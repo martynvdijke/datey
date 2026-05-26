@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{block "title" .}}Datey{{end}}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <style>
+    :root { --pico-font-size: 90%; }
+    .container { padding-top: 1rem; }
+    .upcoming-card { margin-bottom: 0.5rem; }
+    .event-type-badge { font-size: 0.8rem; padding: 0.2rem 0.5rem; border-radius: 4px; }
+    .badge-birthday { background: var(--pico-color-pink); }
+    .badge-anniversary { background: var(--pico-color-jade); }
+    .badge-wedding { background: var(--pico-color-gold); }
+    .nav { margin-bottom: 1rem; }
+    .days-remaining { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <nav class="container-fluid">
+    <ul>
+      <li><strong><a href="/">Datey</a></strong></li>
+    </ul>
+    <ul>
+      <li><a href="/">Dashboard</a></li>
+      <li><a href="/contacts">Contacts</a></li>
+      <li><a href="/settings">Settings</a></li>
+    </ul>
+  </nav>
+  <main class="container">
+    {{embed}}
+  </main>
+</body>
+</html>

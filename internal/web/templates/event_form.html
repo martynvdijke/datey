@@ -1,0 +1,18 @@
+{{define "title"}}Datey - Add Event{{end}}
+{{define "content"}}
+<h1>Add Event</h1>
+<form action="/contacts/{{.ContactID}}/events/new" method="POST">
+  <label for="type">Type</label>
+  <select id="type" name="type" required>
+    <option value="birthday">Birthday</option>
+    <option value="anniversary">Anniversary</option>
+    <option value="wedding">Wedding</option>
+    <option value="custom">Custom</option>
+  </select>
+  <label for="date">Date</label>
+  <input type="date" id="date" name="date" required>
+  <label for="description">Description</label>
+  <input type="text" id="description" name="description">
+  <button type="submit">Create Event</button>
+</form>
+{{end}}

@@ -1,0 +1,44 @@
+{{define "title"}}Datey - {{.Contact.Name}}{{end}}
+{{define "content"}}
+<h1>{{.Contact.Name}}</h1>
+<p>{{.Contact.Notes}}</p>
+<div class="grid">
+  <div>
+    <h2>Events</h2>
+  </div>
+  <div>
+    <a href="/contacts/{{.Contact.ID}}/events/new" role="button">Add Event</a>
+  </div>
+</div>
+{{if .Events}}
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Events}}
+        <tr>
+          <td><span class="event-type-badge badge-{{.Type}}">{{.Type}}</span></td>
+          <td>{{.Date.Format "Jan 2"}}</td>
+          <td>{{.Description}}</td>
+          <td>
+            <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
+              <button class="outline" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{end}}
+    </tbody>
+  </table>
+{{else}}
+  <p>No events for this contact yet.</p>
+{{end}}
+<form action="/contacts/{{.Contact.ID}}/delete" method="POST" style="margin-top: 2rem;" hx-confirm="Delete this contact and all events?" hx-post="/contacts/{{.Contact.ID}}/delete" hx-target="body" hx-push-url="/contacts">
+  <button class="outline secondary">Delete Contact</button>
+</form>
+{{end}}

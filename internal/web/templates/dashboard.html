@@ -1,0 +1,20 @@
+{{define "title"}}Datey - Dashboard{{end}}
+{{define "content"}}
+<h1>Upcoming Events</h1>
+{{if .Events}}
+  {{range .Events}}
+    <article class="upcoming-card">
+      <div class="grid">
+        <div>
+          <strong>{{.Name}}</strong>
+          <span class="event-type-badge badge-{{.Type}}">{{.Type}}</span>
+        </div>
+        <div>{{.Date}}</div>
+        <div class="days-remaining">{{.DaysRemaining}} days</div>
+      </div>
+    </article>
+  {{end}}
+{{else}}
+  <p>No upcoming events in the next {{.ReminderDays}} days.</p>
+{{end}}
+{{end}}

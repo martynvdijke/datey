@@ -1,0 +1,11 @@
+{{define "title"}}Datey - Add Contact{{end}}
+{{define "content"}}
+<h1>{{if .Contact}}Edit{{else}}Add{{end}} Contact</h1>
+<form action="/contacts/new" method="POST">
+  <label for="name">Name</label>
+  <input type="text" id="name" name="name" value="{{if .Contact}}{{.Contact.Name}}{{end}}" required>
+  <label for="notes">Notes</label>
+  <textarea id="notes" name="notes">{{if .Contact}}{{.Contact.Notes}}{{end}}</textarea>
+  <button type="submit">{{if .Contact}}Update{{else}}Create{{end}}</button>
+</form>
+{{end}}

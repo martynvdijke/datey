@@ -1,0 +1,38 @@
+{{define "title"}}Datey - Contacts{{end}}
+{{define "content"}}
+<h1>Contacts</h1>
+<div class="grid">
+  <div>
+    <input type="search" name="q" placeholder="Search contacts..." hx-get="/contacts" hx-trigger="keyup changed delay:300ms" hx-target="#contacts-list" hx-select="#contacts-list">
+  </div>
+  <div>
+    <a href="/contacts/new" role="button">Add Contact</a>
+  </div>
+</div>
+<div id="contacts-list">
+  {{if .Contacts}}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Events</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Contacts}}
+          <tr>
+            <td><a href="/contacts/{{.ID}}">{{.Name}}</a></td>
+            <td>{{len .Edges.Events}}</td>
+            <td>
+              <a href="/contacts/{{.ID}}" role="button" class="outline">View</a>
+            </td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <p>No contacts yet. <a href="/contacts/new">Add your first contact</a>.</p>
+  {{end}}
+</div>
+{{end}}

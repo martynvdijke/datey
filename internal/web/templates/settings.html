@@ -1,0 +1,27 @@
+{{define "title"}}Datey - Settings{{end}}
+{{define "content"}}
+<h1>Settings</h1>
+<h2>Notification Channels</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Channel</th>
+      <th>Status</th>
+      <th>Test</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Channels}}
+      <tr>
+        <td>{{.Name}}</td>
+        <td>{{if .Configured}}✅ Configured{{else}}❌ Not configured{{end}}</td>
+        <td>
+          {{if .Configured}}
+            <button hx-post="/settings/test/{{.Name}}" hx-target="this" hx-swap="outerHTML">Send Test</button>
+          {{end}}
+        </td>
+      </tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
