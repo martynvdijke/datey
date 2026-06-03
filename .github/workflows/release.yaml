@@ -75,19 +75,19 @@ jobs:
 
       - name: Build the Docker image
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: docker build . --file Dockerfile --tag martynvandijke/dnd:latest --tag ghcr.io/martynvdijke/dnd:latest
+        run: docker build . --file Dockerfile --tag martynvandijke/datey:latest --tag ghcr.io/martynvdijke/datey:latest
 
       - name: Push Docker image
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           VERSION=${{ steps.semantic.outputs.new_release_version }}
-          docker tag martynvandijke/dnd:latest martynvandijke/dnd:$VERSION
-          docker tag ghcr.io/martynvdijke/dnd:latest ghcr.io/martynvdijke/dnd:$VERSION
+          docker tag martynvandijke/datey:latest martynvandijke/datey:$VERSION
+          docker tag ghcr.io/martynvdijke/datey:latest ghcr.io/martynvdijke/datey:$VERSION
 
-          docker push martynvandijke/dnd:latest
-          docker push martynvandijke/dnd:$VERSION
-          docker push ghcr.io/martynvdijke/dnd:latest
-          docker push ghcr.io/martynvdijke/dnd:$VERSION
+          docker push martynvandijke/datey:latest
+          docker push martynvandijke/datey:$VERSION
+          docker push ghcr.io/martynvdijke/datey:latest
+          docker push ghcr.io/martynvdijke/datey:$VERSION
 
   notify:
     needs: [ci, release]
