@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/martynvdijke/datey/compare/v1.0.0...v1.0.1) (2026-06-03)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([5f8c5e5](https://github.com/martynvdijke/datey/commit/5f8c5e5df5d75e6b8b13ac4f9ccd44de068bc71d))
+
 # 1.0.0 (2026-06-03)
 
 
