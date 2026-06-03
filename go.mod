@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	entgo.io/ent v0.14.6
 	github.com/go-chi/chi/v5 v5.3.0
-	github.com/mattn/go-sqlite3 v1.14.28
+	github.com/mattn/go-sqlite3 v1.14.44
 )
 
 require (
