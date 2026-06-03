@@ -2,3 +2,7 @@
 .opencode/*
 openspec/*
 datey
+node_modules/
+test-results/
+playwright-report/
+villum-server

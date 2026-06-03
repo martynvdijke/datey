@@ -39,7 +39,6 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
-	r.Get("/health", h.healthCheck)
 	r.Get("/", h.dashboard)
 	r.Get("/contacts", h.listContacts)
 	r.Get("/contacts/new", h.newContactForm)
