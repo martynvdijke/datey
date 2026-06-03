@@ -55,15 +55,6 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Build server binary
-        run: CGO_ENABLED=1 go build -tags fts5 -o villum-server .
-
-      - name: Start server in background
-        run: |
-          DATA_DIR=/tmp/datey-test ./villum-server &
-          sleep 2
-          echo "Server PID: $!"
-
       - name: Run Playwright tests
         run: npx playwright test --project=chromium
         env:

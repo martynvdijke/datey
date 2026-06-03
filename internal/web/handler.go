@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/datey/datey/ent"
@@ -324,15 +323,8 @@ func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("✅ Test sent!"))
 }
 
-func (h *Handler) render(w http.ResponseWriter, name string, data map[string]any) {
-	var buf strings.Builder
-	if err := h.tmpl.ExecuteTemplate(&buf, "base.html", nil); err != nil {
-		slog.Error("render base template", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
-		return
-	}
-
-	if err := h.tmpl.ExecuteTemplate(w, name, data); err != nil {
+func (h *Handler) render(w http.ResponseWriter, _ string, data map[string]any) {
+	if err := h.tmpl.ExecuteTemplate(w, "base.html", data); err != nil {
 		slog.Error("render template", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 	}

@@ -13,7 +13,7 @@ import (
 
 func Init(cfg *config.Config) (*ent.Client, error) {
 	dbPath := cfg.DataDir + "/datey.db"
-	client, err := ent.Open("sqlite3", dbPath+"?_journal_mode=WAL&_timeout=5000")
+	client, err := ent.Open("sqlite3", dbPath+"?_journal_mode=WAL&_timeout=5000&_fk=1")
 	if err != nil {
 		return nil, err
 	}
