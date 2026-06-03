@@ -11,6 +11,6 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]any{
 		"status":  "ok",
 		"time":    time.Now().Format(time.RFC3339),
-		"version": "0.1.0",
+		"version": "1.0.0",
 	})
 }
