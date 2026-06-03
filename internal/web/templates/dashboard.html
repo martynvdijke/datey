@@ -1,20 +1,27 @@
-{{define "title"}}Datey - Dashboard{{end}}
 {{define "content"}}
-<h1>Upcoming Events</h1>
+<h1 class="mb-4">Upcoming Events</h1>
 {{if .Events}}
-  {{range .Events}}
-    <article class="upcoming-card">
-      <div class="grid">
-        <div>
-          <strong>{{.Name}}</strong>
-          <span class="event-type-badge badge-{{.Type}}">{{.Type}}</span>
+  <div class="row g-3">
+    {{range .Events}}
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="card-title mb-0">{{.Name}}</h5>
+              <span class="badge bg-{{if eq .Type "birthday"}}primary{{else if eq .Type "anniversary"}}success{{else if eq .Type "wedding"}}warning text-dark{{else}}secondary{{end}} event-type-badge">{{.Type}}</span>
+            </div>
+            <p class="card-text text-muted">{{.Date}}</p>
+            <p class="card-text">
+              <strong class="{{if le .DaysRemaining 3}}text-danger{{else}}text-primary{{end}}">{{.DaysRemaining}} days</strong> remaining
+            </p>
+          </div>
         </div>
-        <div>{{.Date}}</div>
-        <div class="days-remaining">{{.DaysRemaining}} days</div>
       </div>
-    </article>
-  {{end}}
+    {{end}}
+  </div>
 {{else}}
-  <p>No upcoming events in the next {{.ReminderDays}} days.</p>
+  <div class="alert alert-info" role="alert">
+    No upcoming events in the next {{.ReminderDays}} days.
+  </div>
 {{end}}
 {{end}}

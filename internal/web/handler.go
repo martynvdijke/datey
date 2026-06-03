@@ -19,25 +19,31 @@ import (
 type Handler struct {
 	cfg          *config.Config
 	client       *ent.Client
-	tmpl         *template.Template
+	templates    map[string]*template.Template
 	contacts     *repository.ContactRepository
 	events       *repository.EventRepository
 	notifReg     *notifier.Registry
 }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry) *Handler {
-	tmpl := template.Must(template.ParseFS(templateFS, "templates/*.html"))
+	templates, err := loadTemplates()
+	if err != nil {
+		panic(err)
+	}
 	return &Handler{
-		cfg:      cfg,
-		client:   client,
-		tmpl:     tmpl,
-		contacts: repository.NewContactRepository(client),
-		events:   repository.NewEventRepository(client),
-		notifReg: notifReg,
+		cfg:       cfg,
+		client:    client,
+		templates: templates,
+		contacts:  repository.NewContactRepository(client),
+		events:    repository.NewEventRepository(client),
+		notifReg:  notifReg,
 	}
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
+	r.NotFound(h.notFound)
+
+	r.Get("/health", h.healthCheck)
 	r.Get("/", h.dashboard)
 	r.Get("/contacts", h.listContacts)
 	r.Get("/contacts/new", h.newContactForm)
@@ -49,6 +55,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/events/{id}/delete", h.deleteEvent)
 	r.Get("/settings", h.settings)
 	r.Post("/settings/test/{channel}", h.testNotification)
+}
+
+func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
+	h.renderError(w, http.StatusNotFound)
 }
 
 func (h *Handler) healthCheck(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +76,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	events, err := h.events.ListUpcoming(r.Context(), now, end)
 	if err != nil {
 		slog.Error("dashboard: list upcoming", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		h.renderError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -93,6 +103,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "dashboard.html", map[string]any{
+		"Title":        "Datey - Dashboard",
 		"Events":       evs,
 		"ReminderDays": h.cfg.ReminderDays,
 	})
@@ -112,14 +123,14 @@ func (h *Handler) listContacts(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		slog.Error("list contacts", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		h.renderError(w, http.StatusInternalServerError)
 		return
 	}
 
 	contactsWithEvents, err := h.client.Contact.Query().All(r.Context())
 	if err != nil {
 		slog.Error("list contacts with events", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		h.renderError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -133,12 +144,15 @@ func (h *Handler) listContacts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "contacts.html", map[string]any{
+		"Title":    "Datey - Contacts",
 		"Contacts": contactsWithEvents,
 	})
 }
 
 func (h *Handler) newContactForm(w http.ResponseWriter, r *http.Request) {
-	h.render(w, "contact_form.html", map[string]any{})
+	h.render(w, "contact_form.html", map[string]any{
+		"Title": "Datey - Add Contact",
+	})
 }
 
 func (h *Handler) createContact(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +167,7 @@ func (h *Handler) createContact(w http.ResponseWriter, r *http.Request) {
 	_, err := h.contacts.Create(r.Context(), name, notes)
 	if err != nil {
 		slog.Error("create contact", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		h.renderError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -174,7 +188,7 @@ func (h *Handler) viewContact(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		slog.Error("get contact", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		h.renderError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -186,6 +200,7 @@ func (h *Handler) viewContact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "contact_detail.html", map[string]any{
+		"Title":   "Datey - " + contact.Name,
 		"Contact": contact,
 		"Events":  events,
 	})
@@ -200,7 +215,7 @@ func (h *Handler) deleteContact(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.contacts.Delete(r.Context(), id); err != nil {
 		slog.Error("delete contact", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		h.renderError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -215,6 +230,7 @@ func (h *Handler) newEventForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "event_form.html", map[string]any{
+		"Title":     "Datey - Add Event",
 		"ContactID": id,
 	})
 }
@@ -244,7 +260,7 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 	_, err = h.events.Create(r.Context(), id, eventType, date, description)
 	if err != nil {
 		slog.Error("create event", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		h.renderError(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -281,6 +297,7 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "settings.html", map[string]any{
+		"Title":    "Datey - Settings",
 		"Channels": channels,
 	})
 }
@@ -323,9 +340,25 @@ func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("✅ Test sent!"))
 }
 
-func (h *Handler) render(w http.ResponseWriter, _ string, data map[string]any) {
-	if err := h.tmpl.ExecuteTemplate(w, "base.html", data); err != nil {
-		slog.Error("render template", "error", err)
+func (h *Handler) render(w http.ResponseWriter, page string, data map[string]any) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	tmpl, ok := h.templates[page]
+	if !ok {
+		slog.Error("template not found", "page", page)
 		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
 	}
+	if err := tmpl.ExecuteTemplate(w, "base.html", data); err != nil {
+		slog.Error("render template", "error", err)
+	}
+}
+
+func (h *Handler) renderError(w http.ResponseWriter, status int) {
+	w.WriteHeader(status)
+	statusText := http.StatusText(status)
+	h.render(w, "error.html", map[string]any{
+		"Title":      "Datey - " + statusText,
+		"StatusCode": status,
+		"StatusText": statusText,
+	})
 }

@@ -4,11 +4,11 @@ services:
     container_name: datey
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "6270:6270"
     volumes:
       - datey_data:/data
     environment:
-      - PORT=8080
+      - PORT=6270
       - DATA_DIR=/data
       - SCHEDULER_HOUR=8
       - REMINDER_DAYS=7

@@ -28,7 +28,7 @@ type Config struct {
 
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:          getEnvInt("PORT", 8080),
+		Port:          getEnvInt("PORT", 6270),
 		DataDir:       getEnv("DATA_DIR", "/data"),
 		SchedulerHour: getEnvInt("SCHEDULER_HOUR", 8),
 		ReminderDays:  getEnvInt("REMINDER_DAYS", 7),

@@ -1,18 +1,28 @@
-{{define "title"}}Datey - Add Event{{end}}
 {{define "content"}}
-<h1>Add Event</h1>
-<form action="/contacts/{{.ContactID}}/events/new" method="POST">
-  <label for="type">Type</label>
-  <select id="type" name="type" required>
-    <option value="birthday">Birthday</option>
-    <option value="anniversary">Anniversary</option>
-    <option value="wedding">Wedding</option>
-    <option value="custom">Custom</option>
-  </select>
-  <label for="date">Date</label>
-  <input type="date" id="date" name="date" required>
-  <label for="description">Description</label>
-  <input type="text" id="description" name="description">
-  <button type="submit">Create Event</button>
-</form>
+<h1 class="mb-4">Add Event</h1>
+<div class="row">
+  <div class="col-md-8 col-lg-6">
+    <form action="/contacts/{{.ContactID}}/events/new" method="POST">
+      <div class="mb-3">
+        <label for="type" class="form-label">Type</label>
+        <select class="form-select" id="type" name="type" required>
+          <option value="birthday">Birthday</option>
+          <option value="anniversary">Anniversary</option>
+          <option value="wedding">Wedding</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" class="form-control" id="date" name="date" required>
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" class="form-control" id="description" name="description">
+      </div>
+      <button type="submit" class="btn btn-primary">Create Event</button>
+      <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
 {{end}}

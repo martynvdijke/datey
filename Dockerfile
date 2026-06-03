@@ -12,6 +12,6 @@ RUN apk add --no-cache ca-certificates tzdata && \
 WORKDIR /app
 COPY --from=builder /datey .
 USER datey
-EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:8080/health || exit 1
+EXPOSE 6270
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:6270/health || exit 1
 ENTRYPOINT ["/app/datey"]

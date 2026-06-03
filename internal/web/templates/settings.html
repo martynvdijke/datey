@@ -1,27 +1,34 @@
-{{define "title"}}Datey - Settings{{end}}
 {{define "content"}}
-<h1>Settings</h1>
-<h2>Notification Channels</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Channel</th>
-      <th>Status</th>
-      <th>Test</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{range .Channels}}
+<h1 class="mb-4">Settings</h1>
+<h2 class="mb-3">Notification Channels</h2>
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead class="table-dark">
       <tr>
-        <td>{{.Name}}</td>
-        <td>{{if .Configured}}✅ Configured{{else}}❌ Not configured{{end}}</td>
-        <td>
-          {{if .Configured}}
-            <button hx-post="/settings/test/{{.Name}}" hx-target="this" hx-swap="outerHTML">Send Test</button>
-          {{end}}
-        </td>
+        <th>Channel</th>
+        <th>Status</th>
+        <th class="text-end">Test</th>
       </tr>
-    {{end}}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {{range .Channels}}
+        <tr>
+          <td class="text-capitalize">{{.Name}}</td>
+          <td>
+            {{if .Configured}}
+              <span class="badge bg-success">Configured</span>
+            {{else}}
+              <span class="badge bg-secondary">Not configured</span>
+            {{end}}
+          </td>
+          <td class="text-end">
+            {{if .Configured}}
+              <button class="btn btn-outline-primary btn-sm" hx-post="/settings/test/{{.Name}}" hx-target="this" hx-swap="outerHTML">Send Test</button>
+            {{end}}
+          </td>
+        </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
 {{end}}

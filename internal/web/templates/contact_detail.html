@@ -1,44 +1,47 @@
-{{define "title"}}Datey - {{.Contact.Name}}{{end}}
 {{define "content"}}
-<h1>{{.Contact.Name}}</h1>
-<p>{{.Contact.Notes}}</p>
-<div class="grid">
+<div class="d-flex justify-content-between align-items-start mb-4">
   <div>
-    <h2>Events</h2>
+    <h1 class="mb-1">{{.Contact.Name}}</h1>
+    {{if .Contact.Notes}}<p class="text-muted">{{.Contact.Notes}}</p>{{end}}
   </div>
-  <div>
-    <a href="/contacts/{{.Contact.ID}}/events/new" role="button">Add Event</a>
-  </div>
+  <a href="/contacts/{{.Contact.ID}}/events/new" class="btn btn-primary">Add Event</a>
 </div>
+
+<h2 class="mb-3">Events</h2>
 {{if .Events}}
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Date</th>
-        <th>Description</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{range .Events}}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-dark">
         <tr>
-          <td><span class="event-type-badge badge-{{.Type}}">{{.Type}}</span></td>
-          <td>{{.Date.Format "Jan 2"}}</td>
-          <td>{{.Description}}</td>
-          <td>
-            <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
-              <button class="outline" type="submit">Delete</button>
-            </form>
-          </td>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th class="text-end">Actions</th>
         </tr>
-      {{end}}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {{range .Events}}
+          <tr>
+            <td><span class="badge bg-{{if eq .Type "birthday"}}primary{{else if eq .Type "anniversary"}}success{{else if eq .Type "wedding"}}warning text-dark{{else}}secondary{{end}} event-type-badge">{{.Type}}</span></td>
+            <td>{{.Date.Format "Jan 2, 2006"}}</td>
+            <td>{{.Description}}</td>
+            <td class="text-end">
+              <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
 {{else}}
-  <p>No events for this contact yet.</p>
+  <div class="alert alert-info" role="alert">
+    No events for this contact yet.
+  </div>
 {{end}}
-<form action="/contacts/{{.Contact.ID}}/delete" method="POST" style="margin-top: 2rem;" hx-confirm="Delete this contact and all events?" hx-post="/contacts/{{.Contact.ID}}/delete" hx-target="body" hx-push-url="/contacts">
-  <button class="outline secondary">Delete Contact</button>
+
+<form action="/contacts/{{.Contact.ID}}/delete" method="POST" class="mt-4" hx-confirm="Delete this contact and all events?" hx-post="/contacts/{{.Contact.ID}}/delete" hx-target="body" hx-push-url="/contacts">
+  <button class="btn btn-danger" type="submit">Delete Contact</button>
 </form>
 {{end}}
