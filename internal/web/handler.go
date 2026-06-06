@@ -46,7 +46,6 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.NotFound(h.notFound)
 
-	r.Get("/health", h.healthCheck)
 	r.Get("/", h.dashboard)
 	r.Get("/contacts", h.listContacts)
 	r.Get("/contacts/new", h.newContactForm)
@@ -64,14 +63,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
 	h.renderError(w, http.StatusNotFound)
-}
-
-func (h *Handler) healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
-		"status": "ok",
-		"time":   time.Now().Format(time.RFC3339),
-	})
 }
 
 func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
