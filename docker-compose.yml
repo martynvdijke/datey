@@ -28,6 +28,9 @@ services:
       # Telegram
       - TELEGRAM_BOT_TOKEN=
       - TELEGRAM_CHAT_ID=
+      # Umami Analytics
+      - UMAMI_URL=
+      - UMAMI_WEBSITE_ID=
 
 volumes:
   datey_data:

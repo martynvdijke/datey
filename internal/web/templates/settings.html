@@ -1,5 +1,6 @@
 {{define "content"}}
 <h1 class="mb-4">Settings</h1>
+
 <h2 class="mb-3">Notification Channels</h2>
 <div class="table-responsive">
   <table class="table align-middle">
@@ -28,6 +29,39 @@
           </td>
         </tr>
       {{end}}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="mb-3 mt-4">Tracking</h2>
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Service</th>
+        <th>Status</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Umami Analytics</td>
+        <td>
+          {{if .UmamiConfigured}}
+            <span class="badge bg-success">Configured</span>
+          {{else}}
+            <span class="badge bg-secondary">Not configured</span>
+          {{end}}
+        </td>
+        <td>
+          {{if .UmamiConfigured}}
+            <span class="text-muted">URL:</span> <code>{{.UmamiURL}}</code><br>
+            <span class="text-muted">Website ID:</span> <code>{{.UmamiWebsiteID}}</code>
+          {{else}}
+            <span class="text-muted">Set <code>UMAMI_URL</code> and <code>UMAMI_WEBSITE_ID</code> environment variables to enable.</span>
+          {{end}}
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>

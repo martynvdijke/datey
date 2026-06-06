@@ -400,6 +400,16 @@ func (h *Handler) setLogLevel(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) baseData(title string) map[string]any {
+	umamiConfigured := h.cfg.UmamiURL != "" && h.cfg.UmamiWebsiteID != ""
+	return map[string]any{
+		"Title":            title,
+		"UmamiURL":         h.cfg.UmamiURL,
+		"UmamiWebsiteID":   h.cfg.UmamiWebsiteID,
+		"UmamiConfigured":  umamiConfigured,
+	}
+}
+
 func (h *Handler) render(w http.ResponseWriter, page string, data map[string]any) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl, ok := h.templates[page]
@@ -408,7 +418,15 @@ func (h *Handler) render(w http.ResponseWriter, page string, data map[string]any
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	if err := tmpl.ExecuteTemplate(w, "base.html", data); err != nil {
+
+	// Merge base data (Umami config, etc.) with page-specific data.
+	title, _ := data["Title"].(string)
+	merged := h.baseData(title)
+	for k, v := range data {
+		merged[k] = v
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "base.html", merged); err != nil {
 		slog.Error("render template", "error", err)
 	}
 }

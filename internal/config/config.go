@@ -27,6 +27,9 @@ type Config struct {
 
 	TelegramBotToken string
 	TelegramChatID   string
+
+	UmamiURL       string
+	UmamiWebsiteID string
 }
 
 func Load() (*Config, error) {
@@ -48,6 +51,9 @@ func Load() (*Config, error) {
 		GotifyToken:   getEnv("GOTIFY_TOKEN", ""),
 		TelegramBotToken: getEnv("TELEGRAM_BOT_TOKEN", ""),
 		TelegramChatID:   getEnv("TELEGRAM_CHAT_ID", ""),
+
+		UmamiURL:       getEnv("UMAMI_URL", ""),
+		UmamiWebsiteID: getEnv("UMAMI_WEBSITE_ID", ""),
 	}
 
 	if cfg.DataDir == "" {
