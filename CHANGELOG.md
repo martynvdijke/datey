@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/martynvdijke/datey/compare/v1.1.0...v1.1.1) (2026-06-06)
+
+
+### Bug Fixes
+
+* ensure /data directory exists and is writable by datey user in Docker image ([5fc3093](https://github.com/martynvdijke/datey/commit/5fc309330f087946da04d15cda5c990126c379da))
+
 # [1.1.0](https://github.com/martynvdijke/datey/compare/v1.0.0...v1.1.0) (2026-06-06)
 
 
