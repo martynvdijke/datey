@@ -70,6 +70,7 @@ func main() {
 	r := chi.NewRouter()
 
 	handler := web.NewHandler(cfg, client, reg, store)
+	handlers.Version = Version
 	r.Get("/health", handlers.HealthCheck)
 	handler.RegisterRoutes(r)
 
