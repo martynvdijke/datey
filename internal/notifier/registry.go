@@ -21,7 +21,7 @@ func (r *Registry) Register(n Notifier) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.notifiers[n.Name()] = n
-	slog.Info("registered notifier", "name", n.Name(), "configured", n.IsConfigured())
+	slog.Info("registered notifier", "source", "notifier", "name", n.Name(), "configured", n.IsConfigured())
 }
 
 func (r *Registry) SendAll(ctx context.Context, title, message string) {
@@ -33,9 +33,9 @@ func (r *Registry) SendAll(ctx context.Context, title, message string) {
 			continue
 		}
 		if err := n.Send(ctx, title, message); err != nil {
-			slog.Error("notification failed", "channel", name, "error", err)
+			slog.Error("notification failed", "source", "notifier", "channel", name, "error", err)
 		} else {
-			slog.Info("notification sent", "channel", name)
+			slog.Info("notification sent", "source", "notifier", "channel", name)
 		}
 	}
 }

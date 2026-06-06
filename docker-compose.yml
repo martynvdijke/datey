@@ -12,6 +12,9 @@ services:
       - DATA_DIR=/data
       - SCHEDULER_HOUR=8
       - REMINDER_DAYS=7
+      - LOG_LEVEL=warn
+      - LOG_BUFFER_SIZE=10000
+      - OTEL_ENDPOINT=
       # Email
       - SMTP_HOST=
       - SMTP_PORT=587

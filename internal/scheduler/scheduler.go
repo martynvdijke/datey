@@ -31,7 +31,7 @@ func New(cfg *config.Config, client *ent.Client, registry *notifier.Registry) *S
 }
 
 func (s *Scheduler) Start(ctx context.Context) {
-	slog.Info("scheduler started", "hour", s.cfg.SchedulerHour)
+	slog.Info("scheduler started", "source", "scheduler", "hour", s.cfg.SchedulerHour)
 
 	now := time.Now()
 	next := time.Date(now.Year(), now.Month(), now.Day(), s.cfg.SchedulerHour, 0, 0, 0, now.Location())
@@ -40,7 +40,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 	}
 
 	initialDelay := time.Until(next)
-	slog.Debug("scheduler first run", "delay", initialDelay)
+	slog.Debug("scheduler first run", "source", "scheduler", "delay", initialDelay)
 
 	timer := time.NewTimer(initialDelay)
 	defer timer.Stop()
@@ -48,7 +48,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("scheduler stopped")
+			slog.Info("scheduler stopped", "source", "scheduler")
 			return
 		case <-timer.C:
 			s.processReminders(ctx)
@@ -58,16 +58,16 @@ func (s *Scheduler) Start(ctx context.Context) {
 }
 
 func (s *Scheduler) processReminders(ctx context.Context) {
-	slog.Info("processing reminders")
-
 	now := time.Now()
 	end := now.AddDate(0, 0, s.cfg.ReminderDays)
 
 	upcomingEvents, err := s.events.ListUpcoming(ctx, now, end)
 	if err != nil {
-		slog.Error("scheduler: list upcoming events", "error", err)
+		slog.Error("scheduler: list upcoming events", "source", "scheduler", "error", err)
 		return
 	}
+
+	slog.Info("processing reminders", "source", "scheduler", "event_count", len(upcomingEvents))
 
 	for _, event := range upcomingEvents {
 		eventKey := fmt.Sprintf("%d-%s", event.ID, event.Date.Format("2006-01-02"))
@@ -80,11 +80,11 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 			dateKey := fmt.Sprintf("%s-%s", name, eventKey)
 			exists, err := s.notifLog.ExistsForDate(ctx, name, dateKey)
 			if err != nil {
-				slog.Error("scheduler: check notification log", "error", err)
+				slog.Error("scheduler: check notification log", "source", "scheduler", "error", err)
 				continue
 			}
 			if exists {
-				slog.Debug("scheduler: notification already sent", "channel", name, "event", event.ID)
+				slog.Debug("scheduler: notification already sent", "source", "scheduler", "channel", name, "event", event.ID)
 				continue
 			}
 
@@ -103,7 +103,9 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 
 			_, err = s.notifLog.Create(ctx, event.ID, name, dateKey, time.Now())
 			if err != nil {
-				slog.Error("scheduler: log notification", "error", err)
+				slog.Error("scheduler: log notification", "source", "scheduler", "error", err)
+			} else {
+				slog.Info("scheduler: notification logged", "source", "scheduler", "channel", name, "event", event.ID)
 			}
 		}
 	}

@@ -12,22 +12,48 @@ import (
 	"github.com/datey/datey/handlers"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/db"
+	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/scheduler"
 	"github.com/datey/datey/internal/web"
 	"github.com/go-chi/chi/v5"
 )
 
-const Version = "1.0.1"
+const Version = "1.0.2"
 
 func main() {
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo})))
-
 	cfg, err := config.Load()
 	if err != nil {
 		slog.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
+
+	// Initialise the log store with a ring buffer.
+	store := logstore.NewStore(cfg.LogBufferSize)
+	initialLevel, ok := logstore.ParseLogLevel(cfg.LogLevel)
+	if !ok {
+		initialLevel = slog.LevelWarn
+	}
+	store.InitLevel(initialLevel)
+
+	// Create the custom handler wrapping the default stderr text handler.
+	textHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: store.LevelVar()})
+	var otelFn func(context.Context, slog.Record)
+
+	if cfg.OTLPEndpoint != "" {
+		otelHelper, otelErr := logstore.NewOTelHelper(cfg.OTLPEndpoint)
+		if otelErr != nil {
+			slog.Warn("failed to initialise OTel logger, continuing without OTEL", "error", otelErr)
+		} else if otelHelper != nil {
+			otelFn = func(ctx context.Context, r slog.Record) {
+				otelHelper.Emit(ctx, r)
+			}
+			slog.Info("OTel logging enabled", "endpoint", cfg.OTLPEndpoint)
+		}
+	}
+
+	customHandler := logstore.NewHandler(textHandler, store, otelFn)
+	slog.SetDefault(slog.New(customHandler))
 
 	client, err := db.Init(cfg)
 	if err != nil {
@@ -43,7 +69,7 @@ func main() {
 
 	r := chi.NewRouter()
 
-	handler := web.NewHandler(cfg, client, reg)
+	handler := web.NewHandler(cfg, client, reg, store)
 	r.Get("/health", handlers.HealthCheck)
 	handler.RegisterRoutes(r)
 
@@ -73,3 +99,5 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+

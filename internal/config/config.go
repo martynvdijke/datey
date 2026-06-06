@@ -11,6 +11,9 @@ type Config struct {
 	DataDir       string
 	SchedulerHour int
 	ReminderDays  int
+	LogLevel      string
+	LogBufferSize int
+	OTLPEndpoint  string
 
 	SMTPHost     string
 	SMTPPort     int
@@ -32,6 +35,9 @@ func Load() (*Config, error) {
 		DataDir:       getEnv("DATA_DIR", "/data"),
 		SchedulerHour: getEnvInt("SCHEDULER_HOUR", 8),
 		ReminderDays:  getEnvInt("REMINDER_DAYS", 7),
+		LogLevel:      getEnv("LOG_LEVEL", "warn"),
+		LogBufferSize: getEnvInt("LOG_BUFFER_SIZE", 10000),
+		OTLPEndpoint:  getEnv("OTEL_ENDPOINT", ""),
 		SMTPHost:      getEnv("SMTP_HOST", ""),
 		SMTPPort:      getEnvInt("SMTP_PORT", 587),
 		SMTPUser:      getEnv("SMTP_USER", ""),
