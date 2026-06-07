@@ -6,3 +6,23 @@
 Dockerfile
 docker-compose.yml
 openspec/
+
+# Pre-built binary (22MB) - rebuilt inside Docker
+datey
+
+# CI/CD and release config
+.github/
+.releaserc.yaml
+renovate.json
+
+# Tests (not needed for production build)
+tests/
+playwright.config.ts
+
+# Node.js artifacts (no npm step in Docker build)
+package.json
+package-lock.json
+node_modules/
+
+# AI/opencode config
+.opencode/
