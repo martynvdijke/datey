@@ -19,7 +19,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const Version = "1.1.1"
+const Version = "1.1.2"
 
 func main() {
 	cfg, err := config.Load()

@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/martynvdijke/datey/compare/v1.1.1...v1.1.2) (2026-06-07)
+
+
+### Bug Fixes
+
+* **docker:** slim build context by excluding unnecessary files from .dockerignore ([42b36f8](https://github.com/martynvdijke/datey/commit/42b36f8b051fddda715fabdbf9f27020e485dc18))
+
 ## [1.1.1](https://github.com/martynvdijke/datey/compare/v1.1.0...v1.1.1) (2026-06-06)
 
 
