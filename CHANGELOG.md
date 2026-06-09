@@ -1,3 +1,21 @@
+# [1.2.0](https://github.com/martynvdijke/datey/compare/v1.1.2...v1.2.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* add actions:read and checks:read for reusable workflow caller ([25cbab6](https://github.com/martynvdijke/datey/commit/25cbab645575dac8fc08cab65eea23f11dd936ec))
+* add continue-on-error to otel-cicd-action in remaining workflows ([a62a70e](https://github.com/martynvdijke/datey/commit/a62a70e10f0c648da1ada08b1cd0e2a9bdf748df))
+* add continue-on-error to otel-cicd-action step (correct indentation) ([b0926fb](https://github.com/martynvdijke/datey/commit/b0926fbaf155dbda062bf06d1a697e21ee760195))
+* **deps:** update all non-major dependencies ([09357e5](https://github.com/martynvdijke/datey/commit/09357e500f3f4ca1734b09a3d4db15cd73650de5))
+* rename githubToken to otelToken for otel-cicd-action@v4 ([52f5d9f](https://github.com/martynvdijke/datey/commit/52f5d9f34c1017acf407ac82942a1552783c993f))
+* revert otelToken to githubToken for otel-cicd-action@v4 ([234707f](https://github.com/martynvdijke/datey/commit/234707f5a062eddcc9e860ea3a42c1213ea3d927))
+* use githubToken instead of otelToken for otel-cicd-action@v4 ([cbc5024](https://github.com/martynvdijke/datey/commit/cbc5024a27c22414cc8c8ed51ef3d212a84bde15))
+
+
+### Features
+
+* add otlpAuthorization input for Bearer auth ([1f1dc33](https://github.com/martynvdijke/datey/commit/1f1dc333fefbb0c86ac460300ee653f55d8db490))
+
 ## [1.1.2](https://github.com/martynvdijke/datey/compare/v1.1.1...v1.1.2) (2026-06-07)
 
 
