@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/martynvdijke/datey/compare/v1.2.0...v1.3.0) (2026-06-10)
+
+
+### Bug Fixes
+
+* polish admin setup flow, fix chi v5 middleware ordering, add flash messages ([8be9436](https://github.com/martynvdijke/datey/commit/8be943635732ad014e6997c0f1c2a5ecc98da8cb))
+
+
+### Features
+
+* initial admin setup with multi-user support and role-based access ([6b52b51](https://github.com/martynvdijke/datey/commit/6b52b5102a1b3f4874333ebb096fec9b7fe43743))
+
 # [1.2.0](https://github.com/martynvdijke/datey/compare/v1.1.2...v1.2.0) (2026-06-09)
 
 
