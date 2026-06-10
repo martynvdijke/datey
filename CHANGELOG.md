@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/martynvdijke/datey/compare/v1.4.0...v1.5.0) (2026-06-10)
+
+
+### Features
+
+* add automatic SQLite database backup with configurable schedule and retention ([a92b54c](https://github.com/martynvdijke/datey/commit/a92b54c51ea3418d2e64b53dae10feb5e42416d7))
+
 # [1.4.0](https://github.com/martynvdijke/datey/compare/v1.3.1...v1.4.0) (2026-06-10)
 
 
