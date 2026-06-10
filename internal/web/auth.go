@@ -75,8 +75,8 @@ func (h *Handler) Admin(next http.Handler) http.Handler {
 // If no users exist and the request is not for /setup or /login, redirects to /setup.
 func (h *Handler) SetupRedirect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Skip for setup, login, and health endpoints
-		if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/health" {
+	// Skip for setup, login, logout, and health endpoints
+	if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/logout" || r.URL.Path == "/health" {
 			next.ServeHTTP(w, r)
 			return
 		}

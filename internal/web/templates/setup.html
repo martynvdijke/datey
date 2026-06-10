@@ -3,22 +3,24 @@
   <div class="col-md-5 col-lg-4">
     <div class="card shadow-sm">
       <div class="card-body p-4">
-        <h3 class="card-title text-center mb-2">Welcome to Datey</h3>
-        <p class="text-muted text-center mb-4">Create the initial administrator account to get started.</p>
+        <div class="text-center mb-4">
+          <h3 class="card-title mb-1">Welcome to Datey</h3>
+          <p class="text-muted mb-0">Set up your administrator account to get started.</p>
+        </div>
         {{if .Error}}
           <div class="alert alert-danger">{{.Error}}</div>
         {{end}}
         <form method="POST" action="/setup">
           <div class="mb-3">
             <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required autofocus>
+            <input type="text" class="form-control" id="username" name="username" required autofocus autocomplete="username">
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required minlength="8">
-            <div class="form-text">At least 8 characters</div>
+            <input type="password" class="form-control" id="password" name="password" required minlength="8" autocomplete="new-password">
+            <div class="form-text">Must be at least 8 characters</div>
           </div>
-          <button type="submit" class="btn btn-dark w-100">Create Admin</button>
+          <button type="submit" class="btn btn-dark w-100">Create Admin Account</button>
         </form>
       </div>
     </div>

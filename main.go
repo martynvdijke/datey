@@ -71,7 +71,6 @@ func main() {
 
 	handler := web.NewHandler(cfg, client, reg, store)
 	handlers.Version = Version
-	r.Get("/health", handlers.HealthCheck)
 	handler.RegisterRoutes(r)
 
 	ctx, cancel := context.WithCancel(context.Background())

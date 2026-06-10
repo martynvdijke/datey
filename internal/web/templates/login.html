@@ -4,6 +4,9 @@
     <div class="card shadow-sm">
       <div class="card-body p-4">
         <h3 class="card-title text-center mb-4">Log In</h3>
+        {{if .Success}}
+          <div class="alert alert-success">{{.Success}}</div>
+        {{end}}
         {{if .Error}}
           <div class="alert alert-danger">{{.Error}}</div>
         {{end}}

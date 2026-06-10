@@ -52,44 +52,58 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
-	r.NotFound(h.notFound)
+	// Health check on its own (no middleware applied)
+	r.Get("/health", h.healthCheck)
 
-	// Public routes — no auth required
-	r.Get("/setup", h.setupPage)
-	r.Post("/setup", h.setupCreate)
-	r.Get("/login", h.loginPage)
-	r.Post("/login", h.loginPost)
-	r.Get("/logout", h.logout)
-
-	// SetupRedirect runs before auth: if no users exist, redirect to /setup
-	r.Use(h.SetupRedirect)
-
-	// Protected routes — require authentication
+	// All other routes with middleware applied via group
 	r.Group(func(r chi.Router) {
-		r.Use(h.Auth)
+		r.Use(h.SetupRedirect)
 
-		r.Get("/", h.dashboard)
-		r.Get("/contacts", h.listContacts)
-		r.Get("/contacts/new", h.newContactForm)
-		r.Post("/contacts/new", h.createContact)
-		r.Get("/contacts/{id}", h.viewContact)
-		r.Post("/contacts/{id}/delete", h.deleteContact)
-		r.Get("/contacts/{id}/events/new", h.newEventForm)
-		r.Post("/contacts/{id}/events/new", h.createEvent)
-		r.Post("/events/{id}/delete", h.deleteEvent)
+		r.NotFound(h.notFound)
 
-		// Admin-only routes
+		// Public routes — no auth required
+		r.Get("/setup", h.setupPage)
+		r.Post("/setup", h.setupCreate)
+		r.Get("/login", h.loginPage)
+		r.Post("/login", h.loginPost)
+		r.Get("/logout", h.logout)
+
+		// Protected routes — require authentication
 		r.Group(func(r chi.Router) {
-			r.Use(h.Admin)
+			r.Use(h.Auth)
 
-			r.Get("/settings", h.settings)
-			r.Post("/settings/test/{channel}", h.testNotification)
-			r.Get("/logs", h.logsPage)
-			r.Post("/logs/level", h.setLogLevel)
-			r.Get("/users", h.usersList)
-			r.Post("/users/create", h.userCreate)
-			r.Post("/users/{id}/delete", h.userDelete)
+			r.Get("/", h.dashboard)
+			r.Get("/contacts", h.listContacts)
+			r.Get("/contacts/new", h.newContactForm)
+			r.Post("/contacts/new", h.createContact)
+			r.Get("/contacts/{id}", h.viewContact)
+			r.Post("/contacts/{id}/delete", h.deleteContact)
+			r.Get("/contacts/{id}/events/new", h.newEventForm)
+			r.Post("/contacts/{id}/events/new", h.createEvent)
+			r.Post("/events/{id}/delete", h.deleteEvent)
+
+			// Admin-only routes
+			r.Group(func(r chi.Router) {
+				r.Use(h.Admin)
+
+				r.Get("/settings", h.settings)
+				r.Post("/settings/test/{channel}", h.testNotification)
+				r.Get("/logs", h.logsPage)
+				r.Post("/logs/level", h.setLogLevel)
+				r.Get("/users", h.usersList)
+				r.Post("/users/create", h.userCreate)
+				r.Post("/users/{id}/delete", h.userDelete)
+			})
 		})
+	})
+}
+
+func (h *Handler) healthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"status":  "ok",
+		"time":    time.Now().Format(time.RFC3339),
+		"version": "1.1.2",
 	})
 }
 
@@ -437,7 +451,7 @@ func (h *Handler) setupCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("admin user created", "username", username)
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/login?success=Admin+account+created.+Please+log+in.", http.StatusSeeOther)
 }
 
 func (h *Handler) usersList(w http.ResponseWriter, r *http.Request) {
@@ -465,11 +479,18 @@ func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
 	role := r.FormValue("role")
 
 	if username == "" {
-		h.renderError(w, r, http.StatusBadRequest)
+		http.Redirect(w, r, "/users?error=Username+is+required", http.StatusSeeOther)
 		return
 	}
 	if len(password) < 8 {
-		h.renderError(w, r, http.StatusBadRequest)
+		http.Redirect(w, r, "/users?error=Password+must+be+at+least+8+characters", http.StatusSeeOther)
+		return
+	}
+
+	// Check for duplicate username
+	existing, err := h.users.GetByUsername(r.Context(), username)
+	if err == nil && existing != nil {
+		http.Redirect(w, r, "/users?error=Username+"+username+"+is+already+taken", http.StatusSeeOther)
 		return
 	}
 
@@ -488,14 +509,11 @@ func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
 	_, err = h.users.Create(r.Context(), username, string(hash), userRole)
 	if err != nil {
 		slog.Error("create user", "error", err)
-		h.render(w, r, "users.html", map[string]any{
-			"Title": "Datey - Users",
-			"Error": "Failed to create user: " + err.Error(),
-		})
+		http.Redirect(w, r, "/users?error=Failed+to+create+user", http.StatusSeeOther)
 		return
 	}
 
-	http.Redirect(w, r, "/users", http.StatusSeeOther)
+	http.Redirect(w, r, "/users?success=User+"+username+"+created", http.StatusSeeOther)
 }
 
 func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
@@ -507,20 +525,33 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	currentUser := UserFromContext(r.Context())
 	if currentUser != nil && currentUser.ID == id {
-		http.Error(w, "You cannot delete your own account", http.StatusForbidden)
+		http.Redirect(w, r, "/users?error=You+cannot+delete+your+own+account", http.StatusSeeOther)
 		return
+	}
+
+	// Look up the username before deleting
+	userToDelete, lookupErr := h.users.GetByID(r.Context(), id)
+	username := ""
+	if lookupErr == nil && userToDelete != nil {
+		username = userToDelete.Username
 	}
 
 	// Delete all sessions for this user first
-	h.sessions.DeleteByUserID(r.Context(), id)
+	if err := h.sessions.DeleteByUserID(r.Context(), id); err != nil {
+		slog.Error("delete user: delete sessions", "error", err)
+	}
 
 	if err := h.users.Delete(r.Context(), id); err != nil {
 		slog.Error("delete user", "error", err)
-		h.renderError(w, r, http.StatusInternalServerError)
+		http.Redirect(w, r, "/users?error=Failed+to+delete+user", http.StatusSeeOther)
 		return
 	}
 
-	http.Redirect(w, r, "/users", http.StatusSeeOther)
+	if username != "" {
+		http.Redirect(w, r, "/users?success=User+"+username+"+deleted", http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, "/users?success=User+deleted", http.StatusSeeOther)
+	}
 }
 
 func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
@@ -646,6 +677,13 @@ func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 	if u != nil {
 		data["User"] = u
 		data["IsAdmin"] = u.Role == user.RoleAdmin
+	}
+	// Flash messages from query params (for redirect-based messages)
+	if s := r.URL.Query().Get("success"); s != "" {
+		data["Success"] = s
+	}
+	if e := r.URL.Query().Get("error"); e != "" {
+		data["Error"] = e
 	}
 	return data
 }
