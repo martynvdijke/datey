@@ -8,6 +8,7 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/config"
+	"github.com/datey/datey/internal/db"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
 )
@@ -52,6 +53,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 			return
 		case <-timer.C:
 			s.processReminders(ctx)
+			s.runBackup(ctx)
 			timer.Reset(24 * time.Hour)
 		}
 	}
@@ -109,4 +111,16 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 			}
 		}
 	}
+}
+
+func (s *Scheduler) runBackup(ctx context.Context) {
+	dbPath := s.cfg.DataDir + "/datey.db"
+	slog.Info("running database backup", "source", "scheduler", "path", dbPath)
+
+	if err := db.Backup(dbPath, s.cfg.BackupDir, s.cfg.BackupRetentionDays); err != nil {
+		slog.Error("scheduler: backup failed", "source", "scheduler", "error", err)
+		return
+	}
+
+	slog.Info("database backup completed", "source", "scheduler", "dir", s.cfg.BackupDir)
 }

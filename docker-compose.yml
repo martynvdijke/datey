@@ -31,6 +31,9 @@ services:
       # Umami Analytics
       - UMAMI_URL=
       - UMAMI_WEBSITE_ID=
+      # Database Backup
+      - BACKUP_DIR=/data/backups
+      - BACKUP_RETENTION_DAYS=30
 
 volumes:
   datey_data:

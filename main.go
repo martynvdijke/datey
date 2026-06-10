@@ -79,6 +79,17 @@ func main() {
 	sched := scheduler.New(cfg, client, reg)
 	go sched.Start(ctx)
 
+	// Run an initial backup on startup (non-blocking).
+	go func() {
+		dbPath := cfg.DataDir + "/datey.db"
+		slog.Info("running initial database backup", "path", dbPath)
+		if err := db.Backup(dbPath, cfg.BackupDir, cfg.BackupRetentionDays); err != nil {
+			slog.Warn("initial backup failed", "error", err)
+		} else {
+			slog.Info("initial database backup completed", "dir", cfg.BackupDir)
+		}
+	}()
+
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
 		Handler: r,

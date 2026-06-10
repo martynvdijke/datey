@@ -15,6 +15,9 @@ type Config struct {
 	LogBufferSize int
 	OTLPEndpoint  string
 
+	BackupDir          string
+	BackupRetentionDays int
+
 	SMTPHost     string
 	SMTPPort     int
 	SMTPUser     string
@@ -58,6 +61,13 @@ func Load() (*Config, error) {
 
 	if cfg.DataDir == "" {
 		return nil, fmt.Errorf("DATA_DIR must not be empty")
+	}
+
+	if cfg.BackupDir == "" {
+		cfg.BackupDir = cfg.DataDir + "/backups"
+	}
+	if cfg.BackupRetentionDays <= 0 {
+		cfg.BackupRetentionDays = 30
 	}
 
 	return cfg, nil
