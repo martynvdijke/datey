@@ -52,6 +52,14 @@ func (r *EventRepository) Update(ctx context.Context, id int, eventType string, 
 		Save(ctx)
 }
 
+func (r *EventRepository) ListInRange(ctx context.Context, start, end time.Time) ([]*ent.Event, error) {
+	return r.client.Event.Query().
+		Where(event.DateGTE(start), event.DateLTE(end)).
+		Order(ent.Asc(event.FieldDate)).
+		WithContact().
+		All(ctx)
+}
+
 func (r *EventRepository) Delete(ctx context.Context, id int) error {
 	return r.client.Event.DeleteOneID(id).Exec(ctx)
 }

@@ -35,6 +35,7 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"contact_detail.html",
 		"contact_form.html",
 		"event_form.html",
+		"calendar.html",
 		"settings.html",
 		"logs.html",
 		"error.html",
