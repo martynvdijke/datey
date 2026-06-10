@@ -1,0 +1,75 @@
+{{define "content"}}
+<h1 class="mb-4">Users</h1>
+
+{{if .Error}}
+  <div class="alert alert-danger">{{.Error}}</div>
+{{end}}
+{{if .Success}}
+  <div class="alert alert-success">{{.Success}}</div>
+{{end}}
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Existing Users</h5>
+        {{if .Users}}
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Users}}
+                <tr>
+                  <td>{{.Username}}</td>
+                  <td><span class="badge bg-{{if eq .Role "admin"}}danger{{else}}secondary{{end}}">{{.Role}}</span></td>
+                  <td>{{.CreatedAt.Format "Jan 2, 2006"}}</td>
+                  <td>
+                    <form method="POST" action="/users/{{.ID}}/delete" style="display:inline"
+                          onsubmit="return confirm('Delete user {{.Username}}?')">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              {{end}}
+            </tbody>
+          </table>
+        {{else}}
+          <p class="text-muted mb-0">No users found.</p>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Create User</h5>
+        <form method="POST" action="/users/create">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required minlength="8">
+          </div>
+          <div class="mb-3">
+            <label for="role" class="form-label">Role</label>
+            <select class="form-select" id="role" name="role">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-dark w-100">Create User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -8,6 +8,8 @@ import (
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/schema"
+	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -74,4 +76,20 @@ func init() {
 	recurringruleDescEnabled := recurringruleFields[6].Descriptor()
 	// recurringrule.DefaultEnabled holds the default value on creation for the enabled field.
 	recurringrule.DefaultEnabled = recurringruleDescEnabled.Default.(bool)
+	sessionFields := schema.Session{}.Fields()
+	_ = sessionFields
+	// sessionDescTokenHash is the schema descriptor for token_hash field.
+	sessionDescTokenHash := sessionFields[0].Descriptor()
+	// session.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
+	session.TokenHashValidator = sessionDescTokenHash.Validators[0].(func(string) error)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescUsername is the schema descriptor for username field.
+	userDescUsername := userFields[0].Descriptor()
+	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
+	// userDescPasswordHash is the schema descriptor for password_hash field.
+	userDescPasswordHash := userFields[1].Descriptor()
+	// user.PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
+	user.PasswordHashValidator = userDescPasswordHash.Validators[0].(func(string) error)
 }

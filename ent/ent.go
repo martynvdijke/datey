@@ -16,6 +16,8 @@ import (
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/recurringrule"
+	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/user"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -80,6 +82,8 @@ func checkColumn(t, c string) error {
 			event.Table:           event.ValidColumn,
 			notificationlog.Table: notificationlog.ValidColumn,
 			recurringrule.Table:   recurringrule.ValidColumn,
+			session.Table:         session.ValidColumn,
+			user.Table:            user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

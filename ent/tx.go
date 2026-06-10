@@ -20,6 +20,10 @@ type Tx struct {
 	NotificationLog *NotificationLogClient
 	// RecurringRule is the client for interacting with the RecurringRule builders.
 	RecurringRule *RecurringRuleClient
+	// Session is the client for interacting with the Session builders.
+	Session *SessionClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 
 	// lazily loaded.
 	client     *Client
@@ -155,6 +159,8 @@ func (tx *Tx) init() {
 	tx.Event = NewEventClient(tx.config)
 	tx.NotificationLog = NewNotificationLogClient(tx.config)
 	tx.RecurringRule = NewRecurringRuleClient(tx.config)
+	tx.Session = NewSessionClient(tx.config)
+	tx.User = NewUserClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

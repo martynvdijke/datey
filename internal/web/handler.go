@@ -9,11 +9,15 @@ import (
 	"strconv"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/datey/datey/ent"
+	"github.com/datey/datey/ent/user"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
+	"github.com/datey/datey/internal/session"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -21,6 +25,8 @@ type Handler struct {
 	cfg          *config.Config
 	client       *ent.Client
 	templates    map[string]*template.Template
+	users        *repository.UserRepository
+	sessions     *session.Store
 	contacts     *repository.ContactRepository
 	events       *repository.EventRepository
 	notifReg     *notifier.Registry
@@ -36,6 +42,8 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		cfg:       cfg,
 		client:    client,
 		templates: templates,
+		users:     repository.NewUserRepository(client),
+		sessions:  session.NewStore(client),
 		contacts:  repository.NewContactRepository(client),
 		events:    repository.NewEventRepository(client),
 		notifReg:  notifReg,
@@ -46,23 +54,47 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.NotFound(h.notFound)
 
-	r.Get("/", h.dashboard)
-	r.Get("/contacts", h.listContacts)
-	r.Get("/contacts/new", h.newContactForm)
-	r.Post("/contacts/new", h.createContact)
-	r.Get("/contacts/{id}", h.viewContact)
-	r.Post("/contacts/{id}/delete", h.deleteContact)
-	r.Get("/contacts/{id}/events/new", h.newEventForm)
-	r.Post("/contacts/{id}/events/new", h.createEvent)
-	r.Post("/events/{id}/delete", h.deleteEvent)
-	r.Get("/settings", h.settings)
-	r.Post("/settings/test/{channel}", h.testNotification)
-	r.Get("/logs", h.logsPage)
-	r.Post("/logs/level", h.setLogLevel)
+	// Public routes — no auth required
+	r.Get("/setup", h.setupPage)
+	r.Post("/setup", h.setupCreate)
+	r.Get("/login", h.loginPage)
+	r.Post("/login", h.loginPost)
+	r.Get("/logout", h.logout)
+
+	// SetupRedirect runs before auth: if no users exist, redirect to /setup
+	r.Use(h.SetupRedirect)
+
+	// Protected routes — require authentication
+	r.Group(func(r chi.Router) {
+		r.Use(h.Auth)
+
+		r.Get("/", h.dashboard)
+		r.Get("/contacts", h.listContacts)
+		r.Get("/contacts/new", h.newContactForm)
+		r.Post("/contacts/new", h.createContact)
+		r.Get("/contacts/{id}", h.viewContact)
+		r.Post("/contacts/{id}/delete", h.deleteContact)
+		r.Get("/contacts/{id}/events/new", h.newEventForm)
+		r.Post("/contacts/{id}/events/new", h.createEvent)
+		r.Post("/events/{id}/delete", h.deleteEvent)
+
+		// Admin-only routes
+		r.Group(func(r chi.Router) {
+			r.Use(h.Admin)
+
+			r.Get("/settings", h.settings)
+			r.Post("/settings/test/{channel}", h.testNotification)
+			r.Get("/logs", h.logsPage)
+			r.Post("/logs/level", h.setLogLevel)
+			r.Get("/users", h.usersList)
+			r.Post("/users/create", h.userCreate)
+			r.Post("/users/{id}/delete", h.userDelete)
+		})
+	})
 }
 
 func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
-	h.renderError(w, http.StatusNotFound)
+	h.renderError(w, r, http.StatusNotFound)
 }
 
 func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +104,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	events, err := h.events.ListUpcoming(r.Context(), now, end)
 	if err != nil {
 		slog.Error("dashboard: list upcoming", "error", err)
-		h.renderError(w, http.StatusInternalServerError)
+		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
@@ -98,7 +130,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	h.render(w, "dashboard.html", map[string]any{
+	h.render(w, r, "dashboard.html", map[string]any{
 		"Title":        "Datey - Dashboard",
 		"Events":       evs,
 		"ReminderDays": h.cfg.ReminderDays,
@@ -119,14 +151,14 @@ func (h *Handler) listContacts(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		slog.Error("list contacts", "error", err)
-		h.renderError(w, http.StatusInternalServerError)
+		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
 	contactsWithEvents, err := h.client.Contact.Query().All(r.Context())
 	if err != nil {
 		slog.Error("list contacts with events", "error", err)
-		h.renderError(w, http.StatusInternalServerError)
+		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
@@ -139,14 +171,14 @@ func (h *Handler) listContacts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.render(w, "contacts.html", map[string]any{
+	h.render(w, r, "contacts.html", map[string]any{
 		"Title":    "Datey - Contacts",
 		"Contacts": contactsWithEvents,
 	})
 }
 
 func (h *Handler) newContactForm(w http.ResponseWriter, r *http.Request) {
-	h.render(w, "contact_form.html", map[string]any{
+	h.render(w, r, "contact_form.html", map[string]any{
 		"Title": "Datey - Add Contact",
 	})
 }
@@ -163,7 +195,7 @@ func (h *Handler) createContact(w http.ResponseWriter, r *http.Request) {
 	_, err := h.contacts.Create(r.Context(), name, notes)
 	if err != nil {
 		slog.Error("create contact", "error", err)
-		h.renderError(w, http.StatusInternalServerError)
+		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
@@ -184,7 +216,7 @@ func (h *Handler) viewContact(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		slog.Error("get contact", "error", err)
-		h.renderError(w, http.StatusInternalServerError)
+		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
@@ -195,7 +227,7 @@ func (h *Handler) viewContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.render(w, "contact_detail.html", map[string]any{
+	h.render(w, r, "contact_detail.html", map[string]any{
 		"Title":   "Datey - " + contact.Name,
 		"Contact": contact,
 		"Events":  events,
@@ -211,7 +243,7 @@ func (h *Handler) deleteContact(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.contacts.Delete(r.Context(), id); err != nil {
 		slog.Error("delete contact", "error", err)
-		h.renderError(w, http.StatusInternalServerError)
+		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
@@ -225,7 +257,7 @@ func (h *Handler) newEventForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.render(w, "event_form.html", map[string]any{
+	h.render(w, r, "event_form.html", map[string]any{
 		"Title":     "Datey - Add Event",
 		"ContactID": id,
 	})
@@ -256,7 +288,7 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 	_, err = h.events.Create(r.Context(), id, eventType, date, description)
 	if err != nil {
 		slog.Error("create event", "error", err)
-		h.renderError(w, http.StatusInternalServerError)
+		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
@@ -280,6 +312,217 @@ func (h *Handler) deleteEvent(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request) {
+	// If already authenticated, redirect to dashboard
+	if u := UserFromContext(r.Context()); u != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	h.render(w, r, "login.html", map[string]any{
+		"Title": "Datey - Login",
+	})
+}
+
+func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	if username == "" || password == "" {
+		h.render(w, r, "login.html", map[string]any{
+			"Title":  "Datey - Login",
+			"Error":  "Username and password are required",
+		})
+		return
+	}
+
+	u, err := h.users.GetByUsername(r.Context(), username)
+	if err != nil {
+		h.render(w, r, "login.html", map[string]any{
+			"Title": "Datey - Login",
+			"Error": "Invalid username or password",
+		})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
+		h.render(w, r, "login.html", map[string]any{
+			"Title": "Datey - Login",
+			"Error": "Invalid username or password",
+		})
+		return
+	}
+
+	token, err := h.sessions.Create(r.Context(), u.ID)
+	if err != nil {
+		slog.Error("login: create session", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	session.SetCookie(w, token, r.TLS != nil)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
+	token, err := session.ReadCookie(r)
+	if err == nil && token != "" {
+		h.sessions.Delete(r.Context(), token)
+	}
+	session.ClearCookie(w)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (h *Handler) setupPage(w http.ResponseWriter, r *http.Request) {
+	exists, err := h.users.Exists(r.Context())
+	if err == nil && exists {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	h.render(w, r, "setup.html", map[string]any{
+		"Title": "Datey - Setup",
+	})
+}
+
+func (h *Handler) setupCreate(w http.ResponseWriter, r *http.Request) {
+	exists, _ := h.users.Exists(r.Context())
+	if exists {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	if username == "" {
+		h.render(w, r, "setup.html", map[string]any{
+			"Title": "Datey - Setup",
+			"Error": "Username is required",
+		})
+		return
+	}
+
+	if len(password) < 8 {
+		h.render(w, r, "setup.html", map[string]any{
+			"Title": "Datey - Setup",
+			"Error": "Password must be at least 8 characters",
+		})
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		slog.Error("setup: hash password", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	_, err = h.users.Create(r.Context(), username, string(hash), user.RoleAdmin)
+	if err != nil {
+		h.render(w, r, "setup.html", map[string]any{
+			"Title": "Datey - Setup",
+			"Error": "Failed to create admin user: " + err.Error(),
+		})
+		return
+	}
+
+	slog.Info("admin user created", "username", username)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (h *Handler) usersList(w http.ResponseWriter, r *http.Request) {
+	users, err := h.users.List(r.Context())
+	if err != nil {
+		slog.Error("users list", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	h.render(w, r, "users.html", map[string]any{
+		"Title": "Datey - Users",
+		"Users": users,
+	})
+}
+
+func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+	role := r.FormValue("role")
+
+	if username == "" {
+		h.renderError(w, r, http.StatusBadRequest)
+		return
+	}
+	if len(password) < 8 {
+		h.renderError(w, r, http.StatusBadRequest)
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		slog.Error("create user: hash password", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	userRole := user.RoleUser
+	if role == "admin" {
+		userRole = user.RoleAdmin
+	}
+
+	_, err = h.users.Create(r.Context(), username, string(hash), userRole)
+	if err != nil {
+		slog.Error("create user", "error", err)
+		h.render(w, r, "users.html", map[string]any{
+			"Title": "Datey - Users",
+			"Error": "Failed to create user: " + err.Error(),
+		})
+		return
+	}
+
+	http.Redirect(w, r, "/users", http.StatusSeeOther)
+}
+
+func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	currentUser := UserFromContext(r.Context())
+	if currentUser != nil && currentUser.ID == id {
+		http.Error(w, "You cannot delete your own account", http.StatusForbidden)
+		return
+	}
+
+	// Delete all sessions for this user first
+	h.sessions.DeleteByUserID(r.Context(), id)
+
+	if err := h.users.Delete(r.Context(), id); err != nil {
+		slog.Error("delete user", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/users", http.StatusSeeOther)
+}
+
 func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 	type channelStatus struct {
 		Name       string
@@ -292,7 +535,7 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 		{Name: "telegram", Configured: h.notifReg.IsConfigured("telegram")},
 	}
 
-	h.render(w, "settings.html", map[string]any{
+	h.render(w, r, "settings.html", map[string]any{
 		"Title":    "Datey - Settings",
 		"Channels": channels,
 	})
@@ -353,7 +596,7 @@ func (h *Handler) logsPage(w http.ResponseWriter, r *http.Request) {
 
 	currentLevel := logstore.LevelName(h.logStore.Level())
 
-	h.render(w, "logs.html", map[string]any{
+	h.render(w, r, "logs.html", map[string]any{
 		"Title":        "Datey - Logs",
 		"Entries":      entries,
 		"Total":        total,
@@ -391,17 +634,23 @@ func (h *Handler) setLogLevel(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *Handler) baseData(title string) map[string]any {
+func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 	umamiConfigured := h.cfg.UmamiURL != "" && h.cfg.UmamiWebsiteID != ""
-	return map[string]any{
+	data := map[string]any{
 		"Title":            title,
 		"UmamiURL":         h.cfg.UmamiURL,
 		"UmamiWebsiteID":   h.cfg.UmamiWebsiteID,
 		"UmamiConfigured":  umamiConfigured,
 	}
+	u := UserFromContext(r.Context())
+	if u != nil {
+		data["User"] = u
+		data["IsAdmin"] = u.Role == user.RoleAdmin
+	}
+	return data
 }
 
-func (h *Handler) render(w http.ResponseWriter, page string, data map[string]any) {
+func (h *Handler) render(w http.ResponseWriter, r *http.Request, page string, data map[string]any) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl, ok := h.templates[page]
 	if !ok {
@@ -410,9 +659,9 @@ func (h *Handler) render(w http.ResponseWriter, page string, data map[string]any
 		return
 	}
 
-	// Merge base data (Umami config, etc.) with page-specific data.
+	// Merge base data (Umami config, user, etc.) with page-specific data.
 	title, _ := data["Title"].(string)
-	merged := h.baseData(title)
+	merged := h.baseData(r, title)
 	for k, v := range data {
 		merged[k] = v
 	}
@@ -422,10 +671,10 @@ func (h *Handler) render(w http.ResponseWriter, page string, data map[string]any
 	}
 }
 
-func (h *Handler) renderError(w http.ResponseWriter, status int) {
+func (h *Handler) renderError(w http.ResponseWriter, r *http.Request, status int) {
 	w.WriteHeader(status)
 	statusText := http.StatusText(status)
-	h.render(w, "error.html", map[string]any{
+	h.render(w, r, "error.html", map[string]any{
 		"Title":      "Datey - " + statusText,
 		"StatusCode": status,
 		"StatusText": statusText,

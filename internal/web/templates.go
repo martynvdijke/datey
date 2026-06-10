@@ -38,6 +38,9 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"settings.html",
 		"logs.html",
 		"error.html",
+		"login.html",
+		"setup.html",
+		"users.html",
 	}
 
 	templates := make(map[string]*template.Template, len(pages))
