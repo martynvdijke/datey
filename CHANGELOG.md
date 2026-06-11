@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/martynvdijke/datey/compare/v1.5.0...v1.6.0) (2026-06-11)
+
+
+### Features
+
+* container /db mount, settings overhaul, logs in settings, and test infrastructure ([3a6a76e](https://github.com/martynvdijke/datey/commit/3a6a76e646e6bfa50e679c547421bbb4c0f47fd7))
+
 # [1.5.0](https://github.com/martynvdijke/datey/compare/v1.4.0...v1.5.0) (2026-06-11)
 
 ### Migration Notes
