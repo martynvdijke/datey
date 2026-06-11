@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/martynvdijke/datey/compare/v1.6.0...v1.6.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* docker-compose DATA_DIR=/db to match volume mount, add config tests ([2cebb6e](https://github.com/martynvdijke/datey/commit/2cebb6e47265a3fc0429d10bfa97d6d670891be3))
+
 # [1.6.0](https://github.com/martynvdijke/datey/compare/v1.5.0...v1.6.0) (2026-06-11)
 
 
