@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/notificationlog"
+	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/predicate"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/session"
@@ -29,12 +30,13 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeContact         = "Contact"
-	TypeEvent           = "Event"
-	TypeNotificationLog = "NotificationLog"
-	TypeRecurringRule   = "RecurringRule"
-	TypeSession         = "Session"
-	TypeUser            = "User"
+	TypeContact             = "Contact"
+	TypeEvent               = "Event"
+	TypeNotificationLog     = "NotificationLog"
+	TypeOneTimeNotification = "OneTimeNotification"
+	TypeRecurringRule       = "RecurringRule"
+	TypeSession             = "Session"
+	TypeUser                = "User"
 )
 
 // ContactMutation represents an operation that mutates the Contact nodes in the graph.
@@ -1801,6 +1803,570 @@ func (m *NotificationLogMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown NotificationLog edge %s", name)
+}
+
+// OneTimeNotificationMutation represents an operation that mutates the OneTimeNotification nodes in the graph.
+type OneTimeNotificationMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	message       *string
+	scheduled_at  *time.Time
+	status        *string
+	created_at    *time.Time
+	sent_at       *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*OneTimeNotification, error)
+	predicates    []predicate.OneTimeNotification
+}
+
+var _ ent.Mutation = (*OneTimeNotificationMutation)(nil)
+
+// onetimenotificationOption allows management of the mutation configuration using functional options.
+type onetimenotificationOption func(*OneTimeNotificationMutation)
+
+// newOneTimeNotificationMutation creates new mutation for the OneTimeNotification entity.
+func newOneTimeNotificationMutation(c config, op Op, opts ...onetimenotificationOption) *OneTimeNotificationMutation {
+	m := &OneTimeNotificationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOneTimeNotification,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOneTimeNotificationID sets the ID field of the mutation.
+func withOneTimeNotificationID(id int) onetimenotificationOption {
+	return func(m *OneTimeNotificationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OneTimeNotification
+		)
+		m.oldValue = func(ctx context.Context) (*OneTimeNotification, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OneTimeNotification.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOneTimeNotification sets the old OneTimeNotification of the mutation.
+func withOneTimeNotification(node *OneTimeNotification) onetimenotificationOption {
+	return func(m *OneTimeNotificationMutation) {
+		m.oldValue = func(context.Context) (*OneTimeNotification, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OneTimeNotificationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OneTimeNotificationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OneTimeNotificationMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OneTimeNotificationMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OneTimeNotification.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetMessage sets the "message" field.
+func (m *OneTimeNotificationMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the value of the "message" field in the mutation.
+func (m *OneTimeNotificationMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old "message" field's value of the OneTimeNotification entity.
+// If the OneTimeNotification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneTimeNotificationMutation) OldMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ResetMessage resets all changes to the "message" field.
+func (m *OneTimeNotificationMutation) ResetMessage() {
+	m.message = nil
+}
+
+// SetScheduledAt sets the "scheduled_at" field.
+func (m *OneTimeNotificationMutation) SetScheduledAt(t time.Time) {
+	m.scheduled_at = &t
+}
+
+// ScheduledAt returns the value of the "scheduled_at" field in the mutation.
+func (m *OneTimeNotificationMutation) ScheduledAt() (r time.Time, exists bool) {
+	v := m.scheduled_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScheduledAt returns the old "scheduled_at" field's value of the OneTimeNotification entity.
+// If the OneTimeNotification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneTimeNotificationMutation) OldScheduledAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScheduledAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScheduledAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScheduledAt: %w", err)
+	}
+	return oldValue.ScheduledAt, nil
+}
+
+// ResetScheduledAt resets all changes to the "scheduled_at" field.
+func (m *OneTimeNotificationMutation) ResetScheduledAt() {
+	m.scheduled_at = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *OneTimeNotificationMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *OneTimeNotificationMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the OneTimeNotification entity.
+// If the OneTimeNotification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneTimeNotificationMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *OneTimeNotificationMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *OneTimeNotificationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *OneTimeNotificationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the OneTimeNotification entity.
+// If the OneTimeNotification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneTimeNotificationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *OneTimeNotificationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetSentAt sets the "sent_at" field.
+func (m *OneTimeNotificationMutation) SetSentAt(t time.Time) {
+	m.sent_at = &t
+}
+
+// SentAt returns the value of the "sent_at" field in the mutation.
+func (m *OneTimeNotificationMutation) SentAt() (r time.Time, exists bool) {
+	v := m.sent_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSentAt returns the old "sent_at" field's value of the OneTimeNotification entity.
+// If the OneTimeNotification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneTimeNotificationMutation) OldSentAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSentAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSentAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSentAt: %w", err)
+	}
+	return oldValue.SentAt, nil
+}
+
+// ClearSentAt clears the value of the "sent_at" field.
+func (m *OneTimeNotificationMutation) ClearSentAt() {
+	m.sent_at = nil
+	m.clearedFields[onetimenotification.FieldSentAt] = struct{}{}
+}
+
+// SentAtCleared returns if the "sent_at" field was cleared in this mutation.
+func (m *OneTimeNotificationMutation) SentAtCleared() bool {
+	_, ok := m.clearedFields[onetimenotification.FieldSentAt]
+	return ok
+}
+
+// ResetSentAt resets all changes to the "sent_at" field.
+func (m *OneTimeNotificationMutation) ResetSentAt() {
+	m.sent_at = nil
+	delete(m.clearedFields, onetimenotification.FieldSentAt)
+}
+
+// Where appends a list predicates to the OneTimeNotificationMutation builder.
+func (m *OneTimeNotificationMutation) Where(ps ...predicate.OneTimeNotification) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OneTimeNotificationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OneTimeNotificationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OneTimeNotification, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OneTimeNotificationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OneTimeNotificationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OneTimeNotification).
+func (m *OneTimeNotificationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OneTimeNotificationMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.message != nil {
+		fields = append(fields, onetimenotification.FieldMessage)
+	}
+	if m.scheduled_at != nil {
+		fields = append(fields, onetimenotification.FieldScheduledAt)
+	}
+	if m.status != nil {
+		fields = append(fields, onetimenotification.FieldStatus)
+	}
+	if m.created_at != nil {
+		fields = append(fields, onetimenotification.FieldCreatedAt)
+	}
+	if m.sent_at != nil {
+		fields = append(fields, onetimenotification.FieldSentAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OneTimeNotificationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case onetimenotification.FieldMessage:
+		return m.Message()
+	case onetimenotification.FieldScheduledAt:
+		return m.ScheduledAt()
+	case onetimenotification.FieldStatus:
+		return m.Status()
+	case onetimenotification.FieldCreatedAt:
+		return m.CreatedAt()
+	case onetimenotification.FieldSentAt:
+		return m.SentAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OneTimeNotificationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case onetimenotification.FieldMessage:
+		return m.OldMessage(ctx)
+	case onetimenotification.FieldScheduledAt:
+		return m.OldScheduledAt(ctx)
+	case onetimenotification.FieldStatus:
+		return m.OldStatus(ctx)
+	case onetimenotification.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case onetimenotification.FieldSentAt:
+		return m.OldSentAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown OneTimeNotification field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OneTimeNotificationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case onetimenotification.FieldMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMessage(v)
+		return nil
+	case onetimenotification.FieldScheduledAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScheduledAt(v)
+		return nil
+	case onetimenotification.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case onetimenotification.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case onetimenotification.FieldSentAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSentAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OneTimeNotification field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OneTimeNotificationMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OneTimeNotificationMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OneTimeNotificationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown OneTimeNotification numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OneTimeNotificationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(onetimenotification.FieldSentAt) {
+		fields = append(fields, onetimenotification.FieldSentAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OneTimeNotificationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OneTimeNotificationMutation) ClearField(name string) error {
+	switch name {
+	case onetimenotification.FieldSentAt:
+		m.ClearSentAt()
+		return nil
+	}
+	return fmt.Errorf("unknown OneTimeNotification nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OneTimeNotificationMutation) ResetField(name string) error {
+	switch name {
+	case onetimenotification.FieldMessage:
+		m.ResetMessage()
+		return nil
+	case onetimenotification.FieldScheduledAt:
+		m.ResetScheduledAt()
+		return nil
+	case onetimenotification.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case onetimenotification.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case onetimenotification.FieldSentAt:
+		m.ResetSentAt()
+		return nil
+	}
+	return fmt.Errorf("unknown OneTimeNotification field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OneTimeNotificationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OneTimeNotificationMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OneTimeNotificationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OneTimeNotificationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OneTimeNotificationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OneTimeNotificationMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OneTimeNotificationMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown OneTimeNotification unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OneTimeNotificationMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown OneTimeNotification edge %s", name)
 }
 
 // RecurringRuleMutation represents an operation that mutates the RecurringRule nodes in the graph.

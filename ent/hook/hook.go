@@ -45,6 +45,18 @@ func (f NotificationLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationLogMutation", m)
 }
 
+// The OneTimeNotificationFunc type is an adapter to allow the use of ordinary
+// function as OneTimeNotification mutator.
+type OneTimeNotificationFunc func(context.Context, *ent.OneTimeNotificationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OneTimeNotificationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OneTimeNotificationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OneTimeNotificationMutation", m)
+}
+
 // The RecurringRuleFunc type is an adapter to allow the use of ordinary
 // function as RecurringRule mutator.
 type RecurringRuleFunc func(context.Context, *ent.RecurringRuleMutation) (ent.Value, error)

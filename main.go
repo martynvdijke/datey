@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/internal/db"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
+	"github.com/datey/datey/internal/repository"
 	"github.com/datey/datey/internal/scheduler"
 	"github.com/datey/datey/internal/web"
 	"github.com/go-chi/chi/v5"
@@ -78,6 +79,10 @@ func main() {
 
 	sched := scheduler.New(cfg, client, reg)
 	go sched.Start(ctx)
+
+	onRepo := repository.NewOneTimeNotificationRepository(client)
+	onSched := scheduler.NewOneTimeNotificationScheduler(onRepo, reg)
+	go onSched.Start(ctx)
 
 	// Run an initial backup on startup (non-blocking).
 	go func() {

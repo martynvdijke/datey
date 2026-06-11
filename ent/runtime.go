@@ -6,6 +6,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/notificationlog"
+	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/schema"
 	"github.com/datey/datey/ent/session"
@@ -46,6 +47,16 @@ func init() {
 	notificationlogDescDateKey := notificationlogFields[2].Descriptor()
 	// notificationlog.DateKeyValidator is a validator for the "date_key" field. It is called by the builders before save.
 	notificationlog.DateKeyValidator = notificationlogDescDateKey.Validators[0].(func(string) error)
+	onetimenotificationFields := schema.OneTimeNotification{}.Fields()
+	_ = onetimenotificationFields
+	// onetimenotificationDescMessage is the schema descriptor for message field.
+	onetimenotificationDescMessage := onetimenotificationFields[0].Descriptor()
+	// onetimenotification.MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	onetimenotification.MessageValidator = onetimenotificationDescMessage.Validators[0].(func(string) error)
+	// onetimenotificationDescStatus is the schema descriptor for status field.
+	onetimenotificationDescStatus := onetimenotificationFields[2].Descriptor()
+	// onetimenotification.DefaultStatus holds the default value on creation for the status field.
+	onetimenotification.DefaultStatus = onetimenotificationDescStatus.Default.(string)
 	recurringruleFields := schema.RecurringRule{}.Fields()
 	_ = recurringruleFields
 	// recurringruleDescName is the schema descriptor for name field.

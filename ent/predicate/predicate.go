@@ -15,6 +15,9 @@ type Event func(*sql.Selector)
 // NotificationLog is the predicate function for notificationlog builders.
 type NotificationLog func(*sql.Selector)
 
+// OneTimeNotification is the predicate function for onetimenotification builders.
+type OneTimeNotification func(*sql.Selector)
+
 // RecurringRule is the predicate function for recurringrule builders.
 type RecurringRule func(*sql.Selector)
 

@@ -1,0 +1,52 @@
+{{define "content"}}
+<h1 class="mb-4">One-Time Notifications</h1>
+
+<div class="mb-3">
+  <a href="/notifications/new" class="btn btn-primary">Create Notification</a>
+</div>
+
+{{if .Notifications}}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Message</th>
+          <th>Scheduled</th>
+          <th>Status</th>
+          <th>Sent At</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Notifications}}
+          <tr>
+            <td>{{.Message}}</td>
+            <td>{{.ScheduledAt.Format "Jan 2, 2006 15:04"}}</td>
+            <td>
+              <span class="badge {{if eq .Status "pending"}}bg-warning text-dark{{else if eq .Status "sent"}}bg-success{{else}}bg-danger{{end}}">
+                {{.Status}}
+              </span>
+            </td>
+            <td>
+              {{if .SentAt}}
+                {{.SentAt.Format "Jan 2, 2006 15:04"}}
+              {{else}}
+                —
+              {{end}}
+            </td>
+            <td class="text-end">
+              <form action="/notifications/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this notification?" hx-post="/notifications/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+{{else}}
+  <div class="alert alert-info" role="alert">
+    No one-time notifications yet. <a href="/notifications/new" class="alert-link">Create one</a>.
+  </div>
+{{end}}
+{{end}}

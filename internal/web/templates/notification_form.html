@@ -1,0 +1,21 @@
+{{define "content"}}
+<h1 class="mb-4">Create One-Time Notification</h1>
+<div class="row">
+  <div class="col-md-8 col-lg-6">
+    <form action="/notifications/new" method="POST">
+      <div class="mb-3">
+        <label for="message" class="form-label">Message</label>
+        <textarea class="form-control" id="message" name="message" rows="3" required>{{if .FormData}}{{.FormData.Message}}{{end}}</textarea>
+        {{if .Errors.message}}<div class="text-danger mt-1">{{.Errors.message}}</div>{{end}}
+      </div>
+      <div class="mb-3">
+        <label for="scheduled_at" class="form-label">Scheduled Date & Time</label>
+        <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required value="{{if .FormData}}{{.FormData.ScheduledAt}}{{end}}">
+        {{if .Errors.scheduled_at}}<div class="text-danger mt-1">{{.Errors.scheduled_at}}</div>{{end}}
+      </div>
+      <button type="submit" class="btn btn-primary">Create Notification</button>
+      <a href="/notifications" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{{end}}
