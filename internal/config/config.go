@@ -55,6 +55,9 @@ func Load() (*Config, error) {
 		TelegramBotToken: getEnv("TELEGRAM_BOT_TOKEN", ""),
 		TelegramChatID:   getEnv("TELEGRAM_CHAT_ID", ""),
 
+		BackupDir:           getEnv("BACKUP_DIR", ""),
+		BackupRetentionDays: getEnvInt("BACKUP_RETENTION_DAYS", 0),
+
 		UmamiURL:       getEnv("UMAMI_URL", ""),
 		UmamiWebsiteID: getEnv("UMAMI_WEBSITE_ID", ""),
 	}

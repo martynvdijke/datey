@@ -9,7 +9,7 @@ services:
       - datey_data:/db
     environment:
       - PORT=6270
-      - DATA_DIR=/data
+      - DATA_DIR=/db
       - SCHEDULER_HOUR=8
       - REMINDER_DAYS=7
       - LOG_LEVEL=warn
@@ -32,7 +32,7 @@ services:
       - UMAMI_URL=
       - UMAMI_WEBSITE_ID=
       # Database Backup
-      - BACKUP_DIR=/data/backups
+      - BACKUP_DIR=/db/backups
       - BACKUP_RETENTION_DAYS=30
 
 volumes:
