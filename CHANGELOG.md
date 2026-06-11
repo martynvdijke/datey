@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/martynvdijke/datey/compare/v1.6.1...v1.7.0) (2026-06-11)
+
+
+### Features
+
+* add vCard import/export support ([bb7e0d6](https://github.com/martynvdijke/datey/commit/bb7e0d68e3fb93c5046ca8ddc0e2a9725416fa75))
+
 ## [1.6.1](https://github.com/martynvdijke/datey/compare/v1.6.0...v1.6.1) (2026-06-11)
 
 
