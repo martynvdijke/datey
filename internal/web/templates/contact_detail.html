@@ -4,7 +4,10 @@
     <h1 class="mb-1">{{.Contact.Name}}</h1>
     {{if .Contact.Notes}}<p class="text-muted">{{.Contact.Notes}}</p>{{end}}
   </div>
-  <a href="/contacts/{{.Contact.ID}}/events/new" class="btn btn-primary">Add Event</a>
+  <div class="btn-group">
+    <a href="/contacts/{{.Contact.ID}}/events/new" class="btn btn-primary">Add Event</a>
+    <a href="/contacts/{{.Contact.ID}}/vcard" class="btn btn-outline-secondary">Export vCard</a>
+  </div>
 </div>
 
 <h2 class="mb-3">Events</h2>

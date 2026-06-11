@@ -50,6 +50,12 @@ func (r *ContactRepository) Update(ctx context.Context, id int, name, notes stri
 		Save(ctx)
 }
 
+func (r *ContactRepository) FindByName(ctx context.Context, name string) (*ent.Contact, error) {
+	return r.client.Contact.Query().
+		Where(contact.Name(name)).
+		Only(ctx)
+}
+
 func (r *ContactRepository) Delete(ctx context.Context, id int) error {
 	return r.client.Contact.DeleteOneID(id).Exec(ctx)
 }
