@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/user"
 	"github.com/datey/datey/internal/config"
+	"github.com/datey/datey/internal/db"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
@@ -90,8 +91,14 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Use(h.Admin)
 
 				r.Get("/settings", h.settings)
+				r.Get("/settings/config", h.settingsConfig)
+				r.Get("/settings/logs", h.settingsLogs)
+				r.Get("/settings/backup", h.settingsBackup)
+				r.Post("/settings/backup", h.settingsBackupRun)
 				r.Post("/settings/test/{channel}", h.testNotification)
-				r.Get("/logs", h.logsPage)
+				r.Post("/settings/logs/level", h.setLogLevel)
+				// Legacy redirects
+				r.Get("/logs", h.oldLogsRedirect)
 				r.Post("/logs/level", h.setLogLevel)
 				r.Get("/users", h.usersList)
 				r.Post("/users/create", h.userCreate)
@@ -599,13 +606,15 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type calendarEvent struct {
-		ID         string `json:"id"`
-		Title      string `json:"title"`
-		Start      string `json:"start"`
-		AllDay     bool   `json:"allDay"`
-		Background string `json:"backgroundColor"`
-		Border     string `json:"borderColor"`
-		TextColor  string `json:"textColor"`
+		ID          string `json:"id"`
+		Title       string `json:"title"`
+		Start       string `json:"start"`
+		AllDay      bool   `json:"allDay"`
+		Background  string `json:"backgroundColor"`
+		Border      string `json:"borderColor"`
+		TextColor   string `json:"textColor"`
+		Description string `json:"description"`
+		Type        string `json:"type"`
 	}
 
 	var result []calendarEvent
@@ -623,13 +632,15 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 			title = contactName + " - " + e.Type
 		}
 		result = append(result, calendarEvent{
-			ID:         fmt.Sprintf("%d", e.ID),
-			Title:      title,
-			Start:      e.Date.Format("2006-01-02"),
-			AllDay:     true,
-			Background: color,
-			Border:     color,
-			TextColor:  "#ffffff",
+			ID:          fmt.Sprintf("%d", e.ID),
+			Title:       title,
+			Start:       e.Date.Format("2006-01-02"),
+			AllDay:      true,
+			Background:  color,
+			Border:      color,
+			TextColor:   "#ffffff",
+			Description: e.Description,
+			Type:        e.Type,
 		})
 	}
 
@@ -650,9 +661,107 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, r, "settings.html", map[string]any{
-		"Title":    "Datey - Settings",
-		"Channels": channels,
+		"Title":       "Datey - Settings",
+		"SettingsTab": "notifications",
+		"Channels":    channels,
 	})
+}
+
+func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {
+	type configItem struct {
+		Key   string
+		Value string
+	}
+
+	cfg := h.cfg
+	items := []configItem{
+		{"Port", fmt.Sprintf("%d", cfg.Port)},
+		{"DataDir", cfg.DataDir},
+		{"SchedulerHour", fmt.Sprintf("%d", cfg.SchedulerHour)},
+		{"ReminderDays", fmt.Sprintf("%d", cfg.ReminderDays)},
+		{"LogLevel", cfg.LogLevel},
+		{"LogBufferSize", fmt.Sprintf("%d", cfg.LogBufferSize)},
+		{"OTLPEndpoint", maskValue(cfg.OTLPEndpoint)},
+		{"SMTPHost", cfg.SMTPHost},
+		{"SMTPPort", fmt.Sprintf("%d", cfg.SMTPPort)},
+		{"SMTPUser", cfg.SMTPUser},
+		{"SMTPPass", maskValue(cfg.SMTPPass)},
+		{"SMTPTLS", fmt.Sprintf("%v", cfg.SMTPTLS)},
+		{"NotifyEmail", cfg.NotifyEmail},
+		{"GotifyURL", cfg.GotifyURL},
+		{"GotifyToken", maskValue(cfg.GotifyToken)},
+		{"TelegramBotToken", maskValue(cfg.TelegramBotToken)},
+		{"TelegramChatID", cfg.TelegramChatID},
+		{"UmamiURL", cfg.UmamiURL},
+		{"UmamiWebsiteID", cfg.UmamiWebsiteID},
+		{"BackupDir", cfg.BackupDir},
+		{"BackupRetentionDays", fmt.Sprintf("%d", cfg.BackupRetentionDays)},
+	}
+
+	h.render(w, r, "settings.html", map[string]any{
+		"Title":       "Datey - Settings",
+		"SettingsTab": "config",
+		"ConfigItems": items,
+	})
+}
+
+func maskValue(s string) string {
+	if s == "" {
+		return "—"
+	}
+	return "****"
+}
+
+func (h *Handler) settingsLogs(w http.ResponseWriter, r *http.Request) {
+	levelFilter := r.URL.Query().Get("level")
+	sourceFilter := r.URL.Query().Get("source")
+
+	pageStr := r.URL.Query().Get("page")
+	page := 0
+	if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+		page = p
+	}
+	limit := 100
+	offset := page * limit
+
+	entries, total := h.logStore.Query(levelFilter, sourceFilter, offset, limit)
+	currentLevel := logstore.LevelName(h.logStore.Level())
+
+	h.render(w, r, "settings.html", map[string]any{
+		"Title":        "Datey - Settings",
+		"SettingsTab":  "logs",
+		"Entries":      entries,
+		"Total":        total,
+		"Page":         page,
+		"Limit":        limit,
+		"LevelFilter":  levelFilter,
+		"SourceFilter": sourceFilter,
+		"CurrentLevel": currentLevel,
+	})
+}
+
+func (h *Handler) settingsBackup(w http.ResponseWriter, r *http.Request) {
+	h.render(w, r, "settings.html", map[string]any{
+		"Title":              "Datey - Settings",
+		"SettingsTab":        "backup",
+		"BackupDir":          h.cfg.BackupDir,
+		"BackupRetentionDays": h.cfg.BackupRetentionDays,
+	})
+}
+
+func (h *Handler) settingsBackupRun(w http.ResponseWriter, r *http.Request) {
+	dbPath := h.cfg.DataDir + "/datey.db"
+	if err := db.Backup(dbPath, h.cfg.BackupDir, h.cfg.BackupRetentionDays); err != nil {
+		slog.Error("manual backup failed", "error", err)
+		w.Write([]byte(`<div class="alert alert-danger">Backup failed: ` + err.Error() + `</div>`))
+		return
+	}
+	slog.Info("manual backup completed", "dir", h.cfg.BackupDir)
+	w.Write([]byte(`<div class="alert alert-success">Backup completed successfully!</div>`))
+}
+
+func (h *Handler) oldLogsRedirect(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/settings/logs", http.StatusMovedPermanently)
 }
 
 func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
@@ -692,34 +801,6 @@ func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("test notification sent", "source", "settings", "channel", channel)
 	w.Write([]byte("✅ Test sent!"))
-}
-
-func (h *Handler) logsPage(w http.ResponseWriter, r *http.Request) {
-	levelFilter := r.URL.Query().Get("level")
-	sourceFilter := r.URL.Query().Get("source")
-
-	pageStr := r.URL.Query().Get("page")
-	page := 0
-	if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
-		page = p
-	}
-	limit := 100
-	offset := page * limit
-
-	entries, total := h.logStore.Query(levelFilter, sourceFilter, offset, limit)
-
-	currentLevel := logstore.LevelName(h.logStore.Level())
-
-	h.render(w, r, "logs.html", map[string]any{
-		"Title":        "Datey - Logs",
-		"Entries":      entries,
-		"Total":        total,
-		"Page":         page,
-		"Limit":        limit,
-		"LevelFilter":  levelFilter,
-		"SourceFilter": sourceFilter,
-		"CurrentLevel": currentLevel,
-	})
 }
 
 func (h *Handler) setLogLevel(w http.ResponseWriter, r *http.Request) {

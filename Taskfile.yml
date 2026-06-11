@@ -1,0 +1,28 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Run all tests
+    cmds:
+      - task: test:go
+
+  test:go:
+    desc: Run all Go unit, integration, and handler tests
+    cmds:
+      - go test -v -count=1 -run "Test" ./internal/...
+      - go test -v -count=1 -run "TestSettings|TestCalendar|TestOldLog|TestTestN|TestUnauth|TestMaskValue" .
+
+  test:handler:
+    desc: Run only the HTTP handler tests
+    cmds:
+      - go test -v -count=1 -run "TestSettings|TestCalendar|TestOldLog|TestTestN|TestUnauth" .
+
+  test:all:
+    desc: Run all tests including E2E (requires running server)
+    cmds:
+      - go test -v -count=1 ./...
+
+  test:e2e:
+    desc: Run Playwright E2E browser tests (requires running server, DATEY_URL)
+    cmds:
+      - go test -v -count=1 ./tests/

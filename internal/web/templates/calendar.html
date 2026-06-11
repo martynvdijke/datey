@@ -2,21 +2,60 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <style>
-  #calendar { max-width: 1100px; margin: 0 auto; padding: 1rem; background: #fff; border-radius: 0.5rem; }
+  #calendar-container { max-width: 1100px; margin: 0 auto; }
+  #calendar { background: #fff; border-radius: 0.5rem; padding: 1rem; }
   .fc .fc-button-primary { background-color: #212529; border-color: #212529; }
   .fc .fc-button-primary:hover { background-color: #424649; border-color: #373b3e; }
   .fc .fc-button-primary:not(:disabled).fc-button-active,
   .fc .fc-button-primary:not(:disabled):active { background-color: #000; border-color: #000; }
-  .fc .fc-daygrid-event { white-space: normal; }
+  .fc .fc-daygrid-event { white-space: normal; cursor: pointer; }
+  .calendar-loading { text-align: center; padding: 3rem; color: #6c757d; }
+  .calendar-error { display: none; text-align: center; padding: 2rem; color: #dc3545; }
 </style>
 {{end}}
 
 {{define "content"}}
 <h1 class="mb-4">Calendar</h1>
-<div id="calendar"></div>
+<div id="calendar-container">
+  <div id="calendar-loading" class="calendar-loading">
+    <div class="spinner-border text-secondary" role="status">
+      <span class="visually-hidden">Loading calendar...</span>
+    </div>
+    <p class="mt-2">Loading calendar...</p>
+  </div>
+  <div id="calendar-error" class="calendar-error">
+    <p>Failed to load calendar events. Please try again later.</p>
+  </div>
+  <div id="calendar" style="display:none;"></div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="eventModalLabel">Event Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Contact:</strong> <span id="event-contact"></span></p>
+        <p><strong>Date:</strong> <span id="event-date"></span></p>
+        <p><strong>Type:</strong> <span id="event-type"></span></p>
+        <p><strong>Description:</strong> <span id="event-description"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
+    var loadingEl = document.getElementById('calendar-loading');
+    var errorEl = document.getElementById('calendar-error');
+
     var calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       headerToolbar: {
@@ -28,26 +67,33 @@
         url: '/api/calendar-events',
         method: 'GET',
         failure: function() {
-          console.error('Failed to fetch calendar events');
+          errorEl.style.display = 'block';
+          calendarEl.style.display = 'none';
         }
       },
       eventClick: function(info) {
         var props = info.event.extendedProps;
-        var desc = props.description || 'No description';
-        alert(
-          info.event.title +
-          '\nDate: ' + info.event.start.toLocaleDateString() +
-          '\nType: ' + (props.type || 'N/A') +
-          '\nDescription: ' + desc
-        );
+        document.getElementById('event-contact').textContent = info.event.title;
+        document.getElementById('event-date').textContent = info.event.start.toLocaleDateString('en-US', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        document.getElementById('event-type').textContent = props.type || 'N/A';
+        document.getElementById('event-description').textContent = props.description || 'No description';
+        var modal = new bootstrap.Modal(document.getElementById('eventModal'));
+        modal.show();
       },
       loading: function(isLoading) {
         if (isLoading) {
-          calendarEl.style.opacity = '0.5';
+          loadingEl.style.display = 'block';
+          calendarEl.style.display = 'none';
         } else {
-          calendarEl.style.opacity = '1';
+          loadingEl.style.display = 'none';
+          calendarEl.style.display = 'block';
+          errorEl.style.display = 'none';
         }
-      }
+      },
+      noEventsText: 'No events in this date range',
+      height: 'auto'
     });
     calendar.render();
   });

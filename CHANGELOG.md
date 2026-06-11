@@ -1,9 +1,25 @@
-# [1.5.0](https://github.com/martynvdijke/datey/compare/v1.4.0...v1.5.0) (2026-06-10)
+# [1.5.0](https://github.com/martynvdijke/datey/compare/v1.4.0...v1.5.0) (2026-06-11)
 
+### Migration Notes
+
+* **BREAKING**: Data directory changed from `/data` to `/db`. If upgrading an existing deployment,
+  migrate your data: `docker run --rm -v datey_data:/data -v datey_data_new:/db alpine cp -a /data/. /db/`
+  then update your docker-compose volume mount from `/data` to `/db`.
 
 ### Features
 
-* add automatic SQLite database backup with configurable schedule and retention ([a92b54c](https://github.com/martynvdijke/datey/commit/a92b54c51ea3418d2e64b53dae10feb5e42416d7))
+* Add automatic SQLite database backup with configurable schedule and retention
+* Move log viewer from standalone `/logs` route to Settings page tabs
+* Expand Settings page with Configuration, Logs, Backups tabs
+* Add manual backup trigger to Settings
+* Add read-only configuration view in Settings with masked secrets
+* Add Go HTTP handler tests with in-memory SQLite and admin session auth
+* Add Playwright E2E tests for calendar, settings tabs, backup, and log level
+* Add maskValue unit test and Taskfile for test runners
+
+### Bug Fixes
+
+* Fix calendar overview rendering issues
 
 # [1.4.0](https://github.com/martynvdijke/datey/compare/v1.3.1...v1.4.0) (2026-06-10)
 

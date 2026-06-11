@@ -6,7 +6,7 @@ services:
     ports:
       - "6270:6270"
     volumes:
-      - datey_data:/data
+      - datey_data:/db
     environment:
       - PORT=6270
       - DATA_DIR=/data

@@ -11,7 +11,7 @@ RUN apk add --no-cache ca-certificates tzdata && \
     adduser -D -u 1000 datey
 WORKDIR /app
 COPY --from=builder /datey .
-RUN mkdir -p /data && chown datey:datey /data
+RUN mkdir -p /db && chown datey:datey /db
 USER datey
 EXPOSE 6270
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:6270/health || exit 1
