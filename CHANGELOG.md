@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/martynvdijke/datey/compare/v1.7.0...v1.8.0) (2026-06-11)
+
+
+### Features
+
+* add one-time notification support with scheduler, web UI, and tests ([112a1bf](https://github.com/martynvdijke/datey/commit/112a1bf3f82f13820d0b19fc4acce595c27c1162))
+
 # [1.7.0](https://github.com/martynvdijke/datey/compare/v1.6.1...v1.7.0) (2026-06-11)
 
 
