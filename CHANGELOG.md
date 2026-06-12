@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/martynvdijke/datey/compare/v1.8.0...v1.9.0) (2026-06-12)
+
+
+### Features
+
+* add email notifications with per-channel delivery tracking ([dacc8f2](https://github.com/martynvdijke/datey/commit/dacc8f229cb490fc91bfbd61cda0e709da855a3f))
+
 # [1.8.0](https://github.com/martynvdijke/datey/compare/v1.7.0...v1.8.0) (2026-06-11)
 
 
