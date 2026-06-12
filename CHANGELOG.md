@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/martynvdijke/datey/compare/v1.9.0...v1.9.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* handle empty/invalid channel_targets in scheduler with fallback ([c30ac5b](https://github.com/martynvdijke/datey/commit/c30ac5b75a3fa103c36d6b092d35ca31185419c0))
+
 # [1.9.0](https://github.com/martynvdijke/datey/compare/v1.8.0...v1.9.0) (2026-06-12)
 
 
