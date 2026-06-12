@@ -11,6 +11,19 @@ import (
 	"github.com/datey/datey/internal/repository"
 )
 
+// parseChannelTargets safely parses the channel_targets JSON field.
+// Returns an empty slice if the field is empty or invalid.
+func parseChannelTargets(raw string) ([]string, error) {
+	if raw == "" {
+		return nil, nil
+	}
+	var channels []string
+	if err := json.Unmarshal([]byte(raw), &channels); err != nil {
+		return nil, err
+	}
+	return channels, nil
+}
+
 const pollInterval = 30 * time.Second
 
 type OneTimeNotificationScheduler struct {
@@ -59,12 +72,13 @@ func (s *OneTimeNotificationScheduler) processDue(ctx context.Context) {
 	for _, n := range due {
 		slog.Info("one-time scheduler: sending notification", "source", "scheduler", "id", n.ID)
 
-		// Parse channel targets from JSON field
-		var channels []string
-		if err := json.Unmarshal([]byte(n.ChannelTargets), &channels); err != nil {
-			slog.Error("one-time scheduler: parse channel targets", "source", "scheduler", "id", n.ID, "error", err)
-			s.repo.MarkFailed(ctx, n.ID)
-			continue
+		// Parse channel targets from JSON field.
+		// For notifications created before the channel_targets migration,
+		// this field may be empty — fall back to delivery records or all
+		// configured notifiers.
+		channels, err := parseChannelTargets(n.ChannelTargets)
+		if err != nil {
+			slog.Warn("one-time scheduler: channel_targets parse failed, falling back", "source", "scheduler", "id", n.ID, "error", err)
 		}
 
 		// Build lookup of delivery records by channel
@@ -73,6 +87,26 @@ func (s *OneTimeNotificationScheduler) processDue(ctx context.Context) {
 			for _, d := range n.Edges.Deliveries {
 				deliveryByChannel[d.Channel] = d
 			}
+		}
+
+		// Fallback 1: derive channels from existing delivery records
+		if len(channels) == 0 && len(deliveryByChannel) > 0 {
+			for ch := range deliveryByChannel {
+				channels = append(channels, ch)
+			}
+		}
+
+		// Fallback 2: send to all configured notifiers (pre-migration behaviour)
+		if len(channels) == 0 {
+			channels = s.registry.ConfiguredNames()
+		}
+
+		if len(channels) == 0 {
+			slog.Warn("one-time scheduler: no channels to send notification", "source", "scheduler", "id", n.ID)
+			if err := s.repo.MarkFailed(ctx, n.ID); err != nil {
+				slog.Error("one-time scheduler: mark failed", "source", "scheduler", "id", n.ID, "error", err)
+			}
+			continue
 		}
 
 		anySuccess := false

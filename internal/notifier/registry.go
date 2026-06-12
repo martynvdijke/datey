@@ -60,3 +60,17 @@ func (r *Registry) IsConfigured(name string) bool {
 	n, ok := r.notifiers[name]
 	return ok && n.IsConfigured()
 }
+
+// ConfiguredNames returns the names of all registered notifiers that are
+// configured and ready to send.
+func (r *Registry) ConfiguredNames() []string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	var names []string
+	for name, n := range r.notifiers {
+		if n.IsConfigured() {
+			names = append(names, name)
+		}
+	}
+	return names
+}

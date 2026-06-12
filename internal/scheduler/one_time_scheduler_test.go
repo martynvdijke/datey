@@ -13,6 +13,78 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func TestParseChannelTargets(t *testing.T) {
+	tests := []struct {
+		name     string
+		raw      string
+		wantNil  bool
+		wantErr  bool
+		want     []string
+	}{
+		{
+			name:    "empty string (pre-migration default)",
+			raw:     "",
+			wantNil: true,
+			wantErr: false,
+		},
+		{
+			name:    "null JSON",
+			raw:     "null",
+			wantNil: true,
+			wantErr: false,
+		},
+		{
+			name:    "empty JSON array",
+			raw:     "[]",
+			want:    []string{},
+			wantErr: false,
+		},
+		{
+			name:    "valid single channel",
+			raw:     `["email"]`,
+			want:    []string{"email"},
+			wantErr: false,
+		},
+		{
+			name:    "valid multi channel",
+			raw:     `["email","gotify"]`,
+			want:    []string{"email", "gotify"},
+			wantErr: false,
+		},
+		{
+			name:    "invalid JSON",
+			raw:     "{bad",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseChannelTargets(tt.raw)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseChannelTargets() error = %v, wantErr = %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantNil && got != nil {
+				t.Errorf("parseChannelTargets() = %v, want nil", got)
+				return
+			}
+			if !tt.wantNil && tt.want != nil {
+				if len(got) != len(tt.want) {
+					t.Errorf("parseChannelTargets() = %v, want %v", got, tt.want)
+					return
+				}
+				for i := range tt.want {
+					if got[i] != tt.want[i] {
+						t.Errorf("parseChannelTargets() = %v, want %v", got, tt.want)
+						break
+					}
+				}
+			}
+		})
+	}
+}
+
 type recordingNotifier struct {
 	mu     sync.Mutex
 	sent   []string
@@ -95,6 +167,124 @@ func TestOneTimeScheduler_ProcessesDueNotifications(t *testing.T) {
 		if n.Message == "future notification" && n.Status != "pending" {
 			t.Errorf("future notification should still be pending, got %s", n.Status)
 		}
+	}
+}
+
+func TestOneTimeScheduler_FallbackFromEmptyChannelTargets(t *testing.T) {
+	client := enttest.Open(t, dialect.SQLite, "file:test_ots_fallback?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+
+	ctx := context.Background()
+	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
+
+	reg := notifier.NewRegistry()
+	rec := newRecordingNotifier("test", true)
+	reg.Register(rec)
+
+	// Simulate a pre-migration notification: create via raw ENT client so
+	// ChannelTargets is left at its default empty string, and no delivery
+	// records exist.
+	past := time.Now().Add(-1 * time.Hour)
+	n, err := client.OneTimeNotification.Create().
+		SetMessage("pre-migration notification").
+		SetScheduledAt(past).
+		SetCreatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("Create raw notification failed: %v", err)
+	}
+	if n.ChannelTargets != "" {
+		t.Fatalf("expected empty ChannelTargets, got %q", n.ChannelTargets)
+	}
+
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
+	sched.processDue(ctx)
+
+	sent := rec.Sent()
+	if len(sent) != 1 {
+		t.Fatalf("expected 1 notification sent via fallback (all configured), got %d", len(sent))
+	}
+
+	// Verify the notification was marked as sent
+	got, err := repo.Get(ctx, n.ID)
+	if err != nil {
+		t.Fatalf("Get failed: %v", err)
+	}
+	if got.Status != "sent" {
+		t.Errorf("expected status 'sent', got %q", got.Status)
+	}
+}
+
+func TestOneTimeScheduler_FallbackFromInvalidJSON(t *testing.T) {
+	client := enttest.Open(t, dialect.SQLite, "file:test_ots_fallback_invalid?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+
+	ctx := context.Background()
+	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
+
+	reg := notifier.NewRegistry()
+	rec := newRecordingNotifier("test", true)
+	reg.Register(rec)
+
+	// Simulate a notification with corrupted channel_targets
+	past := time.Now().Add(-1 * time.Hour)
+	n, err := client.OneTimeNotification.Create().
+		SetMessage("corrupted notification").
+		SetScheduledAt(past).
+		SetChannelTargets("{bad json}").
+		SetCreatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("Create raw notification failed: %v", err)
+	}
+
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
+	sched.processDue(ctx)
+
+	sent := rec.Sent()
+	if len(sent) != 1 {
+		t.Fatalf("expected 1 notification sent via fallback, got %d", len(sent))
+	}
+
+	// Verify the notification was marked as sent
+	got, err := repo.Get(ctx, n.ID)
+	if err != nil {
+		t.Fatalf("Get failed: %v", err)
+	}
+	if got.Status != "sent" {
+		t.Errorf("expected status 'sent', got %q", got.Status)
+	}
+}
+
+func TestOneTimeScheduler_NoChannelsFallsbackToConfigured(t *testing.T) {
+	client := enttest.Open(t, dialect.SQLite, "file:test_ots_nochan?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+
+	ctx := context.Background()
+	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
+
+	reg := notifier.NewRegistry()
+	rec := newRecordingNotifier("test", true)
+	inactive := newRecordingNotifier("inactive", false)
+	reg.Register(rec)
+	reg.Register(inactive)
+
+	// Create notification with empty channel list
+	past := time.Now().Add(-1 * time.Hour)
+	_, err := repo.Create(ctx, "no channel specified", past, []string{})
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
+	sched.processDue(ctx)
+
+	sent := rec.Sent()
+	if len(sent) != 1 {
+		t.Fatalf("expected 1 notification sent via fallback to configured, got %d", len(sent))
 	}
 }
 

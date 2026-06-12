@@ -84,12 +84,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/contacts/import", h.handleImportVCard)
 			r.Get("/contacts/{id}/vcard", h.handleExportSingleVCard)
 			r.Get("/contacts/export", h.handleExportAllVCard)
-			r.Get("/contacts/{id}/vcard", h.handleExportSingleVCard)
 			r.Get("/contacts/{id}/events/new", h.newEventForm)
 			r.Post("/contacts/{id}/events/new", h.createEvent)
 			r.Post("/events/{id}/delete", h.deleteEvent)
-			r.Post("/contacts/import", h.handleImportVCard)
-			r.Get("/contacts/export", h.handleExportAllVCard)
 
 			r.Get("/calendar", h.calendarPage)
 			r.Get("/api/calendar-events", h.calendarEvents)
