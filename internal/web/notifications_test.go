@@ -28,8 +28,11 @@ func newTestNotificationsHandler(t *testing.T) *Handler {
 
 	cfg := &config.Config{
 		ReminderDays: 7,
+		SMTPHost:     "test",
+		NotifyEmail:  "test@example.com",
 	}
 	reg := notifier.NewRegistry()
+	reg.Register(notifier.NewEmailNotifier(cfg))
 	store := logstore.NewStore(100)
 
 	return NewHandler(cfg, client, reg, store)
@@ -160,7 +163,7 @@ func TestDeleteNotification(t *testing.T) {
 
 	// First create a notification
 	future := time.Now().Add(24 * time.Hour)
-	n, err := h.oneTimeNots.Create(withUserContext(context.Background()), "to delete", future)
+	n, err := h.oneTimeNots.Create(withUserContext(context.Background()), "to delete", future, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -193,7 +196,7 @@ func TestAPINotifications(t *testing.T) {
 	router := setupNotificationsRouter(h)
 
 	future := time.Now().Add(24 * time.Hour)
-	_, err := h.oneTimeNots.Create(withUserContext(context.Background()), "api test", future)
+	_, err := h.oneTimeNots.Create(withUserContext(context.Background()), "api test", future, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -220,6 +223,77 @@ func TestAPINotifications(t *testing.T) {
 	}
 	if result[0]["status"] != "pending" {
 		t.Errorf("expected status 'pending', got '%v'", result[0]["status"])
+	}
+}
+
+func TestCreateNotification_WithExplicitChannels(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	future := time.Now().Add(24 * time.Hour).Format("2006-01-02T15:04")
+	body := "message=channel+test&scheduled_at=" + future + "&channels=email"
+	req := httptest.NewRequest("POST", "/notifications/new", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("expected 303 redirect, got %d", w.Code)
+	}
+
+	// Verify a delivery record was created for email
+	notifs, err := h.oneTimeNots.List(withUserContext(context.Background()))
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(notifs) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(notifs))
+	}
+	n := notifs[0]
+	if len(n.Edges.Deliveries) != 1 {
+		t.Fatalf("expected 1 delivery record, got %d", len(n.Edges.Deliveries))
+	}
+	if n.Edges.Deliveries[0].Channel != "email" {
+		t.Errorf("expected delivery channel 'email', got '%s'", n.Edges.Deliveries[0].Channel)
+	}
+	if n.Edges.Deliveries[0].Status != "pending" {
+		t.Errorf("expected delivery status 'pending', got '%s'", n.Edges.Deliveries[0].Status)
+	}
+}
+
+func TestCreateNotification_DefaultsToAllConfiguredChannels(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	future := time.Now().Add(24 * time.Hour).Format("2006-01-02T15:04")
+	body := "message=default+channels&scheduled_at=" + future
+	req := httptest.NewRequest("POST", "/notifications/new", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("expected 303 redirect, got %d", w.Code)
+	}
+
+	// Should have defaulted to email (the only configured channel)
+	notifs, err := h.oneTimeNots.List(withUserContext(context.Background()))
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(notifs) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(notifs))
+	}
+	n := notifs[0]
+	if len(n.Edges.Deliveries) != 1 {
+		t.Fatalf("expected 1 delivery record, got %d", len(n.Edges.Deliveries))
+	}
+	if n.Edges.Deliveries[0].Channel != "email" {
+		t.Errorf("expected delivery channel 'email', got '%s'", n.Edges.Deliveries[0].Channel)
 	}
 }
 

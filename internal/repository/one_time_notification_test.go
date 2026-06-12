@@ -19,7 +19,7 @@ func TestOneTimeNotificationRepository_CreateAndList(t *testing.T) {
 	repo := repository.NewOneTimeNotificationRepository(client)
 
 	future := time.Now().Add(24 * time.Hour)
-	n, err := repo.Create(ctx, "test message", future)
+	n, err := repo.Create(ctx, "test message", future, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -54,7 +54,7 @@ func TestOneTimeNotificationRepository_Get(t *testing.T) {
 	repo := repository.NewOneTimeNotificationRepository(client)
 
 	future := time.Now().Add(24 * time.Hour)
-	created, err := repo.Create(ctx, "get test", future)
+	created, err := repo.Create(ctx, "get test", future, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestOneTimeNotificationRepository_Delete(t *testing.T) {
 	repo := repository.NewOneTimeNotificationRepository(client)
 
 	future := time.Now().Add(24 * time.Hour)
-	created, err := repo.Create(ctx, "delete test", future)
+	created, err := repo.Create(ctx, "delete test", future, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -104,11 +104,11 @@ func TestOneTimeNotificationRepository_ListDue(t *testing.T) {
 	past := time.Now().Add(-1 * time.Hour)
 	future := time.Now().Add(24 * time.Hour)
 
-	_, err := repo.Create(ctx, "past notification", past)
+	_, err := repo.Create(ctx, "past notification", past, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create past failed: %v", err)
 	}
-	_, err = repo.Create(ctx, "future notification", future)
+	_, err = repo.Create(ctx, "future notification", future, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create future failed: %v", err)
 	}
@@ -134,7 +134,7 @@ func TestOneTimeNotificationRepository_MarkSent(t *testing.T) {
 	repo := repository.NewOneTimeNotificationRepository(client)
 
 	past := time.Now().Add(-1 * time.Hour)
-	created, err := repo.Create(ctx, "mark sent test", past)
+	created, err := repo.Create(ctx, "mark sent test", past, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -163,7 +163,7 @@ func TestOneTimeNotificationRepository_MarkFailed(t *testing.T) {
 	repo := repository.NewOneTimeNotificationRepository(client)
 
 	past := time.Now().Add(-1 * time.Hour)
-	created, err := repo.Create(ctx, "mark failed test", past)
+	created, err := repo.Create(ctx, "mark failed test", past, []string{"email"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}

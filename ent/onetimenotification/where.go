@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/datey/datey/ent/predicate"
 )
 
@@ -77,6 +78,11 @@ func CreatedAt(v time.Time) predicate.OneTimeNotification {
 // SentAt applies equality check predicate on the "sent_at" field. It's identical to SentAtEQ.
 func SentAt(v time.Time) predicate.OneTimeNotification {
 	return predicate.OneTimeNotification(sql.FieldEQ(FieldSentAt, v))
+}
+
+// ChannelTargets applies equality check predicate on the "channel_targets" field. It's identical to ChannelTargetsEQ.
+func ChannelTargets(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEQ(FieldChannelTargets, v))
 }
 
 // MessageEQ applies the EQ predicate on the "message" field.
@@ -337,6 +343,104 @@ func SentAtIsNil() predicate.OneTimeNotification {
 // SentAtNotNil applies the NotNil predicate on the "sent_at" field.
 func SentAtNotNil() predicate.OneTimeNotification {
 	return predicate.OneTimeNotification(sql.FieldNotNull(FieldSentAt))
+}
+
+// ChannelTargetsEQ applies the EQ predicate on the "channel_targets" field.
+func ChannelTargetsEQ(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEQ(FieldChannelTargets, v))
+}
+
+// ChannelTargetsNEQ applies the NEQ predicate on the "channel_targets" field.
+func ChannelTargetsNEQ(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNEQ(FieldChannelTargets, v))
+}
+
+// ChannelTargetsIn applies the In predicate on the "channel_targets" field.
+func ChannelTargetsIn(vs ...string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldIn(FieldChannelTargets, vs...))
+}
+
+// ChannelTargetsNotIn applies the NotIn predicate on the "channel_targets" field.
+func ChannelTargetsNotIn(vs ...string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNotIn(FieldChannelTargets, vs...))
+}
+
+// ChannelTargetsGT applies the GT predicate on the "channel_targets" field.
+func ChannelTargetsGT(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldGT(FieldChannelTargets, v))
+}
+
+// ChannelTargetsGTE applies the GTE predicate on the "channel_targets" field.
+func ChannelTargetsGTE(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldGTE(FieldChannelTargets, v))
+}
+
+// ChannelTargetsLT applies the LT predicate on the "channel_targets" field.
+func ChannelTargetsLT(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldLT(FieldChannelTargets, v))
+}
+
+// ChannelTargetsLTE applies the LTE predicate on the "channel_targets" field.
+func ChannelTargetsLTE(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldLTE(FieldChannelTargets, v))
+}
+
+// ChannelTargetsContains applies the Contains predicate on the "channel_targets" field.
+func ChannelTargetsContains(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldContains(FieldChannelTargets, v))
+}
+
+// ChannelTargetsHasPrefix applies the HasPrefix predicate on the "channel_targets" field.
+func ChannelTargetsHasPrefix(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldHasPrefix(FieldChannelTargets, v))
+}
+
+// ChannelTargetsHasSuffix applies the HasSuffix predicate on the "channel_targets" field.
+func ChannelTargetsHasSuffix(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldHasSuffix(FieldChannelTargets, v))
+}
+
+// ChannelTargetsIsNil applies the IsNil predicate on the "channel_targets" field.
+func ChannelTargetsIsNil() predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldIsNull(FieldChannelTargets))
+}
+
+// ChannelTargetsNotNil applies the NotNil predicate on the "channel_targets" field.
+func ChannelTargetsNotNil() predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNotNull(FieldChannelTargets))
+}
+
+// ChannelTargetsEqualFold applies the EqualFold predicate on the "channel_targets" field.
+func ChannelTargetsEqualFold(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEqualFold(FieldChannelTargets, v))
+}
+
+// ChannelTargetsContainsFold applies the ContainsFold predicate on the "channel_targets" field.
+func ChannelTargetsContainsFold(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldContainsFold(FieldChannelTargets, v))
+}
+
+// HasDeliveries applies the HasEdge predicate on the "deliveries" edge.
+func HasDeliveries() predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DeliveriesTable, DeliveriesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDeliveriesWith applies the HasEdge predicate on the "deliveries" edge with a given conditions (other predicates).
+func HasDeliveriesWith(preds ...predicate.NotificationDelivery) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(func(s *sql.Selector) {
+		step := newDeliveriesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

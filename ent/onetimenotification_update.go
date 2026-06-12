@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/predicate"
 )
@@ -104,9 +105,65 @@ func (_u *OneTimeNotificationUpdate) ClearSentAt() *OneTimeNotificationUpdate {
 	return _u
 }
 
+// SetChannelTargets sets the "channel_targets" field.
+func (_u *OneTimeNotificationUpdate) SetChannelTargets(v string) *OneTimeNotificationUpdate {
+	_u.mutation.SetChannelTargets(v)
+	return _u
+}
+
+// SetNillableChannelTargets sets the "channel_targets" field if the given value is not nil.
+func (_u *OneTimeNotificationUpdate) SetNillableChannelTargets(v *string) *OneTimeNotificationUpdate {
+	if v != nil {
+		_u.SetChannelTargets(*v)
+	}
+	return _u
+}
+
+// ClearChannelTargets clears the value of the "channel_targets" field.
+func (_u *OneTimeNotificationUpdate) ClearChannelTargets() *OneTimeNotificationUpdate {
+	_u.mutation.ClearChannelTargets()
+	return _u
+}
+
+// AddDeliveryIDs adds the "deliveries" edge to the NotificationDelivery entity by IDs.
+func (_u *OneTimeNotificationUpdate) AddDeliveryIDs(ids ...int) *OneTimeNotificationUpdate {
+	_u.mutation.AddDeliveryIDs(ids...)
+	return _u
+}
+
+// AddDeliveries adds the "deliveries" edges to the NotificationDelivery entity.
+func (_u *OneTimeNotificationUpdate) AddDeliveries(v ...*NotificationDelivery) *OneTimeNotificationUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDeliveryIDs(ids...)
+}
+
 // Mutation returns the OneTimeNotificationMutation object of the builder.
 func (_u *OneTimeNotificationUpdate) Mutation() *OneTimeNotificationMutation {
 	return _u.mutation
+}
+
+// ClearDeliveries clears all "deliveries" edges to the NotificationDelivery entity.
+func (_u *OneTimeNotificationUpdate) ClearDeliveries() *OneTimeNotificationUpdate {
+	_u.mutation.ClearDeliveries()
+	return _u
+}
+
+// RemoveDeliveryIDs removes the "deliveries" edge to NotificationDelivery entities by IDs.
+func (_u *OneTimeNotificationUpdate) RemoveDeliveryIDs(ids ...int) *OneTimeNotificationUpdate {
+	_u.mutation.RemoveDeliveryIDs(ids...)
+	return _u
+}
+
+// RemoveDeliveries removes "deliveries" edges to NotificationDelivery entities.
+func (_u *OneTimeNotificationUpdate) RemoveDeliveries(v ...*NotificationDelivery) *OneTimeNotificationUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDeliveryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -175,6 +232,57 @@ func (_u *OneTimeNotificationUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	if _u.mutation.SentAtCleared() {
 		_spec.ClearField(onetimenotification.FieldSentAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ChannelTargets(); ok {
+		_spec.SetField(onetimenotification.FieldChannelTargets, field.TypeString, value)
+	}
+	if _u.mutation.ChannelTargetsCleared() {
+		_spec.ClearField(onetimenotification.FieldChannelTargets, field.TypeString)
+	}
+	if _u.mutation.DeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   onetimenotification.DeliveriesTable,
+			Columns: []string{onetimenotification.DeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDeliveriesIDs(); len(nodes) > 0 && !_u.mutation.DeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   onetimenotification.DeliveriesTable,
+			Columns: []string{onetimenotification.DeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   onetimenotification.DeliveriesTable,
+			Columns: []string{onetimenotification.DeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -272,9 +380,65 @@ func (_u *OneTimeNotificationUpdateOne) ClearSentAt() *OneTimeNotificationUpdate
 	return _u
 }
 
+// SetChannelTargets sets the "channel_targets" field.
+func (_u *OneTimeNotificationUpdateOne) SetChannelTargets(v string) *OneTimeNotificationUpdateOne {
+	_u.mutation.SetChannelTargets(v)
+	return _u
+}
+
+// SetNillableChannelTargets sets the "channel_targets" field if the given value is not nil.
+func (_u *OneTimeNotificationUpdateOne) SetNillableChannelTargets(v *string) *OneTimeNotificationUpdateOne {
+	if v != nil {
+		_u.SetChannelTargets(*v)
+	}
+	return _u
+}
+
+// ClearChannelTargets clears the value of the "channel_targets" field.
+func (_u *OneTimeNotificationUpdateOne) ClearChannelTargets() *OneTimeNotificationUpdateOne {
+	_u.mutation.ClearChannelTargets()
+	return _u
+}
+
+// AddDeliveryIDs adds the "deliveries" edge to the NotificationDelivery entity by IDs.
+func (_u *OneTimeNotificationUpdateOne) AddDeliveryIDs(ids ...int) *OneTimeNotificationUpdateOne {
+	_u.mutation.AddDeliveryIDs(ids...)
+	return _u
+}
+
+// AddDeliveries adds the "deliveries" edges to the NotificationDelivery entity.
+func (_u *OneTimeNotificationUpdateOne) AddDeliveries(v ...*NotificationDelivery) *OneTimeNotificationUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDeliveryIDs(ids...)
+}
+
 // Mutation returns the OneTimeNotificationMutation object of the builder.
 func (_u *OneTimeNotificationUpdateOne) Mutation() *OneTimeNotificationMutation {
 	return _u.mutation
+}
+
+// ClearDeliveries clears all "deliveries" edges to the NotificationDelivery entity.
+func (_u *OneTimeNotificationUpdateOne) ClearDeliveries() *OneTimeNotificationUpdateOne {
+	_u.mutation.ClearDeliveries()
+	return _u
+}
+
+// RemoveDeliveryIDs removes the "deliveries" edge to NotificationDelivery entities by IDs.
+func (_u *OneTimeNotificationUpdateOne) RemoveDeliveryIDs(ids ...int) *OneTimeNotificationUpdateOne {
+	_u.mutation.RemoveDeliveryIDs(ids...)
+	return _u
+}
+
+// RemoveDeliveries removes "deliveries" edges to NotificationDelivery entities.
+func (_u *OneTimeNotificationUpdateOne) RemoveDeliveries(v ...*NotificationDelivery) *OneTimeNotificationUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDeliveryIDs(ids...)
 }
 
 // Where appends a list predicates to the OneTimeNotificationUpdate builder.
@@ -373,6 +537,57 @@ func (_u *OneTimeNotificationUpdateOne) sqlSave(ctx context.Context) (_node *One
 	}
 	if _u.mutation.SentAtCleared() {
 		_spec.ClearField(onetimenotification.FieldSentAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ChannelTargets(); ok {
+		_spec.SetField(onetimenotification.FieldChannelTargets, field.TypeString, value)
+	}
+	if _u.mutation.ChannelTargetsCleared() {
+		_spec.ClearField(onetimenotification.FieldChannelTargets, field.TypeString)
+	}
+	if _u.mutation.DeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   onetimenotification.DeliveriesTable,
+			Columns: []string{onetimenotification.DeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDeliveriesIDs(); len(nodes) > 0 && !_u.mutation.DeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   onetimenotification.DeliveriesTable,
+			Columns: []string{onetimenotification.DeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   onetimenotification.DeliveriesTable,
+			Columns: []string{onetimenotification.DeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &OneTimeNotification{config: _u.config}
 	_spec.Assign = _node.assignValues

@@ -16,6 +16,8 @@ type Tx struct {
 	Contact *ContactClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
+	// NotificationDelivery is the client for interacting with the NotificationDelivery builders.
+	NotificationDelivery *NotificationDeliveryClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
 	NotificationLog *NotificationLogClient
 	// OneTimeNotification is the client for interacting with the OneTimeNotification builders.
@@ -159,6 +161,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Contact = NewContactClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
+	tx.NotificationDelivery = NewNotificationDeliveryClient(tx.config)
 	tx.NotificationLog = NewNotificationLogClient(tx.config)
 	tx.OneTimeNotification = NewOneTimeNotificationClient(tx.config)
 	tx.RecurringRule = NewRecurringRuleClient(tx.config)

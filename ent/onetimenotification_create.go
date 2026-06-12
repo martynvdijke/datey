@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/onetimenotification"
 )
 
@@ -66,6 +67,35 @@ func (_c *OneTimeNotificationCreate) SetNillableSentAt(v *time.Time) *OneTimeNot
 	return _c
 }
 
+// SetChannelTargets sets the "channel_targets" field.
+func (_c *OneTimeNotificationCreate) SetChannelTargets(v string) *OneTimeNotificationCreate {
+	_c.mutation.SetChannelTargets(v)
+	return _c
+}
+
+// SetNillableChannelTargets sets the "channel_targets" field if the given value is not nil.
+func (_c *OneTimeNotificationCreate) SetNillableChannelTargets(v *string) *OneTimeNotificationCreate {
+	if v != nil {
+		_c.SetChannelTargets(*v)
+	}
+	return _c
+}
+
+// AddDeliveryIDs adds the "deliveries" edge to the NotificationDelivery entity by IDs.
+func (_c *OneTimeNotificationCreate) AddDeliveryIDs(ids ...int) *OneTimeNotificationCreate {
+	_c.mutation.AddDeliveryIDs(ids...)
+	return _c
+}
+
+// AddDeliveries adds the "deliveries" edges to the NotificationDelivery entity.
+func (_c *OneTimeNotificationCreate) AddDeliveries(v ...*NotificationDelivery) *OneTimeNotificationCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDeliveryIDs(ids...)
+}
+
 // Mutation returns the OneTimeNotificationMutation object of the builder.
 func (_c *OneTimeNotificationCreate) Mutation() *OneTimeNotificationMutation {
 	return _c.mutation
@@ -104,6 +134,10 @@ func (_c *OneTimeNotificationCreate) defaults() {
 	if _, ok := _c.mutation.Status(); !ok {
 		v := onetimenotification.DefaultStatus
 		_c.mutation.SetStatus(v)
+	}
+	if _, ok := _c.mutation.ChannelTargets(); !ok {
+		v := onetimenotification.DefaultChannelTargets
+		_c.mutation.SetChannelTargets(v)
 	}
 }
 
@@ -171,6 +205,26 @@ func (_c *OneTimeNotificationCreate) createSpec() (*OneTimeNotification, *sqlgra
 	if value, ok := _c.mutation.SentAt(); ok {
 		_spec.SetField(onetimenotification.FieldSentAt, field.TypeTime, value)
 		_node.SentAt = &value
+	}
+	if value, ok := _c.mutation.ChannelTargets(); ok {
+		_spec.SetField(onetimenotification.FieldChannelTargets, field.TypeString, value)
+		_node.ChannelTargets = value
+	}
+	if nodes := _c.mutation.DeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   onetimenotification.DeliveriesTable,
+			Columns: []string{onetimenotification.DeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

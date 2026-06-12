@@ -81,7 +81,8 @@ func main() {
 	go sched.Start(ctx)
 
 	onRepo := repository.NewOneTimeNotificationRepository(client)
-	onSched := scheduler.NewOneTimeNotificationScheduler(onRepo, reg)
+	onDeliveryRepo := repository.NewNotificationDeliveryRepository(client)
+	onSched := scheduler.NewOneTimeNotificationScheduler(onRepo, onDeliveryRepo, reg)
 	go onSched.Start(ctx)
 
 	// Run an initial backup on startup (non-blocking).

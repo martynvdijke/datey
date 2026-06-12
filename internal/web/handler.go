@@ -857,9 +857,24 @@ func (h *Handler) notificationsList(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type channelInfo struct {
+	Name       string
+	Label      string
+	Configured bool
+}
+
+func (h *Handler) channelInfoList() []channelInfo {
+	return []channelInfo{
+		{"email", "Email", h.notifReg.IsConfigured("email")},
+		{"gotify", "Gotify", h.notifReg.IsConfigured("gotify")},
+		{"telegram", "Telegram", h.notifReg.IsConfigured("telegram")},
+	}
+}
+
 func (h *Handler) newNotificationForm(w http.ResponseWriter, r *http.Request) {
 	h.render(w, r, "notification_form.html", map[string]any{
-		"Title": "Datey - Create Notification",
+		"Title":    "Datey - Create Notification",
+		"Channels": h.channelInfoList(),
 	})
 }
 
@@ -884,12 +899,13 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 
 	if len(errors) > 0 {
 		h.render(w, r, "notification_form.html", map[string]any{
-			"Title":  "Datey - Create Notification",
-			"Errors": errors,
+			"Title":    "Datey - Create Notification",
+			"Errors":   errors,
 			"FormData": map[string]string{
 				"Message":     message,
 				"ScheduledAt": scheduledAtStr,
 			},
+			"Channels": h.channelInfoList(),
 		})
 		return
 	}
@@ -898,12 +914,13 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errors["scheduled_at"] = "Invalid date/time format"
 		h.render(w, r, "notification_form.html", map[string]any{
-			"Title":  "Datey - Create Notification",
-			"Errors": errors,
+			"Title":    "Datey - Create Notification",
+			"Errors":   errors,
 			"FormData": map[string]string{
 				"Message":     message,
 				"ScheduledAt": scheduledAtStr,
 			},
+			"Channels": h.channelInfoList(),
 		})
 		return
 	}
@@ -911,17 +928,42 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 	if scheduledAt.Before(time.Now()) {
 		errors["scheduled_at"] = "Scheduled time must be in the future"
 		h.render(w, r, "notification_form.html", map[string]any{
+			"Title":    "Datey - Create Notification",
+			"Errors":   errors,
+			"FormData": map[string]string{
+				"Message":     message,
+				"ScheduledAt": scheduledAtStr,
+			},
+			"Channels": h.channelInfoList(),
+		})
+		return
+	}
+
+	// Parse selected channel targets (default to all configured if none selected)
+	channels := r.Form["channels"]
+	if len(channels) == 0 {
+		for _, name := range []string{"email", "gotify", "telegram"} {
+			if h.notifReg.IsConfigured(name) {
+				channels = append(channels, name)
+			}
+		}
+	}
+
+	if len(channels) == 0 {
+		errors["channels"] = "At least one notification channel must be selected"
+		h.render(w, r, "notification_form.html", map[string]any{
 			"Title":  "Datey - Create Notification",
 			"Errors": errors,
 			"FormData": map[string]string{
 				"Message":     message,
 				"ScheduledAt": scheduledAtStr,
 			},
+			"Channels": h.channelInfoList(),
 		})
 		return
 	}
 
-	_, err = h.oneTimeNots.Create(r.Context(), message, scheduledAt)
+	_, err = h.oneTimeNots.Create(r.Context(), message, scheduledAt, channels)
 	if err != nil {
 		slog.Error("create notification", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)

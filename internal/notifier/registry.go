@@ -2,6 +2,7 @@ package notifier
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"sync"
 )
@@ -38,6 +39,19 @@ func (r *Registry) SendAll(ctx context.Context, title, message string) {
 			slog.Info("notification sent", "source", "notifier", "channel", name)
 		}
 	}
+}
+
+func (r *Registry) Send(ctx context.Context, name, title, message string) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	n, ok := r.notifiers[name]
+	if !ok {
+		return fmt.Errorf("notifier %q not registered", name)
+	}
+	if !n.IsConfigured() {
+		return fmt.Errorf("notifier %q not configured", name)
+	}
+	return n.Send(ctx, title, message)
 }
 
 func (r *Registry) IsConfigured(name string) bool {

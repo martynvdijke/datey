@@ -4,6 +4,7 @@ package onetimenotification
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -21,8 +22,19 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldSentAt holds the string denoting the sent_at field in the database.
 	FieldSentAt = "sent_at"
+	// FieldChannelTargets holds the string denoting the channel_targets field in the database.
+	FieldChannelTargets = "channel_targets"
+	// EdgeDeliveries holds the string denoting the deliveries edge name in mutations.
+	EdgeDeliveries = "deliveries"
 	// Table holds the table name of the onetimenotification in the database.
 	Table = "one_time_notifications"
+	// DeliveriesTable is the table that holds the deliveries relation/edge.
+	DeliveriesTable = "notification_deliveries"
+	// DeliveriesInverseTable is the table name for the NotificationDelivery entity.
+	// It exists in this package in order to avoid circular dependency with the "notificationdelivery" package.
+	DeliveriesInverseTable = "notification_deliveries"
+	// DeliveriesColumn is the table column denoting the deliveries relation/edge.
+	DeliveriesColumn = "one_time_notification_deliveries"
 )
 
 // Columns holds all SQL columns for onetimenotification fields.
@@ -33,6 +45,7 @@ var Columns = []string{
 	FieldStatus,
 	FieldCreatedAt,
 	FieldSentAt,
+	FieldChannelTargets,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -50,6 +63,8 @@ var (
 	MessageValidator func(string) error
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus string
+	// DefaultChannelTargets holds the default value on creation for the "channel_targets" field.
+	DefaultChannelTargets string
 )
 
 // OrderOption defines the ordering options for the OneTimeNotification queries.
@@ -83,4 +98,30 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // BySentAt orders the results by the sent_at field.
 func BySentAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSentAt, opts...).ToFunc()
+}
+
+// ByChannelTargets orders the results by the channel_targets field.
+func ByChannelTargets(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelTargets, opts...).ToFunc()
+}
+
+// ByDeliveriesCount orders the results by deliveries count.
+func ByDeliveriesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDeliveriesStep(), opts...)
+	}
+}
+
+// ByDeliveries orders the results by deliveries terms.
+func ByDeliveries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDeliveriesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newDeliveriesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DeliveriesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DeliveriesTable, DeliveriesColumn),
+	)
 }

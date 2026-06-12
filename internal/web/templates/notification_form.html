@@ -13,6 +13,20 @@
         <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required value="{{if .FormData}}{{.FormData.ScheduledAt}}{{end}}">
         {{if .Errors.scheduled_at}}<div class="text-danger mt-1">{{.Errors.scheduled_at}}</div>{{end}}
       </div>
+      <div class="mb-3">
+        <label class="form-label">Notification Channels</label>
+        {{if .Errors.channels}}<div class="text-danger mt-1">{{.Errors.channels}}</div>{{end}}
+        <div class="d-flex gap-3 mt-1">
+          {{range .Channels}}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="channels" value="{{.Name}}" id="ch-{{.Name}}"{{if .Configured}} checked{{end}}{{if not .Configured}} disabled{{end}}>
+            <label class="form-check-label" for="ch-{{.Name}}">
+              {{.Label}}{{if not .Configured}} <small class="text-muted">(not configured)</small>{{end}}
+            </label>
+          </div>
+          {{end}}
+        </div>
+      </div>
       <button type="submit" class="btn btn-primary">Create Notification</button>
       <a href="/notifications" class="btn btn-outline-secondary">Cancel</a>
     </form>

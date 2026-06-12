@@ -49,6 +49,7 @@ func TestOneTimeScheduler_ProcessesDueNotifications(t *testing.T) {
 
 	ctx := context.Background()
 	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
 
 	reg := notifier.NewRegistry()
 	rec := newRecordingNotifier("test", true)
@@ -56,19 +57,19 @@ func TestOneTimeScheduler_ProcessesDueNotifications(t *testing.T) {
 
 	// Create a notification due in the past
 	past := time.Now().Add(-1 * time.Hour)
-	_, err := repo.Create(ctx, "past notification", past)
+	_, err := repo.Create(ctx, "past notification", past, []string{"test"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
 	// Create one due in the future (should NOT be processed)
 	future := time.Now().Add(24 * time.Hour)
-	_, err = repo.Create(ctx, "future notification", future)
+	_, err = repo.Create(ctx, "future notification", future, []string{"test"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
-	sched := NewOneTimeNotificationScheduler(repo, reg)
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
 	sched.processDue(ctx)
 
 	sent := rec.Sent()
@@ -103,6 +104,7 @@ func TestOneTimeScheduler_NoDueNotifications(t *testing.T) {
 
 	ctx := context.Background()
 	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
 
 	reg := notifier.NewRegistry()
 	rec := newRecordingNotifier("test", true)
@@ -110,12 +112,12 @@ func TestOneTimeScheduler_NoDueNotifications(t *testing.T) {
 
 	// Only future notifications
 	future := time.Now().Add(24 * time.Hour)
-	_, err := repo.Create(ctx, "future notification", future)
+	_, err := repo.Create(ctx, "future notification", future, []string{"test"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
-	sched := NewOneTimeNotificationScheduler(repo, reg)
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
 	sched.processDue(ctx)
 
 	sent := rec.Sent()

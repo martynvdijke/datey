@@ -19,6 +19,7 @@ func TestOneTimeScheduler_FullFlow(t *testing.T) {
 
 	ctx := context.Background()
 	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
 
 	reg := notifier.NewRegistry()
 	var mu sync.Mutex
@@ -38,12 +39,12 @@ func TestOneTimeScheduler_FullFlow(t *testing.T) {
 
 	// Create a notification due in the past (should fire immediately)
 	past := time.Now().Add(-30 * time.Minute)
-	created, err := repo.Create(ctx, "integration test message", past)
+	created, err := repo.Create(ctx, "integration test message", past, []string{"integration-test"})
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
-	sched := NewOneTimeNotificationScheduler(repo, reg)
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
 	sched.processDue(ctx)
 
 	// Verify the notification was sent

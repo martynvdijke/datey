@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/recurringrule"
@@ -33,6 +34,8 @@ type Client struct {
 	Contact *ContactClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
+	// NotificationDelivery is the client for interacting with the NotificationDelivery builders.
+	NotificationDelivery *NotificationDeliveryClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
 	NotificationLog *NotificationLogClient
 	// OneTimeNotification is the client for interacting with the OneTimeNotification builders.
@@ -56,6 +59,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Contact = NewContactClient(c.config)
 	c.Event = NewEventClient(c.config)
+	c.NotificationDelivery = NewNotificationDeliveryClient(c.config)
 	c.NotificationLog = NewNotificationLogClient(c.config)
 	c.OneTimeNotification = NewOneTimeNotificationClient(c.config)
 	c.RecurringRule = NewRecurringRuleClient(c.config)
@@ -151,15 +155,16 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                 ctx,
-		config:              cfg,
-		Contact:             NewContactClient(cfg),
-		Event:               NewEventClient(cfg),
-		NotificationLog:     NewNotificationLogClient(cfg),
-		OneTimeNotification: NewOneTimeNotificationClient(cfg),
-		RecurringRule:       NewRecurringRuleClient(cfg),
-		Session:             NewSessionClient(cfg),
-		User:                NewUserClient(cfg),
+		ctx:                  ctx,
+		config:               cfg,
+		Contact:              NewContactClient(cfg),
+		Event:                NewEventClient(cfg),
+		NotificationDelivery: NewNotificationDeliveryClient(cfg),
+		NotificationLog:      NewNotificationLogClient(cfg),
+		OneTimeNotification:  NewOneTimeNotificationClient(cfg),
+		RecurringRule:        NewRecurringRuleClient(cfg),
+		Session:              NewSessionClient(cfg),
+		User:                 NewUserClient(cfg),
 	}, nil
 }
 
@@ -177,15 +182,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                 ctx,
-		config:              cfg,
-		Contact:             NewContactClient(cfg),
-		Event:               NewEventClient(cfg),
-		NotificationLog:     NewNotificationLogClient(cfg),
-		OneTimeNotification: NewOneTimeNotificationClient(cfg),
-		RecurringRule:       NewRecurringRuleClient(cfg),
-		Session:             NewSessionClient(cfg),
-		User:                NewUserClient(cfg),
+		ctx:                  ctx,
+		config:               cfg,
+		Contact:              NewContactClient(cfg),
+		Event:                NewEventClient(cfg),
+		NotificationDelivery: NewNotificationDeliveryClient(cfg),
+		NotificationLog:      NewNotificationLogClient(cfg),
+		OneTimeNotification:  NewOneTimeNotificationClient(cfg),
+		RecurringRule:        NewRecurringRuleClient(cfg),
+		Session:              NewSessionClient(cfg),
+		User:                 NewUserClient(cfg),
 	}, nil
 }
 
@@ -215,8 +221,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Contact, c.Event, c.NotificationLog, c.OneTimeNotification, c.RecurringRule,
-		c.Session, c.User,
+		c.Contact, c.Event, c.NotificationDelivery, c.NotificationLog,
+		c.OneTimeNotification, c.RecurringRule, c.Session, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -226,8 +232,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Contact, c.Event, c.NotificationLog, c.OneTimeNotification, c.RecurringRule,
-		c.Session, c.User,
+		c.Contact, c.Event, c.NotificationDelivery, c.NotificationLog,
+		c.OneTimeNotification, c.RecurringRule, c.Session, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -240,6 +246,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Contact.mutate(ctx, m)
 	case *EventMutation:
 		return c.Event.mutate(ctx, m)
+	case *NotificationDeliveryMutation:
+		return c.NotificationDelivery.mutate(ctx, m)
 	case *NotificationLogMutation:
 		return c.NotificationLog.mutate(ctx, m)
 	case *OneTimeNotificationMutation:
@@ -569,6 +577,155 @@ func (c *EventClient) mutate(ctx context.Context, m *EventMutation) (Value, erro
 	}
 }
 
+// NotificationDeliveryClient is a client for the NotificationDelivery schema.
+type NotificationDeliveryClient struct {
+	config
+}
+
+// NewNotificationDeliveryClient returns a client for the NotificationDelivery from the given config.
+func NewNotificationDeliveryClient(c config) *NotificationDeliveryClient {
+	return &NotificationDeliveryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `notificationdelivery.Hooks(f(g(h())))`.
+func (c *NotificationDeliveryClient) Use(hooks ...Hook) {
+	c.hooks.NotificationDelivery = append(c.hooks.NotificationDelivery, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `notificationdelivery.Intercept(f(g(h())))`.
+func (c *NotificationDeliveryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NotificationDelivery = append(c.inters.NotificationDelivery, interceptors...)
+}
+
+// Create returns a builder for creating a NotificationDelivery entity.
+func (c *NotificationDeliveryClient) Create() *NotificationDeliveryCreate {
+	mutation := newNotificationDeliveryMutation(c.config, OpCreate)
+	return &NotificationDeliveryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NotificationDelivery entities.
+func (c *NotificationDeliveryClient) CreateBulk(builders ...*NotificationDeliveryCreate) *NotificationDeliveryCreateBulk {
+	return &NotificationDeliveryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NotificationDeliveryClient) MapCreateBulk(slice any, setFunc func(*NotificationDeliveryCreate, int)) *NotificationDeliveryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NotificationDeliveryCreateBulk{err: fmt.Errorf("calling to NotificationDeliveryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NotificationDeliveryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NotificationDeliveryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NotificationDelivery.
+func (c *NotificationDeliveryClient) Update() *NotificationDeliveryUpdate {
+	mutation := newNotificationDeliveryMutation(c.config, OpUpdate)
+	return &NotificationDeliveryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NotificationDeliveryClient) UpdateOne(_m *NotificationDelivery) *NotificationDeliveryUpdateOne {
+	mutation := newNotificationDeliveryMutation(c.config, OpUpdateOne, withNotificationDelivery(_m))
+	return &NotificationDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NotificationDeliveryClient) UpdateOneID(id int) *NotificationDeliveryUpdateOne {
+	mutation := newNotificationDeliveryMutation(c.config, OpUpdateOne, withNotificationDeliveryID(id))
+	return &NotificationDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NotificationDelivery.
+func (c *NotificationDeliveryClient) Delete() *NotificationDeliveryDelete {
+	mutation := newNotificationDeliveryMutation(c.config, OpDelete)
+	return &NotificationDeliveryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NotificationDeliveryClient) DeleteOne(_m *NotificationDelivery) *NotificationDeliveryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NotificationDeliveryClient) DeleteOneID(id int) *NotificationDeliveryDeleteOne {
+	builder := c.Delete().Where(notificationdelivery.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NotificationDeliveryDeleteOne{builder}
+}
+
+// Query returns a query builder for NotificationDelivery.
+func (c *NotificationDeliveryClient) Query() *NotificationDeliveryQuery {
+	return &NotificationDeliveryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNotificationDelivery},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NotificationDelivery entity by its id.
+func (c *NotificationDeliveryClient) Get(ctx context.Context, id int) (*NotificationDelivery, error) {
+	return c.Query().Where(notificationdelivery.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NotificationDeliveryClient) GetX(ctx context.Context, id int) *NotificationDelivery {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryNotification queries the notification edge of a NotificationDelivery.
+func (c *NotificationDeliveryClient) QueryNotification(_m *NotificationDelivery) *OneTimeNotificationQuery {
+	query := (&OneTimeNotificationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(notificationdelivery.Table, notificationdelivery.FieldID, id),
+			sqlgraph.To(onetimenotification.Table, onetimenotification.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, notificationdelivery.NotificationTable, notificationdelivery.NotificationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NotificationDeliveryClient) Hooks() []Hook {
+	return c.hooks.NotificationDelivery
+}
+
+// Interceptors returns the client interceptors.
+func (c *NotificationDeliveryClient) Interceptors() []Interceptor {
+	return c.inters.NotificationDelivery
+}
+
+func (c *NotificationDeliveryClient) mutate(ctx context.Context, m *NotificationDeliveryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NotificationDeliveryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NotificationDeliveryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NotificationDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NotificationDeliveryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NotificationDelivery mutation op: %q", m.Op())
+	}
+}
+
 // NotificationLogClient is a client for the NotificationLog schema.
 type NotificationLogClient struct {
 	config
@@ -824,6 +981,22 @@ func (c *OneTimeNotificationClient) GetX(ctx context.Context, id int) *OneTimeNo
 		panic(err)
 	}
 	return obj
+}
+
+// QueryDeliveries queries the deliveries edge of a OneTimeNotification.
+func (c *OneTimeNotificationClient) QueryDeliveries(_m *OneTimeNotification) *NotificationDeliveryQuery {
+	query := (&NotificationDeliveryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(onetimenotification.Table, onetimenotification.FieldID, id),
+			sqlgraph.To(notificationdelivery.Table, notificationdelivery.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, onetimenotification.DeliveriesTable, onetimenotification.DeliveriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -1285,11 +1458,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Contact, Event, NotificationLog, OneTimeNotification, RecurringRule, Session,
-		User []ent.Hook
+		Contact, Event, NotificationDelivery, NotificationLog, OneTimeNotification,
+		RecurringRule, Session, User []ent.Hook
 	}
 	inters struct {
-		Contact, Event, NotificationLog, OneTimeNotification, RecurringRule, Session,
-		User []ent.Interceptor
+		Contact, Event, NotificationDelivery, NotificationLog, OneTimeNotification,
+		RecurringRule, Session, User []ent.Interceptor
 	}
 )

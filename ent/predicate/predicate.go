@@ -12,6 +12,9 @@ type Contact func(*sql.Selector)
 // Event is the predicate function for event builders.
 type Event func(*sql.Selector)
 
+// NotificationDelivery is the predicate function for notificationdelivery builders.
+type NotificationDelivery func(*sql.Selector)
+
 // NotificationLog is the predicate function for notificationlog builders.
 type NotificationLog func(*sql.Selector)
 

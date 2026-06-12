@@ -57,6 +57,29 @@ var (
 			},
 		},
 	}
+	// NotificationDeliveriesColumns holds the columns for the "notification_deliveries" table.
+	NotificationDeliveriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "channel", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString, Default: "pending"},
+		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
+		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "one_time_notification_deliveries", Type: field.TypeInt},
+	}
+	// NotificationDeliveriesTable holds the schema information for the "notification_deliveries" table.
+	NotificationDeliveriesTable = &schema.Table{
+		Name:       "notification_deliveries",
+		Columns:    NotificationDeliveriesColumns,
+		PrimaryKey: []*schema.Column{NotificationDeliveriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "notification_deliveries_one_time_notifications_deliveries",
+				Columns:    []*schema.Column{NotificationDeliveriesColumns[5]},
+				RefColumns: []*schema.Column{OneTimeNotificationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// NotificationLogsColumns holds the columns for the "notification_logs" table.
 	NotificationLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -94,6 +117,7 @@ var (
 		{Name: "status", Type: field.TypeString, Default: "pending"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
+		{Name: "channel_targets", Type: field.TypeString, Nullable: true, Default: ""},
 	}
 	// OneTimeNotificationsTable holds the schema information for the "one_time_notifications" table.
 	OneTimeNotificationsTable = &schema.Table{
@@ -160,6 +184,7 @@ var (
 	Tables = []*schema.Table{
 		ContactsTable,
 		EventsTable,
+		NotificationDeliveriesTable,
 		NotificationLogsTable,
 		OneTimeNotificationsTable,
 		RecurringRulesTable,
@@ -170,6 +195,7 @@ var (
 
 func init() {
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
+	NotificationDeliveriesTable.ForeignKeys[0].RefTable = OneTimeNotificationsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 }

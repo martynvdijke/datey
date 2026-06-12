@@ -23,6 +23,7 @@ type Config struct {
 	SMTPUser     string
 	SMTPPass     string
 	SMTPTLS      bool
+	SMTPTimeout  int
 	NotifyEmail  string
 
 	GotifyURL   string
@@ -49,6 +50,7 @@ func Load() (*Config, error) {
 		SMTPUser:      getEnv("SMTP_USER", ""),
 		SMTPPass:      getEnv("SMTP_PASS", ""),
 		SMTPTLS:       getEnv("SMTP_TLS", "true") == "true",
+		SMTPTimeout:   getEnvInt("SMTP_TIMEOUT", 10),
 		NotifyEmail:   getEnv("NOTIFICATION_EMAIL", ""),
 		GotifyURL:     getEnv("GOTIFY_URL", ""),
 		GotifyToken:   getEnv("GOTIFY_TOKEN", ""),

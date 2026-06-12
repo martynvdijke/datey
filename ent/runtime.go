@@ -5,6 +5,7 @@ package ent
 import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/recurringrule"
@@ -37,6 +38,20 @@ func init() {
 	eventDescDescription := eventFields[2].Descriptor()
 	// event.DefaultDescription holds the default value on creation for the description field.
 	event.DefaultDescription = eventDescDescription.Default.(string)
+	notificationdeliveryFields := schema.NotificationDelivery{}.Fields()
+	_ = notificationdeliveryFields
+	// notificationdeliveryDescChannel is the schema descriptor for channel field.
+	notificationdeliveryDescChannel := notificationdeliveryFields[0].Descriptor()
+	// notificationdelivery.ChannelValidator is a validator for the "channel" field. It is called by the builders before save.
+	notificationdelivery.ChannelValidator = notificationdeliveryDescChannel.Validators[0].(func(string) error)
+	// notificationdeliveryDescStatus is the schema descriptor for status field.
+	notificationdeliveryDescStatus := notificationdeliveryFields[1].Descriptor()
+	// notificationdelivery.DefaultStatus holds the default value on creation for the status field.
+	notificationdelivery.DefaultStatus = notificationdeliveryDescStatus.Default.(string)
+	// notificationdeliveryDescErrorMessage is the schema descriptor for error_message field.
+	notificationdeliveryDescErrorMessage := notificationdeliveryFields[3].Descriptor()
+	// notificationdelivery.DefaultErrorMessage holds the default value on creation for the error_message field.
+	notificationdelivery.DefaultErrorMessage = notificationdeliveryDescErrorMessage.Default.(string)
 	notificationlogFields := schema.NotificationLog{}.Fields()
 	_ = notificationlogFields
 	// notificationlogDescChannel is the schema descriptor for channel field.
@@ -57,6 +72,10 @@ func init() {
 	onetimenotificationDescStatus := onetimenotificationFields[2].Descriptor()
 	// onetimenotification.DefaultStatus holds the default value on creation for the status field.
 	onetimenotification.DefaultStatus = onetimenotificationDescStatus.Default.(string)
+	// onetimenotificationDescChannelTargets is the schema descriptor for channel_targets field.
+	onetimenotificationDescChannelTargets := onetimenotificationFields[5].Descriptor()
+	// onetimenotification.DefaultChannelTargets holds the default value on creation for the channel_targets field.
+	onetimenotification.DefaultChannelTargets = onetimenotificationDescChannelTargets.Default.(string)
 	recurringruleFields := schema.RecurringRule{}.Fields()
 	_ = recurringruleFields
 	// recurringruleDescName is the schema descriptor for name field.

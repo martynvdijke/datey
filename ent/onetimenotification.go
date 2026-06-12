@@ -26,8 +26,31 @@ type OneTimeNotification struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// SentAt holds the value of the "sent_at" field.
-	SentAt       *time.Time `json:"sent_at,omitempty"`
+	SentAt *time.Time `json:"sent_at,omitempty"`
+	// ChannelTargets holds the value of the "channel_targets" field.
+	ChannelTargets string `json:"channel_targets,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the OneTimeNotificationQuery when eager-loading is set.
+	Edges        OneTimeNotificationEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// OneTimeNotificationEdges holds the relations/edges for other nodes in the graph.
+type OneTimeNotificationEdges struct {
+	// Deliveries holds the value of the deliveries edge.
+	Deliveries []*NotificationDelivery `json:"deliveries,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// DeliveriesOrErr returns the Deliveries value or an error if the edge
+// was not loaded in eager-loading.
+func (e OneTimeNotificationEdges) DeliveriesOrErr() ([]*NotificationDelivery, error) {
+	if e.loadedTypes[0] {
+		return e.Deliveries, nil
+	}
+	return nil, &NotLoadedError{edge: "deliveries"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -37,7 +60,7 @@ func (*OneTimeNotification) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case onetimenotification.FieldID:
 			values[i] = new(sql.NullInt64)
-		case onetimenotification.FieldMessage, onetimenotification.FieldStatus:
+		case onetimenotification.FieldMessage, onetimenotification.FieldStatus, onetimenotification.FieldChannelTargets:
 			values[i] = new(sql.NullString)
 		case onetimenotification.FieldScheduledAt, onetimenotification.FieldCreatedAt, onetimenotification.FieldSentAt:
 			values[i] = new(sql.NullTime)
@@ -93,6 +116,12 @@ func (_m *OneTimeNotification) assignValues(columns []string, values []any) erro
 				_m.SentAt = new(time.Time)
 				*_m.SentAt = value.Time
 			}
+		case onetimenotification.FieldChannelTargets:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_targets", values[i])
+			} else if value.Valid {
+				_m.ChannelTargets = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -104,6 +133,11 @@ func (_m *OneTimeNotification) assignValues(columns []string, values []any) erro
 // This includes values selected through modifiers, order, etc.
 func (_m *OneTimeNotification) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryDeliveries queries the "deliveries" edge of the OneTimeNotification entity.
+func (_m *OneTimeNotification) QueryDeliveries() *NotificationDeliveryQuery {
+	return NewOneTimeNotificationClient(_m.config).QueryDeliveries(_m)
 }
 
 // Update returns a builder for updating this OneTimeNotification.
@@ -145,6 +179,9 @@ func (_m *OneTimeNotification) String() string {
 		builder.WriteString("sent_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("channel_targets=")
+	builder.WriteString(_m.ChannelTargets)
 	builder.WriteByte(')')
 	return builder.String()
 }

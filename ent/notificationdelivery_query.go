@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -17,53 +16,54 @@ import (
 	"github.com/datey/datey/ent/predicate"
 )
 
-// OneTimeNotificationQuery is the builder for querying OneTimeNotification entities.
-type OneTimeNotificationQuery struct {
+// NotificationDeliveryQuery is the builder for querying NotificationDelivery entities.
+type NotificationDeliveryQuery struct {
 	config
-	ctx            *QueryContext
-	order          []onetimenotification.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.OneTimeNotification
-	withDeliveries *NotificationDeliveryQuery
+	ctx              *QueryContext
+	order            []notificationdelivery.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.NotificationDelivery
+	withNotification *OneTimeNotificationQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the OneTimeNotificationQuery builder.
-func (_q *OneTimeNotificationQuery) Where(ps ...predicate.OneTimeNotification) *OneTimeNotificationQuery {
+// Where adds a new predicate for the NotificationDeliveryQuery builder.
+func (_q *NotificationDeliveryQuery) Where(ps ...predicate.NotificationDelivery) *NotificationDeliveryQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *OneTimeNotificationQuery) Limit(limit int) *OneTimeNotificationQuery {
+func (_q *NotificationDeliveryQuery) Limit(limit int) *NotificationDeliveryQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *OneTimeNotificationQuery) Offset(offset int) *OneTimeNotificationQuery {
+func (_q *NotificationDeliveryQuery) Offset(offset int) *NotificationDeliveryQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *OneTimeNotificationQuery) Unique(unique bool) *OneTimeNotificationQuery {
+func (_q *NotificationDeliveryQuery) Unique(unique bool) *NotificationDeliveryQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *OneTimeNotificationQuery) Order(o ...onetimenotification.OrderOption) *OneTimeNotificationQuery {
+func (_q *NotificationDeliveryQuery) Order(o ...notificationdelivery.OrderOption) *NotificationDeliveryQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
-// QueryDeliveries chains the current query on the "deliveries" edge.
-func (_q *OneTimeNotificationQuery) QueryDeliveries() *NotificationDeliveryQuery {
-	query := (&NotificationDeliveryClient{config: _q.config}).Query()
+// QueryNotification chains the current query on the "notification" edge.
+func (_q *NotificationDeliveryQuery) QueryNotification() *OneTimeNotificationQuery {
+	query := (&OneTimeNotificationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -73,9 +73,9 @@ func (_q *OneTimeNotificationQuery) QueryDeliveries() *NotificationDeliveryQuery
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(onetimenotification.Table, onetimenotification.FieldID, selector),
-			sqlgraph.To(notificationdelivery.Table, notificationdelivery.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, onetimenotification.DeliveriesTable, onetimenotification.DeliveriesColumn),
+			sqlgraph.From(notificationdelivery.Table, notificationdelivery.FieldID, selector),
+			sqlgraph.To(onetimenotification.Table, onetimenotification.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, notificationdelivery.NotificationTable, notificationdelivery.NotificationColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -83,21 +83,21 @@ func (_q *OneTimeNotificationQuery) QueryDeliveries() *NotificationDeliveryQuery
 	return query
 }
 
-// First returns the first OneTimeNotification entity from the query.
-// Returns a *NotFoundError when no OneTimeNotification was found.
-func (_q *OneTimeNotificationQuery) First(ctx context.Context) (*OneTimeNotification, error) {
+// First returns the first NotificationDelivery entity from the query.
+// Returns a *NotFoundError when no NotificationDelivery was found.
+func (_q *NotificationDeliveryQuery) First(ctx context.Context) (*NotificationDelivery, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{onetimenotification.Label}
+		return nil, &NotFoundError{notificationdelivery.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) FirstX(ctx context.Context) *OneTimeNotification {
+func (_q *NotificationDeliveryQuery) FirstX(ctx context.Context) *NotificationDelivery {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -105,22 +105,22 @@ func (_q *OneTimeNotificationQuery) FirstX(ctx context.Context) *OneTimeNotifica
 	return node
 }
 
-// FirstID returns the first OneTimeNotification ID from the query.
-// Returns a *NotFoundError when no OneTimeNotification ID was found.
-func (_q *OneTimeNotificationQuery) FirstID(ctx context.Context) (id int, err error) {
+// FirstID returns the first NotificationDelivery ID from the query.
+// Returns a *NotFoundError when no NotificationDelivery ID was found.
+func (_q *NotificationDeliveryQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{onetimenotification.Label}
+		err = &NotFoundError{notificationdelivery.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) FirstIDX(ctx context.Context) int {
+func (_q *NotificationDeliveryQuery) FirstIDX(ctx context.Context) int {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -128,10 +128,10 @@ func (_q *OneTimeNotificationQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns a single OneTimeNotification entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one OneTimeNotification entity is found.
-// Returns a *NotFoundError when no OneTimeNotification entities are found.
-func (_q *OneTimeNotificationQuery) Only(ctx context.Context) (*OneTimeNotification, error) {
+// Only returns a single NotificationDelivery entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one NotificationDelivery entity is found.
+// Returns a *NotFoundError when no NotificationDelivery entities are found.
+func (_q *NotificationDeliveryQuery) Only(ctx context.Context) (*NotificationDelivery, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -140,14 +140,14 @@ func (_q *OneTimeNotificationQuery) Only(ctx context.Context) (*OneTimeNotificat
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{onetimenotification.Label}
+		return nil, &NotFoundError{notificationdelivery.Label}
 	default:
-		return nil, &NotSingularError{onetimenotification.Label}
+		return nil, &NotSingularError{notificationdelivery.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) OnlyX(ctx context.Context) *OneTimeNotification {
+func (_q *NotificationDeliveryQuery) OnlyX(ctx context.Context) *NotificationDelivery {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -155,10 +155,10 @@ func (_q *OneTimeNotificationQuery) OnlyX(ctx context.Context) *OneTimeNotificat
 	return node
 }
 
-// OnlyID is like Only, but returns the only OneTimeNotification ID in the query.
-// Returns a *NotSingularError when more than one OneTimeNotification ID is found.
+// OnlyID is like Only, but returns the only NotificationDelivery ID in the query.
+// Returns a *NotSingularError when more than one NotificationDelivery ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *OneTimeNotificationQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *NotificationDeliveryQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -167,15 +167,15 @@ func (_q *OneTimeNotificationQuery) OnlyID(ctx context.Context) (id int, err err
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{onetimenotification.Label}
+		err = &NotFoundError{notificationdelivery.Label}
 	default:
-		err = &NotSingularError{onetimenotification.Label}
+		err = &NotSingularError{notificationdelivery.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) OnlyIDX(ctx context.Context) int {
+func (_q *NotificationDeliveryQuery) OnlyIDX(ctx context.Context) int {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -183,18 +183,18 @@ func (_q *OneTimeNotificationQuery) OnlyIDX(ctx context.Context) int {
 	return id
 }
 
-// All executes the query and returns a list of OneTimeNotifications.
-func (_q *OneTimeNotificationQuery) All(ctx context.Context) ([]*OneTimeNotification, error) {
+// All executes the query and returns a list of NotificationDeliveries.
+func (_q *NotificationDeliveryQuery) All(ctx context.Context) ([]*NotificationDelivery, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*OneTimeNotification, *OneTimeNotificationQuery]()
-	return withInterceptors[[]*OneTimeNotification](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*NotificationDelivery, *NotificationDeliveryQuery]()
+	return withInterceptors[[]*NotificationDelivery](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) AllX(ctx context.Context) []*OneTimeNotification {
+func (_q *NotificationDeliveryQuery) AllX(ctx context.Context) []*NotificationDelivery {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -202,20 +202,20 @@ func (_q *OneTimeNotificationQuery) AllX(ctx context.Context) []*OneTimeNotifica
 	return nodes
 }
 
-// IDs executes the query and returns a list of OneTimeNotification IDs.
-func (_q *OneTimeNotificationQuery) IDs(ctx context.Context) (ids []int, err error) {
+// IDs executes the query and returns a list of NotificationDelivery IDs.
+func (_q *NotificationDeliveryQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(onetimenotification.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(notificationdelivery.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) IDsX(ctx context.Context) []int {
+func (_q *NotificationDeliveryQuery) IDsX(ctx context.Context) []int {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -224,16 +224,16 @@ func (_q *OneTimeNotificationQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (_q *OneTimeNotificationQuery) Count(ctx context.Context) (int, error) {
+func (_q *NotificationDeliveryQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*OneTimeNotificationQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*NotificationDeliveryQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) CountX(ctx context.Context) int {
+func (_q *NotificationDeliveryQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -242,7 +242,7 @@ func (_q *OneTimeNotificationQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *OneTimeNotificationQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *NotificationDeliveryQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -255,7 +255,7 @@ func (_q *OneTimeNotificationQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *OneTimeNotificationQuery) ExistX(ctx context.Context) bool {
+func (_q *NotificationDeliveryQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -263,33 +263,33 @@ func (_q *OneTimeNotificationQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the OneTimeNotificationQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the NotificationDeliveryQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *OneTimeNotificationQuery) Clone() *OneTimeNotificationQuery {
+func (_q *NotificationDeliveryQuery) Clone() *NotificationDeliveryQuery {
 	if _q == nil {
 		return nil
 	}
-	return &OneTimeNotificationQuery{
-		config:         _q.config,
-		ctx:            _q.ctx.Clone(),
-		order:          append([]onetimenotification.OrderOption{}, _q.order...),
-		inters:         append([]Interceptor{}, _q.inters...),
-		predicates:     append([]predicate.OneTimeNotification{}, _q.predicates...),
-		withDeliveries: _q.withDeliveries.Clone(),
+	return &NotificationDeliveryQuery{
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]notificationdelivery.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.NotificationDelivery{}, _q.predicates...),
+		withNotification: _q.withNotification.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
 }
 
-// WithDeliveries tells the query-builder to eager-load the nodes that are connected to
-// the "deliveries" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *OneTimeNotificationQuery) WithDeliveries(opts ...func(*NotificationDeliveryQuery)) *OneTimeNotificationQuery {
-	query := (&NotificationDeliveryClient{config: _q.config}).Query()
+// WithNotification tells the query-builder to eager-load the nodes that are connected to
+// the "notification" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *NotificationDeliveryQuery) WithNotification(opts ...func(*OneTimeNotificationQuery)) *NotificationDeliveryQuery {
+	query := (&OneTimeNotificationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withDeliveries = query
+	_q.withNotification = query
 	return _q
 }
 
@@ -299,19 +299,19 @@ func (_q *OneTimeNotificationQuery) WithDeliveries(opts ...func(*NotificationDel
 // Example:
 //
 //	var v []struct {
-//		Message string `json:"message,omitempty"`
+//		Channel string `json:"channel,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.OneTimeNotification.Query().
-//		GroupBy(onetimenotification.FieldMessage).
+//	client.NotificationDelivery.Query().
+//		GroupBy(notificationdelivery.FieldChannel).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *OneTimeNotificationQuery) GroupBy(field string, fields ...string) *OneTimeNotificationGroupBy {
+func (_q *NotificationDeliveryQuery) GroupBy(field string, fields ...string) *NotificationDeliveryGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OneTimeNotificationGroupBy{build: _q}
+	grbuild := &NotificationDeliveryGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = onetimenotification.Label
+	grbuild.label = notificationdelivery.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -322,26 +322,26 @@ func (_q *OneTimeNotificationQuery) GroupBy(field string, fields ...string) *One
 // Example:
 //
 //	var v []struct {
-//		Message string `json:"message,omitempty"`
+//		Channel string `json:"channel,omitempty"`
 //	}
 //
-//	client.OneTimeNotification.Query().
-//		Select(onetimenotification.FieldMessage).
+//	client.NotificationDelivery.Query().
+//		Select(notificationdelivery.FieldChannel).
 //		Scan(ctx, &v)
-func (_q *OneTimeNotificationQuery) Select(fields ...string) *OneTimeNotificationSelect {
+func (_q *NotificationDeliveryQuery) Select(fields ...string) *NotificationDeliverySelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &OneTimeNotificationSelect{OneTimeNotificationQuery: _q}
-	sbuild.label = onetimenotification.Label
+	sbuild := &NotificationDeliverySelect{NotificationDeliveryQuery: _q}
+	sbuild.label = notificationdelivery.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a OneTimeNotificationSelect configured with the given aggregations.
-func (_q *OneTimeNotificationQuery) Aggregate(fns ...AggregateFunc) *OneTimeNotificationSelect {
+// Aggregate returns a NotificationDeliverySelect configured with the given aggregations.
+func (_q *NotificationDeliveryQuery) Aggregate(fns ...AggregateFunc) *NotificationDeliverySelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *OneTimeNotificationQuery) prepareQuery(ctx context.Context) error {
+func (_q *NotificationDeliveryQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -353,7 +353,7 @@ func (_q *OneTimeNotificationQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !onetimenotification.ValidColumn(f) {
+		if !notificationdelivery.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -367,19 +367,26 @@ func (_q *OneTimeNotificationQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (_q *OneTimeNotificationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OneTimeNotification, error) {
+func (_q *NotificationDeliveryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NotificationDelivery, error) {
 	var (
-		nodes       = []*OneTimeNotification{}
+		nodes       = []*NotificationDelivery{}
+		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			_q.withDeliveries != nil,
+			_q.withNotification != nil,
 		}
 	)
+	if _q.withNotification != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, notificationdelivery.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*OneTimeNotification).scanValues(nil, columns)
+		return (*NotificationDelivery).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OneTimeNotification{config: _q.config}
+		node := &NotificationDelivery{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
@@ -393,51 +400,49 @@ func (_q *OneTimeNotificationQuery) sqlAll(ctx context.Context, hooks ...queryHo
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withDeliveries; query != nil {
-		if err := _q.loadDeliveries(ctx, query, nodes,
-			func(n *OneTimeNotification) { n.Edges.Deliveries = []*NotificationDelivery{} },
-			func(n *OneTimeNotification, e *NotificationDelivery) {
-				n.Edges.Deliveries = append(n.Edges.Deliveries, e)
-			}); err != nil {
+	if query := _q.withNotification; query != nil {
+		if err := _q.loadNotification(ctx, query, nodes, nil,
+			func(n *NotificationDelivery, e *OneTimeNotification) { n.Edges.Notification = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *OneTimeNotificationQuery) loadDeliveries(ctx context.Context, query *NotificationDeliveryQuery, nodes []*OneTimeNotification, init func(*OneTimeNotification), assign func(*OneTimeNotification, *NotificationDelivery)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*OneTimeNotification)
+func (_q *NotificationDeliveryQuery) loadNotification(ctx context.Context, query *OneTimeNotificationQuery, nodes []*NotificationDelivery, init func(*NotificationDelivery), assign func(*NotificationDelivery, *OneTimeNotification)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*NotificationDelivery)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		if nodes[i].one_time_notification_deliveries == nil {
+			continue
 		}
+		fk := *nodes[i].one_time_notification_deliveries
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.withFKs = true
-	query.Where(predicate.NotificationDelivery(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(onetimenotification.DeliveriesColumn), fks...))
-	}))
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(onetimenotification.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.one_time_notification_deliveries
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "one_time_notification_deliveries" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "one_time_notification_deliveries" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "one_time_notification_deliveries" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
 
-func (_q *OneTimeNotificationQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *NotificationDeliveryQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
@@ -446,8 +451,8 @@ func (_q *OneTimeNotificationQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *OneTimeNotificationQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(onetimenotification.Table, onetimenotification.Columns, sqlgraph.NewFieldSpec(onetimenotification.FieldID, field.TypeInt))
+func (_q *NotificationDeliveryQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(notificationdelivery.Table, notificationdelivery.Columns, sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -456,9 +461,9 @@ func (_q *OneTimeNotificationQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, onetimenotification.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, notificationdelivery.FieldID)
 		for i := range fields {
-			if fields[i] != onetimenotification.FieldID {
+			if fields[i] != notificationdelivery.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -486,12 +491,12 @@ func (_q *OneTimeNotificationQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *OneTimeNotificationQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *NotificationDeliveryQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(onetimenotification.Table)
+	t1 := builder.Table(notificationdelivery.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = onetimenotification.Columns
+		columns = notificationdelivery.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -518,28 +523,28 @@ func (_q *OneTimeNotificationQuery) sqlQuery(ctx context.Context) *sql.Selector 
 	return selector
 }
 
-// OneTimeNotificationGroupBy is the group-by builder for OneTimeNotification entities.
-type OneTimeNotificationGroupBy struct {
+// NotificationDeliveryGroupBy is the group-by builder for NotificationDelivery entities.
+type NotificationDeliveryGroupBy struct {
 	selector
-	build *OneTimeNotificationQuery
+	build *NotificationDeliveryQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *OneTimeNotificationGroupBy) Aggregate(fns ...AggregateFunc) *OneTimeNotificationGroupBy {
+func (_g *NotificationDeliveryGroupBy) Aggregate(fns ...AggregateFunc) *NotificationDeliveryGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *OneTimeNotificationGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *NotificationDeliveryGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OneTimeNotificationQuery, *OneTimeNotificationGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*NotificationDeliveryQuery, *NotificationDeliveryGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *OneTimeNotificationGroupBy) sqlScan(ctx context.Context, root *OneTimeNotificationQuery, v any) error {
+func (_g *NotificationDeliveryGroupBy) sqlScan(ctx context.Context, root *NotificationDeliveryQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -566,28 +571,28 @@ func (_g *OneTimeNotificationGroupBy) sqlScan(ctx context.Context, root *OneTime
 	return sql.ScanSlice(rows, v)
 }
 
-// OneTimeNotificationSelect is the builder for selecting fields of OneTimeNotification entities.
-type OneTimeNotificationSelect struct {
-	*OneTimeNotificationQuery
+// NotificationDeliverySelect is the builder for selecting fields of NotificationDelivery entities.
+type NotificationDeliverySelect struct {
+	*NotificationDeliveryQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *OneTimeNotificationSelect) Aggregate(fns ...AggregateFunc) *OneTimeNotificationSelect {
+func (_s *NotificationDeliverySelect) Aggregate(fns ...AggregateFunc) *NotificationDeliverySelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *OneTimeNotificationSelect) Scan(ctx context.Context, v any) error {
+func (_s *NotificationDeliverySelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OneTimeNotificationQuery, *OneTimeNotificationSelect](ctx, _s.OneTimeNotificationQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*NotificationDeliveryQuery, *NotificationDeliverySelect](ctx, _s.NotificationDeliveryQuery, _s, _s.inters, v)
 }
 
-func (_s *OneTimeNotificationSelect) sqlScan(ctx context.Context, root *OneTimeNotificationQuery, v any) error {
+func (_s *NotificationDeliverySelect) sqlScan(ctx context.Context, root *NotificationDeliveryQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
