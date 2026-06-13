@@ -36,7 +36,10 @@
             </td>
             <td class="text-end">
               <form action="/notifications/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this notification?" hx-post="/notifications/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
-                <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                <button class="btn btn-outline-danger btn-sm" type="submit" hx-indicator="closest form">
+                  <span class="btn-text">Delete</span>
+                  <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+                </button>
               </form>
             </td>
           </tr>

@@ -30,7 +30,10 @@
             <td>{{.Description}}</td>
             <td class="text-end">
               <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
-                <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                <button class="btn btn-outline-danger btn-sm" type="submit" hx-indicator="closest form">
+                  <span class="btn-text">Delete</span>
+                  <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+                </button>
               </form>
             </td>
           </tr>
@@ -45,6 +48,9 @@
 {{end}}
 
 <form action="/contacts/{{.Contact.ID}}/delete" method="POST" class="mt-4" hx-confirm="Delete this contact and all events?" hx-post="/contacts/{{.Contact.ID}}/delete" hx-target="body" hx-push-url="/contacts">
-  <button class="btn btn-danger" type="submit">Delete Contact</button>
+  <button class="btn btn-danger" type="submit" hx-indicator="closest form">
+    <span class="btn-text">Delete Contact</span>
+    <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+  </button>
 </form>
 {{end}}

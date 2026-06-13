@@ -171,3 +171,35 @@ func unauthenticatedRequest(method, path string) *http.Request {
 	req, _ := http.NewRequest(method, path, nil)
 	return req
 }
+
+// seedTestEvent creates an event for the given contact and returns the event ID.
+func seedTestEvent(contactID int, eventType string, date time.Time) int {
+	event, err := testClient.Event.Create().
+		SetType(eventType).
+		SetDate(date).
+		SetDescription("Test event").
+		SetCreatedAt(time.Now()).
+		SetContactID(contactID).
+		Save(context.Background())
+	if err != nil {
+		log.Printf("seedTestEvent: failed to create event: %v", err)
+		return 0
+	}
+	return event.ID
+}
+
+// seedTestNotification creates a one-time notification and returns its ID.
+func seedTestNotification() int {
+	n, err := testClient.OneTimeNotification.Create().
+		SetMessage("Test notification").
+		SetScheduledAt(time.Now().Add(24 * time.Hour)).
+		SetChannelTargets(`["email"]`).
+		SetStatus("pending").
+		SetCreatedAt(time.Now()).
+		Save(context.Background())
+	if err != nil {
+		log.Printf("seedTestNotification: failed to create notification: %v", err)
+		return 0
+	}
+	return n.ID
+}

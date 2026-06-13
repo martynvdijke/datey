@@ -1,0 +1,311 @@
+/* ═══════════════════════════════════════════
+   Datey Design System — CSS Custom Properties
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* ── Brand Colors ── */
+  --datey-primary: #2d3a5c;
+  --datey-primary-hover: #3d4e7a;
+  --datey-primary-light: #e8ecf4;
+  --datey-accent: #5b7bb5;
+
+  /* ── Neutrals ── */
+  --datey-surface: #ffffff;
+  --datey-surface-subtle: #f8f9fa;
+  --datey-border: #dee2e6;
+  --datey-text-primary: #212529;
+  --datey-text-muted: #6c757d;
+  --datey-text-inverse: #ffffff;
+
+  /* ── Semantic / Event Types ── */
+  --datey-event-birthday: #0d6efd;
+  --datey-event-anniversary: #198754;
+  --datey-event-wedding: #ffc107;
+  --datey-event-holiday: #dc3545;
+  --datey-event-meeting: #6f42c1;
+  --datey-event-custom: #6c757d;
+
+  /* ── Spacing ── */
+  --datey-space-xs: 0.25rem;
+  --datey-space-sm: 0.5rem;
+  --datey-space-md: 1rem;
+  --datey-space-lg: 1.5rem;
+  --datey-space-xl: 3rem;
+
+  /* ── Typography ── */
+  --datey-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --datey-font-size-sm: 0.875rem;
+  --datey-font-size-base: 1rem;
+  --datey-font-size-lg: 1.25rem;
+  --datey-font-size-xl: 1.5rem;
+  --datey-font-size-2xl: 2rem;
+
+  /* ── Border Radius ── */
+  --datey-radius-sm: 0.25rem;
+  --datey-radius: 0.5rem;
+  --datey-radius-lg: 0.75rem;
+  --datey-radius-pill: 50rem;
+
+  /* ── Shadows ── */
+  --datey-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --datey-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --datey-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* ── Transitions ── */
+  --datey-transition-fast: 150ms ease;
+  --datey-transition: 200ms ease;
+  --datey-transition-slow: 300ms ease;
+}
+
+/* ═══════════════════════════════════════════
+   Base
+   ═══════════════════════════════════════════ */
+
+body {
+  background: var(--datey-surface-subtle);
+  font-family: var(--datey-font-sans);
+}
+
+/* ═══════════════════════════════════════════
+   Navbar
+   ═══════════════════════════════════════════ */
+
+.navbar {
+  background: var(--datey-primary) !important;
+  box-shadow: var(--datey-shadow-sm);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  border-radius: var(--datey-radius-sm);
+  padding: 0.5rem 0.75rem;
+  transition: background var(--datey-transition-fast), color var(--datey-transition-fast);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-dark .navbar-nav .nav-link.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--datey-text-inverse);
+}
+
+/* ═══════════════════════════════════════════
+   Cards
+   ═══════════════════════════════════════════ */
+
+.card {
+  border: none;
+  border-radius: var(--datey-radius);
+  box-shadow: var(--datey-shadow-sm);
+  transition: transform var(--datey-transition), box-shadow var(--datey-transition);
+}
+
+.card:hover {
+  /* Subtle lift only on clickable/event cards */
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--datey-shadow);
+}
+
+.card-title {
+  color: var(--datey-text-primary);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   Event Type Badges
+   ═══════════════════════════════════════════ */
+
+.event-type-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25em 0.65em;
+  border-radius: var(--datey-radius-pill);
+  text-transform: capitalize;
+}
+
+.event-type-badge.event-birthday { background: var(--datey-event-birthday); color: #fff; }
+.event-type-badge.event-anniversary { background: var(--datey-event-anniversary); color: #fff; }
+.event-type-badge.event-wedding { background: var(--datey-event-wedding); color: #212529; }
+.event-type-badge.event-holiday { background: var(--datey-event-holiday); color: #fff; }
+.event-type-badge.event-meeting { background: var(--datey-event-meeting); color: #fff; }
+.event-type-badge.event-custom { background: var(--datey-event-custom); color: #fff; }
+
+/* ═══════════════════════════════════════════
+   Buttons & Interactive Elements
+   ═══════════════════════════════════════════ */
+
+.btn {
+  border-radius: var(--datey-radius);
+  transition: all var(--datey-transition-fast);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--datey-shadow-sm);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+a {
+  transition: color var(--datey-transition-fast);
+}
+
+/* ═══════════════════════════════════════════
+   Tables
+   ═══════════════════════════════════════════ */
+
+.table tr {
+  transition: background var(--datey-transition-fast);
+}
+
+.table-hover tbody tr:hover {
+  background: var(--datey-primary-light);
+}
+
+.table > thead {
+  background: var(--datey-primary);
+  color: var(--datey-text-inverse);
+}
+
+/* ═══════════════════════════════════════════
+   Forms
+   ═══════════════════════════════════════════ */
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--datey-accent);
+  box-shadow: 0 0 0 0.2rem rgba(91, 123, 181, 0.25);
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* ═══════════════════════════════════════════
+   Toast Notifications
+   ═══════════════════════════════════════════ */
+
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 24rem;
+  pointer-events: none;
+}
+
+#toast-container .toast {
+  pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════
+   HTMX Loading States
+   ═══════════════════════════════════════════ */
+
+.spinner-border.htmx-request {
+  display: inline-block;
+}
+
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline-block;
+}
+
+.htmx-request.htmx-indicator + .btn-text,
+.htmx-request .btn-text {
+  display: none;
+}
+
+/* Search input loading */
+.search-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--datey-border);
+  border-top-color: var(--datey-accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: none;
+}
+
+.htmx-request .search-spinner,
+.htmx-request.search-spinner {
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════
+   Active Nav Highlight
+   ═══════════════════════════════════════════ */
+
+.nav-item .nav-link.active {
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   Touch Targets (Mobile)
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 991.98px) {
+  .navbar-nav .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Typography
+   ═══════════════════════════════════════════ */
+
+h1, h2, h3, h4, h5 {
+  color: var(--datey-text-primary);
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: var(--datey-font-size-2xl); font-weight: 700; }
+h2 { font-size: var(--datey-font-size-xl); font-weight: 600; }
+h3 { font-size: var(--datey-font-size-lg); font-weight: 600; }
+
+/* ═══════════════════════════════════════════
+   Dashboard Days Remaining
+   ═══════════════════════════════════════════ */
+
+.days-remaining {
+  font-weight: 700;
+  font-size: var(--datey-font-size-lg);
+}
+
+.days-remaining.urgent { color: var(--datey-event-holiday); }
+.days-remaining.normal { color: var(--datey-accent); }
+
+/* ═══════════════════════════════════════════
+   Error Pages
+   ═══════════════════════════════════════════ */
+
+.error-page .display-1 {
+  color: var(--datey-text-muted);
+  font-weight: 700;
+}

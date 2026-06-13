@@ -2,8 +2,11 @@ package web
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/user"
@@ -75,8 +78,8 @@ func (h *Handler) Admin(next http.Handler) http.Handler {
 // If no users exist and the request is not for /setup or /login, redirects to /setup.
 func (h *Handler) SetupRedirect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// Skip for setup, login, logout, and health endpoints
-	if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/logout" || r.URL.Path == "/health" {
+		// Skip for setup, login, logout, and health endpoints
+		if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/logout" || r.URL.Path == "/health" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -90,7 +93,7 @@ func (h *Handler) SetupRedirect(next http.Handler) http.Handler {
 	})
 }
 
-// userFromRequest is a helper to get user ID from request (for handler methods).
+// getUserID is a helper to get user ID from request.
 func getUserID(r *http.Request) int {
 	u := UserFromContext(r.Context())
 	if u == nil {
@@ -102,4 +105,132 @@ func getUserID(r *http.Request) int {
 // parseIntParam parses an ID from a URL param.
 func parseIntParam(r *http.Request, param string) (int, error) {
 	return strconv.Atoi(r.PathValue(param))
+}
+
+func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request) {
+	// If already authenticated, redirect to dashboard
+	if u := UserFromContext(r.Context()); u != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	h.render(w, r, "login.html", map[string]any{
+		"Title": "Datey - Login",
+	})
+}
+
+func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	if username == "" || password == "" {
+		h.render(w, r, "login.html", map[string]any{
+			"Title": "Datey - Login",
+			"Error": "Username and password are required",
+		})
+		return
+	}
+
+	u, err := h.users.GetByUsername(r.Context(), username)
+	if err != nil {
+		h.render(w, r, "login.html", map[string]any{
+			"Title": "Datey - Login",
+			"Error": "Invalid username or password",
+		})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
+		h.render(w, r, "login.html", map[string]any{
+			"Title": "Datey - Login",
+			"Error": "Invalid username or password",
+		})
+		return
+	}
+
+	token, err := h.sessions.Create(r.Context(), u.ID)
+	if err != nil {
+		slog.Error("login: create session", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	session.SetCookie(w, token, r.TLS != nil)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
+	token, err := session.ReadCookie(r)
+	if err == nil && token != "" {
+		h.sessions.Delete(r.Context(), token)
+	}
+	session.ClearCookie(w)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (h *Handler) setupPage(w http.ResponseWriter, r *http.Request) {
+	exists, err := h.users.Exists(r.Context())
+	if err == nil && exists {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	h.render(w, r, "setup.html", map[string]any{
+		"Title": "Datey - Setup",
+	})
+}
+
+func (h *Handler) setupCreate(w http.ResponseWriter, r *http.Request) {
+	exists, _ := h.users.Exists(r.Context())
+	if exists {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	if username == "" {
+		h.render(w, r, "setup.html", map[string]any{
+			"Title": "Datey - Setup",
+			"Error": "Username is required",
+		})
+		return
+	}
+
+	if len(password) < 8 {
+		h.render(w, r, "setup.html", map[string]any{
+			"Title": "Datey - Setup",
+			"Error": "Password must be at least 8 characters",
+		})
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		slog.Error("setup: hash password", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	_, err = h.users.Create(r.Context(), username, string(hash), user.RoleAdmin)
+	if err != nil {
+		h.render(w, r, "setup.html", map[string]any{
+			"Title": "Datey - Setup",
+			"Error": "Failed to create admin user: " + err.Error(),
+		})
+		return
+	}
+
+	slog.Info("admin user created", "username", username)
+	http.Redirect(w, r, "/login?success=Admin+account+created.+Please+log+in.", http.StatusSeeOther)
 }

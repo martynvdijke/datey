@@ -257,8 +257,9 @@
     </div>
 
     <div class="d-flex align-items-center gap-3">
-      <button class="btn btn-primary" hx-post="/settings/backup" hx-target="#backup-result" hx-swap="innerHTML">
-        Run Backup Now
+      <button class="btn btn-primary" hx-post="/settings/backup" hx-target="#backup-result" hx-swap="innerHTML" hx-indicator="#backup-spinner">
+        <span class="btn-text">Run Backup Now</span>
+        <span id="backup-spinner" class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Backing up...</span></span>
       </button>
       <div id="backup-result"></div>
     </div>

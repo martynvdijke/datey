@@ -177,11 +177,6 @@ func AttrsToMap(attrs []slog.Attr) map[string]any {
 	return m
 }
 
-// Ensure InitLevel is called properly — fix the double init bug by checking if already set
-func init() {
-	// noop: factory function handles init
-}
-
 // EnsureCapacity returns the store's capacity.
 func (s *Store) EnsureCapacity() int {
 	return s.capacity

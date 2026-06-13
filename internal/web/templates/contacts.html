@@ -16,7 +16,12 @@
 </form>
 <div class="row mb-3">
   <div class="col-md-6">
-    <input type="search" class="form-control" name="q" placeholder="Search contacts..." hx-get="/contacts" hx-trigger="keyup changed delay:300ms" hx-target="#contacts-list" hx-select="#contacts-list">
+    <div class="input-group">
+      <input type="search" class="form-control" name="q" placeholder="Search contacts..." hx-get="/contacts" hx-trigger="keyup changed delay:300ms" hx-target="#contacts-list" hx-select="#contacts-list" hx-indicator="#search-spinner">
+      <span class="input-group-text" id="search-spinner">
+        <span class="search-spinner htmx-indicator"></span>
+      </span>
+    </div>
   </div>
 </div>
 <div id="contacts-list">
