@@ -11,6 +11,7 @@ RUN apk add --no-cache ca-certificates tzdata && \
     adduser -D -u 1000 datey
 WORKDIR /app
 COPY --from=builder /datey .
+ENV DATA_DIR=/db
 RUN mkdir -p /db && chown datey:datey /db
 USER datey
 EXPOSE 6270
