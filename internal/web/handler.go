@@ -64,6 +64,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	// Health check on its own (no middleware applied)
 	r.Get("/health", handlers.HealthCheck)
 
+	// Database health check (includes DB connectivity test)
+	r.Get("/health/db", handlers.DBHealthCheck(h.client))
+
 	// All other routes with middleware applied via group
 	r.Group(func(r chi.Router) {
 		r.Use(h.SetupRedirect)
@@ -135,10 +138,12 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	events, err := h.events.ListUpcoming(r.Context(), now, end)
 	if err != nil {
-		slog.Error("dashboard: list upcoming", "error", err)
+		slog.Error("dashboard: list upcoming", "error", err, "from", now.Format(time.RFC3339), "to", end.Format(time.RFC3339))
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
+
+	slog.Info("dashboard: upcoming events", "count", len(events), "from", now.Format("2006-01-02"), "to", end.Format("2006-01-02"), "reminder_days", h.cfg.ReminderDays)
 
 	type eventView struct {
 		Name          string

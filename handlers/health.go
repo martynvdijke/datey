@@ -1,13 +1,17 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/datey/datey/ent"
 )
 
 var Version = "dev"
 
+// HealthCheck returns basic health status.
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
@@ -15,4 +19,37 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 		"time":    time.Now().Format(time.RFC3339),
 		"version": Version,
 	})
+}
+
+// DBHealthCheck returns health status including database connectivity.
+func DBHealthCheck(client *ent.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+
+		status := "ok"
+		dbStatus := "ok"
+
+		// Test database connectivity with a simple query
+		_, err := client.User.Query().Count(ctx)
+		if err != nil {
+			dbStatus = "error"
+			status = "degraded"
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		resp := map[string]any{
+			"status":     status,
+			"time":       time.Now().Format(time.RFC3339),
+			"version":    Version,
+			"database":   dbStatus,
+		}
+
+		if dbStatus == "error" {
+			resp["database_error"] = err.Error()
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
+
+		json.NewEncoder(w).Encode(resp)
+	}
 }

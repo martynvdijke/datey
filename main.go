@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/datey/datey/handlers"
 	"github.com/datey/datey/internal/config"
@@ -18,6 +19,7 @@ import (
 	"github.com/datey/datey/internal/scheduler"
 	"github.com/datey/datey/internal/web"
 	"github.com/go-chi/chi/v5"
+	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
 const Version = "1.9.5"
@@ -38,7 +40,7 @@ func main() {
 	store.InitLevel(initialLevel)
 
 	// Create the custom handler wrapping the default stderr text handler.
-	textHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: store.LevelVar()})
+	textHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: store.LevelVar()})
 	var otelFn func(context.Context, slog.Record)
 
 	if cfg.OTLPEndpoint != "" {
@@ -70,6 +72,11 @@ func main() {
 
 	r := chi.NewRouter()
 
+	// Middleware for logging, recovery, and request ID
+	r.Use(chimw.Logger)
+	r.Use(chimw.Recoverer)
+	r.Use(chimw.RequestID)
+
 	handler := web.NewHandler(cfg, client, reg, store)
 	handlers.Version = Version
 	handler.RegisterRoutes(r)
@@ -96,9 +103,13 @@ func main() {
 		}
 	}()
 
+	addr := fmt.Sprintf(":%d", cfg.Port)
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Port),
-		Handler: r,
+		Addr:         addr,
+		Handler:      r,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
 	go func() {
@@ -107,10 +118,14 @@ func main() {
 		<-sigCh
 		slog.Info("shutting down...")
 		cancel()
-		srv.Shutdown(context.Background())
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer shutdownCancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			slog.Error("server shutdown error", "error", err)
+		}
 	}()
 
-	slog.Info("starting server", "port", cfg.Port, "version", Version)
+	slog.Info("starting server", "addr", addr, "version", Version)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
