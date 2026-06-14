@@ -45,8 +45,8 @@ func TestLoad_LogLevelDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() failed: %v", err)
 	}
-	if cfg.LogLevel != "warn" {
-		t.Errorf("LogLevel = %q, want %q", cfg.LogLevel, "warn")
+	if cfg.LogLevel != "info" {
+		t.Errorf("LogLevel = %q, want %q", cfg.LogLevel, "info")
 	}
 }
 

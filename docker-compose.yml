@@ -12,7 +12,7 @@ services:
       - DATA_DIR=/db
       - SCHEDULER_HOUR=8
       - REMINDER_DAYS=7
-      - LOG_LEVEL=warn
+      - LOG_LEVEL=info
       - LOG_BUFFER_SIZE=10000
       - OTEL_ENDPOINT=
       # Email

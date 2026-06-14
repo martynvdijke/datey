@@ -42,7 +42,7 @@ func Load() (*Config, error) {
 		DataDir:       getEnv("DATA_DIR", "/db"),
 		SchedulerHour: getEnvInt("SCHEDULER_HOUR", 8),
 		ReminderDays:  getEnvInt("REMINDER_DAYS", 7),
-		LogLevel:      getEnv("LOG_LEVEL", "warn"),
+		LogLevel:      getEnv("LOG_LEVEL", "info"),
 		LogBufferSize: getEnvInt("LOG_BUFFER_SIZE", 10000),
 		OTLPEndpoint:  getEnv("OTEL_ENDPOINT", ""),
 		SMTPHost:      getEnv("SMTP_HOST", ""),
