@@ -1,3 +1,10 @@
+## [1.9.6](https://github.com/martynvdijke/datey/compare/v1.9.5...v1.9.6) (2026-06-14)
+
+
+### Bug Fixes
+
+* consolidate main.go, add DB health check, improve dashboard logging ([91a1f0c](https://github.com/martynvdijke/datey/commit/91a1f0c9ab6bea324ba84d028c37700d68d2bae5))
+
 ## [1.9.5](https://github.com/martynvdijke/datey/compare/v1.9.4...v1.9.5) (2026-06-14)
 
 
