@@ -1,3 +1,10 @@
+## [1.9.5](https://github.com/martynvdijke/datey/compare/v1.9.4...v1.9.5) (2026-06-14)
+
+
+### Bug Fixes
+
+* ensure database dir is writable at runtime with entrypoint script ([af512c2](https://github.com/martynvdijke/datey/commit/af512c2b74e46fbbdb05b8f6b08aea663809029b))
+
 ## [1.9.4](https://github.com/martynvdijke/datey/compare/v1.9.3...v1.9.4) (2026-06-14)
 
 
