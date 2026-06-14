@@ -1,3 +1,10 @@
+## [1.9.4](https://github.com/martynvdijke/datey/compare/v1.9.3...v1.9.4) (2026-06-14)
+
+
+### Bug Fixes
+
+* explicitly set DATA_DIR=/db in Dockerfile for data persistence ([ff8cd6e](https://github.com/martynvdijke/datey/commit/ff8cd6e6c458805cf5a6608338198588f2c02d48))
+
 ## [1.9.3](https://github.com/martynvdijke/datey/compare/v1.9.2...v1.9.3) (2026-06-14)
 
 
