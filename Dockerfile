@@ -7,13 +7,14 @@ COPY . .
 RUN CGO_ENABLED=1 go build -o /datey .
 
 FROM alpine:3.24
-RUN apk add --no-cache ca-certificates tzdata && \
+RUN apk add --no-cache ca-certificates tzdata su-exec && \
     adduser -D -u 1000 datey
 WORKDIR /app
 COPY --from=builder /datey .
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 ENV DATA_DIR=/db
 RUN mkdir -p /db && chown datey:datey /db
-USER datey
 EXPOSE 6270
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:6270/health || exit 1
-ENTRYPOINT ["/app/datey"]
+ENTRYPOINT ["/entrypoint.sh"]
