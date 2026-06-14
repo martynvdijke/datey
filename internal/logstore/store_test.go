@@ -106,7 +106,7 @@ func TestQueryFilterBySource(t *testing.T) {
 
 func TestQueryPagination(t *testing.T) {
 	s := NewStore(20)
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		s.Append(LogEntry{Message: string(rune('A' + i))})
 	}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"log/slog"
+	"maps"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,16 +23,16 @@ import (
 )
 
 type Handler struct {
-	cfg          *config.Config
-	client       *ent.Client
-	templates    map[string]*template.Template
-	users        *repository.UserRepository
-	sessions     *session.Store
-	contacts     *repository.ContactRepository
-	events       *repository.EventRepository
-	oneTimeNots  *repository.OneTimeNotificationRepository
-	notifReg     *notifier.Registry
-	logStore     *logstore.Store
+	cfg         *config.Config
+	client      *ent.Client
+	templates   map[string]*template.Template
+	users       *repository.UserRepository
+	sessions    *session.Store
+	contacts    *repository.ContactRepository
+	events      *repository.EventRepository
+	oneTimeNots *repository.OneTimeNotificationRepository
+	notifReg    *notifier.Registry
+	logStore    *logstore.Store
 }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry, logStore *logstore.Store) *Handler {
@@ -271,11 +272,11 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 	umamiConfigured := h.cfg.UmamiURL != "" && h.cfg.UmamiWebsiteID != ""
 	data := map[string]any{
-		"Title":            title,
-		"UmamiURL":         h.cfg.UmamiURL,
-		"UmamiWebsiteID":   h.cfg.UmamiWebsiteID,
-		"UmamiConfigured":  umamiConfigured,
-		"ActiveNav":        inferActiveNav(r.URL.Path),
+		"Title":           title,
+		"UmamiURL":        h.cfg.UmamiURL,
+		"UmamiWebsiteID":  h.cfg.UmamiWebsiteID,
+		"UmamiConfigured": umamiConfigured,
+		"ActiveNav":       inferActiveNav(r.URL.Path),
 	}
 	u := UserFromContext(r.Context())
 	if u != nil {
@@ -326,9 +327,7 @@ func (h *Handler) render(w http.ResponseWriter, r *http.Request, page string, da
 	// Merge base data (Umami config, user, etc.) with page-specific data.
 	title, _ := data["Title"].(string)
 	merged := h.baseData(r, title)
-	for k, v := range data {
-		merged[k] = v
-	}
+	maps.Copy(merged, data)
 
 	if err := tmpl.ExecuteTemplate(w, "base.html", merged); err != nil {
 		slog.Error("render template", "error", err)
