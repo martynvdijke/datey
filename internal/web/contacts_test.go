@@ -73,8 +73,8 @@ func TestCreateContact_Success(t *testing.T) {
 		t.Errorf("expected 303 redirect, got %d", w.Code)
 	}
 	loc := w.Header().Get("Location")
-	if loc != "/contacts" {
-		t.Errorf("expected redirect to /contacts, got %s", loc)
+	if loc != "/contacts?success=Contact+created" {
+		t.Errorf("expected redirect to /contacts?success=Contact+created, got %s", loc)
 	}
 }
 

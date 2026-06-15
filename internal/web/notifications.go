@@ -137,6 +137,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	toastHeader(w, "Notification created", "success")
 	http.Redirect(w, r, "/notifications", http.StatusSeeOther)
 }
 
@@ -158,6 +159,14 @@ func (h *Handler) deleteNotification(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+type apiDelivery struct {
+	ID           int        `json:"id"`
+	Channel      string     `json:"channel"`
+	Status       string     `json:"status"`
+	SentAt       *time.Time `json:"sent_at,omitempty"`
+	ErrorMessage string     `json:"error_message,omitempty"`
+}
+
 func (h *Handler) apiNotifications(w http.ResponseWriter, r *http.Request) {
 	notifications, err := h.oneTimeNots.List(r.Context())
 	if err != nil {
@@ -167,16 +176,27 @@ func (h *Handler) apiNotifications(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type apiNotification struct {
-		ID          int        `json:"id"`
-		Message     string     `json:"message"`
-		ScheduledAt time.Time  `json:"scheduled_at"`
-		Status      string     `json:"status"`
-		CreatedAt   time.Time  `json:"created_at"`
-		SentAt      *time.Time `json:"sent_at,omitempty"`
+		ID          int           `json:"id"`
+		Message     string        `json:"message"`
+		ScheduledAt time.Time     `json:"scheduled_at"`
+		Status      string        `json:"status"`
+		CreatedAt   time.Time     `json:"created_at"`
+		SentAt      *time.Time    `json:"sent_at,omitempty"`
+		Deliveries  []apiDelivery `json:"deliveries"`
 	}
 
 	result := make([]apiNotification, len(notifications))
 	for i, n := range notifications {
+		deliveries := make([]apiDelivery, 0, len(n.Edges.Deliveries))
+		for _, d := range n.Edges.Deliveries {
+			deliveries = append(deliveries, apiDelivery{
+				ID:           d.ID,
+				Channel:      d.Channel,
+				Status:       d.Status,
+				SentAt:       d.SentAt,
+				ErrorMessage: d.ErrorMessage,
+			})
+		}
 		result[i] = apiNotification{
 			ID:          n.ID,
 			Message:     n.Message,
@@ -184,6 +204,7 @@ func (h *Handler) apiNotifications(w http.ResponseWriter, r *http.Request) {
 			Status:      n.Status,
 			CreatedAt:   n.CreatedAt,
 			SentAt:      n.SentAt,
+			Deliveries:  deliveries,
 		}
 	}
 

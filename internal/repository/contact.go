@@ -1,3 +1,8 @@
+// Deprecated: ContactRepository is kept for backward compatibility during the
+// transition to Person. New code should use PersonRepository (person.go) instead.
+// The Contact schema remains active for existing data; the MigrateContactsToPeople
+// function in db/db.go handles copying existing contacts to the new people table.
+
 package repository
 
 import (

@@ -22,7 +22,8 @@ func (Event) Fields() []ent.Field {
 
 func (Event) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("contact", Contact.Type).Ref("events").Unique().Required(),
+		edge.From("contact", Contact.Type).Ref("events").Unique(),
+		edge.From("person", Person.Type).Ref("events").Unique(),
 		edge.To("notification_logs", NotificationLog.Type),
 	}
 }

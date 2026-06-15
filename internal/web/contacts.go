@@ -65,7 +65,7 @@ func (h *Handler) createContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+	http.Redirect(w, r, "/contacts?success=Contact+created", http.StatusSeeOther)
 }
 
 func (h *Handler) viewContact(w http.ResponseWriter, r *http.Request) {
@@ -113,5 +113,5 @@ func (h *Handler) deleteContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+	http.Redirect(w, r, "/contacts?success=Contact+deleted", http.StatusSeeOther)
 }

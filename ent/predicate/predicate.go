@@ -12,6 +12,9 @@ type Contact func(*sql.Selector)
 // Event is the predicate function for event builders.
 type Event func(*sql.Selector)
 
+// Group is the predicate function for group builders.
+type Group func(*sql.Selector)
+
 // NotificationDelivery is the predicate function for notificationdelivery builders.
 type NotificationDelivery func(*sql.Selector)
 
@@ -20,6 +23,9 @@ type NotificationLog func(*sql.Selector)
 
 // OneTimeNotification is the predicate function for onetimenotification builders.
 type OneTimeNotification func(*sql.Selector)
+
+// Person is the predicate function for person builders.
+type Person func(*sql.Selector)
 
 // RecurringRule is the predicate function for recurringrule builders.
 type RecurringRule func(*sql.Selector)

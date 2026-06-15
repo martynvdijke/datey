@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	govcard "github.com/emersion/go-vcard"
-	"github.com/datey/datey/ent"
 )
 
 // ParsedContact holds the fields extracted from a single vCard entry.
@@ -87,24 +86,30 @@ func ToCard(name, notes string) govcard.Card {
 	return card
 }
 
-// Encode serialises one or more contacts to vCard 3.0 format.
-func Encode(contacts []*ent.Contact) ([]byte, error) {
+// NameNotes holds a name and notes pair for vCard encoding.
+type NameNotes struct {
+	Name  string
+	Notes string
+}
+
+// Encode serialises one or more name/notes pairs to vCard 3.0 format.
+func Encode(items []NameNotes) ([]byte, error) {
 	var buf bytes.Buffer
 
-	for _, c := range contacts {
-		card := ToCard(c.Name, c.Notes)
+	for _, it := range items {
+		card := ToCard(it.Name, it.Notes)
 		enc := govcard.NewEncoder(&buf)
 		if err := enc.Encode(card); err != nil {
-			return nil, fmt.Errorf("encode vCard for %q: %w", c.Name, err)
+			return nil, fmt.Errorf("encode vCard for %q: %w", it.Name, err)
 		}
 	}
 
 	return buf.Bytes(), nil
 }
 
-// EncodeSingle serialises a single contact to vCard 3.0 format.
-func EncodeSingle(c *ent.Contact) ([]byte, error) {
-	return Encode([]*ent.Contact{c})
+// EncodeSingle serialises a single name/notes pair to vCard 3.0 format.
+func EncodeSingle(name, notes string) ([]byte, error) {
+	return Encode([]NameNotes{{Name: name, Notes: notes}})
 }
 
 // SanitizeFilename converts a contact name to a safe filename.

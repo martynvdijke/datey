@@ -15,6 +15,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/notificationlog"
+	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
 )
 
@@ -26,6 +27,7 @@ type EventQuery struct {
 	inters               []Interceptor
 	predicates           []predicate.Event
 	withContact          *ContactQuery
+	withPerson           *PersonQuery
 	withNotificationLogs *NotificationLogQuery
 	withFKs              bool
 	// intermediate query (i.e. traversal path).
@@ -79,6 +81,28 @@ func (_q *EventQuery) QueryContact() *ContactQuery {
 			sqlgraph.From(event.Table, event.FieldID, selector),
 			sqlgraph.To(contact.Table, contact.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, event.ContactTable, event.ContactColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPerson chains the current query on the "person" edge.
+func (_q *EventQuery) QueryPerson() *PersonQuery {
+	query := (&PersonClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(event.Table, event.FieldID, selector),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, event.PersonTable, event.PersonColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -301,6 +325,7 @@ func (_q *EventQuery) Clone() *EventQuery {
 		inters:               append([]Interceptor{}, _q.inters...),
 		predicates:           append([]predicate.Event{}, _q.predicates...),
 		withContact:          _q.withContact.Clone(),
+		withPerson:           _q.withPerson.Clone(),
 		withNotificationLogs: _q.withNotificationLogs.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -316,6 +341,17 @@ func (_q *EventQuery) WithContact(opts ...func(*ContactQuery)) *EventQuery {
 		opt(query)
 	}
 	_q.withContact = query
+	return _q
+}
+
+// WithPerson tells the query-builder to eager-load the nodes that are connected to
+// the "person" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EventQuery) WithPerson(opts ...func(*PersonQuery)) *EventQuery {
+	query := (&PersonClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withPerson = query
 	return _q
 }
 
@@ -409,12 +445,13 @@ func (_q *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 		nodes       = []*Event{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withContact != nil,
+			_q.withPerson != nil,
 			_q.withNotificationLogs != nil,
 		}
 	)
-	if _q.withContact != nil {
+	if _q.withContact != nil || _q.withPerson != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -441,6 +478,12 @@ func (_q *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 	if query := _q.withContact; query != nil {
 		if err := _q.loadContact(ctx, query, nodes, nil,
 			func(n *Event, e *Contact) { n.Edges.Contact = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withPerson; query != nil {
+		if err := _q.loadPerson(ctx, query, nodes, nil,
+			func(n *Event, e *Person) { n.Edges.Person = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -479,6 +522,38 @@ func (_q *EventQuery) loadContact(ctx context.Context, query *ContactQuery, node
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "contact_events" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *EventQuery) loadPerson(ctx context.Context, query *PersonQuery, nodes []*Event, init func(*Event), assign func(*Event, *Person)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Event)
+	for i := range nodes {
+		if nodes[i].person_events == nil {
+			continue
+		}
+		fk := *nodes[i].person_events
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(person.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "person_events" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

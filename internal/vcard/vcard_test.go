@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/datey/datey/ent"
 	"github.com/emersion/go-vcard"
 )
 
@@ -157,11 +156,11 @@ func TestToContact_UnrecognizedProps(t *testing.T) {
 }
 
 func TestEncode_SingleContact(t *testing.T) {
-	contacts := []*ent.Contact{
+	items := []NameNotes{
 		{Name: "Alice", Notes: "Test note"},
 	}
 
-	data, err := Encode(contacts)
+	data, err := Encode(items)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -188,12 +187,12 @@ func TestEncode_SingleContact(t *testing.T) {
 }
 
 func TestEncode_MultiContact(t *testing.T) {
-	contacts := []*ent.Contact{
+	items := []NameNotes{
 		{Name: "Alice", Notes: ""},
 		{Name: "Bob", Notes: "Colleague"},
 	}
 
-	data, err := Encode(contacts)
+	data, err := Encode(items)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -208,7 +207,7 @@ func TestEncode_MultiContact(t *testing.T) {
 }
 
 func TestEncode_EmptyList(t *testing.T) {
-	data, err := Encode([]*ent.Contact{})
+	data, err := Encode([]NameNotes{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -218,8 +217,7 @@ func TestEncode_EmptyList(t *testing.T) {
 }
 
 func TestEncodeSingle(t *testing.T) {
-	c := &ent.Contact{Name: "Single", Notes: "Just me"}
-	data, err := EncodeSingle(c)
+	data, err := EncodeSingle("Single", "Just me")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -268,10 +266,10 @@ END:VCARD`
 		t.Fatalf("expected 1 contact, got %d", len(parsed))
 	}
 
-	contacts := []*ent.Contact{
+	items := []NameNotes{
 		{Name: parsed[0].Name, Notes: parsed[0].Notes},
 	}
-	data, err := Encode(contacts)
+	data, err := Encode(items)
 	if err != nil {
 		t.Fatalf("encode error: %v", err)
 	}

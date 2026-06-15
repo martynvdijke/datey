@@ -13,6 +13,7 @@
           <th>Message</th>
           <th>Scheduled</th>
           <th>Status</th>
+          <th>Deliveries</th>
           <th>Sent At</th>
           <th class="text-end">Actions</th>
         </tr>
@@ -26,6 +27,19 @@
               <span class="badge {{if eq .Status "pending"}}bg-warning text-dark{{else if eq .Status "sent"}}bg-success{{else}}bg-danger{{end}}">
                 {{.Status}}
               </span>
+            </td>
+            <td>
+              {{if .Edges.Deliveries}}
+                <div class="d-flex gap-1 flex-wrap">
+                  {{range .Edges.Deliveries}}
+                    <span class="badge {{if eq .Status "sent"}}bg-success{{else if eq .Status "failed"}}bg-danger{{else}}bg-secondary{{end}}" title="{{if .ErrorMessage}}{{.ErrorMessage}}{{else}}{{.Channel}}{{end}}">
+                      {{.Channel}}
+                    </span>
+                  {{end}}
+                </div>
+              {{else}}
+                <span class="text-muted small">—</span>
+              {{end}}
             </td>
             <td>
               {{if .SentAt}}

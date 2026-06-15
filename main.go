@@ -77,6 +77,12 @@ func main() {
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.RequestID)
 
+	// Run data migration from contact→person for existing deployments
+	if err := db.MigrateContactsToPeople(context.Background(), client); err != nil {
+		slog.Error("failed to migrate contacts to people", "error", err)
+		os.Exit(1)
+	}
+
 	handler := web.NewHandler(cfg, client, reg, store)
 	handlers.Version = Version
 	handler.RegisterRoutes(r)

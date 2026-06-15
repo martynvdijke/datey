@@ -1,0 +1,62 @@
+{{define "content"}}
+<h1 class="mb-4">Groups</h1>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Create Group</h5>
+        <form action="/groups/create" method="POST">
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Create Group</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    {{if .Groups}}
+    <h5>Existing Groups</h5>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Members</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Groups}}
+          <tr>
+            <td><strong>{{.Name}}</strong></td>
+            <td>{{if .Description}}{{.Description}}{{else}}<span class="text-muted">—</span>{{end}}</td>
+            <td>{{len .Edges.People}}</td>
+            <td class="text-end">
+              <form action="/groups/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete group '{{.Name}}'? People in this group will not be deleted." hx-post="/groups/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
+                <button class="btn btn-outline-danger btn-sm" type="submit">
+                  <span class="btn-text">Delete</span>
+                  <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{else}}
+    <div class="alert alert-info">
+      No groups yet. Create one to organize people.
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

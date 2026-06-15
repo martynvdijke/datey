@@ -29,6 +29,8 @@ type Handler struct {
 	users       *repository.UserRepository
 	sessions    *session.Store
 	contacts    *repository.ContactRepository
+	people      *repository.PersonRepository
+	groups      *repository.GroupRepository
 	events      *repository.EventRepository
 	oneTimeNots *repository.OneTimeNotificationRepository
 	notifReg    *notifier.Registry
@@ -47,6 +49,8 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		users:       repository.NewUserRepository(client),
 		sessions:    session.NewStore(client),
 		contacts:    repository.NewContactRepository(client),
+		people:      repository.NewPersonRepository(client),
+		groups:      repository.NewGroupRepository(client),
 		events:      repository.NewEventRepository(client),
 		oneTimeNots: repository.NewOneTimeNotificationRepository(client),
 		notifReg:    notifReg,
@@ -85,17 +89,31 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Use(h.Auth)
 
 			r.Get("/", h.dashboard)
-			r.Get("/contacts", h.listContacts)
-			r.Get("/contacts/new", h.newContactForm)
-			r.Post("/contacts/new", h.createContact)
-			r.Get("/contacts/{id}", h.viewContact)
-			r.Post("/contacts/{id}/delete", h.deleteContact)
-			r.Post("/contacts/import", h.handleImportVCard)
-			r.Get("/contacts/{id}/vcard", h.handleExportSingleVCard)
-			r.Get("/contacts/export", h.handleExportAllVCard)
-			r.Get("/contacts/{id}/events/new", h.newEventForm)
-			r.Post("/contacts/{id}/events/new", h.createEvent)
+			// People routes (new path)
+			r.Get("/people", h.listPeople)
+			r.Get("/people/new", h.newPersonForm)
+			r.Post("/people/new", h.createPerson)
+			r.Get("/people/{id}", h.viewPerson)
+			r.Post("/people/{id}/delete", h.deletePerson)
+			r.Post("/people/import", h.handleImportVCard)
+			r.Get("/people/{id}/vcard", h.handleExportSingleVCard)
+			r.Get("/people/export", h.handleExportAllVCard)
+			r.Get("/people/{id}/events/new", h.newEventForm)
+			r.Post("/people/{id}/events/new", h.createEvent)
 			r.Post("/events/{id}/delete", h.deleteEvent)
+
+			// Legacy /contacts/* 301 redirects → /people/*
+			r.Get("/contacts", h.redirectContactsList)
+			r.Get("/contacts/new", h.redirectContactsNew)
+			r.Get("/contacts/{id}", h.redirectContactsView)
+			r.Get("/contacts/{id}/events/new", h.redirectContactsView)
+			r.Get("/contacts/{id}/vcard", h.redirectContactsView)
+			r.Get("/contacts/export", h.handleExportAllVCard)
+
+			// Group routes (admin-only)
+			r.Get("/groups", h.listGroups)
+			r.Post("/groups/create", h.createGroup)
+			r.Post("/groups/{id}/delete", h.deleteGroup)
 
 			r.Get("/calendar", h.calendarPage)
 			r.Get("/api/calendar-events", h.calendarEvents)
@@ -105,6 +123,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/notifications/new", h.createNotification)
 			r.Post("/notifications/{id}/delete", h.deleteNotification)
 			r.Get("/api/notifications", h.apiNotifications)
+
+			r.Get("/roll", h.diceRoll)
 
 			// Admin-only routes
 			r.Group(func(r chi.Router) {
@@ -134,7 +154,16 @@ func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
-	end := now.AddDate(0, 0, h.cfg.ReminderDays)
+	reminderDays := h.cfg.ReminderDays
+
+	// Allow query param override for date finder
+	if daysStr := r.URL.Query().Get("days"); daysStr != "" {
+		if days, err := strconv.Atoi(daysStr); err == nil && days >= 1 && days <= 365 {
+			reminderDays = days
+		}
+	}
+
+	end := now.AddDate(0, 0, reminderDays)
 
 	events, err := h.events.ListUpcoming(r.Context(), now, end)
 	if err != nil {
@@ -143,7 +172,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.Info("dashboard: upcoming events", "count", len(events), "from", now.Format("2006-01-02"), "to", end.Format("2006-01-02"), "reminder_days", h.cfg.ReminderDays)
+	slog.Info("dashboard: upcoming events", "count", len(events), "from", now.Format("2006-01-02"), "to", end.Format("2006-01-02"), "reminder_days", reminderDays)
 
 	type eventView struct {
 		Name          string
@@ -154,13 +183,15 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	var evs []eventView
 	for _, e := range events {
-		contactName := ""
-		if contact := e.Edges.Contact; contact != nil {
-			contactName = contact.Name
+		personName := ""
+		if p := e.Edges.Person; p != nil {
+			personName = p.Name
+		} else if c := e.Edges.Contact; c != nil {
+			personName = c.Name
 		}
 		days := int(e.Date.Sub(now).Hours() / 24)
 		evs = append(evs, eventView{
-			Name:          contactName,
+			Name:          personName,
 			Type:          e.Type,
 			Date:          e.Date.Format("Jan 2"),
 			DaysRemaining: days,
@@ -170,7 +201,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	h.render(w, r, "dashboard.html", map[string]any{
 		"Title":        "Datey - Dashboard",
 		"Events":       evs,
-		"ReminderDays": h.cfg.ReminderDays,
+		"ReminderDays": reminderDays,
 	})
 }
 
@@ -303,12 +334,16 @@ func inferActiveNav(path string) string {
 	switch {
 	case path == "/" || path == "":
 		return "dashboard"
-	case hasPrefix(path, "/contacts"):
-		return "contacts"
+	case hasPrefix(path, "/people"):
+		return "people"
+	case hasPrefix(path, "/groups"):
+		return "groups"
 	case hasPrefix(path, "/calendar") || hasPrefix(path, "/api/calendar"):
 		return "calendar"
 	case hasPrefix(path, "/notifications"):
 		return "notifications"
+	case path == "/roll":
+		return "roll"
 	case hasPrefix(path, "/settings") || hasPrefix(path, "/logs") || hasPrefix(path, "/users"):
 		return "settings"
 	default:
@@ -363,4 +398,10 @@ func (h *Handler) renderError(w http.ResponseWriter, r *http.Request, status int
 	if r.Header.Get("HX-Request") == "true" {
 		toastHeader(w, statusText, "error")
 	}
+}
+
+func (h *Handler) diceRoll(w http.ResponseWriter, r *http.Request) {
+	h.render(w, r, "roll.html", map[string]any{
+		"Title": "Datey - Dice Roller",
+	})
 }

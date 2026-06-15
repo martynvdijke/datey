@@ -13,8 +13,8 @@ import (
 
 func setupEventsRouter(h *Handler) chi.Router {
 	r := chi.NewRouter()
-	r.Get("/contacts/{id}/events/new", h.newEventForm)
-	r.Post("/contacts/{id}/events/new", h.createEvent)
+	r.Get("/people/{id}/events/new", h.newEventForm)
+	r.Post("/people/{id}/events/new", h.createEvent)
 	r.Post("/events/{id}/delete", h.deleteEvent)
 	return r
 }
@@ -23,7 +23,7 @@ func TestNewEventForm(t *testing.T) {
 	h := newTestWebHandler(t)
 	router := setupEventsRouter(h)
 
-	req := httptest.NewRequest("GET", "/contacts/1/events/new", nil)
+	req := httptest.NewRequest("GET", "/people/1/events/new", nil)
 	req = req.WithContext(withUserContext(req.Context()))
 	w := httptest.NewRecorder()
 
@@ -42,7 +42,7 @@ func TestCreateEvent_InvalidDate(t *testing.T) {
 	router := setupEventsRouter(h)
 
 	body := "type=birthday&date=invalid&description=test"
-	req := httptest.NewRequest("POST", "/contacts/1/events/new", strings.NewReader(body))
+	req := httptest.NewRequest("POST", "/people/1/events/new", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req = req.WithContext(withUserContext(req.Context()))
 	w := httptest.NewRecorder()
@@ -59,7 +59,7 @@ func TestCreateEvent_InvalidContactID(t *testing.T) {
 	router := setupEventsRouter(h)
 
 	// chi still routes "abc" as {id} with value "abc"
-	req := httptest.NewRequest("POST", "/contacts/abc/events/new", nil)
+	req := httptest.NewRequest("POST", "/people/abc/events/new", nil)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req = req.WithContext(withUserContext(req.Context()))
 	w := httptest.NewRecorder()
@@ -77,19 +77,19 @@ func TestCreateEvent_Success(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Create a contact first
-	contact, err := h.client.Contact.Create().
+	// Create a person first
+	person, err := h.client.Person.Create().
 		SetName("Event Test").
 		SetNotes("test").
 		SetCreatedAt(time.Now()).
 		SetUpdatedAt(time.Now()).
 		Save(ctx)
 	if err != nil {
-		t.Fatalf("create contact: %v", err)
+		t.Fatalf("create person: %v", err)
 	}
 
 	body := "type=birthday&date=2026-07-04&description=Test+event"
-	req := httptest.NewRequest("POST", "/contacts/"+itoa(contact.ID)+"/events/new", strings.NewReader(body))
+	req := httptest.NewRequest("POST", "/people/"+itoa(person.ID)+"/events/new", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req = req.WithContext(withUserContext(req.Context()))
 	w := httptest.NewRecorder()
@@ -100,7 +100,7 @@ func TestCreateEvent_Success(t *testing.T) {
 		t.Errorf("expected 303 redirect, got %d", w.Code)
 	}
 	loc := w.Header().Get("Location")
-	expected := "/contacts/" + itoa(contact.ID)
+	expected := "/people/" + itoa(person.ID)
 	if loc != expected {
 		t.Errorf("expected redirect to %s, got %s", expected, loc)
 	}
@@ -112,15 +112,15 @@ func TestDeleteEvent(t *testing.T) {
 
 	ctx := context.Background()
 
-	// Create a contact and event
-	contact, err := h.client.Contact.Create().
+	// Create a person and event
+	person, err := h.client.Person.Create().
 		SetName("Event Delete").
 		SetNotes("test").
 		SetCreatedAt(time.Now()).
 		SetUpdatedAt(time.Now()).
 		Save(ctx)
 	if err != nil {
-		t.Fatalf("create contact: %v", err)
+		t.Fatalf("create person: %v", err)
 	}
 
 	event, err := h.client.Event.Create().
@@ -128,7 +128,7 @@ func TestDeleteEvent(t *testing.T) {
 		SetDate(time.Date(2026, 7, 4, 0, 0, 0, 0, time.UTC)).
 		SetDescription("to delete").
 		SetCreatedAt(time.Now()).
-		SetContactID(contact.ID).
+		SetPersonID(person.ID).
 		Save(ctx)
 	if err != nil {
 		t.Fatalf("create event: %v", err)

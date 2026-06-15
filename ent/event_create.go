@@ -13,6 +13,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/notificationlog"
+	"github.com/datey/datey/ent/person"
 )
 
 // EventCreate is the builder for creating a Event entity.
@@ -60,9 +61,36 @@ func (_c *EventCreate) SetContactID(id int) *EventCreate {
 	return _c
 }
 
+// SetNillableContactID sets the "contact" edge to the Contact entity by ID if the given value is not nil.
+func (_c *EventCreate) SetNillableContactID(id *int) *EventCreate {
+	if id != nil {
+		_c = _c.SetContactID(*id)
+	}
+	return _c
+}
+
 // SetContact sets the "contact" edge to the Contact entity.
 func (_c *EventCreate) SetContact(v *Contact) *EventCreate {
 	return _c.SetContactID(v.ID)
+}
+
+// SetPersonID sets the "person" edge to the Person entity by ID.
+func (_c *EventCreate) SetPersonID(id int) *EventCreate {
+	_c.mutation.SetPersonID(id)
+	return _c
+}
+
+// SetNillablePersonID sets the "person" edge to the Person entity by ID if the given value is not nil.
+func (_c *EventCreate) SetNillablePersonID(id *int) *EventCreate {
+	if id != nil {
+		_c = _c.SetPersonID(*id)
+	}
+	return _c
+}
+
+// SetPerson sets the "person" edge to the Person entity.
+func (_c *EventCreate) SetPerson(v *Person) *EventCreate {
+	return _c.SetPersonID(v.ID)
 }
 
 // AddNotificationLogIDs adds the "notification_logs" edge to the NotificationLog entity by IDs.
@@ -137,9 +165,6 @@ func (_c *EventCreate) check() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Event.created_at"`)}
 	}
-	if len(_c.mutation.ContactIDs()) == 0 {
-		return &ValidationError{Name: "contact", err: errors.New(`ent: missing required edge "Event.contact"`)}
-	}
 	return nil
 }
 
@@ -197,6 +222,23 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.contact_events = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PersonIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.PersonTable,
+			Columns: []string{event.PersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.person_events = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.NotificationLogsIDs(); len(nodes) > 0 {

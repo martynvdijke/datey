@@ -1,0 +1,65 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">People</h1>
+  <div class="btn-group">
+    <a href="/people/new" class="btn btn-primary">Add Person</a>
+    <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('import-form').classList.toggle('d-none')">Import vCard</button>
+    <a href="/people/export" class="btn btn-outline-secondary">Export All vCard</a>
+  </div>
+</div>
+<form id="import-form" action="/people/import" method="POST" enctype="multipart/form-data" class="d-none mb-3">
+  <div class="input-group">
+    <input type="file" name="vcf_file" accept=".vcf" class="form-control" required>
+    <button class="btn btn-primary" type="submit">Upload</button>
+  </div>
+  <div class="form-text">Upload a .vcf file to import people. Supports single and multi-contact vCards.</div>
+</form>
+<div class="row mb-3">
+  <div class="col-md-6">
+    <div class="input-group">
+      <input type="search" class="form-control" name="q" placeholder="Search people..." hx-get="/people" hx-trigger="keyup changed delay:300ms" hx-target="#people-list" hx-select="#people-list" hx-indicator="#search-spinner">
+      <span class="input-group-text" id="search-spinner">
+        <span class="search-spinner htmx-indicator"></span>
+      </span>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <select class="form-select" name="group" hx-get="/people" hx-trigger="change" hx-target="#people-list" hx-select="#people-list">
+      <option value="">All Groups</option>
+      {{range .Groups}}
+        <option value="{{.ID}}"{{if eq $.GroupID (printf "%d" .ID)}} selected{{end}}>{{.Name}}</option>
+      {{end}}
+    </select>
+  </div>
+</div>
+<div id="people-list">
+  {{if .People}}
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Name</th>
+            <th>Events</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .People}}
+            <tr>
+              <td><a href="/people/{{.ID}}">{{.Name}}</a></td>
+              <td>{{len .Edges.Events}}</td>
+              <td class="text-end">
+                <a href="/people/{{.ID}}" class="btn btn-outline-primary btn-sm">View</a>
+              </td>
+            </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <div class="alert alert-info" role="alert">
+      No people yet. <a href="/people/new" class="alert-link">Add your first person</a>.
+    </div>
+  {{end}}
+</div>
+{{end}}

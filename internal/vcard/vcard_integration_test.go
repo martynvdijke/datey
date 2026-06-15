@@ -59,7 +59,11 @@ END:VCARD`
 		t.Fatalf("expected 2 contacts, got %d", len(all))
 	}
 
-	data, err := vcardlib.Encode(all)
+	items := make([]vcardlib.NameNotes, len(all))
+	for i, c := range all {
+		items[i] = vcardlib.NameNotes{Name: c.Name, Notes: c.Notes}
+	}
+	data, err := vcardlib.Encode(items)
 	if err != nil {
 		t.Fatalf("encode error: %v", err)
 	}
@@ -133,7 +137,7 @@ func TestIntegration_ExportSingle(t *testing.T) {
 		t.Fatalf("create contact: %v", err)
 	}
 
-	data, err := vcardlib.EncodeSingle(c)
+	data, err := vcardlib.EncodeSingle(c.Name, c.Notes)
 	if err != nil {
 		t.Fatalf("encode single: %v", err)
 	}
@@ -211,7 +215,11 @@ func TestIntegration_ExportEmptyDatabase(t *testing.T) {
 		t.Fatalf("expected 0 contacts, got %d", len(all))
 	}
 
-	data, err := vcardlib.Encode(all)
+	items := make([]vcardlib.NameNotes, len(all))
+	for i, c := range all {
+		items[i] = vcardlib.NameNotes{Name: c.Name, Notes: c.Notes}
+	}
+	data, err := vcardlib.Encode(items)
 	if err != nil {
 		t.Fatalf("encode error: %v", err)
 	}

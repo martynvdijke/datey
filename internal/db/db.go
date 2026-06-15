@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/datey/datey/ent"
@@ -10,6 +11,72 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// MigrateContactsToPeople copies data from the contacts table to the people table
+// and updates event foreign keys to point to the new person records.
+func MigrateContactsToPeople(ctx context.Context, client *ent.Client) error {
+	// Check if migration is needed by counting contacts
+	count, err := client.Contact.Query().Count(ctx)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		slog.Info("migration: no contacts to migrate", "source", "db")
+		return nil
+	}
+
+	// Check if people already exist (migration already run)
+	peopleCount, err := client.Person.Query().Count(ctx)
+	if err != nil {
+		return err
+	}
+	if peopleCount > 0 {
+		slog.Info("migration: people already exist, skipping", "source", "db", "people_count", peopleCount)
+		return nil
+	}
+
+	slog.Info("migration: starting contacts → people migration", "source", "db", "contact_count", count)
+
+	// Load all contacts with their events
+	contacts, err := client.Contact.Query().WithEvents().All(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, c := range contacts {
+		// Create person record from contact
+		p, err := client.Person.Create().
+			SetName(c.Name).
+			SetNotes(c.Notes).
+			SetCreatedAt(c.CreatedAt).
+			SetUpdatedAt(c.UpdatedAt).
+			Save(ctx)
+		if err != nil {
+			slog.Error("migration: create person", "source", "db", "contact_id", c.ID, "error", err)
+			return err
+		}
+
+		// Update events to point to the new person
+		for _, e := range c.Edges.Events {
+			if err := client.Event.UpdateOneID(e.ID).
+				SetPersonID(p.ID).
+				Exec(ctx); err != nil {
+				slog.Error("migration: update event person_id", "source", "db", "event_id", e.ID, "error", err)
+				return err
+			}
+		}
+	}
+
+	// Delete all contacts after successful migration
+	deleted, err := client.Contact.Delete().Exec(ctx)
+	if err != nil {
+		slog.Error("migration: delete contacts", "source", "db", "error", err)
+		return err
+	}
+
+	slog.Info("migration: completed", "source", "db", "contacts_migrated", count, "contacts_deleted", deleted)
+	return nil
+}
 
 func Init(cfg *config.Config) (*ent.Client, error) {
 	dbPath := cfg.DataDir + "/datey.db"

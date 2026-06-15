@@ -14,9 +14,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
+	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/user"
@@ -82,9 +84,11 @@ func checkColumn(t, c string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			contact.Table:              contact.ValidColumn,
 			event.Table:                event.ValidColumn,
+			group.Table:                group.ValidColumn,
 			notificationdelivery.Table: notificationdelivery.ValidColumn,
 			notificationlog.Table:      notificationlog.ValidColumn,
 			onetimenotification.Table:  onetimenotification.ValidColumn,
+			person.Table:               person.ValidColumn,
 			recurringrule.Table:        recurringrule.ValidColumn,
 			session.Table:              session.ValidColumn,
 			user.Table:                 user.ValidColumn,

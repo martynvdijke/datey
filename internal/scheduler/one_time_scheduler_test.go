@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -285,6 +286,97 @@ func TestOneTimeScheduler_NoChannelsFallsbackToConfigured(t *testing.T) {
 	sent := rec.Sent()
 	if len(sent) != 1 {
 		t.Fatalf("expected 1 notification sent via fallback to configured, got %d", len(sent))
+	}
+}
+
+type failingNotifier struct {
+	name   string
+	active bool
+}
+
+func newFailingNotifier(name string, active bool) *failingNotifier {
+	return &failingNotifier{name: name, active: active}
+}
+
+func (n *failingNotifier) Send(_ context.Context, title, message string) error {
+	return fmt.Errorf("simulated failure for %s", n.name)
+}
+
+func (n *failingNotifier) Name() string { return n.name }
+
+func (n *failingNotifier) IsConfigured() bool { return n.active }
+
+func TestOneTimeScheduler_UpdatesDeliveryRecordsOnSuccess(t *testing.T) {
+	client := enttest.Open(t, dialect.SQLite, "file:test_ots_delivery_success?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+
+	ctx := context.Background()
+	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
+
+	reg := notifier.NewRegistry()
+	rec := newRecordingNotifier("test", true)
+	reg.Register(rec)
+
+	past := time.Now().Add(-1 * time.Hour)
+	n, err := repo.Create(ctx, "delivery success test", past, []string{"test"})
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
+	sched.processDue(ctx)
+
+	// Check delivery records were updated to sent
+	deliveries, err := deliveryRepo.ListByNotification(ctx, n.ID)
+	if err != nil {
+		t.Fatalf("ListByNotification failed: %v", err)
+	}
+	if len(deliveries) != 1 {
+		t.Fatalf("expected 1 delivery record, got %d", len(deliveries))
+	}
+	if deliveries[0].Status != "sent" {
+		t.Errorf("expected delivery status 'sent', got '%s'", deliveries[0].Status)
+	}
+	if deliveries[0].SentAt == nil {
+		t.Error("expected delivery sent_at to be set, got nil")
+	}
+}
+
+func TestOneTimeScheduler_UpdatesDeliveryRecordsOnFailure(t *testing.T) {
+	client := enttest.Open(t, dialect.SQLite, "file:test_ots_delivery_fail?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+
+	ctx := context.Background()
+	repo := repository.NewOneTimeNotificationRepository(client)
+	deliveryRepo := repository.NewNotificationDeliveryRepository(client)
+
+	reg := notifier.NewRegistry()
+	fail := newFailingNotifier("failbot", true)
+	reg.Register(fail)
+
+	past := time.Now().Add(-1 * time.Hour)
+	n, err := repo.Create(ctx, "delivery fail test", past, []string{"failbot"})
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	sched := NewOneTimeNotificationScheduler(repo, deliveryRepo, reg)
+	sched.processDue(ctx)
+
+	// Check delivery records were updated to failed
+	deliveries, err := deliveryRepo.ListByNotification(ctx, n.ID)
+	if err != nil {
+		t.Fatalf("ListByNotification failed: %v", err)
+	}
+	if len(deliveries) != 1 {
+		t.Fatalf("expected 1 delivery record, got %d", len(deliveries))
+	}
+	if deliveries[0].Status != "failed" {
+		t.Errorf("expected delivery status 'failed', got '%s'", deliveries[0].Status)
+	}
+	if deliveries[0].ErrorMessage == "" {
+		t.Error("expected delivery error_message to be set, got empty")
 	}
 }
 

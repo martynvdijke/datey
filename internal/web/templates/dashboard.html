@@ -1,27 +1,51 @@
 {{define "content"}}
 <h1 class="mb-4">Upcoming Events</h1>
-{{if .Events}}
-  <div class="row g-3">
-    {{range .Events}}
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h5 class="card-title mb-0">{{.Name}}</h5>
-              <span class="badge bg-{{if eq .Type "birthday"}}primary{{else if eq .Type "anniversary"}}success{{else if eq .Type "wedding"}}warning text-dark{{else}}secondary{{end}} event-type-badge">{{.Type}}</span>
+
+<!-- Date Finder -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <label for="reminder-days" class="form-label fw-medium">
+          Show events within <span id="days-label">{{.ReminderDays}}</span> days
+        </label>
+        <input type="range" class="form-range" id="reminder-days" min="1" max="365" value="{{.ReminderDays}}"
+               hx-get="/" hx-trigger="change" hx-target="#events-content" hx-select="#events-content"
+               hx-vals='{"days": "{{.ReminderDays}}"}'
+               oninput="document.getElementById('days-label').textContent = this.value;
+                        this.setAttribute('hx-vals', JSON.stringify({days: this.value}));">
+      </div>
+      <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        <span class="text-muted small">1 – 365 days</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="events-content">
+  {{if .Events}}
+    <div class="row g-3">
+      {{range .Events}}
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm card-hover">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="card-title mb-0">{{.Name}}</h5>
+                <span class="badge bg-{{if eq .Type "birthday"}}primary{{else if eq .Type "anniversary"}}success{{else if eq .Type "wedding"}}warning text-dark{{else}}secondary{{end}} event-type-badge">{{.Type}}</span>
+              </div>
+              <p class="card-text text-muted">{{.Date}}</p>
+              <p class="card-text">
+                <strong class="{{if le .DaysRemaining 3}}text-danger{{else}}text-primary{{end}}">{{.DaysRemaining}} days</strong> remaining
+              </p>
             </div>
-            <p class="card-text text-muted">{{.Date}}</p>
-            <p class="card-text">
-              <strong class="{{if le .DaysRemaining 3}}text-danger{{else}}text-primary{{end}}">{{.DaysRemaining}} days</strong> remaining
-            </p>
           </div>
         </div>
-      </div>
-    {{end}}
-  </div>
-{{else}}
-  <div class="alert alert-info" role="alert">
-    No upcoming events in the next {{.ReminderDays}} days.
-  </div>
-{{end}}
+      {{end}}
+    </div>
+  {{else}}
+    <div class="alert alert-info" role="alert">
+      No upcoming events in the next {{.ReminderDays}} days.
+    </div>
+  {{end}}
+</div>
 {{end}}

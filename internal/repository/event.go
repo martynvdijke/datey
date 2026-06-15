@@ -7,6 +7,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/person"
 )
 
 type EventRepository struct {
@@ -17,13 +18,23 @@ func NewEventRepository(client *ent.Client) *EventRepository {
 	return &EventRepository{client: client}
 }
 
-func (r *EventRepository) Create(ctx context.Context, contactID int, eventType string, date time.Time, description string) (*ent.Event, error) {
+func (r *EventRepository) Create(ctx context.Context, personID int, eventType string, date time.Time, description string) (*ent.Event, error) {
 	return r.client.Event.Create().
 		SetType(eventType).
 		SetDate(date).
 		SetDescription(description).
 		SetCreatedAt(time.Now()).
-		SetContactID(contactID).
+		SetContactID(personID).
+		Save(ctx)
+}
+
+func (r *EventRepository) CreateForPerson(ctx context.Context, personID int, eventType string, date time.Time, description string) (*ent.Event, error) {
+	return r.client.Event.Create().
+		SetType(eventType).
+		SetDate(date).
+		SetDescription(description).
+		SetCreatedAt(time.Now()).
+		SetPersonID(personID).
 		Save(ctx)
 }
 
@@ -44,6 +55,13 @@ func (r *EventRepository) ListByContact(ctx context.Context, contactID int) ([]*
 		All(ctx)
 }
 
+func (r *EventRepository) ListByPerson(ctx context.Context, personID int) ([]*ent.Event, error) {
+	return r.client.Event.Query().
+		Where(event.HasPersonWith(person.IDEQ(personID))).
+		Order(ent.Asc(event.FieldDate)).
+		All(ctx)
+}
+
 func (r *EventRepository) Update(ctx context.Context, id int, eventType string, date time.Time, description string) (*ent.Event, error) {
 	return r.client.Event.UpdateOneID(id).
 		SetType(eventType).
@@ -57,6 +75,7 @@ func (r *EventRepository) ListInRange(ctx context.Context, start, end time.Time)
 		Where(event.DateGTE(start), event.DateLTE(end)).
 		Order(ent.Asc(event.FieldDate)).
 		WithContact().
+		WithPerson().
 		All(ctx)
 }
 
@@ -69,5 +88,6 @@ func (r *EventRepository) ListUpcoming(ctx context.Context, from, to time.Time) 
 		Where(event.DateGTE(from), event.DateLTE(to)).
 		Order(ent.Asc(event.FieldDate)).
 		WithContact().
+		WithPerson().
 		All(ctx)
 }

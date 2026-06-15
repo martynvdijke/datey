@@ -226,6 +226,50 @@ func TestAPINotifications(t *testing.T) {
 	}
 }
 
+func TestAPINotifications_IncludesDeliveries(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	future := time.Now().Add(24 * time.Hour)
+	_, err := h.oneTimeNots.Create(withUserContext(context.Background()), "delivery test", future, []string{"email"})
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/api/notifications", nil)
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	var result []map[string]any
+	if err := json.NewDecoder(w.Body).Decode(&result); err != nil {
+		t.Fatalf("failed to decode JSON: %v", err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(result))
+	}
+
+	deliveries, ok := result[0]["deliveries"].([]any)
+	if !ok {
+		t.Fatal("expected deliveries array in API response")
+	}
+	if len(deliveries) != 1 {
+		t.Fatalf("expected 1 delivery, got %d", len(deliveries))
+	}
+	delivery := deliveries[0].(map[string]any)
+	if delivery["channel"] != "email" {
+		t.Errorf("expected channel 'email', got '%v'", delivery["channel"])
+	}
+	if delivery["status"] != "pending" {
+		t.Errorf("expected status 'pending', got '%v'", delivery["status"])
+	}
+}
+
 func TestCreateNotification_WithExplicitChannels(t *testing.T) {
 	h := newTestNotificationsHandler(t)
 	router := setupNotificationsRouter(h)

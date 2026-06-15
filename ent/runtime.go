@@ -5,9 +5,11 @@ package ent
 import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
+	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/schema"
 	"github.com/datey/datey/ent/session"
@@ -38,6 +40,16 @@ func init() {
 	eventDescDescription := eventFields[2].Descriptor()
 	// event.DefaultDescription holds the default value on creation for the description field.
 	event.DefaultDescription = eventDescDescription.Default.(string)
+	groupFields := schema.Group{}.Fields()
+	_ = groupFields
+	// groupDescName is the schema descriptor for name field.
+	groupDescName := groupFields[0].Descriptor()
+	// group.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	group.NameValidator = groupDescName.Validators[0].(func(string) error)
+	// groupDescDescription is the schema descriptor for description field.
+	groupDescDescription := groupFields[1].Descriptor()
+	// group.DefaultDescription holds the default value on creation for the description field.
+	group.DefaultDescription = groupDescDescription.Default.(string)
 	notificationdeliveryFields := schema.NotificationDelivery{}.Fields()
 	_ = notificationdeliveryFields
 	// notificationdeliveryDescChannel is the schema descriptor for channel field.
@@ -76,6 +88,16 @@ func init() {
 	onetimenotificationDescChannelTargets := onetimenotificationFields[5].Descriptor()
 	// onetimenotification.DefaultChannelTargets holds the default value on creation for the channel_targets field.
 	onetimenotification.DefaultChannelTargets = onetimenotificationDescChannelTargets.Default.(string)
+	personFields := schema.Person{}.Fields()
+	_ = personFields
+	// personDescName is the schema descriptor for name field.
+	personDescName := personFields[0].Descriptor()
+	// person.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	person.NameValidator = personDescName.Validators[0].(func(string) error)
+	// personDescNotes is the schema descriptor for notes field.
+	personDescNotes := personFields[1].Descriptor()
+	// person.DefaultNotes holds the default value on creation for the notes field.
+	person.DefaultNotes = personDescNotes.Default.(string)
 	recurringruleFields := schema.RecurringRule{}.Fields()
 	_ = recurringruleFields
 	// recurringruleDescName is the schema descriptor for name field.

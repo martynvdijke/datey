@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/notificationlog"
+	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
 )
 
@@ -98,9 +99,36 @@ func (_u *EventUpdate) SetContactID(id int) *EventUpdate {
 	return _u
 }
 
+// SetNillableContactID sets the "contact" edge to the Contact entity by ID if the given value is not nil.
+func (_u *EventUpdate) SetNillableContactID(id *int) *EventUpdate {
+	if id != nil {
+		_u = _u.SetContactID(*id)
+	}
+	return _u
+}
+
 // SetContact sets the "contact" edge to the Contact entity.
 func (_u *EventUpdate) SetContact(v *Contact) *EventUpdate {
 	return _u.SetContactID(v.ID)
+}
+
+// SetPersonID sets the "person" edge to the Person entity by ID.
+func (_u *EventUpdate) SetPersonID(id int) *EventUpdate {
+	_u.mutation.SetPersonID(id)
+	return _u
+}
+
+// SetNillablePersonID sets the "person" edge to the Person entity by ID if the given value is not nil.
+func (_u *EventUpdate) SetNillablePersonID(id *int) *EventUpdate {
+	if id != nil {
+		_u = _u.SetPersonID(*id)
+	}
+	return _u
+}
+
+// SetPerson sets the "person" edge to the Person entity.
+func (_u *EventUpdate) SetPerson(v *Person) *EventUpdate {
+	return _u.SetPersonID(v.ID)
 }
 
 // AddNotificationLogIDs adds the "notification_logs" edge to the NotificationLog entity by IDs.
@@ -126,6 +154,12 @@ func (_u *EventUpdate) Mutation() *EventMutation {
 // ClearContact clears the "contact" edge to the Contact entity.
 func (_u *EventUpdate) ClearContact() *EventUpdate {
 	_u.mutation.ClearContact()
+	return _u
+}
+
+// ClearPerson clears the "person" edge to the Person entity.
+func (_u *EventUpdate) ClearPerson() *EventUpdate {
+	_u.mutation.ClearPerson()
 	return _u
 }
 
@@ -184,9 +218,6 @@ func (_u *EventUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Event.type": %w`, err)}
 		}
 	}
-	if _u.mutation.ContactCleared() && len(_u.mutation.ContactIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Event.contact"`)
-	}
 	return nil
 }
 
@@ -239,6 +270,35 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(contact.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PersonCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.PersonTable,
+			Columns: []string{event.PersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PersonIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.PersonTable,
+			Columns: []string{event.PersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -379,9 +439,36 @@ func (_u *EventUpdateOne) SetContactID(id int) *EventUpdateOne {
 	return _u
 }
 
+// SetNillableContactID sets the "contact" edge to the Contact entity by ID if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableContactID(id *int) *EventUpdateOne {
+	if id != nil {
+		_u = _u.SetContactID(*id)
+	}
+	return _u
+}
+
 // SetContact sets the "contact" edge to the Contact entity.
 func (_u *EventUpdateOne) SetContact(v *Contact) *EventUpdateOne {
 	return _u.SetContactID(v.ID)
+}
+
+// SetPersonID sets the "person" edge to the Person entity by ID.
+func (_u *EventUpdateOne) SetPersonID(id int) *EventUpdateOne {
+	_u.mutation.SetPersonID(id)
+	return _u
+}
+
+// SetNillablePersonID sets the "person" edge to the Person entity by ID if the given value is not nil.
+func (_u *EventUpdateOne) SetNillablePersonID(id *int) *EventUpdateOne {
+	if id != nil {
+		_u = _u.SetPersonID(*id)
+	}
+	return _u
+}
+
+// SetPerson sets the "person" edge to the Person entity.
+func (_u *EventUpdateOne) SetPerson(v *Person) *EventUpdateOne {
+	return _u.SetPersonID(v.ID)
 }
 
 // AddNotificationLogIDs adds the "notification_logs" edge to the NotificationLog entity by IDs.
@@ -407,6 +494,12 @@ func (_u *EventUpdateOne) Mutation() *EventMutation {
 // ClearContact clears the "contact" edge to the Contact entity.
 func (_u *EventUpdateOne) ClearContact() *EventUpdateOne {
 	_u.mutation.ClearContact()
+	return _u
+}
+
+// ClearPerson clears the "person" edge to the Person entity.
+func (_u *EventUpdateOne) ClearPerson() *EventUpdateOne {
+	_u.mutation.ClearPerson()
 	return _u
 }
 
@@ -478,9 +571,6 @@ func (_u *EventUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Event.type": %w`, err)}
 		}
 	}
-	if _u.mutation.ContactCleared() && len(_u.mutation.ContactIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Event.contact"`)
-	}
 	return nil
 }
 
@@ -550,6 +640,35 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(contact.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PersonCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.PersonTable,
+			Columns: []string{event.PersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PersonIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.PersonTable,
+			Columns: []string{event.PersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

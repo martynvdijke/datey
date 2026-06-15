@@ -61,7 +61,7 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 		Type        string `json:"type"`
 	}
 
-	var result []calendarEvent
+	result := make([]calendarEvent, 0)
 	for _, e := range events {
 		contactName := ""
 		if contact := e.Edges.Contact; contact != nil {

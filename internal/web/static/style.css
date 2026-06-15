@@ -309,3 +309,34 @@ h3 { font-size: var(--datey-font-size-lg); font-weight: 600; }
   color: var(--datey-text-muted);
   font-weight: 700;
 }
+
+/* ═══════════════════════════════════════════
+   Range Slider (Dashboard Date Finder)
+   ═══════════════════════════════════════════ */
+
+.form-range::-webkit-slider-thumb {
+  background: var(--datey-accent);
+  transition: transform var(--datey-transition-fast);
+}
+
+.form-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.form-range::-moz-range-thumb {
+  background: var(--datey-accent);
+  border: none;
+  transition: transform var(--datey-transition-fast);
+}
+
+.form-range::-moz-range-thumb:hover {
+  transform: scale(1.15);
+}
+
+.form-range:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 0.2rem rgba(91, 123, 181, 0.35);
+}
+
+.form-range:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 0.2rem rgba(91, 123, 181, 0.35);
+}

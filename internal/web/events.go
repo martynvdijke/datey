@@ -19,7 +19,7 @@ func (h *Handler) newEventForm(w http.ResponseWriter, r *http.Request) {
 
 	h.render(w, r, "event_form.html", map[string]any{
 		"Title":     "Datey - Add Event",
-		"ContactID": id,
+		"PersonID": id,
 	})
 }
 
@@ -45,14 +45,15 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.events.Create(r.Context(), id, eventType, date, description)
+	_, err = h.events.CreateForPerson(r.Context(), id, eventType, date, description)
 	if err != nil {
 		slog.Error("create event", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/contacts/%d", id), http.StatusSeeOther)
+	toastHeader(w, "Event created", "success")
+	http.Redirect(w, r, fmt.Sprintf("/people/%d", id), http.StatusSeeOther)
 }
 
 func (h *Handler) deleteEvent(w http.ResponseWriter, r *http.Request) {

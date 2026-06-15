@@ -27,12 +27,19 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="mainNav">
+        <form class="d-flex me-3" role="search" action="/people" method="GET">
+          <input class="form-control form-control-sm" type="search" name="q" placeholder="Search people..." aria-label="Search">
+        </form>
         {{if .User}}
           <ul class="navbar-nav me-auto">
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `dashboard`}} active{{end}}" href="/">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `contacts`}} active{{end}}" href="/contacts">Contacts</a></li>
+            <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `people`}} active{{end}}" href="/people">People</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `calendar`}} active{{end}}" href="/calendar">Calendar</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `notifications`}} active{{end}}" href="/notifications">Notifications</a></li>
+            <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `roll`}} active{{end}}" href="/roll">Dice Roller</a></li>
+            {{if .IsAdmin}}
+              <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `groups`}} active{{end}}" href="/groups">Groups</a></li>
+            {{end}}
             {{if .IsAdmin}}
               <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `settings`}} active{{end}}" href="/settings">Settings</a></li>
               <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `users`}} active{{end}}" href="/users">Users</a></li>

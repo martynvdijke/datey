@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/person"
 )
 
 // Event is the model entity for the Event schema.
@@ -30,6 +31,7 @@ type Event struct {
 	// The values are being populated by the EventQuery when eager-loading is set.
 	Edges          EventEdges `json:"edges"`
 	contact_events *int
+	person_events  *int
 	selectValues   sql.SelectValues
 }
 
@@ -37,11 +39,13 @@ type Event struct {
 type EventEdges struct {
 	// Contact holds the value of the contact edge.
 	Contact *Contact `json:"contact,omitempty"`
+	// Person holds the value of the person edge.
+	Person *Person `json:"person,omitempty"`
 	// NotificationLogs holds the value of the notification_logs edge.
 	NotificationLogs []*NotificationLog `json:"notification_logs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ContactOrErr returns the Contact value or an error if the edge
@@ -55,10 +59,21 @@ func (e EventEdges) ContactOrErr() (*Contact, error) {
 	return nil, &NotLoadedError{edge: "contact"}
 }
 
+// PersonOrErr returns the Person value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e EventEdges) PersonOrErr() (*Person, error) {
+	if e.Person != nil {
+		return e.Person, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: person.Label}
+	}
+	return nil, &NotLoadedError{edge: "person"}
+}
+
 // NotificationLogsOrErr returns the NotificationLogs value or an error if the edge
 // was not loaded in eager-loading.
 func (e EventEdges) NotificationLogsOrErr() ([]*NotificationLog, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.NotificationLogs, nil
 	}
 	return nil, &NotLoadedError{edge: "notification_logs"}
@@ -76,6 +91,8 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 		case event.FieldDate, event.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case event.ForeignKeys[0]: // contact_events
+			values[i] = new(sql.NullInt64)
+		case event.ForeignKeys[1]: // person_events
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -129,6 +146,13 @@ func (_m *Event) assignValues(columns []string, values []any) error {
 				_m.contact_events = new(int)
 				*_m.contact_events = int(value.Int64)
 			}
+		case event.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field person_events", value)
+			} else if value.Valid {
+				_m.person_events = new(int)
+				*_m.person_events = int(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -145,6 +169,11 @@ func (_m *Event) Value(name string) (ent.Value, error) {
 // QueryContact queries the "contact" edge of the Event entity.
 func (_m *Event) QueryContact() *ContactQuery {
 	return NewEventClient(_m.config).QueryContact(_m)
+}
+
+// QueryPerson queries the "person" edge of the Event entity.
+func (_m *Event) QueryPerson() *PersonQuery {
+	return NewEventClient(_m.config).QueryPerson(_m)
 }
 
 // QueryNotificationLogs queries the "notification_logs" edge of the Event entity.

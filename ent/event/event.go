@@ -22,6 +22,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeContact holds the string denoting the contact edge name in mutations.
 	EdgeContact = "contact"
+	// EdgePerson holds the string denoting the person edge name in mutations.
+	EdgePerson = "person"
 	// EdgeNotificationLogs holds the string denoting the notification_logs edge name in mutations.
 	EdgeNotificationLogs = "notification_logs"
 	// Table holds the table name of the event in the database.
@@ -33,6 +35,13 @@ const (
 	ContactInverseTable = "contacts"
 	// ContactColumn is the table column denoting the contact relation/edge.
 	ContactColumn = "contact_events"
+	// PersonTable is the table that holds the person relation/edge.
+	PersonTable = "events"
+	// PersonInverseTable is the table name for the Person entity.
+	// It exists in this package in order to avoid circular dependency with the "person" package.
+	PersonInverseTable = "persons"
+	// PersonColumn is the table column denoting the person relation/edge.
+	PersonColumn = "person_events"
 	// NotificationLogsTable is the table that holds the notification_logs relation/edge.
 	NotificationLogsTable = "notification_logs"
 	// NotificationLogsInverseTable is the table name for the NotificationLog entity.
@@ -55,6 +64,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"contact_events",
+	"person_events",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -114,6 +124,13 @@ func ByContactField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByPersonField orders the results by person field.
+func ByPersonField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPersonStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByNotificationLogsCount orders the results by notification_logs count.
 func ByNotificationLogsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -132,6 +149,13 @@ func newContactStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ContactInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, ContactTable, ContactColumn),
+	)
+}
+func newPersonStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PersonInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, PersonTable, PersonColumn),
 	)
 }
 func newNotificationLogsStep() *sqlgraph.Step {

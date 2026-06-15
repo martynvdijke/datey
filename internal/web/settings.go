@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/datey/datey/internal/db"
@@ -53,7 +54,7 @@ func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {
 		{"SMTPUser", cfg.SMTPUser},
 		{"SMTPPass", maskValue(cfg.SMTPPass)},
 		{"SMTPTLS", fmt.Sprintf("%v", cfg.SMTPTLS)},
-		{"NotifyEmail", cfg.NotifyEmail},
+		{"NotifyEmail", maskEmail(cfg.NotifyEmail)},
 		{"GotifyURL", cfg.GotifyURL},
 		{"GotifyToken", maskValue(cfg.GotifyToken)},
 		{"TelegramBotToken", maskValue(cfg.TelegramBotToken)},
@@ -76,6 +77,20 @@ func maskValue(s string) string {
 		return "\u2014"
 	}
 	return "****"
+}
+
+// maskEmail partially masks an email address, showing only the first character
+// and domain, e.g. "j***@example.com". Returns the original string if it
+// doesn't contain '@'.
+func maskEmail(s string) string {
+	if s == "" {
+		return "\u2014"
+	}
+	at := strings.Index(s, "@")
+	if at < 1 {
+		return maskValue(s)
+	}
+	return s[:1] + "***" + s[at:]
 }
 
 func (h *Handler) settingsLogs(w http.ResponseWriter, r *http.Request) {

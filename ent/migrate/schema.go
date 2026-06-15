@@ -29,7 +29,8 @@ var (
 		{Name: "date", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "contact_events", Type: field.TypeInt},
+		{Name: "contact_events", Type: field.TypeInt, Nullable: true},
+		{Name: "person_events", Type: field.TypeInt, Nullable: true},
 	}
 	// EventsTable holds the schema information for the "events" table.
 	EventsTable = &schema.Table{
@@ -41,7 +42,13 @@ var (
 				Symbol:     "events_contacts_events",
 				Columns:    []*schema.Column{EventsColumns[5]},
 				RefColumns: []*schema.Column{ContactsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "events_persons_events",
+				Columns:    []*schema.Column{EventsColumns[6]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -56,6 +63,20 @@ var (
 				Columns: []*schema.Column{EventsColumns[1]},
 			},
 		},
+	}
+	// GroupsColumns holds the columns for the "groups" table.
+	GroupsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// GroupsTable holds the schema information for the "groups" table.
+	GroupsTable = &schema.Table{
+		Name:       "groups",
+		Columns:    GroupsColumns,
+		PrimaryKey: []*schema.Column{GroupsColumns[0]},
 	}
 	// NotificationDeliveriesColumns holds the columns for the "notification_deliveries" table.
 	NotificationDeliveriesColumns = []*schema.Column{
@@ -125,6 +146,20 @@ var (
 		Columns:    OneTimeNotificationsColumns,
 		PrimaryKey: []*schema.Column{OneTimeNotificationsColumns[0]},
 	}
+	// PersonsColumns holds the columns for the "persons" table.
+	PersonsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// PersonsTable holds the schema information for the "persons" table.
+	PersonsTable = &schema.Table{
+		Name:       "persons",
+		Columns:    PersonsColumns,
+		PrimaryKey: []*schema.Column{PersonsColumns[0]},
+	}
 	// RecurringRulesColumns holds the columns for the "recurring_rules" table.
 	RecurringRulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -180,22 +215,53 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// PersonGroupsColumns holds the columns for the "person_groups" table.
+	PersonGroupsColumns = []*schema.Column{
+		{Name: "person_id", Type: field.TypeInt},
+		{Name: "group_id", Type: field.TypeInt},
+	}
+	// PersonGroupsTable holds the schema information for the "person_groups" table.
+	PersonGroupsTable = &schema.Table{
+		Name:       "person_groups",
+		Columns:    PersonGroupsColumns,
+		PrimaryKey: []*schema.Column{PersonGroupsColumns[0], PersonGroupsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "person_groups_person_id",
+				Columns:    []*schema.Column{PersonGroupsColumns[0]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "person_groups_group_id",
+				Columns:    []*schema.Column{PersonGroupsColumns[1]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ContactsTable,
 		EventsTable,
+		GroupsTable,
 		NotificationDeliveriesTable,
 		NotificationLogsTable,
 		OneTimeNotificationsTable,
+		PersonsTable,
 		RecurringRulesTable,
 		SessionsTable,
 		UsersTable,
+		PersonGroupsTable,
 	}
 )
 
 func init() {
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
+	EventsTable.ForeignKeys[1].RefTable = PersonsTable
 	NotificationDeliveriesTable.ForeignKeys[0].RefTable = OneTimeNotificationsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
+	PersonGroupsTable.ForeignKeys[0].RefTable = PersonsTable
+	PersonGroupsTable.ForeignKeys[1].RefTable = GroupsTable
 }
