@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/martynvdijke/datey/compare/v1.9.7...v1.10.0) (2026-06-15)
+
+
+### Features
+
+* people/groups rename, dice roller, dashboard date finder, email notifications, polish UI ([4eface2](https://github.com/martynvdijke/datey/commit/4eface202ef111e07a283beb87f0d8c54a06f625))
+
 ## [1.9.7](https://github.com/martynvdijke/datey/compare/v1.9.6...v1.9.7) (2026-06-15)
 
 ## [1.9.6](https://github.com/martynvdijke/datey/compare/v1.9.5...v1.9.6) (2026-06-14)
