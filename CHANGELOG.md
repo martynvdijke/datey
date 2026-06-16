@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/martynvdijke/datey/compare/v1.10.0...v1.11.0) (2026-06-16)
+
+
+### Features
+
+* add e-ink display mode with per-user toggle and config force ([d050413](https://github.com/martynvdijke/datey/commit/d05041315cbca6c4701c2fabb342bcba6084f3fa))
+
 # [1.10.0](https://github.com/martynvdijke/datey/compare/v1.9.7...v1.10.0) (2026-06-15)
 
 
