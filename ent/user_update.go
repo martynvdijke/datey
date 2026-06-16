@@ -71,6 +71,20 @@ func (_u *UserUpdate) SetNillableRole(v *user.Role) *UserUpdate {
 	return _u
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_u *UserUpdate) SetEinkMode(v bool) *UserUpdate {
+	_u.mutation.SetEinkMode(v)
+	return _u
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableEinkMode(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetEinkMode(*v)
+	}
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *UserUpdate) SetCreatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -208,6 +222,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.EinkMode(); ok {
+		_spec.SetField(user.FieldEinkMode, field.TypeBool, value)
+	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -317,6 +334,20 @@ func (_u *UserUpdateOne) SetRole(v user.Role) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillableRole(v *user.Role) *UserUpdateOne {
 	if v != nil {
 		_u.SetRole(*v)
+	}
+	return _u
+}
+
+// SetEinkMode sets the "eink_mode" field.
+func (_u *UserUpdateOne) SetEinkMode(v bool) *UserUpdateOne {
+	_u.mutation.SetEinkMode(v)
+	return _u
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableEinkMode(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetEinkMode(*v)
 	}
 	return _u
 }
@@ -487,6 +518,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.EinkMode(); ok {
+		_spec.SetField(user.FieldEinkMode, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

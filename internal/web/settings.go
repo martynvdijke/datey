@@ -34,6 +34,39 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) settingsEinkToggle(w http.ResponseWriter, r *http.Request) {
+	u := UserFromContext(r.Context())
+	if u == nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	newVal, err := h.users.UpdateEinkMode(r.Context(), u.ID)
+	if err != nil {
+		slog.Error("eink toggle", "error", err)
+		http.Error(w, "failed to toggle e-ink mode", http.StatusInternalServerError)
+		return
+	}
+
+	label := "Off"
+	if newVal {
+		label = "On"
+	}
+
+	// HX-Trigger to let client-side JS update body class
+	payload := map[string]any{
+		"eink-toggled": newVal,
+	}
+	b, _ := json.Marshal(payload)
+	w.Header().Set("HX-Trigger", string(b))
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(fmt.Sprintf(`<button class="btn btn-sm %s" hx-post="/settings/eink-toggle" hx-target="this" hx-swap="outerHTML">E-Ink: %s</button>`,
+		map[bool]string{true: "btn-dark", false: "btn-outline-secondary"}[newVal],
+		label,
+	)))
+}
+
 func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {
 	type configItem struct {
 		Key   string
@@ -63,6 +96,7 @@ func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {
 		{"UmamiWebsiteID", cfg.UmamiWebsiteID},
 		{"BackupDir", cfg.BackupDir},
 		{"BackupRetentionDays", fmt.Sprintf("%d", cfg.BackupRetentionDays)},
+		{"EinkMode", fmt.Sprintf("%v", cfg.EinkMode)},
 	}
 
 	h.render(w, r, "settings.html", map[string]any{

@@ -20,6 +20,8 @@ const (
 	FieldPasswordHash = "password_hash"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldEinkMode holds the string denoting the eink_mode field in the database.
+	FieldEinkMode = "eink_mode"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -43,6 +45,7 @@ var Columns = []string{
 	FieldUsername,
 	FieldPasswordHash,
 	FieldRole,
+	FieldEinkMode,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -62,6 +65,8 @@ var (
 	UsernameValidator func(string) error
 	// PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
 	PasswordHashValidator func(string) error
+	// DefaultEinkMode holds the default value on creation for the "eink_mode" field.
+	DefaultEinkMode bool
 )
 
 // Role defines the type for the "role" enum field.
@@ -111,6 +116,11 @@ func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByEinkMode orders the results by the eink_mode field.
+func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEinkMode, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

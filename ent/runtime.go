@@ -144,4 +144,8 @@ func init() {
 	userDescPasswordHash := userFields[1].Descriptor()
 	// user.PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
 	user.PasswordHashValidator = userDescPasswordHash.Validators[0].(func(string) error)
+	// userDescEinkMode is the schema descriptor for eink_mode field.
+	userDescEinkMode := userFields[3].Descriptor()
+	// user.DefaultEinkMode holds the default value on creation for the eink_mode field.
+	user.DefaultEinkMode = userDescEinkMode.Default.(bool)
 }

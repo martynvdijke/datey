@@ -1,0 +1,347 @@
+/* ═══════════════════════════════════════════
+   Datey E-Ink Mode — Override Stylesheet
+   ═══════════════════════════════════════════
+   Loaded conditionally when e-ink mode is enabled.
+   Strips animations, transitions, shadows, and
+   color-only indicators for e-ink display compatibility.
+   ═══════════════════════════════════════════ */
+
+/* ── Global Overrides ── */
+
+.eink-mode *,
+.eink-mode *::before,
+.eink-mode *::after {
+  transition: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* ── Colors: Maximum Contrast ── */
+
+.eink-mode {
+  --datey-primary: #000000;
+  --datey-primary-hover: #000000;
+  --datey-primary-light: #f0f0f0;
+  --datey-accent: #000000;
+  --datey-surface: #ffffff;
+  --datey-surface-subtle: #ffffff;
+  --datey-border: #cccccc;
+  --datey-text-primary: #000000;
+  --datey-text-muted: #444444;
+  --datey-text-inverse: #ffffff;
+  --datey-event-birthday: #000000;
+  --datey-event-anniversary: #555555;
+  --datey-event-wedding: #888888;
+  --datey-event-holiday: #000000;
+  --datey-event-meeting: #333333;
+  --datey-event-custom: #666666;
+  --datey-shadow-sm: none;
+  --datey-shadow: none;
+  --datey-shadow-lg: none;
+  --datey-transition-fast: 0s;
+  --datey-transition: 0s;
+  --datey-transition-slow: 0s;
+}
+
+/* ── Body & Background ── */
+
+.eink-mode body,
+.eink-mode .card,
+.eink-mode .table,
+.eink-mode .navbar,
+.eink-mode .modal-content,
+.eink-mode .dropdown-menu,
+.eink-mode .bg-light,
+.eink-mode .bg-dark {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* ── Text ── */
+
+.eink-mode .text-muted,
+.eink-mode small.text-muted {
+  color: #444444 !important;
+}
+
+.eink-mode a:not(.btn) {
+  color: #000000 !important;
+  text-decoration: underline !important;
+}
+
+/* ── Navbar ── */
+
+.eink-mode .navbar {
+  border-bottom: 2px solid #000000 !important;
+}
+
+.eink-mode .navbar-brand {
+  color: #000000 !important;
+}
+
+.eink-mode .navbar-dark .navbar-nav .nav-link {
+  color: #000000 !important;
+}
+
+.eink-mode .navbar-dark .navbar-nav .nav-link.active {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.eink-mode .navbar-dark .navbar-nav .nav-link:hover {
+  background: #e0e0e0 !important;
+  color: #000000 !important;
+}
+
+/* ── Cards ── */
+
+.eink-mode .card {
+  border: 1px solid #cccccc !important;
+  border-radius: 0 !important;
+}
+
+.eink-mode .card-hover:hover {
+  transform: none !important;
+}
+
+/* ── Buttons ── */
+
+.eink-mode .btn {
+  border: 1px solid #000000 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.eink-mode .btn:hover {
+  transform: none !important;
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.eink-mode .btn-primary,
+.eink-mode .btn-dark {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+.eink-mode .btn-outline-primary,
+.eink-mode .btn-outline-secondary {
+  background: transparent !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+}
+
+.eink-mode .btn-outline-primary:hover,
+.eink-mode .btn-outline-secondary:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── Event Type Badges (Border-Differentiated) ── */
+
+.eink-mode .event-type-badge {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.eink-mode .event-type-badge.event-birthday {
+  border-style: solid !important;
+}
+
+.eink-mode .event-type-badge.event-anniversary {
+  border-style: dashed !important;
+}
+
+.eink-mode .event-type-badge.event-wedding {
+  border-style: dotted !important;
+}
+
+.eink-mode .event-type-badge.event-holiday {
+  border-style: double !important;
+}
+
+.eink-mode .event-type-badge.event-meeting {
+  border-style: groove !important;
+}
+
+.eink-mode .event-type-badge.event-custom {
+  border-style: ridge !important;
+}
+
+/* ── Status Badges ── */
+
+.eink-mode .badge {
+  border: 1px solid #000000 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.eink-mode .badge.bg-success,
+.eink-mode .badge.bg-danger,
+.eink-mode .badge.bg-warning,
+.eink-mode .badge.bg-info,
+.eink-mode .badge.bg-secondary,
+.eink-mode .badge.bg-primary {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* ── Tables ── */
+
+.eink-mode .table {
+  border: 1px solid #cccccc !important;
+}
+
+.eink-mode .table > thead {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.eink-mode .table tr {
+  border-bottom: 1px solid #cccccc !important;
+}
+
+.eink-mode .table-hover tbody tr:hover {
+  background: #f0f0f0 !important;
+}
+
+/* ── Forms ── */
+
+.eink-mode .form-control,
+.eink-mode .form-select {
+  border: 1px solid #000000 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.eink-mode .form-control:focus,
+.eink-mode .form-select:focus {
+  border-color: #000000 !important;
+  box-shadow: none !important;
+}
+
+/* ── Pagination ── */
+
+.eink-mode .page-link {
+  border: 1px solid #000000 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.eink-mode .page-item.active .page-link {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ── Dropdown ── */
+
+.eink-mode .dropdown-menu {
+  border: 1px solid #000000 !important;
+  border-radius: 0 !important;
+}
+
+.eink-mode .dropdown-item {
+  color: #000000 !important;
+}
+
+.eink-mode .dropdown-item:hover {
+  background: #f0f0f0 !important;
+  color: #000000 !important;
+}
+
+/* ── Modal ── */
+
+.eink-mode .modal-content {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+}
+
+/* ── Toast ── */
+
+.eink-mode .toast {
+  border: 1px solid #000000 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* ── Spinner → Static Indicator ── */
+
+.eink-mode .spinner-border,
+.eink-mode .spinner-grow {
+  display: none !important;
+}
+
+.eink-mode .htmx-indicator {
+  border: 1px solid #000000;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+}
+
+.eink-mode .htmx-request .htmx-indicator::before {
+  content: "⏳";
+}
+
+/* ── Range Slider ── */
+
+.eink-mode .form-range::-webkit-slider-thumb {
+  background: #000000 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.eink-mode .form-range::-moz-range-thumb {
+  background: #000000 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* ── Nav Tabs ── */
+
+.eink-mode .nav-tabs .nav-link {
+  border: 1px solid #cccccc !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  color: #000000 !important;
+  background: #ffffff !important;
+}
+
+.eink-mode .nav-tabs .nav-link.active {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+/* ── Dice Roller ── */
+
+.eink-mode #dice-result {
+  border: 2px solid #000000 !important;
+}
+
+/* ── Calendar ── */
+
+.eink-mode .fc-toolbar-title {
+  color: #000000 !important;
+}
+
+.eink-mode .fc-button-primary {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+.eink-mode .fc-daygrid-event {
+  border: 1px solid #000000 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}

@@ -10,13 +10,14 @@
   <meta property="og:type" content="website">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
+  {{if .EinkMode}}<link rel="stylesheet" href="/static/eink.css">{{end}}
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   {{if and .UmamiURL .UmamiWebsiteID}}
     <script async defer src="{{.UmamiURL}}/script.js" data-website-id="{{.UmamiWebsiteID}}"></script>
   {{end}}
   {{block "head_extra" .}}{{end}}
 </head>
-<body>
+<body{{if .EinkMode}} class="eink-mode"{{end}}>
   <!-- Toast Container -->
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
@@ -46,6 +47,13 @@
             {{end}}
           </ul>
           <ul class="navbar-nav">
+            <li class="nav-item d-flex align-items-center me-2">
+              <button class="btn btn-sm {{if .EinkMode}}btn-light{{else}}btn-outline-light{{end}}"
+                      hx-post="/settings/eink-toggle"
+                      hx-target="this"
+                      hx-swap="outerHTML"
+                      title="Toggle E-Ink mode">E-Ink</button>
+            </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button">
                 {{.User.Username}}
@@ -98,6 +106,22 @@
         div.appendChild(document.createTextNode(text));
         return div.innerHTML;
       }
+
+      // E-Ink mode toggle listener
+      document.body.addEventListener('eink-toggled', function(evt) {
+        var enabled = evt.detail || false;
+        document.body.classList.toggle('eink-mode', enabled);
+        // Toggle stylesheet link
+        var link = document.querySelector('link[href="/static/eink.css"]');
+        if (!link && enabled) {
+          link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = '/static/eink.css';
+          document.head.appendChild(link);
+        } else if (link && !enabled) {
+          link.remove();
+        }
+      });
 
       // Active nav — set via data attribute if not already set from server
       var path = window.location.pathname;

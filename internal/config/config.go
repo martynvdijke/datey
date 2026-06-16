@@ -34,6 +34,8 @@ type Config struct {
 
 	UmamiURL       string
 	UmamiWebsiteID string
+
+	EinkMode bool
 }
 
 func Load() (*Config, error) {
@@ -62,6 +64,8 @@ func Load() (*Config, error) {
 
 		UmamiURL:       getEnv("UMAMI_URL", ""),
 		UmamiWebsiteID: getEnv("UMAMI_WEBSITE_ID", ""),
+
+		EinkMode: getEnv("EINK_MODE", "") == "true",
 	}
 
 	if cfg.DataDir == "" {

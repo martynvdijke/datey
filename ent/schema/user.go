@@ -15,6 +15,7 @@ func (User) Fields() []ent.Field {
 		field.String("username").Unique().NotEmpty(),
 		field.String("password_hash").NotEmpty(),
 		field.Enum("role").Values("admin", "user").Default("user"),
+		field.Bool("eink_mode").Default(false),
 		field.Time("created_at"),
 		field.Time("updated_at"),
 	}

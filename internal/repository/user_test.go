@@ -178,3 +178,78 @@ func TestUserExists_False(t *testing.T) {
 		t.Errorf("expected false, got true")
 	}
 }
+
+func TestUserEinkMode_DefaultFalse(t *testing.T) {
+	repo := newTestUserRepo(t)
+	id := seedUser(t, repo, "einktest", "hash", user.RoleUser)
+
+	enabled, err := repo.GetEinkMode(context.Background(), id)
+	if err != nil {
+		t.Fatalf("GetEinkMode: %v", err)
+	}
+	if enabled {
+		t.Errorf("expected default eink_mode to be false, got true")
+	}
+}
+
+func TestUserEinkMode_SetAndGet(t *testing.T) {
+	repo := newTestUserRepo(t)
+	id := seedUser(t, repo, "einktest2", "hash", user.RoleUser)
+
+	if err := repo.SetEinkMode(context.Background(), id, true); err != nil {
+		t.Fatalf("SetEinkMode(true): %v", err)
+	}
+
+	enabled, err := repo.GetEinkMode(context.Background(), id)
+	if err != nil {
+		t.Fatalf("GetEinkMode after set: %v", err)
+	}
+	if !enabled {
+		t.Errorf("expected eink_mode to be true after set")
+	}
+
+	if err := repo.SetEinkMode(context.Background(), id, false); err != nil {
+		t.Fatalf("SetEinkMode(false): %v", err)
+	}
+
+	enabled, err = repo.GetEinkMode(context.Background(), id)
+	if err != nil {
+		t.Fatalf("GetEinkMode after unset: %v", err)
+	}
+	if enabled {
+		t.Errorf("expected eink_mode to be false after unset")
+	}
+}
+
+func TestUserEinkMode_UpdateEinkMode(t *testing.T) {
+	repo := newTestUserRepo(t)
+	id := seedUser(t, repo, "einktest3", "hash", user.RoleUser)
+
+	// Toggle on
+	newVal, err := repo.UpdateEinkMode(context.Background(), id)
+	if err != nil {
+		t.Fatalf("UpdateEinkMode first: %v", err)
+	}
+	if !newVal {
+		t.Errorf("expected first toggle to return true")
+	}
+
+	enabled, _ := repo.GetEinkMode(context.Background(), id)
+	if !enabled {
+		t.Errorf("expected eink_mode to be true after toggle on")
+	}
+
+	// Toggle off
+	newVal, err = repo.UpdateEinkMode(context.Background(), id)
+	if err != nil {
+		t.Fatalf("UpdateEinkMode second: %v", err)
+	}
+	if newVal {
+		t.Errorf("expected second toggle to return false")
+	}
+
+	enabled, _ = repo.GetEinkMode(context.Background(), id)
+	if enabled {
+		t.Errorf("expected eink_mode to be false after toggle off")
+	}
+}

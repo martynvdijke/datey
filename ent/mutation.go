@@ -5917,6 +5917,7 @@ type UserMutation struct {
 	username        *string
 	password_hash   *string
 	role            *user.Role
+	eink_mode       *bool
 	created_at      *time.Time
 	updated_at      *time.Time
 	clearedFields   map[string]struct{}
@@ -6134,6 +6135,42 @@ func (m *UserMutation) ResetRole() {
 	m.role = nil
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (m *UserMutation) SetEinkMode(b bool) {
+	m.eink_mode = &b
+}
+
+// EinkMode returns the value of the "eink_mode" field in the mutation.
+func (m *UserMutation) EinkMode() (r bool, exists bool) {
+	v := m.eink_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEinkMode returns the old "eink_mode" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldEinkMode(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEinkMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEinkMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEinkMode: %w", err)
+	}
+	return oldValue.EinkMode, nil
+}
+
+// ResetEinkMode resets all changes to the "eink_mode" field.
+func (m *UserMutation) ResetEinkMode() {
+	m.eink_mode = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -6294,7 +6331,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
@@ -6303,6 +6340,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
+	}
+	if m.eink_mode != nil {
+		fields = append(fields, user.FieldEinkMode)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -6324,6 +6364,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.PasswordHash()
 	case user.FieldRole:
 		return m.Role()
+	case user.FieldEinkMode:
+		return m.EinkMode()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
@@ -6343,6 +6385,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPasswordHash(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
+	case user.FieldEinkMode:
+		return m.OldEinkMode(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
@@ -6376,6 +6420,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRole(v)
+		return nil
+	case user.FieldEinkMode:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEinkMode(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -6448,6 +6499,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldRole:
 		m.ResetRole()
+		return nil
+	case user.FieldEinkMode:
+		m.ResetEinkMode()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

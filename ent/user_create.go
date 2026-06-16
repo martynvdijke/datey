@@ -47,6 +47,20 @@ func (_c *UserCreate) SetNillableRole(v *user.Role) *UserCreate {
 	return _c
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_c *UserCreate) SetEinkMode(v bool) *UserCreate {
+	_c.mutation.SetEinkMode(v)
+	return _c
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_c *UserCreate) SetNillableEinkMode(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetEinkMode(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -113,6 +127,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultRole
 		_c.mutation.SetRole(v)
 	}
+	if _, ok := _c.mutation.EinkMode(); !ok {
+		v := user.DefaultEinkMode
+		_c.mutation.SetEinkMode(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -140,6 +158,9 @@ func (_c *UserCreate) check() error {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.EinkMode(); !ok {
+		return &ValidationError{Name: "eink_mode", err: errors.New(`ent: missing required field "User.eink_mode"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -184,6 +205,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if value, ok := _c.mutation.EinkMode(); ok {
+		_spec.SetField(user.FieldEinkMode, field.TypeBool, value)
+		_node.EinkMode = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

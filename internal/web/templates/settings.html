@@ -52,6 +52,29 @@
       </table>
     </div>
 
+    <h2 class="mb-3 mt-4">E-Ink Mode</h2>
+    <div class="card mb-4">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <span class="fw-semibold">E-Ink Display Mode</span>
+          <p class="text-muted mb-0 small">Optimizes the UI for e-ink displays by removing animations, shadows, and colors.</p>
+          {{if .EinkForced}}
+            <span class="badge bg-dark mt-1">Forced by server config</span>
+          {{end}}
+        </div>
+        <div>
+          {{if .EinkForced}}
+            <span class="text-muted small">{{if .EinkMode}}On{{else}}Off{{end}}</span>
+          {{else}}
+            <button class="btn {{if .EinkMode}}btn-dark{{else}}btn-outline-secondary{{end}}"
+                    hx-post="/settings/eink-toggle"
+                    hx-target="this"
+                    hx-swap="outerHTML">{{if .EinkMode}}On{{else}}Off{{end}}</button>
+          {{end}}
+        </div>
+      </div>
+    </div>
+
     <h2 class="mb-3 mt-4">Tracking</h2>
     <div class="table-responsive">
       <table class="table align-middle">

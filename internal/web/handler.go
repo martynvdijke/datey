@@ -137,6 +137,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Post("/settings/backup", h.settingsBackupRun)
 				r.Post("/settings/test/{channel}", h.testNotification)
 				r.Post("/settings/logs/level", h.setLogLevel)
+				r.Post("/settings/eink-toggle", h.settingsEinkToggle)
 				// Legacy redirects
 				r.Get("/logs", h.oldLogsRedirect)
 				r.Post("/logs/level", h.setLogLevel)
@@ -307,12 +308,15 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 	umamiConfigured := h.cfg.UmamiURL != "" && h.cfg.UmamiWebsiteID != ""
+	einkMode := h.einkModeEnabled(r)
 	data := map[string]any{
 		"Title":           title,
 		"UmamiURL":        h.cfg.UmamiURL,
 		"UmamiWebsiteID":  h.cfg.UmamiWebsiteID,
 		"UmamiConfigured": umamiConfigured,
 		"ActiveNav":       inferActiveNav(r.URL.Path),
+		"EinkMode":        einkMode,
+		"EinkForced":      h.cfg.EinkMode,
 	}
 	u := UserFromContext(r.Context())
 	if u != nil {
@@ -327,6 +331,23 @@ func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 		data["Error"] = e
 	}
 	return data
+}
+
+// einkModeEnabled checks if e-ink mode should be active.
+// Returns true if the EINK_MODE env var is set, otherwise checks user preference.
+func (h *Handler) einkModeEnabled(r *http.Request) bool {
+	if h.cfg.EinkMode {
+		return true
+	}
+	u := UserFromContext(r.Context())
+	if u == nil {
+		return false
+	}
+	enabled, err := h.users.GetEinkMode(r.Context(), u.ID)
+	if err != nil {
+		return false
+	}
+	return enabled
 }
 
 // inferActiveNav determines which nav item should be highlighted based on the URL path.

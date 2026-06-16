@@ -65,6 +65,11 @@ func PasswordHash(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordHash, v))
 }
 
+// EinkMode applies equality check predicate on the "eink_mode" field. It's identical to EinkModeEQ.
+func EinkMode(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldEinkMode, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -223,6 +228,16 @@ func RoleIn(vs ...Role) predicate.User {
 // RoleNotIn applies the NotIn predicate on the "role" field.
 func RoleNotIn(vs ...Role) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldRole, vs...))
+}
+
+// EinkModeEQ applies the EQ predicate on the "eink_mode" field.
+func EinkModeEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldEinkMode, v))
+}
+
+// EinkModeNEQ applies the NEQ predicate on the "eink_mode" field.
+func EinkModeNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldEinkMode, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

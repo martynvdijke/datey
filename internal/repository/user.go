@@ -49,3 +49,27 @@ func (r *UserRepository) Delete(ctx context.Context, id int) error {
 func (r *UserRepository) Exists(ctx context.Context) (bool, error) {
 	return r.client.User.Query().Exist(ctx)
 }
+
+func (r *UserRepository) GetEinkMode(ctx context.Context, id int) (bool, error) {
+	u, err := r.client.User.Get(ctx, id)
+	if err != nil {
+		return false, err
+	}
+	return u.EinkMode, nil
+}
+
+func (r *UserRepository) SetEinkMode(ctx context.Context, id int, enabled bool) error {
+	return r.client.User.UpdateOneID(id).SetEinkMode(enabled).Exec(ctx)
+}
+
+func (r *UserRepository) UpdateEinkMode(ctx context.Context, id int) (bool, error) {
+	current, err := r.GetEinkMode(ctx, id)
+	if err != nil {
+		return false, err
+	}
+	newVal := !current
+	if err := r.SetEinkMode(ctx, id, newVal); err != nil {
+		return false, err
+	}
+	return newVal, nil
+}
