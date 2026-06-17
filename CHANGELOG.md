@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/martynvdijke/datey/compare/v1.11.0...v1.11.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* **navbar:** correct e-ink toggle button contrast and mobile toggler visibility ([799ec74](https://github.com/martynvdijke/datey/commit/799ec748725675b48e3bd10ea7230f191ccd4900)), closes [#6c757d](https://github.com/martynvdijke/datey/issues/6c757d) [#2d3a5c](https://github.com/martynvdijke/datey/issues/2d3a5c)
+
 # [1.11.0](https://github.com/martynvdijke/datey/compare/v1.10.0...v1.11.0) (2026-06-16)
 
 
