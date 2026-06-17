@@ -51,8 +51,8 @@ func TestEinkToggle_ToggleOn(t *testing.T) {
 		t.Errorf("expected toggle button showing On, got: %s", body)
 	}
 
-	if !strings.Contains(body, "btn-dark") {
-		t.Errorf("expected active toggle button style (btn-dark), got: %s", body)
+	if !strings.Contains(body, "btn-light") {
+		t.Errorf("expected active toggle button style (btn-light), got: %s", body)
 	}
 
 	// Verify persisted in DB
@@ -97,8 +97,8 @@ func TestEinkToggle_ToggleOff(t *testing.T) {
 		t.Errorf("expected toggle button showing Off, got: %s", body)
 	}
 
-	if !strings.Contains(body, "btn-outline-secondary") {
-		t.Errorf("expected inactive toggle style (btn-outline-secondary), got: %s", body)
+	if !strings.Contains(body, "btn-outline-light") {
+		t.Errorf("expected inactive toggle style (btn-outline-light, readable on dark navbar), got: %s", body)
 	}
 
 	// Verify persisted in DB
