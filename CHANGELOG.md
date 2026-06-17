@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/martynvdijke/datey/compare/v1.11.2...v1.12.0) (2026-06-17)
+
+
+### Features
+
+* **ui:** redesign navbar, add light/dark theme toggle, polish dashboard ([c6d5880](https://github.com/martynvdijke/datey/commit/c6d5880404a282dc6bfc3e3e91f15d88d0112526))
+
 ## [1.11.2](https://github.com/martynvdijke/datey/compare/v1.11.1...v1.11.2) (2026-06-17)
 
 
