@@ -1,13 +1,22 @@
 {{define "content"}}
-<h1 class="mb-4">Upcoming Events</h1>
+<div class="page-header">
+  <div>
+    <h1>Upcoming Events</h1>
+    <p>Keep track of the dates that matter.</p>
+  </div>
+  <a href="/people/new" class="btn btn-primary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 0.25rem;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    Add Person
+  </a>
+</div>
 
 <!-- Date Finder -->
-<div class="card shadow-sm mb-4">
+<div class="card date-finder-card mb-4">
   <div class="card-body">
     <div class="row align-items-center">
       <div class="col-md-8">
-        <label for="reminder-days" class="form-label fw-medium">
-          Show events within <span id="days-label">{{.ReminderDays}}</span> days
+        <label for="reminder-days" class="form-label mb-2">
+          Show events within <span id="days-label" class="fw-semibold">{{.ReminderDays}}</span> days
         </label>
         <input type="range" class="form-range" id="reminder-days" min="1" max="365" value="{{.ReminderDays}}"
                hx-get="/" hx-trigger="change" hx-target="#events-content" hx-select="#events-content"
@@ -24,18 +33,22 @@
 
 <div id="events-content">
   {{if .Events}}
-    <div class="row g-3">
+    <div class="row g-4">
       {{range .Events}}
         <div class="col-12 col-md-6 col-lg-4">
-          <div class="card h-100 shadow-sm card-hover">
+          <div class="card h-100 card-hover event-card event-{{.Type}}">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <h5 class="card-title mb-0">{{.Name}}</h5>
-                <span class="badge bg-{{if eq .Type "birthday"}}primary{{else if eq .Type "anniversary"}}success{{else if eq .Type "wedding"}}warning text-dark{{else}}secondary{{end}} event-type-badge">{{.Type}}</span>
+                <span class="badge event-type-badge event-{{.Type}}">{{.Type}}</span>
               </div>
-              <p class="card-text text-muted">{{.Date}}</p>
-              <p class="card-text">
-                <strong class="{{if le .DaysRemaining 3}}text-danger{{else}}text-primary{{end}}">{{.DaysRemaining}} days</strong> remaining
+              <p class="event-date mb-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                {{.Date}}
+              </p>
+              <p class="card-text mb-0">
+                <span class="days-remaining {{if le .DaysRemaining 3}}urgent{{else}}normal{{end}}">{{.DaysRemaining}}</span>
+                <span class="text-muted">days remaining</span>
               </p>
             </div>
           </div>
@@ -43,8 +56,10 @@
       {{end}}
     </div>
   {{else}}
-    <div class="alert alert-info" role="alert">
-      No upcoming events in the next {{.ReminderDays}} days.
+    <div class="empty-state">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <p class="mb-0">No upcoming events in the next {{.ReminderDays}} days.</p>
+      <a href="/people/new" class="btn btn-sm btn-outline-primary mt-3">Add a person</a>
     </div>
   {{end}}
 </div>

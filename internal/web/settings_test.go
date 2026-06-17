@@ -51,8 +51,8 @@ func TestEinkToggle_ToggleOn(t *testing.T) {
 		t.Errorf("expected toggle button showing On, got: %s", body)
 	}
 
-	if !strings.Contains(body, "btn-light") {
-		t.Errorf("expected active toggle button style (btn-light), got: %s", body)
+	if !strings.Contains(body, "eink-toggle active") {
+		t.Errorf("expected active toggle button style (eink-toggle active), got: %s", body)
 	}
 
 	// Verify persisted in DB
@@ -97,8 +97,11 @@ func TestEinkToggle_ToggleOff(t *testing.T) {
 		t.Errorf("expected toggle button showing Off, got: %s", body)
 	}
 
-	if !strings.Contains(body, "btn-outline-light") {
-		t.Errorf("expected inactive toggle style (btn-outline-light, readable on dark navbar), got: %s", body)
+	if !strings.Contains(body, "eink-toggle") {
+		t.Errorf("expected inactive toggle style (eink-toggle), got: %s", body)
+	}
+	if strings.Contains(body, "eink-toggle active") {
+		t.Errorf("expected inactive toggle button not to have active class, got: %s", body)
 	}
 
 	// Verify persisted in DB
@@ -188,24 +191,20 @@ func TestEinkToggle_ClassesMatchBaseTemplate(t *testing.T) {
 	}
 	base := string(baseBytes)
 
-	// base.html must render both states with readable classes on the dark navbar.
-	for _, c := range []struct{ name, class string }{
-		{"on (e-ink active)", "btn-light"},
-		{"off (e-ink inactive)", "btn-outline-light"},
-	} {
-		if !strings.Contains(base, c.class) {
-			t.Errorf("base.html missing initial class %q for %s state", c.class, c.name)
-		}
+	// base.html must render the eink-toggle class for both states.
+	if !strings.Contains(base, "eink-toggle") {
+		t.Error("base.html missing eink-toggle class")
 	}
 
-	// The toggle handler must return the same two classes so a swap doesn't
-	// regress contrast. Drive both states and compare against base.html.
+	// The toggle handler must return the same class so a swap doesn't
+	// regress styling. Drive both states and compare against base.html.
 	h := newTestWebHandler(t)
 	router := setupEinkRouter(h)
 	u := seedEinkTestUser(t, h, "consistencyadmin", user.RoleAdmin)
 	ctx := withEinkUserContext(context.Background(), u)
 
-	seen := map[string]bool{}
+	seenActive := false
+	seenInactive := false
 	for i := 0; i < 2; i++ { // toggle on, then off
 		req := httptest.NewRequest("POST", "/settings/eink-toggle", nil).WithContext(ctx)
 		w := httptest.NewRecorder()
@@ -214,17 +213,17 @@ func TestEinkToggle_ClassesMatchBaseTemplate(t *testing.T) {
 			t.Fatalf("toggle %d: expected 200, got %d", i, w.Code)
 		}
 		body := w.Body.String()
-		for _, c := range []string{"btn-light", "btn-outline-light"} {
-			if strings.Contains(body, c) {
-				seen[c] = true
-				if !strings.Contains(base, c) {
-					t.Errorf("handler returns %q but base.html does not — divergence causes post-swap contrast regression", c)
-				}
-			}
+		if !strings.Contains(body, "eink-toggle") {
+			t.Errorf("handler missing eink-toggle class in toggle %d: %s", i, body)
+		}
+		if strings.Contains(body, "eink-toggle active") {
+			seenActive = true
+		} else {
+			seenInactive = true
 		}
 	}
-	if !seen["btn-light"] || !seen["btn-outline-light"] {
-		t.Errorf("expected handler to emit both btn-light and btn-outline-light across toggles, got: %v", seen)
+	if !seenActive || !seenInactive {
+		t.Errorf("expected handler to emit both active and inactive eink-toggle states, got active=%v inactive=%v", seenActive, seenInactive)
 	}
 }
 
@@ -257,9 +256,8 @@ func TestEinkToggle_NeverReturnsLowContrastClasses(t *testing.T) {
 }
 
 // TestEinkCSS_HasNavbarTogglerOverride ensures the mobile navbar toggler stays
-// visible in e-ink mode. The navbar keeps Bootstrap's navbar-dark (white bars)
-// while eink.css makes the navbar white, so without an override the hamburger
-// icon is invisible.
+// visible in e-ink mode. The custom toggler uses the page text color by default;
+// eink.css must force black bars/border on the white e-ink navbar.
 func TestEinkCSS_HasNavbarTogglerOverride(t *testing.T) {
 	cssBytes, err := staticFS.ReadFile("static/eink.css")
 	if err != nil {
@@ -267,11 +265,8 @@ func TestEinkCSS_HasNavbarTogglerOverride(t *testing.T) {
 	}
 	css := string(cssBytes)
 
-	if !strings.Contains(css, ".navbar-dark .navbar-toggler") {
-		t.Error("eink.css missing .navbar-dark .navbar-toggler override — mobile menu button border invisible in e-ink mode")
-	}
-	if !strings.Contains(css, "navbar-toggler-icon") {
-		t.Error("eink.css missing navbar-toggler-icon override — white bars invisible on white e-ink navbar")
+	if !strings.Contains(css, ".navbar-toggler") {
+		t.Error("eink.css missing .navbar-toggler override — mobile menu button invisible in e-ink mode")
 	}
 	if !strings.Contains(css, "#000") {
 		t.Error("eink.css toggler override must use black (#000) for visible bars/border on the white e-ink navbar")

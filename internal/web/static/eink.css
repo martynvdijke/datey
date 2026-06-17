@@ -80,28 +80,27 @@
   color: #000000 !important;
 }
 
-.eink-mode .navbar-dark .navbar-nav .nav-link {
+.eink-mode .navbar-nav .nav-link {
   color: #000000 !important;
 }
 
-.eink-mode .navbar-dark .navbar-nav .nav-link.active {
+.eink-mode .navbar-nav .nav-link.active {
   background: #000000 !important;
   color: #ffffff !important;
 }
 
-.eink-mode .navbar-dark .navbar-nav .nav-link:hover {
+.eink-mode .navbar-nav .nav-link:hover {
   background: #e0e0e0 !important;
   color: #000000 !important;
 }
 
-/* Mobile toggler: navbar-dark renders white bars, invisible on the white
-   e-ink navbar. Force black bars + border so the menu button is visible. */
-.eink-mode .navbar-dark .navbar-toggler {
+/* Mobile toggler: force black bars + border so the menu button is visible. */
+.eink-mode .navbar-toggler {
   border-color: #000000 !important;
 }
 
-.eink-mode .navbar-dark .navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+.eink-mode .navbar-toggler-line {
+  background: #000000 !important;
 }
 
 /* ── Cards ── */

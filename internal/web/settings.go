@@ -61,14 +61,10 @@ func (h *Handler) settingsEinkToggle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Trigger", string(b))
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// Button classes must match base.html's initial render so contrast stays
-	// correct after the HTMX swap. The navbar is dark in normal mode, so the
-	// "off" state needs btn-outline-light (white) — btn-outline-secondary
-	// (gray #6c757d) on the dark navy navbar (#2d3a5c) is only ~2.4:1 contrast
-	// and fails WCAG AA. In e-ink mode the navbar is white, so the "on" state
-	// uses btn-light (rendered black-on-white by eink.css).
-	w.Write([]byte(fmt.Sprintf(`<button class="btn btn-sm %s" hx-post="/settings/eink-toggle" hx-target="this" hx-swap="outerHTML" title="Toggle E-Ink mode">E-Ink: %s</button>`,
-		map[bool]string{true: "btn-light", false: "btn-outline-light"}[newVal],
+	// Button classes must match base.html's initial render so styling stays
+	// consistent after the HTMX swap.
+	w.Write([]byte(fmt.Sprintf(`<button class="btn btn-sm eink-toggle %s" hx-post="/settings/eink-toggle" hx-target="this" hx-swap="outerHTML" title="Toggle E-Ink mode">E-Ink: %s</button>`,
+		map[bool]string{true: "active", false: ""}[newVal],
 		label,
 	)))
 }

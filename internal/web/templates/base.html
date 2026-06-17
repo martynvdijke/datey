@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,63 +16,114 @@
     <script async defer src="{{.UmamiURL}}/script.js" data-website-id="{{.UmamiWebsiteID}}"></script>
   {{end}}
   {{block "head_extra" .}}{{end}}
+  <script>
+    // Theme initialization — run before paint to avoid flash
+    (function() {
+      var stored = localStorage.getItem('datey-theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = stored || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body{{if .EinkMode}} class="eink-mode"{{end}}>
   <!-- Toast Container -->
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+  <nav class="navbar navbar-expand-lg sticky-top" aria-label="Main navigation">
     <div class="container">
-      <a class="navbar-brand" href="/">Datey</a>
+      <a class="navbar-brand" href="/">
+        <span class="navbar-brand-icon" aria-hidden="true">D</span>
+        <span>Datey</span>
+      </a>
+
+      {{if .User}}
+      <form class="navbar-search d-none d-md-flex" role="search" action="/people" method="GET">
+        <svg class="navbar-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.7422 10.3439C12.5329 9.2673 12.9767 7.9382 12.9767 6.57068C12.9767 3.13273 10.1917 0.347656 6.75374 0.347656C3.3158 0.347656 0.530762 3.13273 0.530762 6.57068C0.530762 10.0086 3.3158 12.7937 6.75374 12.7937C8.1213 12.7937 9.45036 12.3499 10.5269 11.5592L14.0231 15.0554C14.2855 15.3178 14.7097 15.3178 14.9721 15.0554C15.2345 14.793 15.2345 14.3688 14.9721 14.1064L11.7422 10.3439ZM6.75374 11.117C4.24168 11.117 2.20741 9.08275 2.20741 6.57068C2.20741 4.05861 4.24168 2.02434 6.75374 2.02434C9.26581 2.02434 11.3001 4.05861 11.3001 6.57068C11.3001 9.08275 9.26581 11.117 6.75374 11.117Z" fill="currentColor"/></svg>
+        <input class="form-control" type="search" name="q" placeholder="Search people…" aria-label="Search people">
+      </form>
+      {{end}}
+
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+        <span class="navbar-toggler-line"></span>
+        <span class="navbar-toggler-line"></span>
+        <span class="navbar-toggler-line"></span>
       </button>
+
       <div class="collapse navbar-collapse" id="mainNav">
-        <form class="d-flex me-3" role="search" action="/people" method="GET">
-          <input class="form-control form-control-sm" type="search" name="q" placeholder="Search people..." aria-label="Search">
-        </form>
         {{if .User}}
-          <ul class="navbar-nav me-auto">
+          <ul class="navbar-nav ms-auto">
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `dashboard`}} active{{end}}" href="/">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `people`}} active{{end}}" href="/people">People</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `calendar`}} active{{end}}" href="/calendar">Calendar</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `notifications`}} active{{end}}" href="/notifications">Notifications</a></li>
-            <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `roll`}} active{{end}}" href="/roll">Dice Roller</a></li>
+            <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `roll`}} active{{end}}" href="/roll">Dice</a></li>
             {{if .IsAdmin}}
               <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `groups`}} active{{end}}" href="/groups">Groups</a></li>
-            {{end}}
-            {{if .IsAdmin}}
               <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `settings`}} active{{end}}" href="/settings">Settings</a></li>
               <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `users`}} active{{end}}" href="/users">Users</a></li>
             {{end}}
           </ul>
-          <ul class="navbar-nav">
-            <li class="nav-item d-flex align-items-center me-2">
-              <button class="btn btn-sm {{if .EinkMode}}btn-light{{else}}btn-outline-light{{end}}"
-                      hx-post="/settings/eink-toggle"
-                      hx-target="this"
-                      hx-swap="outerHTML"
-                      title="Toggle E-Ink mode">E-Ink</button>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button">
-                {{.User.Username}}
+
+          <div class="navbar-actions">
+            <button type="button" class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle light and dark theme">
+              <span class="theme-toggle-light" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+              </span>
+              <span class="theme-toggle-dark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              </span>
+            </button>
+
+            <button class="btn btn-sm eink-toggle{{if .EinkMode}} active{{end}}"
+                    hx-post="/settings/eink-toggle"
+                    hx-target="this"
+                    hx-swap="outerHTML"
+                    title="Toggle E-Ink mode">E-Ink</button>
+
+            <div class="nav-item dropdown">
+              <a class="nav-link user-menu dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                <span class="user-avatar">{{slice .User.Username 0 1}}</span>
+                <span class="user-name d-none d-lg-inline">{{.User.Username}}</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/logout">Log out</a></li>
               </ul>
-            </li>
+            </div>
+          </div>
+        {{else}}
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/login">Log in</a></li>
           </ul>
         {{end}}
       </div>
     </div>
   </nav>
+
   <main class="container">
     {{template "content" .}}
   </main>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      var html = document.documentElement;
+      var toggle = document.getElementById('theme-toggle');
+
+      function setTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem('datey-theme', theme);
+      }
+
+      if (toggle) {
+        toggle.addEventListener('click', function() {
+          var current = html.getAttribute('data-theme') || 'light';
+          setTheme(current === 'dark' ? 'light' : 'dark');
+        });
+      }
+
       // Toast notification listener for HTMX
       document.body.addEventListener('show-toast', function(evt) {
         var detail = evt.detail || {};
