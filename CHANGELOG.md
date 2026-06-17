@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/martynvdijke/datey/compare/v1.11.1...v1.11.2) (2026-06-17)
+
+
+### Bug Fixes
+
+* **navbar:** add regression tests for e-ink toggle contrast fix ([5bb5524](https://github.com/martynvdijke/datey/commit/5bb55240c05d758ab9f6c8ce047ddef4f3351089))
+
 ## [1.11.1](https://github.com/martynvdijke/datey/compare/v1.11.0...v1.11.1) (2026-06-17)
 
 
