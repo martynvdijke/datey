@@ -50,7 +50,6 @@ func TestNavbar_RendersForAuthenticatedUser(t *testing.T) {
 		"People",
 		"Calendar",
 		"Notifications",
-		"Dice",
 		"Search people",
 		"theme-toggle",
 		"eink-toggle",
@@ -146,8 +145,8 @@ func TestStyleCSS_HasThemeVariables(t *testing.T) {
 	mustContain := []string{
 		`[data-theme="dark"]`,
 		"--datey-surface:",
-		"--datey-surface-elevated:",
-		"--datey-text-primary:",
+		"--datey-surface-variant:",
+		"--datey-text:",
 		"--datey-primary:",
 	}
 	for _, s := range mustContain {

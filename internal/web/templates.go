@@ -50,7 +50,6 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"users.html",
 		"notifications.html",
 		"notification_form.html",
-		"roll.html",
 	}
 
 	templates := make(map[string]*template.Template, len(pages))

@@ -17,7 +17,6 @@
   {{end}}
   {{block "head_extra" .}}{{end}}
   <script>
-    // Theme initialization — run before paint to avoid flash
     (function() {
       var stored = localStorage.getItem('datey-theme');
       var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -27,72 +26,78 @@
   </script>
 </head>
 <body{{if .EinkMode}} class="eink-mode"{{end}}>
-  <!-- Toast Container -->
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <nav class="navbar navbar-expand-lg sticky-top" aria-label="Main navigation">
+  <nav class="navbar navbar-expand-xl">
     <div class="container">
       <a class="navbar-brand" href="/">
-        <span class="navbar-brand-icon" aria-hidden="true">D</span>
-        <span>Datey</span>
+        <span class="brand-icon">D</span>
+        Datey
       </a>
 
       {{if .User}}
-      <form class="navbar-search d-none d-md-flex" role="search" action="/people" method="GET">
-        <svg class="navbar-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.7422 10.3439C12.5329 9.2673 12.9767 7.9382 12.9767 6.57068C12.9767 3.13273 10.1917 0.347656 6.75374 0.347656C3.3158 0.347656 0.530762 3.13273 0.530762 6.57068C0.530762 10.0086 3.3158 12.7937 6.75374 12.7937C8.1213 12.7937 9.45036 12.3499 10.5269 11.5592L14.0231 15.0554C14.2855 15.3178 14.7097 15.3178 14.9721 15.0554C15.2345 14.793 15.2345 14.3688 14.9721 14.1064L11.7422 10.3439ZM6.75374 11.117C4.24168 11.117 2.20741 9.08275 2.20741 6.57068C2.20741 4.05861 4.24168 2.02434 6.75374 2.02434C9.26581 2.02434 11.3001 4.05861 11.3001 6.57068C11.3001 9.08275 9.26581 11.117 6.75374 11.117Z" fill="currentColor"/></svg>
+      <form class="d-none d-md-flex navbar-search" role="search" action="/people" method="GET">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <input class="form-control" type="search" name="q" placeholder="Search people…" aria-label="Search people">
       </form>
       {{end}}
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-line"></span>
-        <span class="navbar-toggler-line"></span>
-        <span class="navbar-toggler-line"></span>
+        <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="mainNav">
         {{if .User}}
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-xl-center">
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `dashboard`}} active{{end}}" href="/">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `people`}} active{{end}}" href="/people">People</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `calendar`}} active{{end}}" href="/calendar">Calendar</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `notifications`}} active{{end}}" href="/notifications">Notifications</a></li>
-            <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `roll`}} active{{end}}" href="/roll">Dice</a></li>
+
             {{if .IsAdmin}}
-              <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `groups`}} active{{end}}" href="/groups">Groups</a></li>
-              <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `settings`}} active{{end}}" href="/settings">Settings</a></li>
-              <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `users`}} active{{end}}" href="/users">Users</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">More</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item{{if eq .ActiveNav `groups`}} active{{end}}" href="/groups">Groups</a></li>
+                <li><a class="dropdown-item{{if eq .ActiveNav `settings`}} active{{end}}" href="/settings">Settings</a></li>
+                <li><a class="dropdown-item{{if eq .ActiveNav `users`}} active{{end}}" href="/users">Users</a></li>
+              </ul>
+            </li>
             {{end}}
-          </ul>
 
-          <div class="navbar-actions">
-            <button type="button" class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle light and dark theme">
-              <span class="theme-toggle-light" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-              </span>
-              <span class="theme-toggle-dark" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-              </span>
-            </button>
+            <li class="nav-item nav-divider d-none d-xl-block"></li>
 
-            <button class="btn btn-sm eink-toggle{{if .EinkMode}} active{{end}}"
-                    hx-post="/settings/eink-toggle"
-                    hx-target="this"
-                    hx-swap="outerHTML"
-                    title="Toggle E-Ink mode">E-Ink</button>
+            <li class="nav-item">
+              <button type="button" class="btn-icon theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle light and dark theme">
+                <span class="theme-icon-light" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                </span>
+                <span class="theme-icon-dark" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </span>
+              </button>
+            </li>
 
-            <div class="nav-item dropdown">
-              <a class="nav-link user-menu dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+            <li class="nav-item">
+              <button class="btn btn-sm eink-toggle{{if .EinkMode}} active{{end}}"
+                      hx-post="/settings/eink-toggle"
+                      hx-target="this"
+                      hx-swap="outerHTML"
+                      title="Toggle E-Ink mode">E-Ink: {{if .EinkMode}}On{{else}}Off{{end}}</button>
+            </li>
+
+            <li class="nav-item dropdown user-dropdown">
+              <a class="nav-link user-menu dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="user-avatar">{{slice .User.Username 0 1}}</span>
-                <span class="user-name d-none d-lg-inline">{{.User.Username}}</span>
+                <span class="user-name">{{.User.Username}}</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                <li><a class="dropdown-item{{if eq .ActiveNav `settings`}} active{{end}}" href="/settings">Settings</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/logout">Log out</a></li>
               </ul>
-            </div>
-          </div>
+            </li>
+          </ul>
         {{else}}
           <ul class="navbar-nav ms-auto">
             <li class="nav-item"><a class="nav-link" href="/login">Log in</a></li>
@@ -124,7 +129,6 @@
         });
       }
 
-      // Toast notification listener for HTMX
       document.body.addEventListener('show-toast', function(evt) {
         var detail = evt.detail || {};
         var message = detail.message || '';
@@ -158,11 +162,9 @@
         return div.innerHTML;
       }
 
-      // E-Ink mode toggle listener
       document.body.addEventListener('eink-toggled', function(evt) {
         var enabled = evt.detail || false;
         document.body.classList.toggle('eink-mode', enabled);
-        // Toggle stylesheet link
         var link = document.querySelector('link[href="/static/eink.css"]');
         if (!link && enabled) {
           link = document.createElement('link');
@@ -174,7 +176,6 @@
         }
       });
 
-      // Active nav — set via data attribute if not already set from server
       var path = window.location.pathname;
       document.querySelectorAll('.navbar-nav .nav-link').forEach(function(link) {
         var href = link.getAttribute('href');

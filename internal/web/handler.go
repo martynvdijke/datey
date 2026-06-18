@@ -124,8 +124,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/notifications/{id}/delete", h.deleteNotification)
 			r.Get("/api/notifications", h.apiNotifications)
 
-			r.Get("/roll", h.diceRoll)
-
 			// Admin-only routes
 			r.Group(func(r chi.Router) {
 				r.Use(h.Admin)
@@ -363,8 +361,6 @@ func inferActiveNav(path string) string {
 		return "calendar"
 	case hasPrefix(path, "/notifications"):
 		return "notifications"
-	case path == "/roll":
-		return "roll"
 	case hasPrefix(path, "/settings") || hasPrefix(path, "/logs") || hasPrefix(path, "/users"):
 		return "settings"
 	default:
@@ -419,10 +415,4 @@ func (h *Handler) renderError(w http.ResponseWriter, r *http.Request, status int
 	if r.Header.Get("HX-Request") == "true" {
 		toastHeader(w, statusText, "error")
 	}
-}
-
-func (h *Handler) diceRoll(w http.ResponseWriter, r *http.Request) {
-	h.render(w, r, "roll.html", map[string]any{
-		"Title": "Datey - Dice Roller",
-	})
 }
