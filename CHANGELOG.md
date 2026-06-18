@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/martynvdijke/datey/compare/v1.12.0...v1.13.0) (2026-06-18)
+
+
+### Features
+
+* **ui:** redesign navbar in Bootstrap+Material style, remove dice roller ([53c83e8](https://github.com/martynvdijke/datey/commit/53c83e87673f652e309ca76caaefe094648c1c82))
+
 # [1.12.0](https://github.com/martynvdijke/datey/compare/v1.11.2...v1.12.0) (2026-06-17)
 
 
