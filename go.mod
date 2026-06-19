@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	entgo.io/ent v0.14.6
-	github.com/emersion/go-vcard v0.0.0-20241024213814-c9703dde27ff
+	github.com/emersion/go-vcard v0.0.0-20260618161152-d854b7e0e2d3
 	github.com/go-chi/chi/v5 v5.3.0
 	github.com/mattn/go-sqlite3 v1.14.46
 	go.opentelemetry.io/otel v1.44.0
