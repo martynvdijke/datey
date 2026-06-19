@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/martynvdijke/datey/compare/v1.13.1...v1.14.0) (2026-06-19)
+
+
+### Features
+
+* **ui:** modernize to standard Bootstrap 5.3 with 3-way Light/Dark/E-Ink theme toggle ([bae633b](https://github.com/martynvdijke/datey/commit/bae633babf26a41bd93f369b763ce4ad1f07a020))
+
 ## [1.13.1](https://github.com/martynvdijke/datey/compare/v1.13.0...v1.13.1) (2026-06-18)
 
 
