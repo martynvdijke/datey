@@ -18,15 +18,30 @@ func NewOneTimeNotificationRepository(client *ent.Client) *OneTimeNotificationRe
 	return &OneTimeNotificationRepository{client: client}
 }
 
-func (r *OneTimeNotificationRepository) Create(ctx context.Context, message string, scheduledAt time.Time, channelTargets []string) (*ent.OneTimeNotification, error) {
+type CreateNotificationOptions struct {
+	PersonID  *int
+	EventType string
+}
+
+func (r *OneTimeNotificationRepository) Create(ctx context.Context, message string, scheduledAt time.Time, channelTargets []string, opts *CreateNotificationOptions) (*ent.OneTimeNotification, error) {
 	targetsJSON, _ := json.Marshal(channelTargets)
 
-	n, err := r.client.OneTimeNotification.Create().
+	query := r.client.OneTimeNotification.Create().
 		SetMessage(message).
 		SetScheduledAt(scheduledAt).
 		SetCreatedAt(time.Now()).
-		SetChannelTargets(string(targetsJSON)).
-		Save(ctx)
+		SetChannelTargets(string(targetsJSON))
+
+	if opts != nil {
+		if opts.PersonID != nil {
+			query.SetNillablePersonID(opts.PersonID)
+		}
+		if opts.EventType != "" {
+			query.SetEventType(opts.EventType)
+		}
+	}
+
+	n, err := query.Save(ctx)
 	if err != nil {
 		return nil, err
 	}

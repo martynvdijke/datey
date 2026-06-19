@@ -139,6 +139,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
 		{Name: "channel_targets", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "person_id", Type: field.TypeInt, Nullable: true},
+		{Name: "event_type", Type: field.TypeString, Nullable: true, Default: ""},
 	}
 	// OneTimeNotificationsTable holds the schema information for the "one_time_notifications" table.
 	OneTimeNotificationsTable = &schema.Table{

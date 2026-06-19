@@ -2,7 +2,28 @@
 <h1 class="mb-4">Create One-Time Notification</h1>
 <div class="row">
   <div class="col-md-8 col-lg-6">
-    <form action="/notifications/new" method="POST">
+    <form action="/notifications/new" method="POST" id="notif-form">
+      <div class="mb-3">
+        <label for="person_id" class="form-label">Person (optional)</label>
+        <select class="form-select" id="person_id" name="person_id">
+          <option value="">— No person —</option>
+          {{range .People}}
+            <option value="{{.ID}}"{{if eq $.FormData.PersonID (printf "%d" .ID)}} selected{{end}}>{{.Name}}</option>
+          {{end}}
+        </select>
+        <div class="form-text">Link this notification to a specific person (e.g., for their birthday).</div>
+      </div>
+      <div class="mb-3">
+        <label for="event_type" class="form-label">Event Type (optional)</label>
+        <select class="form-select" id="event_type" name="event_type">
+          <option value="">— Custom —</option>
+          <option value="birthday"{{if eq .FormData.EventType "birthday"}} selected{{end}}>Birthday</option>
+          <option value="anniversary"{{if eq .FormData.EventType "anniversary"}} selected{{end}}>Anniversary</option>
+          <option value="wedding"{{if eq .FormData.EventType "wedding"}} selected{{end}}>Wedding</option>
+          <option value="holiday"{{if eq .FormData.EventType "holiday"}} selected{{end}}>Holiday</option>
+          <option value="meeting"{{if eq .FormData.EventType "meeting"}} selected{{end}}>Meeting</option>
+        </select>
+      </div>
       <div class="mb-3">
         <label for="message" class="form-label">Message</label>
         <textarea class="form-control" id="message" name="message" rows="3" required>{{if .FormData}}{{.FormData.Message}}{{end}}</textarea>
@@ -27,9 +48,21 @@
           {{end}}
         </div>
       </div>
-      <button type="submit" class="btn btn-primary">Create Notification</button>
-      <a href="/notifications" class="btn btn-outline-secondary">Cancel</a>
+      <div class="d-flex align-items-center gap-2">
+        <button type="submit" class="btn btn-primary">Create Notification</button>
+        <button type="button" class="btn btn-outline-success" id="test-send-btn"
+                hx-post="/notifications/test"
+                hx-include="closest form"
+                hx-target="#test-result"
+                hx-swap="innerHTML"
+                hx-trigger="click"
+                title="Send a test notification immediately using the first configured channel">
+          Send Test
+        </button>
+        <a href="/notifications" class="btn btn-outline-secondary">Cancel</a>
+      </div>
     </form>
+    <div id="test-result" class="mt-2"></div>
   </div>
 </div>
 {{end}}

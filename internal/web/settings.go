@@ -41,32 +41,29 @@ func (h *Handler) settingsEinkToggle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newVal, err := h.users.UpdateEinkMode(r.Context(), u.ID)
-	if err != nil {
-		slog.Error("eink toggle", "error", err)
-		http.Error(w, "failed to toggle e-ink mode", http.StatusInternalServerError)
-		return
+	// Accept optional "enabled" query param to explicitly set state.
+	// When absent, toggle the current state (backward compat).
+	enabledStr := r.URL.Query().Get("enabled")
+	var newVal bool
+	if enabledStr != "" {
+		newVal = enabledStr == "true"
+		if err := h.users.SetEinkMode(r.Context(), u.ID, newVal); err != nil {
+			slog.Error("eink set mode", "error", err)
+			http.Error(w, "failed to set e-ink mode", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		var err error
+		newVal, err = h.users.UpdateEinkMode(r.Context(), u.ID)
+		if err != nil {
+			slog.Error("eink toggle", "error", err)
+			http.Error(w, "failed to toggle e-ink mode", http.StatusInternalServerError)
+			return
+		}
 	}
 
-	label := "Off"
-	if newVal {
-		label = "On"
-	}
-
-	// HX-Trigger to let client-side JS update body class
-	payload := map[string]any{
-		"eink-toggled": newVal,
-	}
-	b, _ := json.Marshal(payload)
-	w.Header().Set("HX-Trigger", string(b))
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// Button classes must match base.html's initial render so styling stays
-	// consistent after the HTMX swap.
-	w.Write([]byte(fmt.Sprintf(`<button class="btn btn-sm eink-toggle %s" hx-post="/settings/eink-toggle" hx-target="this" hx-swap="outerHTML" title="Toggle E-Ink mode">E-Ink: %s</button>`,
-		map[bool]string{true: "active", false: ""}[newVal],
-		label,
-	)))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"eink_mode": newVal})
 }
 
 func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {

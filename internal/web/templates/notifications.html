@@ -11,6 +11,8 @@
       <thead class="table-dark">
         <tr>
           <th>Message</th>
+          <th>Person</th>
+          <th>Event</th>
           <th>Scheduled</th>
           <th>Status</th>
           <th>Deliveries</th>
@@ -22,6 +24,25 @@
         {{range .Notifications}}
           <tr>
             <td>{{.Message}}</td>
+            <td>
+              {{if .PersonID}}
+                {{$name := index $.PersonNames .PersonID.Value}}
+                {{if $name}}
+                  <a href="/people/{{.PersonID.Value}}">{{$name}}</a>
+                {{else}}
+                  <span class="text-muted">Person #{{.PersonID.Value}}</span>
+                {{end}}
+              {{else}}
+                <span class="text-muted">—</span>
+              {{end}}
+            </td>
+            <td>
+              {{if .EventType}}
+                <span class="badge event-type-badge event-{{.EventType}}">{{.EventType}}</span>
+              {{else}}
+                <span class="text-muted">—</span>
+              {{end}}
+            </td>
             <td>{{.ScheduledAt.Format "Jan 2, 2006 15:04"}}</td>
             <td>
               <span class="badge {{if eq .Status "pending"}}bg-warning text-dark{{else if eq .Status "sent"}}bg-success{{else}}bg-danger{{end}}">

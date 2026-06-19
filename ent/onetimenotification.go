@@ -29,6 +29,10 @@ type OneTimeNotification struct {
 	SentAt *time.Time `json:"sent_at,omitempty"`
 	// ChannelTargets holds the value of the "channel_targets" field.
 	ChannelTargets string `json:"channel_targets,omitempty"`
+	// PersonID holds the value of the "person_id" field.
+	PersonID *int `json:"person_id,omitempty"`
+	// EventType holds the value of the "event_type" field.
+	EventType string `json:"event_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OneTimeNotificationQuery when eager-loading is set.
 	Edges        OneTimeNotificationEdges `json:"edges"`
@@ -58,9 +62,9 @@ func (*OneTimeNotification) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case onetimenotification.FieldID:
+		case onetimenotification.FieldID, onetimenotification.FieldPersonID:
 			values[i] = new(sql.NullInt64)
-		case onetimenotification.FieldMessage, onetimenotification.FieldStatus, onetimenotification.FieldChannelTargets:
+		case onetimenotification.FieldMessage, onetimenotification.FieldStatus, onetimenotification.FieldChannelTargets, onetimenotification.FieldEventType:
 			values[i] = new(sql.NullString)
 		case onetimenotification.FieldScheduledAt, onetimenotification.FieldCreatedAt, onetimenotification.FieldSentAt:
 			values[i] = new(sql.NullTime)
@@ -122,6 +126,19 @@ func (_m *OneTimeNotification) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.ChannelTargets = value.String
 			}
+		case onetimenotification.FieldPersonID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field person_id", values[i])
+			} else if value.Valid {
+				_m.PersonID = new(int)
+				*_m.PersonID = int(value.Int64)
+			}
+		case onetimenotification.FieldEventType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field event_type", values[i])
+			} else if value.Valid {
+				_m.EventType = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -182,6 +199,14 @@ func (_m *OneTimeNotification) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("channel_targets=")
 	builder.WriteString(_m.ChannelTargets)
+	builder.WriteString(", ")
+	if v := _m.PersonID; v != nil {
+		builder.WriteString("person_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("event_type=")
+	builder.WriteString(_m.EventType)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -3081,6 +3081,9 @@ type OneTimeNotificationMutation struct {
 	created_at        *time.Time
 	sent_at           *time.Time
 	channel_targets   *string
+	person_id         *int
+	addperson_id      *int
+	event_type        *string
 	clearedFields     map[string]struct{}
 	deliveries        map[int]struct{}
 	removeddeliveries map[int]struct{}
@@ -3430,6 +3433,125 @@ func (m *OneTimeNotificationMutation) ResetChannelTargets() {
 	delete(m.clearedFields, onetimenotification.FieldChannelTargets)
 }
 
+// SetPersonID sets the "person_id" field.
+func (m *OneTimeNotificationMutation) SetPersonID(i int) {
+	m.person_id = &i
+	m.addperson_id = nil
+}
+
+// PersonID returns the value of the "person_id" field in the mutation.
+func (m *OneTimeNotificationMutation) PersonID() (r int, exists bool) {
+	v := m.person_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPersonID returns the old "person_id" field's value of the OneTimeNotification entity.
+// If the OneTimeNotification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneTimeNotificationMutation) OldPersonID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPersonID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPersonID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPersonID: %w", err)
+	}
+	return oldValue.PersonID, nil
+}
+
+// AddPersonID adds i to the "person_id" field.
+func (m *OneTimeNotificationMutation) AddPersonID(i int) {
+	if m.addperson_id != nil {
+		*m.addperson_id += i
+	} else {
+		m.addperson_id = &i
+	}
+}
+
+// AddedPersonID returns the value that was added to the "person_id" field in this mutation.
+func (m *OneTimeNotificationMutation) AddedPersonID() (r int, exists bool) {
+	v := m.addperson_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearPersonID clears the value of the "person_id" field.
+func (m *OneTimeNotificationMutation) ClearPersonID() {
+	m.person_id = nil
+	m.addperson_id = nil
+	m.clearedFields[onetimenotification.FieldPersonID] = struct{}{}
+}
+
+// PersonIDCleared returns if the "person_id" field was cleared in this mutation.
+func (m *OneTimeNotificationMutation) PersonIDCleared() bool {
+	_, ok := m.clearedFields[onetimenotification.FieldPersonID]
+	return ok
+}
+
+// ResetPersonID resets all changes to the "person_id" field.
+func (m *OneTimeNotificationMutation) ResetPersonID() {
+	m.person_id = nil
+	m.addperson_id = nil
+	delete(m.clearedFields, onetimenotification.FieldPersonID)
+}
+
+// SetEventType sets the "event_type" field.
+func (m *OneTimeNotificationMutation) SetEventType(s string) {
+	m.event_type = &s
+}
+
+// EventType returns the value of the "event_type" field in the mutation.
+func (m *OneTimeNotificationMutation) EventType() (r string, exists bool) {
+	v := m.event_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEventType returns the old "event_type" field's value of the OneTimeNotification entity.
+// If the OneTimeNotification object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneTimeNotificationMutation) OldEventType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEventType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEventType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEventType: %w", err)
+	}
+	return oldValue.EventType, nil
+}
+
+// ClearEventType clears the value of the "event_type" field.
+func (m *OneTimeNotificationMutation) ClearEventType() {
+	m.event_type = nil
+	m.clearedFields[onetimenotification.FieldEventType] = struct{}{}
+}
+
+// EventTypeCleared returns if the "event_type" field was cleared in this mutation.
+func (m *OneTimeNotificationMutation) EventTypeCleared() bool {
+	_, ok := m.clearedFields[onetimenotification.FieldEventType]
+	return ok
+}
+
+// ResetEventType resets all changes to the "event_type" field.
+func (m *OneTimeNotificationMutation) ResetEventType() {
+	m.event_type = nil
+	delete(m.clearedFields, onetimenotification.FieldEventType)
+}
+
 // AddDeliveryIDs adds the "deliveries" edge to the NotificationDelivery entity by ids.
 func (m *OneTimeNotificationMutation) AddDeliveryIDs(ids ...int) {
 	if m.deliveries == nil {
@@ -3518,7 +3640,7 @@ func (m *OneTimeNotificationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OneTimeNotificationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.message != nil {
 		fields = append(fields, onetimenotification.FieldMessage)
 	}
@@ -3536,6 +3658,12 @@ func (m *OneTimeNotificationMutation) Fields() []string {
 	}
 	if m.channel_targets != nil {
 		fields = append(fields, onetimenotification.FieldChannelTargets)
+	}
+	if m.person_id != nil {
+		fields = append(fields, onetimenotification.FieldPersonID)
+	}
+	if m.event_type != nil {
+		fields = append(fields, onetimenotification.FieldEventType)
 	}
 	return fields
 }
@@ -3557,6 +3685,10 @@ func (m *OneTimeNotificationMutation) Field(name string) (ent.Value, bool) {
 		return m.SentAt()
 	case onetimenotification.FieldChannelTargets:
 		return m.ChannelTargets()
+	case onetimenotification.FieldPersonID:
+		return m.PersonID()
+	case onetimenotification.FieldEventType:
+		return m.EventType()
 	}
 	return nil, false
 }
@@ -3578,6 +3710,10 @@ func (m *OneTimeNotificationMutation) OldField(ctx context.Context, name string)
 		return m.OldSentAt(ctx)
 	case onetimenotification.FieldChannelTargets:
 		return m.OldChannelTargets(ctx)
+	case onetimenotification.FieldPersonID:
+		return m.OldPersonID(ctx)
+	case onetimenotification.FieldEventType:
+		return m.OldEventType(ctx)
 	}
 	return nil, fmt.Errorf("unknown OneTimeNotification field %s", name)
 }
@@ -3629,6 +3765,20 @@ func (m *OneTimeNotificationMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetChannelTargets(v)
 		return nil
+	case onetimenotification.FieldPersonID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPersonID(v)
+		return nil
+	case onetimenotification.FieldEventType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEventType(v)
+		return nil
 	}
 	return fmt.Errorf("unknown OneTimeNotification field %s", name)
 }
@@ -3636,13 +3786,21 @@ func (m *OneTimeNotificationMutation) SetField(name string, value ent.Value) err
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *OneTimeNotificationMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addperson_id != nil {
+		fields = append(fields, onetimenotification.FieldPersonID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *OneTimeNotificationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case onetimenotification.FieldPersonID:
+		return m.AddedPersonID()
+	}
 	return nil, false
 }
 
@@ -3651,6 +3809,13 @@ func (m *OneTimeNotificationMutation) AddedField(name string) (ent.Value, bool) 
 // type.
 func (m *OneTimeNotificationMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case onetimenotification.FieldPersonID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPersonID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown OneTimeNotification numeric field %s", name)
 }
@@ -3664,6 +3829,12 @@ func (m *OneTimeNotificationMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(onetimenotification.FieldChannelTargets) {
 		fields = append(fields, onetimenotification.FieldChannelTargets)
+	}
+	if m.FieldCleared(onetimenotification.FieldPersonID) {
+		fields = append(fields, onetimenotification.FieldPersonID)
+	}
+	if m.FieldCleared(onetimenotification.FieldEventType) {
+		fields = append(fields, onetimenotification.FieldEventType)
 	}
 	return fields
 }
@@ -3684,6 +3855,12 @@ func (m *OneTimeNotificationMutation) ClearField(name string) error {
 		return nil
 	case onetimenotification.FieldChannelTargets:
 		m.ClearChannelTargets()
+		return nil
+	case onetimenotification.FieldPersonID:
+		m.ClearPersonID()
+		return nil
+	case onetimenotification.FieldEventType:
+		m.ClearEventType()
 		return nil
 	}
 	return fmt.Errorf("unknown OneTimeNotification nullable field %s", name)
@@ -3710,6 +3887,12 @@ func (m *OneTimeNotificationMutation) ResetField(name string) error {
 		return nil
 	case onetimenotification.FieldChannelTargets:
 		m.ResetChannelTargets()
+		return nil
+	case onetimenotification.FieldPersonID:
+		m.ResetPersonID()
+		return nil
+	case onetimenotification.FieldEventType:
+		m.ResetEventType()
 		return nil
 	}
 	return fmt.Errorf("unknown OneTimeNotification field %s", name)

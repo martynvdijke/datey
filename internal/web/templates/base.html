@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-bs-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
-  {{if .EinkMode}}<link rel="stylesheet" href="/static/eink.css">{{end}}
+  <link rel="stylesheet" href="/static/eink.css" id="eink-stylesheet" disabled>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   {{if and .UmamiURL .UmamiWebsiteID}}
     <script async defer src="{{.UmamiURL}}/script.js" data-website-id="{{.UmamiWebsiteID}}"></script>
@@ -18,14 +18,22 @@
   {{block "head_extra" .}}{{end}}
   <script>
     (function() {
+      var themes = ['light', 'dark', 'eink'];
       var stored = localStorage.getItem('datey-theme');
       var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       var theme = stored || (prefersDark ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
+      // Server-forced eink overrides everything
+      {{if .EinkForced}}theme = 'eink';{{end}}
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      // Enable eink stylesheet if needed
+      if (theme === 'eink') {
+        var link = document.getElementById('eink-stylesheet');
+        if (link) link.disabled = false;
+      }
     })();
   </script>
 </head>
-<body{{if .EinkMode}} class="eink-mode"{{end}}>
+<body>
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <nav class="navbar navbar-expand-xl">
@@ -65,25 +73,22 @@
             </li>
             {{end}}
 
-            <li class="nav-item nav-divider d-none d-xl-block"></li>
+            <li class="nav-item nav-divider d-none d-xl-block" style="width:1px;height:1.5rem;background:var(--bs-border-color);margin:0 0.25rem;"></li>
 
             <li class="nav-item">
-              <button type="button" class="btn-icon theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle light and dark theme">
+              <button type="button" class="btn-icon theme-toggle" id="theme-toggle"
+                      title="Switch theme" aria-label="Switch theme (Light/Dark/E-Ink)">
                 <span class="theme-icon-light" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                 </span>
                 <span class="theme-icon-dark" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                 </span>
+                <span class="theme-icon-eink" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect><line x1="6" y1="7" x2="18" y2="7"></line><line x1="6" y1="11" x2="18" y2="11"></line><line x1="6" y1="15" x2="12" y2="15"></line></svg>
+                </span>
+                <span class="theme-badge" id="theme-label">Light</span>
               </button>
-            </li>
-
-            <li class="nav-item">
-              <button class="btn btn-sm eink-toggle{{if .EinkMode}} active{{end}}"
-                      hx-post="/settings/eink-toggle"
-                      hx-target="this"
-                      hx-swap="outerHTML"
-                      title="Toggle E-Ink mode">E-Ink: {{if .EinkMode}}On{{else}}Off{{end}}</button>
             </li>
 
             <li class="nav-item dropdown user-dropdown">
@@ -116,17 +121,35 @@
     document.addEventListener('DOMContentLoaded', function() {
       var html = document.documentElement;
       var toggle = document.getElementById('theme-toggle');
+      var label = document.getElementById('theme-label');
+      var themes = ['light', 'dark', 'eink'];
+      var themeNames = { light: 'Light', dark: 'Dark', eink: 'E-Ink' };
 
       function setTheme(theme) {
-        html.setAttribute('data-theme', theme);
+        html.setAttribute('data-bs-theme', theme);
         localStorage.setItem('datey-theme', theme);
+        if (label) label.textContent = themeNames[theme] || theme;
+        // Toggle eink stylesheet
+        var link = document.getElementById('eink-stylesheet');
+        if (link) link.disabled = theme !== 'eink';
+        // Notify server to persist eink preference
+        var enabled = theme === 'eink' ? 'true' : 'false';
+        fetch('/settings/eink-toggle?enabled=' + enabled, { method: 'POST' }).catch(function() {});
+      }
+
+      function cycleTheme() {
+        var current = html.getAttribute('data-bs-theme') || 'light';
+        var idx = themes.indexOf(current);
+        if (idx === -1) idx = 0;
+        var next = themes[(idx + 1) % themes.length];
+        setTheme(next);
       }
 
       if (toggle) {
-        toggle.addEventListener('click', function() {
-          var current = html.getAttribute('data-theme') || 'light';
-          setTheme(current === 'dark' ? 'light' : 'dark');
-        });
+        toggle.addEventListener('click', cycleTheme);
+        // Set initial label
+        var initial = html.getAttribute('data-bs-theme') || 'light';
+        if (label) label.textContent = themeNames[initial] || initial;
       }
 
       document.body.addEventListener('show-toast', function(evt) {
@@ -137,7 +160,7 @@
         if (!container || !message) return;
 
         var bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-primary';
-        var icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+        var icon = type === 'success' ? '\u2713' : type === 'error' ? '\u2717' : '\u2139';
 
         var toastEl = document.createElement('div');
         toastEl.className = 'toast align-items-center text-white border-0';
@@ -161,20 +184,6 @@
         div.appendChild(document.createTextNode(text));
         return div.innerHTML;
       }
-
-      document.body.addEventListener('eink-toggled', function(evt) {
-        var enabled = evt.detail || false;
-        document.body.classList.toggle('eink-mode', enabled);
-        var link = document.querySelector('link[href="/static/eink.css"]');
-        if (!link && enabled) {
-          link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = '/static/eink.css';
-          document.head.appendChild(link);
-        } else if (link && !enabled) {
-          link.remove();
-        }
-      });
 
       var path = window.location.pathname;
       document.querySelectorAll('.navbar-nav .nav-link').forEach(function(link) {

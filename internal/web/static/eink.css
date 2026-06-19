@@ -1,16 +1,16 @@
 /* ═══════════════════════════════════════════
    Datey E-Ink Mode — Override Stylesheet
    ═══════════════════════════════════════════
-   Loaded conditionally when e-ink mode is enabled.
+   Activated via data-bs-theme="eink".
    Strips animations, transitions, shadows, and
    color-only indicators for e-ink display compatibility.
    ═══════════════════════════════════════════ */
 
 /* ── Global Overrides ── */
 
-.eink-mode *,
-.eink-mode *::before,
-.eink-mode *::after {
+[data-bs-theme="eink"] *,
+[data-bs-theme="eink"] *::before,
+[data-bs-theme="eink"] *::after {
   transition: none !important;
   animation: none !important;
   box-shadow: none !important;
@@ -19,338 +19,311 @@
 
 /* ── Colors: Maximum Contrast ── */
 
-.eink-mode {
-  --datey-primary: #000000;
-  --datey-primary-hover: #000000;
-  --datey-primary-light: #f0f0f0;
-  --datey-accent: #000000;
-  --datey-surface: #ffffff;
-  --datey-surface-subtle: #ffffff;
-  --datey-border: #cccccc;
-  --datey-text-primary: #000000;
-  --datey-text-muted: #444444;
-  --datey-text-inverse: #ffffff;
-  --datey-event-birthday: #000000;
-  --datey-event-anniversary: #555555;
-  --datey-event-wedding: #888888;
-  --datey-event-holiday: #000000;
-  --datey-event-meeting: #333333;
-  --datey-event-custom: #666666;
-  --datey-shadow-sm: none;
-  --datey-shadow: none;
-  --datey-shadow-lg: none;
-  --datey-transition-fast: 0s;
-  --datey-transition: 0s;
-  --datey-transition-slow: 0s;
+[data-bs-theme="eink"] {
+  --bs-body-bg: #fff !important;
+  --bs-body-color: #000 !important;
+  --bs-secondary-color: #444 !important;
+  --bs-border-color: #ccc !important;
+  --bs-tertiary-bg: #f0f0f0 !important;
+  --bs-primary: #000 !important;
+  --bs-primary-rgb: 0,0,0 !important;
+  --bs-success: #000 !important;
+  --bs-danger: #000 !important;
+  --bs-warning: #000 !important;
+  --bs-info: #000 !important;
+  --bs-secondary: #000 !important;
+  --bs-dark: #000 !important;
+  --bs-light: #fff !important;
+  --bs-link-color: #000 !important;
 }
 
 /* ── Body & Background ── */
 
-.eink-mode body,
-.eink-mode .card,
-.eink-mode .table,
-.eink-mode .navbar,
-.eink-mode .modal-content,
-.eink-mode .dropdown-menu,
-.eink-mode .bg-light,
-.eink-mode .bg-dark {
-  background: #ffffff !important;
-  color: #000000 !important;
+[data-bs-theme="eink"] body,
+[data-bs-theme="eink"] .card,
+[data-bs-theme="eink"] .table,
+[data-bs-theme="eink"] .navbar,
+[data-bs-theme="eink"] .modal-content,
+[data-bs-theme="eink"] .dropdown-menu {
+  background: #fff !important;
+  color: #000 !important;
 }
 
-/* ── Text ── */
+/* ── Links ── */
 
-.eink-mode .text-muted,
-.eink-mode small.text-muted {
-  color: #444444 !important;
-}
-
-.eink-mode a:not(.btn) {
-  color: #000000 !important;
+[data-bs-theme="eink"] a:not(.btn) {
+  color: #000 !important;
   text-decoration: underline !important;
 }
 
 /* ── Navbar ── */
 
-.eink-mode .navbar {
-  border-bottom: 2px solid #000000 !important;
+[data-bs-theme="eink"] .navbar {
+  border-bottom: 2px solid #000 !important;
 }
 
-.eink-mode .navbar-brand {
-  color: #000000 !important;
+[data-bs-theme="eink"] .navbar-brand {
+  color: #000 !important;
 }
 
-.eink-mode .navbar-nav .nav-link {
-  color: #000000 !important;
+[data-bs-theme="eink"] .navbar-nav .nav-link {
+  color: #000 !important;
 }
 
-.eink-mode .navbar-nav .nav-link.active {
-  background: #000000 !important;
-  color: #ffffff !important;
+[data-bs-theme="eink"] .navbar-nav .nav-link.active {
+  background: #000 !important;
+  color: #fff !important;
 }
 
-.eink-mode .navbar-nav .nav-link:hover {
+[data-bs-theme="eink"] .navbar-nav .nav-link:hover {
   background: #e0e0e0 !important;
-  color: #000000 !important;
+  color: #000 !important;
 }
 
 /* Mobile toggler: force black bars + border so the menu button is visible. */
-.eink-mode .navbar-toggler {
-  border-color: #000000 !important;
+[data-bs-theme="eink"] .navbar-toggler {
+  border-color: #000 !important;
 }
 
-.eink-mode .navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+[data-bs-theme="eink"] .navbar-toggler-icon {
+  filter: none !important;
 }
 
 /* ── Cards ── */
 
-.eink-mode .card {
-  border: 1px solid #cccccc !important;
+[data-bs-theme="eink"] .card {
+  border: 1px solid #ccc !important;
   border-radius: 0 !important;
 }
 
-.eink-mode .card-hover:hover {
+[data-bs-theme="eink"] .card-hover:hover {
   transform: none !important;
 }
 
 /* ── Buttons ── */
 
-.eink-mode .btn {
-  border: 1px solid #000000 !important;
+[data-bs-theme="eink"] .btn {
+  border: 1px solid #000 !important;
   border-radius: 0 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #fff !important;
+  color: #000 !important;
 }
 
-.eink-mode .btn:hover {
+[data-bs-theme="eink"] .btn:hover {
   transform: none !important;
-  background: #000000 !important;
-  color: #ffffff !important;
+  background: #000 !important;
+  color: #fff !important;
 }
 
-.eink-mode .btn-primary,
-.eink-mode .btn-dark {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border-color: #000000 !important;
+[data-bs-theme="eink"] .btn-primary,
+[data-bs-theme="eink"] .btn-dark {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #000 !important;
 }
 
-.eink-mode .btn-outline-primary,
-.eink-mode .btn-outline-secondary {
+[data-bs-theme="eink"] .btn-outline-primary,
+[data-bs-theme="eink"] .btn-outline-secondary {
   background: transparent !important;
-  border-color: #000000 !important;
-  color: #000000 !important;
+  border-color: #000 !important;
+  color: #000 !important;
 }
 
-.eink-mode .btn-outline-primary:hover,
-.eink-mode .btn-outline-secondary:hover {
-  background: #000000 !important;
-  color: #ffffff !important;
+[data-bs-theme="eink"] .btn-outline-primary:hover,
+[data-bs-theme="eink"] .btn-outline-secondary:hover {
+  background: #000 !important;
+  color: #fff !important;
 }
 
 /* ── Event Type Badges (Border-Differentiated) ── */
 
-.eink-mode .event-type-badge {
-  border: 2px solid #000000 !important;
+[data-bs-theme="eink"] .event-type-badge {
+  border: 2px solid #000 !important;
   border-radius: 0 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #fff !important;
+  color: #000 !important;
   font-weight: 600 !important;
 }
 
-.eink-mode .event-type-badge.event-birthday {
-  border-style: solid !important;
-}
-
-.eink-mode .event-type-badge.event-anniversary {
-  border-style: dashed !important;
-}
-
-.eink-mode .event-type-badge.event-wedding {
-  border-style: dotted !important;
-}
-
-.eink-mode .event-type-badge.event-holiday {
-  border-style: double !important;
-}
-
-.eink-mode .event-type-badge.event-meeting {
-  border-style: groove !important;
-}
-
-.eink-mode .event-type-badge.event-custom {
-  border-style: ridge !important;
-}
+[data-bs-theme="eink"] .event-type-badge.event-birthday { border-style: solid !important; }
+[data-bs-theme="eink"] .event-type-badge.event-anniversary { border-style: dashed !important; }
+[data-bs-theme="eink"] .event-type-badge.event-wedding { border-style: dotted !important; }
+[data-bs-theme="eink"] .event-type-badge.event-holiday { border-style: double !important; }
+[data-bs-theme="eink"] .event-type-badge.event-meeting { border-style: groove !important; }
+[data-bs-theme="eink"] .event-type-badge.event-custom { border-style: ridge !important; }
 
 /* ── Status Badges ── */
 
-.eink-mode .badge {
-  border: 1px solid #000000 !important;
+[data-bs-theme="eink"] .badge {
+  border: 1px solid #000 !important;
   border-radius: 0 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #fff !important;
+  color: #000 !important;
   font-weight: 600 !important;
 }
 
-.eink-mode .badge.bg-success,
-.eink-mode .badge.bg-danger,
-.eink-mode .badge.bg-warning,
-.eink-mode .badge.bg-info,
-.eink-mode .badge.bg-secondary,
-.eink-mode .badge.bg-primary {
-  background: #ffffff !important;
-  color: #000000 !important;
+[data-bs-theme="eink"] .badge.bg-success,
+[data-bs-theme="eink"] .badge.bg-danger,
+[data-bs-theme="eink"] .badge.bg-warning,
+[data-bs-theme="eink"] .badge.bg-info,
+[data-bs-theme="eink"] .badge.bg-secondary,
+[data-bs-theme="eink"] .badge.bg-primary {
+  background: #fff !important;
+  color: #000 !important;
 }
 
 /* ── Tables ── */
 
-.eink-mode .table {
-  border: 1px solid #cccccc !important;
+[data-bs-theme="eink"] .table {
+  border: 1px solid #ccc !important;
 }
 
-.eink-mode .table > thead {
-  background: #000000 !important;
-  color: #ffffff !important;
+[data-bs-theme="eink"] .table > thead {
+  background: #000 !important;
+  color: #fff !important;
 }
 
-.eink-mode .table tr {
-  border-bottom: 1px solid #cccccc !important;
+[data-bs-theme="eink"] .table tr {
+  border-bottom: 1px solid #ccc !important;
 }
 
-.eink-mode .table-hover tbody tr:hover {
+[data-bs-theme="eink"] .table-hover tbody tr:hover {
   background: #f0f0f0 !important;
 }
 
 /* ── Forms ── */
 
-.eink-mode .form-control,
-.eink-mode .form-select {
-  border: 1px solid #000000 !important;
+[data-bs-theme="eink"] .form-control,
+[data-bs-theme="eink"] .form-select {
+  border: 1px solid #000 !important;
   border-radius: 0 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #fff !important;
+  color: #000 !important;
 }
 
-.eink-mode .form-control:focus,
-.eink-mode .form-select:focus {
-  border-color: #000000 !important;
+[data-bs-theme="eink"] .form-control:focus,
+[data-bs-theme="eink"] .form-select:focus {
+  border-color: #000 !important;
   box-shadow: none !important;
 }
 
 /* ── Pagination ── */
 
-.eink-mode .page-link {
-  border: 1px solid #000000 !important;
+[data-bs-theme="eink"] .page-link {
+  border: 1px solid #000 !important;
   border-radius: 0 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #fff !important;
+  color: #000 !important;
 }
 
-.eink-mode .page-item.active .page-link {
-  background: #000000 !important;
-  color: #ffffff !important;
+[data-bs-theme="eink"] .page-item.active .page-link {
+  background: #000 !important;
+  color: #fff !important;
 }
 
 /* ── Dropdown ── */
 
-.eink-mode .dropdown-menu {
-  border: 1px solid #000000 !important;
+[data-bs-theme="eink"] .dropdown-menu {
+  border: 1px solid #000 !important;
   border-radius: 0 !important;
 }
 
-.eink-mode .dropdown-item {
-  color: #000000 !important;
+[data-bs-theme="eink"] .dropdown-item {
+  color: #000 !important;
 }
 
-.eink-mode .dropdown-item:hover {
+[data-bs-theme="eink"] .dropdown-item:hover {
   background: #f0f0f0 !important;
-  color: #000000 !important;
+  color: #000 !important;
 }
 
 /* ── Modal ── */
 
-.eink-mode .modal-content {
-  border: 2px solid #000000 !important;
+[data-bs-theme="eink"] .modal-content {
+  border: 2px solid #000 !important;
   border-radius: 0 !important;
 }
 
 /* ── Toast ── */
 
-.eink-mode .toast {
-  border: 1px solid #000000 !important;
+[data-bs-theme="eink"] .toast {
+  border: 1px solid #000 !important;
   border-radius: 0 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+  background: #fff !important;
+  color: #000 !important;
 }
 
 /* ── Spinner → Static Indicator ── */
 
-.eink-mode .spinner-border,
-.eink-mode .spinner-grow {
+[data-bs-theme="eink"] .spinner-border,
+[data-bs-theme="eink"] .spinner-grow {
   display: none !important;
 }
 
-.eink-mode .htmx-indicator {
-  border: 1px solid #000000;
+[data-bs-theme="eink"] .htmx-indicator {
+  border: 1px solid #000;
   padding: 2px 6px;
   font-size: 0.75rem;
 }
 
-.eink-mode .htmx-request .htmx-indicator::before {
-  content: "⏳";
+[data-bs-theme="eink"] .htmx-request .htmx-indicator::before {
+  content: "\23F3";
 }
 
 /* ── Range Slider ── */
 
-.eink-mode .form-range::-webkit-slider-thumb {
-  background: #000000 !important;
+[data-bs-theme="eink"] .form-range::-webkit-slider-thumb {
+  background: #000 !important;
   border: none !important;
   border-radius: 0 !important;
 }
 
-.eink-mode .form-range::-moz-range-thumb {
-  background: #000000 !important;
+[data-bs-theme="eink"] .form-range::-moz-range-thumb {
+  background: #000 !important;
   border: none !important;
   border-radius: 0 !important;
 }
 
 /* ── Nav Tabs ── */
 
-.eink-mode .nav-tabs .nav-link {
-  border: 1px solid #cccccc !important;
+[data-bs-theme="eink"] .nav-tabs .nav-link {
+  border: 1px solid #ccc !important;
   border-bottom: none !important;
   border-radius: 0 !important;
-  color: #000000 !important;
-  background: #ffffff !important;
+  color: #000 !important;
+  background: #fff !important;
 }
 
-.eink-mode .nav-tabs .nav-link.active {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border-color: #000000 !important;
-}
-
-/* ── Dice Roller ── */
-
-.eink-mode #dice-result {
-  border: 2px solid #000000 !important;
+[data-bs-theme="eink"] .nav-tabs .nav-link.active {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #000 !important;
 }
 
 /* ── Calendar ── */
 
-.eink-mode .fc-toolbar-title {
-  color: #000000 !important;
+[data-bs-theme="eink"] .fc-toolbar-title {
+  color: #000 !important;
 }
 
-.eink-mode .fc-button-primary {
-  background: #ffffff !important;
-  color: #000000 !important;
-  border-color: #000000 !important;
+[data-bs-theme="eink"] .fc-button-primary {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #000 !important;
 }
 
-.eink-mode .fc-daygrid-event {
-  border: 1px solid #000000 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+[data-bs-theme="eink"] .fc-daygrid-event {
+  border: 1px solid #000 !important;
+  background: #fff !important;
+  color: #000 !important;
+}
+
+/* ── Event Card Accent Bar (e-ink: use border instead of colored bar) ── */
+
+[data-bs-theme="eink"] .event-card::before {
+  display: none !important;
+}
+
+[data-bs-theme="eink"] .event-card {
+  border-left: 4px solid #000 !important;
 }

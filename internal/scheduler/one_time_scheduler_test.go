@@ -130,14 +130,14 @@ func TestOneTimeScheduler_ProcessesDueNotifications(t *testing.T) {
 
 	// Create a notification due in the past
 	past := time.Now().Add(-1 * time.Hour)
-	_, err := repo.Create(ctx, "past notification", past, []string{"test"})
+	_, err := repo.Create(ctx, "past notification", past, []string{"test"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
 	// Create one due in the future (should NOT be processed)
 	future := time.Now().Add(24 * time.Hour)
-	_, err = repo.Create(ctx, "future notification", future, []string{"test"})
+	_, err = repo.Create(ctx, "future notification", future, []string{"test"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -275,7 +275,7 @@ func TestOneTimeScheduler_NoChannelsFallsbackToConfigured(t *testing.T) {
 
 	// Create notification with empty channel list
 	past := time.Now().Add(-1 * time.Hour)
-	_, err := repo.Create(ctx, "no channel specified", past, []string{})
+	_, err := repo.Create(ctx, "no channel specified", past, []string{}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -319,7 +319,7 @@ func TestOneTimeScheduler_UpdatesDeliveryRecordsOnSuccess(t *testing.T) {
 	reg.Register(rec)
 
 	past := time.Now().Add(-1 * time.Hour)
-	n, err := repo.Create(ctx, "delivery success test", past, []string{"test"})
+	n, err := repo.Create(ctx, "delivery success test", past, []string{"test"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -356,7 +356,7 @@ func TestOneTimeScheduler_UpdatesDeliveryRecordsOnFailure(t *testing.T) {
 	reg.Register(fail)
 
 	past := time.Now().Add(-1 * time.Hour)
-	n, err := repo.Create(ctx, "delivery fail test", past, []string{"failbot"})
+	n, err := repo.Create(ctx, "delivery fail test", past, []string{"test"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -394,7 +394,7 @@ func TestOneTimeScheduler_NoDueNotifications(t *testing.T) {
 
 	// Only future notifications
 	future := time.Now().Add(24 * time.Hour)
-	_, err := repo.Create(ctx, "future notification", future, []string{"test"})
+	_, err := repo.Create(ctx, "future notification", future, []string{"test"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}

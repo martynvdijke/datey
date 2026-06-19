@@ -39,7 +39,7 @@ func TestOneTimeScheduler_FullFlow(t *testing.T) {
 
 	// Create a notification due in the past (should fire immediately)
 	past := time.Now().Add(-30 * time.Minute)
-	created, err := repo.Create(ctx, "integration test message", past, []string{"integration-test"})
+	created, err := repo.Create(ctx, "integration test message", past, []string{"integration-test"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}

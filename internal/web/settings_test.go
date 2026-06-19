@@ -46,13 +46,8 @@ func TestEinkToggle_ToggleOn(t *testing.T) {
 		t.Errorf("expected 200, got %d", w.Code)
 	}
 
-	body := w.Body.String()
-	if !strings.Contains(body, "E-Ink: On") {
-		t.Errorf("expected toggle button showing On, got: %s", body)
-	}
-
-	if !strings.Contains(body, "eink-toggle active") {
-		t.Errorf("expected active toggle button style (eink-toggle active), got: %s", body)
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("expected JSON response, got %s", w.Header().Get("Content-Type"))
 	}
 
 	// Verify persisted in DB
@@ -92,16 +87,8 @@ func TestEinkToggle_ToggleOff(t *testing.T) {
 		t.Errorf("second toggle expected 200, got %d", w2.Code)
 	}
 
-	body := w2.Body.String()
-	if !strings.Contains(body, "E-Ink: Off") {
-		t.Errorf("expected toggle button showing Off, got: %s", body)
-	}
-
-	if !strings.Contains(body, "eink-toggle") {
-		t.Errorf("expected inactive toggle style (eink-toggle), got: %s", body)
-	}
-	if strings.Contains(body, "eink-toggle active") {
-		t.Errorf("expected inactive toggle button not to have active class, got: %s", body)
+	if w2.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("expected JSON response, got %s", w2.Header().Get("Content-Type"))
 	}
 
 	// Verify persisted in DB
@@ -140,7 +127,11 @@ func TestEinkToggle_NonAdminUser(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
-		t.Errorf("expected 200 (auth handled at route level), got %d", w.Code)
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("expected JSON response, got %s", w.Header().Get("Content-Type"))
 	}
 
 	// Verify it toggled the non-admin user's preference
@@ -181,77 +172,74 @@ func TestEinkConfigNotForced_Defaults(t *testing.T) {
 	}
 }
 
-// TestEinkToggle_ClassesMatchBaseTemplate ensures the HTMX-swapped button uses
-// the same classes as base.html's initial render. If they diverge, contrast
-// breaks after a toggle without a full page reload (the original bug).
-func TestEinkToggle_ClassesMatchBaseTemplate(t *testing.T) {
-	baseBytes, err := templateFS.ReadFile("templates/base.html")
-	if err != nil {
-		t.Fatalf("read embedded base.html: %v", err)
-	}
-	base := string(baseBytes)
-
-	// base.html must render the eink-toggle class for both states.
-	if !strings.Contains(base, "eink-toggle") {
-		t.Error("base.html missing eink-toggle class")
-	}
-
-	// The toggle handler must return the same class so a swap doesn't
-	// regress styling. Drive both states and compare against base.html.
+func TestEinkToggle_WithEnabledParam(t *testing.T) {
 	h := newTestWebHandler(t)
 	router := setupEinkRouter(h)
-	u := seedEinkTestUser(t, h, "consistencyadmin", user.RoleAdmin)
-	ctx := withEinkUserContext(context.Background(), u)
+	user := seedEinkTestUser(t, h, "enabledparam", user.RoleAdmin)
+	ctx := withEinkUserContext(context.Background(), user)
 
-	seenActive := false
-	seenInactive := false
-	for i := 0; i < 2; i++ { // toggle on, then off
-		req := httptest.NewRequest("POST", "/settings/eink-toggle", nil).WithContext(ctx)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-		if w.Code != http.StatusOK {
-			t.Fatalf("toggle %d: expected 200, got %d", i, w.Code)
-		}
-		body := w.Body.String()
-		if !strings.Contains(body, "eink-toggle") {
-			t.Errorf("handler missing eink-toggle class in toggle %d: %s", i, body)
-		}
-		if strings.Contains(body, "eink-toggle active") {
-			seenActive = true
-		} else {
-			seenInactive = true
-		}
+	// Set enabled=true
+	req := httptest.NewRequest("POST", "/settings/eink-toggle?enabled=true", nil)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
 	}
-	if !seenActive || !seenInactive {
-		t.Errorf("expected handler to emit both active and inactive eink-toggle states, got active=%v inactive=%v", seenActive, seenInactive)
+
+	u, err := h.users.GetByID(context.Background(), user.ID)
+	if err != nil {
+		t.Fatalf("get user: %v", err)
+	}
+	if !u.EinkMode {
+		t.Errorf("expected eink_mode to be true after enabled=true")
+	}
+
+	// Set enabled=false
+	req2 := httptest.NewRequest("POST", "/settings/eink-toggle?enabled=false", nil)
+	req2 = req2.WithContext(ctx)
+	w2 := httptest.NewRecorder()
+	router.ServeHTTP(w2, req2)
+
+	if w2.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w2.Code)
+	}
+
+	u, err = h.users.GetByID(context.Background(), user.ID)
+	if err != nil {
+		t.Fatalf("get user: %v", err)
+	}
+	if u.EinkMode {
+		t.Errorf("expected eink_mode to be false after enabled=false")
 	}
 }
 
-// TestEinkToggle_NeverReturnsLowContrastClasses is a regression guard against
-// the original bug: btn-outline-secondary (#6c757d) on the dark navy navbar
-// (#2d3a5c) is ~2.4:1 contrast (fails WCAG AA 4.5:1), and btn-dark is
-// near-invisible on the dark navbar. Neither must ever be returned.
-func TestEinkToggle_NeverReturnsLowContrastClasses(t *testing.T) {
+func TestEinkToggle_EnabledParamIsIdempotent(t *testing.T) {
 	h := newTestWebHandler(t)
 	router := setupEinkRouter(h)
-	u := seedEinkTestUser(t, h, "contrastadmin", user.RoleAdmin)
-	ctx := withEinkUserContext(context.Background(), u)
+	user := seedEinkTestUser(t, h, "idempotent", user.RoleAdmin)
+	ctx := withEinkUserContext(context.Background(), user)
 
-	forbidden := []string{"btn-outline-secondary", "btn-dark"}
+	// Toggle on first
+	h.users.SetEinkMode(context.Background(), user.ID, true)
 
-	for i := 0; i < 4; i++ { // on/off/on/off
-		req := httptest.NewRequest("POST", "/settings/eink-toggle", nil).WithContext(ctx)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-		if w.Code != http.StatusOK {
-			t.Fatalf("toggle %d: expected 200, got %d", i, w.Code)
-		}
-		body := w.Body.String()
-		for _, bad := range forbidden {
-			if strings.Contains(body, bad) {
-				t.Errorf("toggle %d: returned low-contrast class %q: %s", i, bad, body)
-			}
-		}
+	// Then set enabled=true again — should stay true
+	req := httptest.NewRequest("POST", "/settings/eink-toggle?enabled=true", nil)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	u, err := h.users.GetByID(context.Background(), user.ID)
+	if err != nil {
+		t.Fatalf("get user: %v", err)
+	}
+	if !u.EinkMode {
+		t.Errorf("expected eink_mode to remain true after setting enabled=true again")
 	}
 }
 

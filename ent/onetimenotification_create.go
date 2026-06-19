@@ -81,6 +81,34 @@ func (_c *OneTimeNotificationCreate) SetNillableChannelTargets(v *string) *OneTi
 	return _c
 }
 
+// SetPersonID sets the "person_id" field.
+func (_c *OneTimeNotificationCreate) SetPersonID(v int) *OneTimeNotificationCreate {
+	_c.mutation.SetPersonID(v)
+	return _c
+}
+
+// SetNillablePersonID sets the "person_id" field if the given value is not nil.
+func (_c *OneTimeNotificationCreate) SetNillablePersonID(v *int) *OneTimeNotificationCreate {
+	if v != nil {
+		_c.SetPersonID(*v)
+	}
+	return _c
+}
+
+// SetEventType sets the "event_type" field.
+func (_c *OneTimeNotificationCreate) SetEventType(v string) *OneTimeNotificationCreate {
+	_c.mutation.SetEventType(v)
+	return _c
+}
+
+// SetNillableEventType sets the "event_type" field if the given value is not nil.
+func (_c *OneTimeNotificationCreate) SetNillableEventType(v *string) *OneTimeNotificationCreate {
+	if v != nil {
+		_c.SetEventType(*v)
+	}
+	return _c
+}
+
 // AddDeliveryIDs adds the "deliveries" edge to the NotificationDelivery entity by IDs.
 func (_c *OneTimeNotificationCreate) AddDeliveryIDs(ids ...int) *OneTimeNotificationCreate {
 	_c.mutation.AddDeliveryIDs(ids...)
@@ -138,6 +166,10 @@ func (_c *OneTimeNotificationCreate) defaults() {
 	if _, ok := _c.mutation.ChannelTargets(); !ok {
 		v := onetimenotification.DefaultChannelTargets
 		_c.mutation.SetChannelTargets(v)
+	}
+	if _, ok := _c.mutation.EventType(); !ok {
+		v := onetimenotification.DefaultEventType
+		_c.mutation.SetEventType(v)
 	}
 }
 
@@ -209,6 +241,14 @@ func (_c *OneTimeNotificationCreate) createSpec() (*OneTimeNotification, *sqlgra
 	if value, ok := _c.mutation.ChannelTargets(); ok {
 		_spec.SetField(onetimenotification.FieldChannelTargets, field.TypeString, value)
 		_node.ChannelTargets = value
+	}
+	if value, ok := _c.mutation.PersonID(); ok {
+		_spec.SetField(onetimenotification.FieldPersonID, field.TypeInt, value)
+		_node.PersonID = &value
+	}
+	if value, ok := _c.mutation.EventType(); ok {
+		_spec.SetField(onetimenotification.FieldEventType, field.TypeString, value)
+		_node.EventType = value
 	}
 	if nodes := _c.mutation.DeliveriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

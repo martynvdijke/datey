@@ -18,6 +18,8 @@ func (OneTimeNotification) Fields() []ent.Field {
 		field.Time("created_at"),
 		field.Time("sent_at").Optional().Nillable(),
 		field.String("channel_targets").Optional().Default(""),
+		field.Int("person_id").Optional().Nillable(),
+		field.String("event_type").Optional().Default(""),
 	}
 }
 

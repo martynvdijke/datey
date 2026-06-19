@@ -88,6 +88,10 @@ func init() {
 	onetimenotificationDescChannelTargets := onetimenotificationFields[5].Descriptor()
 	// onetimenotification.DefaultChannelTargets holds the default value on creation for the channel_targets field.
 	onetimenotification.DefaultChannelTargets = onetimenotificationDescChannelTargets.Default.(string)
+	// onetimenotificationDescEventType is the schema descriptor for event_type field.
+	onetimenotificationDescEventType := onetimenotificationFields[7].Descriptor()
+	// onetimenotification.DefaultEventType holds the default value on creation for the event_type field.
+	onetimenotification.DefaultEventType = onetimenotificationDescEventType.Default.(string)
 	personFields := schema.Person{}.Fields()
 	_ = personFields
 	// personDescName is the schema descriptor for name field.

@@ -1,640 +1,31 @@
 /* ═══════════════════════════════════════════
-   Datey — Material Design Theme
+   Datey — Lean Overrides (Bootstrap 5.3+)
    ═══════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+/* ── Event Card Accent Bar ── */
 
-:root {
-  /* Material palette */
-  --datey-primary: #2563eb;
-  --datey-primary-hover: #1d4ed8;
-  --datey-primary-container: #dbeafe;
-  --datey-on-primary-container: #1e3a8a;
-  --datey-secondary: #475569;
-  --datey-secondary-hover: #334155;
-
-  --datey-surface: #ffffff;
-  --datey-surface-dim: #f8fafc;
-  --datey-surface-variant: #f1f5f9;
-  --datey-surface-container: #f1f5f9;
-  --datey-surface-container-high: #e2e8f0;
-
-  --datey-border: #e2e8f0;
-  --datey-border-variant: #cbd5e1;
-
-  --datey-text: #0f172a;
-  --datey-text-secondary: #64748b;
-  --datey-text-inverse: #ffffff;
-
-  /* Event types */
-  --datey-event-birthday: #2563eb;
-  --datey-event-anniversary: #16a34a;
-  --datey-event-wedding: #d97706;
-  --datey-event-holiday: #dc2626;
-  --datey-event-meeting: #7c3aed;
-  --datey-event-custom: #64748b;
-
-  /* Spacing — 8dp grid */
-  --space-1: 0.5rem;
-  --space-2: 1rem;
-  --space-3: 1.5rem;
-  --space-4: 2rem;
-  --space-5: 2.5rem;
-
-  /* Typography */
-  --font-sans: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-
-  /* Shape */
-  --radius-sm: 0.5rem;
-  --radius: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-pill: 9999px;
-
-  /* Elevation */
-  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-2: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-3: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-
-  /* Motion */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-[data-theme="dark"] {
-  --datey-primary: #60a5fa;
-  --datey-primary-hover: #93c5fd;
-  --datey-primary-container: #1e3a8a;
-  --datey-on-primary-container: #dbeafe;
-  --datey-secondary: #94a3b8;
-  --datey-secondary-hover: #cbd5e1;
-
-  --datey-surface: #0f172a;
-  --datey-surface-dim: #020617;
-  --datey-surface-variant: #1e293b;
-  --datey-surface-container: #1e293b;
-  --datey-surface-container-high: #334155;
-
-  --datey-border: #334155;
-  --datey-border-variant: #475569;
-
-  --datey-text: #f8fafc;
-  --datey-text-secondary: #94a3b8;
-  --datey-text-inverse: #0f172a;
-
-  --datey-event-birthday: #60a5fa;
-  --datey-event-anniversary: #4ade80;
-  --datey-event-wedding: #fbbf24;
-  --datey-event-holiday: #f87171;
-  --datey-event-meeting: #a78bfa;
-  --datey-event-custom: #94a3b8;
-}
-
-/* ═══════════════════════════════════════════
-   Base
-   ═══════════════════════════════════════════ */
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background: var(--datey-surface-dim);
-  color: var(--datey-text);
-  font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  min-height: 100vh;
-  transition: background var(--transition), color var(--transition);
-}
-
-/* ═══════════════════════════════════════════
-   Navbar
-   ═══════════════════════════════════════════ */
-
-.navbar {
-  background: var(--datey-surface);
-  border-bottom: 1px solid var(--datey-border);
-  box-shadow: var(--shadow-1);
-  padding: 0.75rem 0;
-  transition: background var(--transition), border-color var(--transition);
-}
-
-.navbar > .container {
-  gap: var(--space-2);
-}
-
-.navbar-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  font-family: var(--font-sans);
-  font-size: 1.375rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--datey-text) !important;
-  padding: 0;
-  margin-right: var(--space-2);
-}
-
-.brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius);
-  background: var(--datey-primary);
-  color: var(--datey-text-inverse);
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.navbar-search {
+.event-card {
   position: relative;
-  width: 100%;
-  max-width: 280px;
-}
-
-.navbar-search .search-icon {
-  position: absolute;
-  left: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--datey-text-secondary);
-  pointer-events: none;
-}
-
-.navbar-search .form-control {
-  padding-left: 2.5rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-radius: var(--radius-pill);
-  background: var(--datey-surface-variant);
-  border: 1px solid transparent;
-  color: var(--datey-text);
-  font-size: 0.9375rem;
-  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.navbar-search .form-control::placeholder {
-  color: var(--datey-text-secondary);
-}
-
-.navbar-search .form-control:focus {
-  background: var(--datey-surface);
-  border-color: var(--datey-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-  color: var(--datey-text);
-}
-
-[data-theme="dark"] .navbar-search .form-control:focus {
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
-}
-
-/* Nav links */
-
-.navbar-nav {
-  gap: 0.125rem;
-}
-
-.navbar-nav .nav-link {
-  color: var(--datey-text-secondary);
-  font-weight: 500;
-  font-size: 0.875rem;
-  padding: 0.5rem 0.875rem;
-  border-radius: var(--radius-pill);
-  transition: color var(--transition-fast), background var(--transition-fast);
-}
-
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link:focus {
-  color: var(--datey-text);
-  background: var(--datey-surface-variant);
-}
-
-.navbar-nav .nav-link.active {
-  color: var(--datey-on-primary-container);
-  background: var(--datey-primary-container);
-  font-weight: 600;
-}
-
-.nav-divider {
-  width: 1px;
-  height: 1.5rem;
-  background: var(--datey-border);
-  margin: 0 0.25rem;
-}
-
-/* Icon buttons */
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: var(--datey-text-secondary);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.btn-icon:hover {
-  background: var(--datey-surface-variant);
-  color: var(--datey-text);
-}
-
-.theme-toggle .theme-icon-light,
-.theme-toggle .theme-icon-dark {
-  display: none;
-}
-
-[data-theme="light"] .theme-toggle .theme-icon-light,
-[data-theme="dark"] .theme-toggle .theme-icon-dark {
-  display: inline-flex;
-}
-
-.eink-toggle {
-  border-radius: var(--radius-pill);
-  padding-left: 0.875rem;
-  padding-right: 0.875rem;
-  border: 1px solid var(--datey-border);
-  background: transparent;
-  color: var(--datey-text-secondary);
-  font-weight: 500;
-  font-size: 0.8125rem;
-  transition: all var(--transition-fast);
-}
-
-.eink-toggle:hover {
-  background: var(--datey-surface-variant);
-  color: var(--datey-text);
-}
-
-.eink-toggle.active {
-  background: var(--datey-primary);
-  border-color: var(--datey-primary);
-  color: var(--datey-text-inverse);
-}
-
-/* User menu */
-
-.user-dropdown .user-menu {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.75rem 0.25rem 0.25rem !important;
-  border-radius: var(--radius-pill) !important;
-  border: 1px solid var(--datey-border);
-  color: var(--datey-text) !important;
-  font-weight: 500;
-  font-size: 0.875rem;
-  white-space: nowrap;
-}
-
-.user-dropdown .user-menu:hover,
-.user-dropdown .user-menu:focus {
-  background: var(--datey-surface-variant);
-  border-color: var(--datey-border-variant);
-}
-
-.user-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 50%;
-  background: var(--datey-primary-container);
-  color: var(--datey-on-primary-container);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.user-name {
-  max-width: 120px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-/* Toggler */
-
-.navbar-toggler {
-  border-color: var(--datey-border);
-  padding: 0.5rem 0.625rem;
-  border-radius: var(--radius);
+.event-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
 }
 
-.navbar-toggler:focus {
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
+.event-card.event-birthday::before { background: var(--bs-primary); }
+.event-card.event-anniversary::before { background: var(--bs-success); }
+.event-card.event-wedding::before { background: var(--bs-warning); }
+.event-card.event-holiday::before { background: var(--bs-danger); }
+.event-card.event-meeting::before { background: var(--bs-purple, #6f42c1); }
+.event-card.event-custom::before { background: var(--bs-secondary); }
 
-.navbar-toggler-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Dropdowns */
-
-.dropdown-menu {
-  background: var(--datey-surface);
-  border: 1px solid var(--datey-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-3);
-  padding: 0.5rem;
-  min-width: 12rem;
-}
-
-.dropdown-item {
-  color: var(--datey-text);
-  border-radius: var(--radius-sm);
-  padding: 0.625rem 0.875rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: background var(--transition-fast);
-}
-
-.dropdown-item:hover,
-.dropdown-item:focus {
-  background: var(--datey-surface-variant);
-  color: var(--datey-text);
-}
-
-.dropdown-item.active {
-  background: var(--datey-primary-container);
-  color: var(--datey-on-primary-container);
-}
-
-.dropdown-divider {
-  border-color: var(--datey-border);
-  margin: 0.5rem;
-}
-
-/* Mobile */
-
-@media (max-width: 1199.98px) {
-  .navbar-collapse {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--datey-border);
-  }
-
-  .navbar-nav {
-    gap: 0.25rem;
-  }
-
-  .navbar-nav .nav-link {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    border-radius: var(--radius);
-  }
-
-  .nav-divider {
-    display: none;
-  }
-
-  .navbar-actions-stack {
-    display: flex;
-    gap: 0.5rem;
-    padding-top: 0.75rem;
-    margin-top: 0.5rem;
-    border-top: 1px solid var(--datey-border);
-  }
-}
-
-/* ═══════════════════════════════════════════
-   Main Layout
-   ═══════════════════════════════════════════ */
-
-main.container {
-  padding-top: var(--space-4);
-  padding-bottom: var(--space-4);
-}
-
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-  flex-wrap: wrap;
-}
-
-.page-header h1 {
-  margin-bottom: 0;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.page-header p {
-  color: var(--datey-text-secondary);
-  margin-bottom: 0;
-}
-
-/* ═══════════════════════════════════════════
-   Cards
-   ═══════════════════════════════════════════ */
-
-.card {
-  background: var(--datey-surface);
-  border: 1px solid var(--datey-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
-  transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
-}
-
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-2);
-  border-color: var(--datey-border-variant);
-}
-
-.card-title {
-  color: var(--datey-text);
-  font-weight: 600;
-}
-
-.card-body {
-  padding: var(--space-2) var(--space-3);
-}
-
-/* ═══════════════════════════════════════════
-   Buttons
-   ═══════════════════════════════════════════ */
-
-.btn {
-  font-weight: 500;
-  font-size: 0.875rem;
-  letter-spacing: 0.01em;
-  border-radius: var(--radius-pill);
-  padding: 0.5rem 1.25rem;
-  transition: all var(--transition-fast);
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-1);
-}
-
-.btn:active {
-  transform: translateY(0);
-}
-
-.btn-primary {
-  background: var(--datey-primary);
-  border-color: var(--datey-primary);
-  color: var(--datey-text-inverse);
-}
-
-.btn-primary:hover,
-.btn-primary:focus {
-  background: var(--datey-primary-hover);
-  border-color: var(--datey-primary-hover);
-}
-
-.btn-outline-primary {
-  color: var(--datey-primary);
-  border-color: var(--datey-primary);
-}
-
-.btn-outline-primary:hover {
-  background: var(--datey-primary);
-  border-color: var(--datey-primary);
-  color: var(--datey-text-inverse);
-}
-
-.btn-secondary {
-  background: var(--datey-surface-variant);
-  border-color: var(--datey-border);
-  color: var(--datey-text);
-}
-
-.btn-secondary:hover {
-  background: var(--datey-surface-container-high);
-  border-color: var(--datey-border-variant);
-  color: var(--datey-text);
-}
-
-/* ═══════════════════════════════════════════
-   Badges
-   ═══════════════════════════════════════════ */
-
-.event-type-badge {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 0.35em 0.75em;
-  border-radius: var(--radius-pill);
-}
-
-.event-type-badge.event-birthday { background: var(--datey-event-birthday); color: #fff; }
-.event-type-badge.event-anniversary { background: var(--datey-event-anniversary); color: #fff; }
-.event-type-badge.event-wedding { background: var(--datey-event-wedding); color: #0f172a; }
-.event-type-badge.event-holiday { background: var(--datey-event-holiday); color: #fff; }
-.event-type-badge.event-meeting { background: var(--datey-event-meeting); color: #fff; }
-.event-type-badge.event-custom { background: var(--datey-event-custom); color: #fff; }
-
-/* ═══════════════════════════════════════════
-   Tables
-   ═══════════════════════════════════════════ */
-
-.table {
-  color: var(--datey-text);
-  border-color: var(--datey-border);
-}
-
-.table > thead {
-  background: var(--datey-surface-variant);
-  color: var(--datey-text-secondary);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.table > thead th {
-  border-bottom: 1px solid var(--datey-border);
-  padding: 0.75rem 1rem;
-}
-
-.table > tbody td {
-  padding: 1rem;
-  border-color: var(--datey-border);
-}
-
-.table-hover tbody tr:hover {
-  background: var(--datey-surface-variant);
-}
-
-/* ═══════════════════════════════════════════
-   Forms
-   ═══════════════════════════════════════════ */
-
-.form-label {
-  color: var(--datey-text);
-  font-weight: 500;
-  font-size: 0.875rem;
-}
-
-.form-control,
-.form-select {
-  background: var(--datey-surface);
-  border: 1px solid var(--datey-border-variant);
-  color: var(--datey-text);
-  border-radius: var(--radius);
-  padding: 0.625rem 0.875rem;
-  font-size: 0.9375rem;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.form-control::placeholder {
-  color: var(--datey-text-secondary);
-}
-
-.form-control:focus,
-.form-select:focus {
-  background: var(--datey-surface);
-  border-color: var(--datey-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-  color: var(--datey-text);
-}
-
-[data-theme="dark"] .form-control:focus,
-[data-theme="dark"] .form-select:focus {
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
-}
-
-/* ═══════════════════════════════════════════
-   Alerts
-   ═══════════════════════════════════════════ */
-
-.alert {
-  border: 1px solid var(--datey-border);
-  border-radius: var(--radius);
-  background: var(--datey-surface);
-  color: var(--datey-text);
-  padding: 1rem 1.25rem;
-}
-
-.alert-info {
-  background: var(--datey-primary-container);
-  border-color: rgba(37, 99, 235, 0.15);
-  color: var(--datey-on-primary-container);
-}
-
-/* ═══════════════════════════════════════════
-   Toast
-   ═══════════════════════════════════════════ */
+/* ── Toast Container ── */
 
 #toast-container {
   position: fixed;
@@ -650,58 +41,9 @@ main.container {
 
 #toast-container .toast {
   pointer-events: auto;
-  border-radius: var(--radius);
-  background: var(--datey-surface);
-  color: var(--datey-text);
-  border: 1px solid var(--datey-border);
-  box-shadow: var(--shadow-3);
 }
 
-/* ═══════════════════════════════════════════
-   Dashboard
-   ═══════════════════════════════════════════ */
-
-.date-finder-card {
-  background: var(--datey-surface);
-}
-
-.days-remaining {
-  font-weight: 700;
-  font-size: 1.125rem;
-}
-
-.days-remaining.urgent { color: var(--datey-event-holiday); }
-.days-remaining.normal { color: var(--datey-primary); }
-
-.event-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.event-card::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--datey-primary);
-}
-
-.event-card.event-birthday::before { background: var(--datey-event-birthday); }
-.event-card.event-anniversary::before { background: var(--datey-event-anniversary); }
-.event-card.event-wedding::before { background: var(--datey-event-wedding); }
-.event-card.event-holiday::before { background: var(--datey-event-holiday); }
-.event-card.event-meeting::before { background: var(--datey-event-meeting); }
-.event-card.event-custom::before { background: var(--datey-event-custom); }
-
-.event-date {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--datey-text-secondary);
-  font-size: 0.875rem;
-}
+/* ── Empty State ── */
 
 .empty-state {
   display: flex;
@@ -709,24 +51,20 @@ main.container {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: var(--space-5) var(--space-3);
-  border-radius: var(--radius-lg);
-  background: var(--datey-surface);
-  border: 1px solid var(--datey-border);
-  color: var(--datey-text-secondary);
+  padding: 3rem 1.5rem;
+  border-radius: var(--bs-border-radius-lg);
+  border: 1px solid var(--bs-border-color);
+  color: var(--bs-secondary-color);
 }
 
 .empty-state-icon {
   width: 3rem;
   height: 3rem;
-  margin-bottom: var(--space-2);
-  color: var(--datey-text-secondary);
+  margin-bottom: 1rem;
   opacity: 0.5;
 }
 
-/* ═══════════════════════════════════════════
-   HTMX Loading
-   ═══════════════════════════════════════════ */
+/* ── HTMX Loading ── */
 
 .htmx-indicator {
   display: none;
@@ -740,8 +78,8 @@ main.container {
 .search-spinner {
   width: 1rem;
   height: 1rem;
-  border: 2px solid var(--datey-border);
-  border-top-color: var(--datey-primary);
+  border: 2px solid var(--bs-border-color);
+  border-top-color: var(--bs-primary);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   display: none;
@@ -756,59 +94,148 @@ main.container {
   to { transform: rotate(360deg); }
 }
 
-/* ═══════════════════════════════════════════
-   Misc
-   ═══════════════════════════════════════════ */
+/* ── Days Remaining ── */
 
-h1, h2, h3, h4, h5 {
-  color: var(--datey-text);
+.days-remaining {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.days-remaining.urgent { color: var(--bs-danger); }
+.days-remaining.normal { color: var(--bs-primary); }
+
+/* ── Event Date ── */
+
+.event-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+}
+
+/* ── Event Type Badge ── */
+
+.event-type-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Brand Icon ── */
+
+.brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-primary);
+  color: #fff;
+  font-size: 1rem;
   font-weight: 700;
 }
 
-.text-muted {
-  color: var(--datey-text-secondary) !important;
+/* ── Navbar Search ── */
+
+.navbar-search {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
 }
 
-a {
-  color: var(--datey-primary);
+.navbar-search .search-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+  z-index: 5;
 }
 
-a:hover {
-  color: var(--datey-primary-hover);
+.navbar-search .form-control {
+  padding-left: 2.5rem;
+  border-radius: 50rem;
 }
 
-.page-link {
-  background: var(--datey-surface);
-  border-color: var(--datey-border);
-  color: var(--datey-primary);
+/* ── User Avatar ── */
+
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.page-link:hover {
-  background: var(--datey-surface-variant);
-  border-color: var(--datey-border);
-  color: var(--datey-primary);
+.user-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.page-item.active .page-link {
-  background: var(--datey-primary);
-  border-color: var(--datey-primary);
-  color: var(--datey-text-inverse);
+/* ── Theme Toggle ── */
+
+.theme-toggle .theme-icon-light,
+.theme-toggle .theme-icon-dark,
+.theme-toggle .theme-icon-eink {
+  display: none;
 }
 
-.modal-content {
-  background: var(--datey-surface);
-  border-color: var(--datey-border);
-  color: var(--datey-text);
-  border-radius: var(--radius-lg);
+[data-bs-theme="light"] .theme-toggle .theme-icon-light,
+[data-bs-theme="dark"] .theme-toggle .theme-icon-dark,
+[data-bs-theme="eink"] .theme-toggle .theme-icon-eink {
+  display: inline-flex;
 }
 
-.modal-header,
-.modal-footer {
-  border-color: var(--datey-border);
+/* ── Navbar text/icon button for theme toggle ── */
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--bs-secondary-color);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
 
-.list-group-item {
-  background: var(--datey-surface);
-  border-color: var(--datey-border);
-  color: var(--datey-text);
+.btn-icon:hover {
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+}
+
+/* ── Theme Badge (3-way toggle state label) ── */
+
+.theme-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.2em 0.5em;
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-secondary-color);
+  margin-left: 0.25rem;
+}
+
+/* ── Navbar tweaks for e-ink mode ── */
+
+[data-bs-theme="eink"] .theme-badge {
+  background: #000;
+  color: #fff;
 }

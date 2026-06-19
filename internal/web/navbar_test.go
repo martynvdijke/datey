@@ -52,7 +52,9 @@ func TestNavbar_RendersForAuthenticatedUser(t *testing.T) {
 		"Notifications",
 		"Search people",
 		"theme-toggle",
-		"eink-toggle",
+		"theme-icon-eink",
+		"E-Ink",
+		"Light",
 	}
 	for _, s := range mustContain {
 		if !strings.Contains(body, s) {
@@ -122,11 +124,13 @@ func TestThemeScript_PresentInBaseTemplate(t *testing.T) {
 	base := string(baseBytes)
 
 	mustContain := []string{
-		`data-theme="light"`,
+		`data-bs-theme="light"`,
 		"localStorage.getItem('datey-theme')",
 		"localStorage.setItem('datey-theme', theme)",
 		"prefers-color-scheme",
 		"theme-toggle",
+		"theme-icon-eink",
+		"eink-stylesheet",
 	}
 	for _, s := range mustContain {
 		if !strings.Contains(base, s) {
@@ -135,7 +139,7 @@ func TestThemeScript_PresentInBaseTemplate(t *testing.T) {
 	}
 }
 
-func TestStyleCSS_HasThemeVariables(t *testing.T) {
+func TestStyleCSS_HasEssentials(t *testing.T) {
 	cssBytes, err := staticFS.ReadFile("static/style.css")
 	if err != nil {
 		t.Fatalf("read embedded style.css: %v", err)
@@ -143,15 +147,16 @@ func TestStyleCSS_HasThemeVariables(t *testing.T) {
 	css := string(cssBytes)
 
 	mustContain := []string{
-		`[data-theme="dark"]`,
-		"--datey-surface:",
-		"--datey-surface-variant:",
-		"--datey-text:",
-		"--datey-primary:",
+		".event-card::before",
+		"#toast-container",
+		".empty-state",
+		"htmx-indicator",
+		".theme-icon-eink",
+		"data-bs-theme",
 	}
 	for _, s := range mustContain {
 		if !strings.Contains(css, s) {
-			t.Errorf("style.css missing theme variable/selector: %q", s)
+			t.Errorf("style.css missing essential style: %q", s)
 		}
 	}
 }

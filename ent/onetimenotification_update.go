@@ -125,6 +125,53 @@ func (_u *OneTimeNotificationUpdate) ClearChannelTargets() *OneTimeNotificationU
 	return _u
 }
 
+// SetPersonID sets the "person_id" field.
+func (_u *OneTimeNotificationUpdate) SetPersonID(v int) *OneTimeNotificationUpdate {
+	_u.mutation.ResetPersonID()
+	_u.mutation.SetPersonID(v)
+	return _u
+}
+
+// SetNillablePersonID sets the "person_id" field if the given value is not nil.
+func (_u *OneTimeNotificationUpdate) SetNillablePersonID(v *int) *OneTimeNotificationUpdate {
+	if v != nil {
+		_u.SetPersonID(*v)
+	}
+	return _u
+}
+
+// AddPersonID adds value to the "person_id" field.
+func (_u *OneTimeNotificationUpdate) AddPersonID(v int) *OneTimeNotificationUpdate {
+	_u.mutation.AddPersonID(v)
+	return _u
+}
+
+// ClearPersonID clears the value of the "person_id" field.
+func (_u *OneTimeNotificationUpdate) ClearPersonID() *OneTimeNotificationUpdate {
+	_u.mutation.ClearPersonID()
+	return _u
+}
+
+// SetEventType sets the "event_type" field.
+func (_u *OneTimeNotificationUpdate) SetEventType(v string) *OneTimeNotificationUpdate {
+	_u.mutation.SetEventType(v)
+	return _u
+}
+
+// SetNillableEventType sets the "event_type" field if the given value is not nil.
+func (_u *OneTimeNotificationUpdate) SetNillableEventType(v *string) *OneTimeNotificationUpdate {
+	if v != nil {
+		_u.SetEventType(*v)
+	}
+	return _u
+}
+
+// ClearEventType clears the value of the "event_type" field.
+func (_u *OneTimeNotificationUpdate) ClearEventType() *OneTimeNotificationUpdate {
+	_u.mutation.ClearEventType()
+	return _u
+}
+
 // AddDeliveryIDs adds the "deliveries" edge to the NotificationDelivery entity by IDs.
 func (_u *OneTimeNotificationUpdate) AddDeliveryIDs(ids ...int) *OneTimeNotificationUpdate {
 	_u.mutation.AddDeliveryIDs(ids...)
@@ -238,6 +285,21 @@ func (_u *OneTimeNotificationUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	if _u.mutation.ChannelTargetsCleared() {
 		_spec.ClearField(onetimenotification.FieldChannelTargets, field.TypeString)
+	}
+	if value, ok := _u.mutation.PersonID(); ok {
+		_spec.SetField(onetimenotification.FieldPersonID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPersonID(); ok {
+		_spec.AddField(onetimenotification.FieldPersonID, field.TypeInt, value)
+	}
+	if _u.mutation.PersonIDCleared() {
+		_spec.ClearField(onetimenotification.FieldPersonID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.EventType(); ok {
+		_spec.SetField(onetimenotification.FieldEventType, field.TypeString, value)
+	}
+	if _u.mutation.EventTypeCleared() {
+		_spec.ClearField(onetimenotification.FieldEventType, field.TypeString)
 	}
 	if _u.mutation.DeliveriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -400,6 +462,53 @@ func (_u *OneTimeNotificationUpdateOne) ClearChannelTargets() *OneTimeNotificati
 	return _u
 }
 
+// SetPersonID sets the "person_id" field.
+func (_u *OneTimeNotificationUpdateOne) SetPersonID(v int) *OneTimeNotificationUpdateOne {
+	_u.mutation.ResetPersonID()
+	_u.mutation.SetPersonID(v)
+	return _u
+}
+
+// SetNillablePersonID sets the "person_id" field if the given value is not nil.
+func (_u *OneTimeNotificationUpdateOne) SetNillablePersonID(v *int) *OneTimeNotificationUpdateOne {
+	if v != nil {
+		_u.SetPersonID(*v)
+	}
+	return _u
+}
+
+// AddPersonID adds value to the "person_id" field.
+func (_u *OneTimeNotificationUpdateOne) AddPersonID(v int) *OneTimeNotificationUpdateOne {
+	_u.mutation.AddPersonID(v)
+	return _u
+}
+
+// ClearPersonID clears the value of the "person_id" field.
+func (_u *OneTimeNotificationUpdateOne) ClearPersonID() *OneTimeNotificationUpdateOne {
+	_u.mutation.ClearPersonID()
+	return _u
+}
+
+// SetEventType sets the "event_type" field.
+func (_u *OneTimeNotificationUpdateOne) SetEventType(v string) *OneTimeNotificationUpdateOne {
+	_u.mutation.SetEventType(v)
+	return _u
+}
+
+// SetNillableEventType sets the "event_type" field if the given value is not nil.
+func (_u *OneTimeNotificationUpdateOne) SetNillableEventType(v *string) *OneTimeNotificationUpdateOne {
+	if v != nil {
+		_u.SetEventType(*v)
+	}
+	return _u
+}
+
+// ClearEventType clears the value of the "event_type" field.
+func (_u *OneTimeNotificationUpdateOne) ClearEventType() *OneTimeNotificationUpdateOne {
+	_u.mutation.ClearEventType()
+	return _u
+}
+
 // AddDeliveryIDs adds the "deliveries" edge to the NotificationDelivery entity by IDs.
 func (_u *OneTimeNotificationUpdateOne) AddDeliveryIDs(ids ...int) *OneTimeNotificationUpdateOne {
 	_u.mutation.AddDeliveryIDs(ids...)
@@ -543,6 +652,21 @@ func (_u *OneTimeNotificationUpdateOne) sqlSave(ctx context.Context) (_node *One
 	}
 	if _u.mutation.ChannelTargetsCleared() {
 		_spec.ClearField(onetimenotification.FieldChannelTargets, field.TypeString)
+	}
+	if value, ok := _u.mutation.PersonID(); ok {
+		_spec.SetField(onetimenotification.FieldPersonID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPersonID(); ok {
+		_spec.AddField(onetimenotification.FieldPersonID, field.TypeInt, value)
+	}
+	if _u.mutation.PersonIDCleared() {
+		_spec.ClearField(onetimenotification.FieldPersonID, field.TypeInt)
+	}
+	if value, ok := _u.mutation.EventType(); ok {
+		_spec.SetField(onetimenotification.FieldEventType, field.TypeString, value)
+	}
+	if _u.mutation.EventTypeCleared() {
+		_spec.ClearField(onetimenotification.FieldEventType, field.TypeString)
 	}
 	if _u.mutation.DeliveriesCleared() {
 		edge := &sqlgraph.EdgeSpec{

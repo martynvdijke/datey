@@ -122,7 +122,11 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/notifications/new", h.newNotificationForm)
 			r.Post("/notifications/new", h.createNotification)
 			r.Post("/notifications/{id}/delete", h.deleteNotification)
+			r.Post("/notifications/test", h.testNotificationNow)
 			r.Get("/api/notifications", h.apiNotifications)
+
+			// E-Ink toggle: requires auth (not admin-only, any user can toggle)
+			r.Post("/settings/eink-toggle", h.settingsEinkToggle)
 
 			// Admin-only routes
 			r.Group(func(r chi.Router) {
@@ -135,7 +139,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Post("/settings/backup", h.settingsBackupRun)
 				r.Post("/settings/test/{channel}", h.testNotification)
 				r.Post("/settings/logs/level", h.setLogLevel)
-				r.Post("/settings/eink-toggle", h.settingsEinkToggle)
 				// Legacy redirects
 				r.Get("/logs", h.oldLogsRedirect)
 				r.Post("/logs/level", h.setLogLevel)

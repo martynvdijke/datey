@@ -163,7 +163,7 @@ func TestDeleteNotification(t *testing.T) {
 
 	// First create a notification
 	future := time.Now().Add(24 * time.Hour)
-	n, err := h.oneTimeNots.Create(withUserContext(context.Background()), "to delete", future, []string{"email"})
+	n, err := h.oneTimeNots.Create(withUserContext(context.Background()), "to delete", future, []string{"email"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -196,7 +196,7 @@ func TestAPINotifications(t *testing.T) {
 	router := setupNotificationsRouter(h)
 
 	future := time.Now().Add(24 * time.Hour)
-	_, err := h.oneTimeNots.Create(withUserContext(context.Background()), "api test", future, []string{"email"})
+	_, err := h.oneTimeNots.Create(withUserContext(context.Background()), "api test", future, []string{"email"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -231,7 +231,7 @@ func TestAPINotifications_IncludesDeliveries(t *testing.T) {
 	router := setupNotificationsRouter(h)
 
 	future := time.Now().Add(24 * time.Hour)
-	_, err := h.oneTimeNots.Create(withUserContext(context.Background()), "delivery test", future, []string{"email"})
+	_, err := h.oneTimeNots.Create(withUserContext(context.Background()), "delivery test", future, []string{"email"}, nil)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}

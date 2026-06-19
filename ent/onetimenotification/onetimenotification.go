@@ -24,6 +24,10 @@ const (
 	FieldSentAt = "sent_at"
 	// FieldChannelTargets holds the string denoting the channel_targets field in the database.
 	FieldChannelTargets = "channel_targets"
+	// FieldPersonID holds the string denoting the person_id field in the database.
+	FieldPersonID = "person_id"
+	// FieldEventType holds the string denoting the event_type field in the database.
+	FieldEventType = "event_type"
 	// EdgeDeliveries holds the string denoting the deliveries edge name in mutations.
 	EdgeDeliveries = "deliveries"
 	// Table holds the table name of the onetimenotification in the database.
@@ -46,6 +50,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldSentAt,
 	FieldChannelTargets,
+	FieldPersonID,
+	FieldEventType,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -65,6 +71,8 @@ var (
 	DefaultStatus string
 	// DefaultChannelTargets holds the default value on creation for the "channel_targets" field.
 	DefaultChannelTargets string
+	// DefaultEventType holds the default value on creation for the "event_type" field.
+	DefaultEventType string
 )
 
 // OrderOption defines the ordering options for the OneTimeNotification queries.
@@ -103,6 +111,16 @@ func BySentAt(opts ...sql.OrderTermOption) OrderOption {
 // ByChannelTargets orders the results by the channel_targets field.
 func ByChannelTargets(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChannelTargets, opts...).ToFunc()
+}
+
+// ByPersonID orders the results by the person_id field.
+func ByPersonID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPersonID, opts...).ToFunc()
+}
+
+// ByEventType orders the results by the event_type field.
+func ByEventType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEventType, opts...).ToFunc()
 }
 
 // ByDeliveriesCount orders the results by deliveries count.

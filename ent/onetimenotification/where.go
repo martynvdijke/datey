@@ -85,6 +85,16 @@ func ChannelTargets(v string) predicate.OneTimeNotification {
 	return predicate.OneTimeNotification(sql.FieldEQ(FieldChannelTargets, v))
 }
 
+// PersonID applies equality check predicate on the "person_id" field. It's identical to PersonIDEQ.
+func PersonID(v int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEQ(FieldPersonID, v))
+}
+
+// EventType applies equality check predicate on the "event_type" field. It's identical to EventTypeEQ.
+func EventType(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEQ(FieldEventType, v))
+}
+
 // MessageEQ applies the EQ predicate on the "message" field.
 func MessageEQ(v string) predicate.OneTimeNotification {
 	return predicate.OneTimeNotification(sql.FieldEQ(FieldMessage, v))
@@ -418,6 +428,131 @@ func ChannelTargetsEqualFold(v string) predicate.OneTimeNotification {
 // ChannelTargetsContainsFold applies the ContainsFold predicate on the "channel_targets" field.
 func ChannelTargetsContainsFold(v string) predicate.OneTimeNotification {
 	return predicate.OneTimeNotification(sql.FieldContainsFold(FieldChannelTargets, v))
+}
+
+// PersonIDEQ applies the EQ predicate on the "person_id" field.
+func PersonIDEQ(v int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEQ(FieldPersonID, v))
+}
+
+// PersonIDNEQ applies the NEQ predicate on the "person_id" field.
+func PersonIDNEQ(v int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNEQ(FieldPersonID, v))
+}
+
+// PersonIDIn applies the In predicate on the "person_id" field.
+func PersonIDIn(vs ...int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldIn(FieldPersonID, vs...))
+}
+
+// PersonIDNotIn applies the NotIn predicate on the "person_id" field.
+func PersonIDNotIn(vs ...int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNotIn(FieldPersonID, vs...))
+}
+
+// PersonIDGT applies the GT predicate on the "person_id" field.
+func PersonIDGT(v int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldGT(FieldPersonID, v))
+}
+
+// PersonIDGTE applies the GTE predicate on the "person_id" field.
+func PersonIDGTE(v int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldGTE(FieldPersonID, v))
+}
+
+// PersonIDLT applies the LT predicate on the "person_id" field.
+func PersonIDLT(v int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldLT(FieldPersonID, v))
+}
+
+// PersonIDLTE applies the LTE predicate on the "person_id" field.
+func PersonIDLTE(v int) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldLTE(FieldPersonID, v))
+}
+
+// PersonIDIsNil applies the IsNil predicate on the "person_id" field.
+func PersonIDIsNil() predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldIsNull(FieldPersonID))
+}
+
+// PersonIDNotNil applies the NotNil predicate on the "person_id" field.
+func PersonIDNotNil() predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNotNull(FieldPersonID))
+}
+
+// EventTypeEQ applies the EQ predicate on the "event_type" field.
+func EventTypeEQ(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEQ(FieldEventType, v))
+}
+
+// EventTypeNEQ applies the NEQ predicate on the "event_type" field.
+func EventTypeNEQ(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNEQ(FieldEventType, v))
+}
+
+// EventTypeIn applies the In predicate on the "event_type" field.
+func EventTypeIn(vs ...string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldIn(FieldEventType, vs...))
+}
+
+// EventTypeNotIn applies the NotIn predicate on the "event_type" field.
+func EventTypeNotIn(vs ...string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNotIn(FieldEventType, vs...))
+}
+
+// EventTypeGT applies the GT predicate on the "event_type" field.
+func EventTypeGT(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldGT(FieldEventType, v))
+}
+
+// EventTypeGTE applies the GTE predicate on the "event_type" field.
+func EventTypeGTE(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldGTE(FieldEventType, v))
+}
+
+// EventTypeLT applies the LT predicate on the "event_type" field.
+func EventTypeLT(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldLT(FieldEventType, v))
+}
+
+// EventTypeLTE applies the LTE predicate on the "event_type" field.
+func EventTypeLTE(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldLTE(FieldEventType, v))
+}
+
+// EventTypeContains applies the Contains predicate on the "event_type" field.
+func EventTypeContains(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldContains(FieldEventType, v))
+}
+
+// EventTypeHasPrefix applies the HasPrefix predicate on the "event_type" field.
+func EventTypeHasPrefix(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldHasPrefix(FieldEventType, v))
+}
+
+// EventTypeHasSuffix applies the HasSuffix predicate on the "event_type" field.
+func EventTypeHasSuffix(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldHasSuffix(FieldEventType, v))
+}
+
+// EventTypeIsNil applies the IsNil predicate on the "event_type" field.
+func EventTypeIsNil() predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldIsNull(FieldEventType))
+}
+
+// EventTypeNotNil applies the NotNil predicate on the "event_type" field.
+func EventTypeNotNil() predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldNotNull(FieldEventType))
+}
+
+// EventTypeEqualFold applies the EqualFold predicate on the "event_type" field.
+func EventTypeEqualFold(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldEqualFold(FieldEventType, v))
+}
+
+// EventTypeContainsFold applies the ContainsFold predicate on the "event_type" field.
+func EventTypeContainsFold(v string) predicate.OneTimeNotification {
+	return predicate.OneTimeNotification(sql.FieldContainsFold(FieldEventType, v))
 }
 
 // HasDeliveries applies the HasEdge predicate on the "deliveries" edge.

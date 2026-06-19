@@ -1,12 +1,17 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/datey/datey/ent"
+	"github.com/datey/datey/internal/notifier"
+	"github.com/datey/datey/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -24,6 +29,32 @@ func (h *Handler) channelInfoList() []channelInfo {
 	}
 }
 
+// personOption is a simplified person representation for form dropdowns.
+type personOption struct {
+	ID   int
+	Name string
+}
+
+func (h *Handler) personOptions(ctx context.Context) []personOption {
+	people, err := h.people.List(ctx)
+	if err != nil {
+		slog.Error("list people for notification form", "error", err)
+		return nil
+	}
+	opts := make([]personOption, 0, len(people))
+	for _, p := range people {
+		opts = append(opts, personOption{ID: p.ID, Name: p.Name})
+	}
+	return opts
+}
+
+// personNameByID returns a map of person ID → name for quick lookup.
+func personNameByID(notifications []*ent.OneTimeNotification) map[int]string {
+	// We no longer have edges, so we return empty.
+	// The handler loads names separately.
+	return nil
+}
+
 func (h *Handler) notificationsList(w http.ResponseWriter, r *http.Request) {
 	notifications, err := h.oneTimeNots.List(r.Context())
 	if err != nil {
@@ -32,9 +63,24 @@ func (h *Handler) notificationsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Build a person name lookup for notifications that have a person_id
+	personNames := make(map[int]string)
+	for _, n := range notifications {
+		if n.PersonID != nil {
+			id := *n.PersonID
+			if _, ok := personNames[id]; !ok {
+				p, err := h.people.Get(r.Context(), id)
+				if err == nil && p != nil {
+					personNames[id] = p.Name
+				}
+			}
+		}
+	}
+
 	h.render(w, r, "notifications.html", map[string]any{
 		"Title":         "Datey - One-Time Notifications",
 		"Notifications": notifications,
+		"PersonNames":   personNames,
 	})
 }
 
@@ -42,6 +88,7 @@ func (h *Handler) newNotificationForm(w http.ResponseWriter, r *http.Request) {
 	h.render(w, r, "notification_form.html", map[string]any{
 		"Title":    "Datey - Create Notification",
 		"Channels": h.channelInfoList(),
+		"People":   h.personOptions(r.Context()),
 	})
 }
 
@@ -53,6 +100,8 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 
 	message := r.FormValue("message")
 	scheduledAtStr := r.FormValue("scheduled_at")
+	personIDStr := r.FormValue("person_id")
+	eventType := r.FormValue("event_type")
 
 	errors := make(map[string]string)
 
@@ -71,8 +120,11 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 			"FormData": map[string]string{
 				"Message":     message,
 				"ScheduledAt": scheduledAtStr,
+				"PersonID":    personIDStr,
+				"EventType":   eventType,
 			},
 			"Channels": h.channelInfoList(),
+			"People":   h.personOptions(r.Context()),
 		})
 		return
 	}
@@ -86,8 +138,11 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 			"FormData": map[string]string{
 				"Message":     message,
 				"ScheduledAt": scheduledAtStr,
+				"PersonID":    personIDStr,
+				"EventType":   eventType,
 			},
 			"Channels": h.channelInfoList(),
+			"People":   h.personOptions(r.Context()),
 		})
 		return
 	}
@@ -95,13 +150,16 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 	if scheduledAt.Before(time.Now()) {
 		errors["scheduled_at"] = "Scheduled time must be in the future"
 		h.render(w, r, "notification_form.html", map[string]any{
-			"Title":    "Datey - Create Notification",
-			"Errors":   errors,
+			"Title":  "Datey - Create Notification",
+			"Errors": errors,
 			"FormData": map[string]string{
 				"Message":     message,
 				"ScheduledAt": scheduledAtStr,
+				"PersonID":    personIDStr,
+				"EventType":   eventType,
 			},
 			"Channels": h.channelInfoList(),
+			"People":   h.personOptions(r.Context()),
 		})
 		return
 	}
@@ -124,13 +182,24 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 			"FormData": map[string]string{
 				"Message":     message,
 				"ScheduledAt": scheduledAtStr,
+				"PersonID":    personIDStr,
+				"EventType":   eventType,
 			},
 			"Channels": h.channelInfoList(),
+			"People":   h.personOptions(r.Context()),
 		})
 		return
 	}
 
-	_, err = h.oneTimeNots.Create(r.Context(), message, scheduledAt, channels)
+	opts := &repository.CreateNotificationOptions{}
+	if pid, err := strconv.Atoi(personIDStr); err == nil && pid > 0 {
+		opts.PersonID = &pid
+	}
+	if eventType != "" {
+		opts.EventType = eventType
+	}
+
+	_, err = h.oneTimeNots.Create(r.Context(), message, scheduledAt, channels, opts)
 	if err != nil {
 		slog.Error("create notification", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
@@ -182,6 +251,8 @@ func (h *Handler) apiNotifications(w http.ResponseWriter, r *http.Request) {
 		Status      string        `json:"status"`
 		CreatedAt   time.Time     `json:"created_at"`
 		SentAt      *time.Time    `json:"sent_at,omitempty"`
+		PersonID    *int          `json:"person_id,omitempty"`
+		EventType   string        `json:"event_type,omitempty"`
 		Deliveries  []apiDelivery `json:"deliveries"`
 	}
 
@@ -197,17 +268,76 @@ func (h *Handler) apiNotifications(w http.ResponseWriter, r *http.Request) {
 				ErrorMessage: d.ErrorMessage,
 			})
 		}
-		result[i] = apiNotification{
+		notif := apiNotification{
 			ID:          n.ID,
 			Message:     n.Message,
 			ScheduledAt: n.ScheduledAt,
 			Status:      n.Status,
 			CreatedAt:   n.CreatedAt,
 			SentAt:      n.SentAt,
+			EventType:   n.EventType,
 			Deliveries:  deliveries,
 		}
+		if n.PersonID != nil {
+			notif.PersonID = n.PersonID
+		}
+		result[i] = notif
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
+}
+
+// testNotificationNow sends a notification immediately via the specified channel.
+// This is the handler for the "Send Test" button on the notification form.
+func (h *Handler) testNotificationNow(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	message := r.FormValue("message")
+	channel := r.FormValue("channel")
+
+	if message == "" {
+		http.Error(w, "message is required", http.StatusBadRequest)
+		return
+	}
+
+	if channel == "" {
+		http.Error(w, "channel is required", http.StatusBadRequest)
+		return
+	}
+
+	if !h.notifReg.IsConfigured(channel) {
+		http.Error(w, "channel not configured", http.StatusBadRequest)
+		return
+	}
+
+	title := "Datey Test Notification"
+	var err error
+	switch channel {
+	case "email":
+		n := notifier.NewEmailNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	case "gotify":
+		n := notifier.NewGotifyNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	case "telegram":
+		n := notifier.NewTelegramNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	default:
+		http.Error(w, "unknown channel", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		slog.Error("test notification now failed", "channel", channel, "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`<div class="alert alert-danger py-2 mb-0">Failed: %s</div>`, err.Error())))
+		return
+	}
+
+	slog.Info("test notification now sent", "channel", channel)
+	w.Write([]byte(`<div class="alert alert-success py-2 mb-0">Test sent!</div>`))
 }
