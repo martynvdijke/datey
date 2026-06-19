@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/martynvdijke/datey/compare/v1.14.0...v1.14.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* **deps:** update github.com/emersion/go-vcard digest to d854b7e ([#11](https://github.com/martynvdijke/datey/issues/11)) ([d873d08](https://github.com/martynvdijke/datey/commit/d873d08fee6ee30b00c3d03654bc7f99d980d231))
+
 # [1.14.0](https://github.com/martynvdijke/datey/compare/v1.13.1...v1.14.0) (2026-06-19)
 
 
