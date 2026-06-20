@@ -26,11 +26,12 @@
             <td>{{.Message}}</td>
             <td>
               {{if .PersonID}}
-                {{$name := index $.PersonNames .PersonID.Value}}
+                {{$pid := printf "%d" .PersonID}}
+                {{$name := index $.PersonNames $pid}}
                 {{if $name}}
-                  <a href="/people/{{.PersonID.Value}}">{{$name}}</a>
+                  <a href="/people/{{$pid}}">{{$name}}</a>
                 {{else}}
-                  <span class="text-muted">Person #{{.PersonID.Value}}</span>
+                  <span class="text-muted">Person #{{$pid}}</span>
                 {{end}}
               {{else}}
                 <span class="text-muted">—</span>

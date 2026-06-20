@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
+	"github.com/datey/datey/internal/repository"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -53,8 +55,49 @@ func setupNotificationsRouter(h *Handler) chi.Router {
 	r.Get("/notifications/new", h.newNotificationForm)
 	r.Post("/notifications/new", h.createNotification)
 	r.Post("/notifications/{id}/delete", h.deleteNotification)
+	r.Post("/notifications/test", h.testNotificationNow)
 	r.Get("/api/notifications", h.apiNotifications)
 	return r
+}
+
+// mockNotifier is a test double for notifier.Notifier.
+type mockNotifier struct {
+	name       string
+	configured bool
+	sent       []mockMessage
+	sendErr    error
+}
+
+type mockMessage struct {
+	title   string
+	message string
+}
+
+func (m *mockNotifier) Send(ctx context.Context, title, message string) error {
+	if m.sendErr != nil {
+		return m.sendErr
+	}
+	m.sent = append(m.sent, mockMessage{title: title, message: message})
+	return nil
+}
+
+func (m *mockNotifier) Name() string         { return m.name }
+func (m *mockNotifier) IsConfigured() bool   { return m.configured }
+
+// newTestNotificationsHandlerWithMock creates a handler with a mock notifier
+// registered under the given channel name.
+func newTestNotificationsHandlerWithMock(t *testing.T, mock *mockNotifier) *Handler {
+	t.Helper()
+
+	client := enttest.Open(t, dialect.SQLite, "file:test_notif_mock?mode=memory&cache=shared&_fk=1")
+	t.Cleanup(func() { client.Close() })
+
+	cfg := &config.Config{ReminderDays: 7}
+	reg := notifier.NewRegistry()
+	reg.Register(mock)
+	store := logstore.NewStore(100)
+
+	return NewHandler(cfg, client, reg, store)
 }
 
 func TestNotificationsList_Empty(t *testing.T) {
@@ -362,4 +405,305 @@ func itoa(i int) string {
 		buf[pos] = '-'
 	}
 	return string(buf[pos:])
+}
+
+// ── Per-person notification tests ──
+
+func TestCreateNotification_WithPersonAndEventType(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	// Create a person to link the notification to
+	person, err := h.people.Create(withUserContext(context.Background()), "Alice", "birthday person")
+	if err != nil {
+		t.Fatalf("failed to create person: %v", err)
+	}
+
+	future := time.Now().Add(24 * time.Hour).Format("2006-01-02T15:04")
+	body := "message=Happy+Birthday+Alice&scheduled_at=" + future + "&person_id=" + itoa(person.ID) + "&event_type=birthday&channels=email"
+	req := httptest.NewRequest("POST", "/notifications/new", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("expected 303 redirect, got %d", w.Code)
+	}
+
+	// Verify the notification was created with person_id and event_type
+	notifs, err := h.oneTimeNots.List(withUserContext(context.Background()))
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(notifs) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(notifs))
+	}
+	n := notifs[0]
+	if n.PersonID == nil || *n.PersonID != person.ID {
+		t.Errorf("expected person_id %d, got %v", person.ID, n.PersonID)
+	}
+	if n.EventType != "birthday" {
+		t.Errorf("expected event_type 'birthday', got '%s'", n.EventType)
+	}
+}
+
+func TestCreateNotification_WithInvalidPersonID(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	future := time.Now().Add(24 * time.Hour).Format("2006-01-02T15:04")
+	// Non-numeric person_id should be ignored (treated as no person)
+	body := "message=No+person&scheduled_at=" + future + "&person_id=abc&channels=email"
+	req := httptest.NewRequest("POST", "/notifications/new", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("expected 303 redirect, got %d", w.Code)
+	}
+
+	notifs, err := h.oneTimeNots.List(withUserContext(context.Background()))
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(notifs) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(notifs))
+	}
+	if notifs[0].PersonID != nil {
+		t.Errorf("expected nil person_id for invalid input, got %v", notifs[0].PersonID)
+	}
+}
+
+func TestNotificationForm_IncludesPeople(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	// Create a person
+	_, err := h.people.Create(withUserContext(context.Background()), "Bob", "")
+	if err != nil {
+		t.Fatalf("failed to create person: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/notifications/new", nil)
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "Person (optional)") {
+		t.Errorf("expected person dropdown label, got: %s", body[:min(len(body), 300)])
+	}
+	if !strings.Contains(body, "Bob") {
+		t.Errorf("expected person name 'Bob' in dropdown, got: %s", body[:min(len(body), 300)])
+	}
+	if !strings.Contains(body, "Event Type") {
+		t.Errorf("expected event type selector, got: %s", body[:min(len(body), 300)])
+	}
+	if !strings.Contains(body, "Send Test") {
+		t.Errorf("expected Send Test button, got: %s", body[:min(len(body), 300)])
+	}
+}
+
+func TestNotificationsList_ShowsPersonName(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	// Create a person
+	person, err := h.people.Create(withUserContext(context.Background()), "Charlie", "")
+	if err != nil {
+		t.Fatalf("failed to create person: %v", err)
+	}
+
+	// Create a notification linked to the person
+	pid := person.ID
+	_, err = h.oneTimeNots.Create(
+		withUserContext(context.Background()),
+		"Charlie's birthday",
+		time.Now().Add(24*time.Hour),
+		[]string{"email"},
+		&repository.CreateNotificationOptions{PersonID: &pid, EventType: "birthday"},
+	)
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/notifications", nil)
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "Charlie") {
+		t.Errorf("expected person name 'Charlie' in list, got: %s", body[:min(len(body), 500)])
+	}
+	if !strings.Contains(body, "birthday") {
+		t.Errorf("expected event type 'birthday' in list, got: %s", body[:min(len(body), 500)])
+	}
+}
+
+func TestAPINotifications_IncludesPersonAndEventType(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	person, err := h.people.Create(withUserContext(context.Background()), "Diana", "")
+	if err != nil {
+		t.Fatalf("failed to create person: %v", err)
+	}
+
+	pid := person.ID
+	_, err = h.oneTimeNots.Create(
+		withUserContext(context.Background()),
+		"api person test",
+		time.Now().Add(24*time.Hour),
+		[]string{"email"},
+		&repository.CreateNotificationOptions{PersonID: &pid, EventType: "anniversary"},
+	)
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/api/notifications", nil)
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+
+	var result []map[string]any
+	if err := json.NewDecoder(w.Body).Decode(&result); err != nil {
+		t.Fatalf("failed to decode JSON: %v", err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(result))
+	}
+	if result[0]["event_type"] != "anniversary" {
+		t.Errorf("expected event_type 'anniversary', got '%v'", result[0]["event_type"])
+	}
+	personID, ok := result[0]["person_id"].(float64)
+	if !ok {
+		t.Fatalf("expected person_id in response, got %v", result[0]["person_id"])
+	}
+	if int(personID) != person.ID {
+		t.Errorf("expected person_id %d, got %d", person.ID, int(personID))
+	}
+}
+
+// ── Test-send button tests ──
+
+func TestTestNotificationNow_Success(t *testing.T) {
+	mock := &mockNotifier{name: "email", configured: true}
+	h := newTestNotificationsHandlerWithMock(t, mock)
+	router := setupNotificationsRouter(h)
+
+	body := "message=Test+preview&channel=email"
+	req := httptest.NewRequest("POST", "/notifications/test", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	respBody := w.Body.String()
+	if !strings.Contains(respBody, "Test sent!") {
+		t.Errorf("expected success message, got: %s", respBody)
+	}
+	if len(mock.sent) != 1 {
+		t.Errorf("expected 1 sent message, got %d", len(mock.sent))
+	}
+	if mock.sent[0].message != "Test preview" {
+		t.Errorf("expected message 'Test preview', got '%s'", mock.sent[0].message)
+	}
+}
+
+func TestTestNotificationNow_MissingMessage(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	body := "channel=email"
+	req := httptest.NewRequest("POST", "/notifications/test", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestTestNotificationNow_MissingChannel(t *testing.T) {
+	h := newTestNotificationsHandler(t)
+	router := setupNotificationsRouter(h)
+
+	body := "message=Test"
+	req := httptest.NewRequest("POST", "/notifications/test", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestTestNotificationNow_UnconfiguredChannel(t *testing.T) {
+	mock := &mockNotifier{name: "email", configured: false}
+	h := newTestNotificationsHandlerWithMock(t, mock)
+	router := setupNotificationsRouter(h)
+
+	body := "message=Test&channel=email"
+	req := httptest.NewRequest("POST", "/notifications/test", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for unconfigured channel, got %d", w.Code)
+	}
+}
+
+func TestTestNotificationNow_SendFailure(t *testing.T) {
+	mock := &mockNotifier{name: "email", configured: true, sendErr: fmt.Errorf("SMTP connection refused")}
+	h := newTestNotificationsHandlerWithMock(t, mock)
+	router := setupNotificationsRouter(h)
+
+	body := "message=Test&channel=email"
+	req := httptest.NewRequest("POST", "/notifications/test", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected 500 for send failure, got %d", w.Code)
+	}
+	respBody := w.Body.String()
+	if !strings.Contains(respBody, "Failed:") {
+		t.Errorf("expected failure message, got: %s", respBody)
+	}
 }

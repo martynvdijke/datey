@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/datey/datey/ent"
-	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
@@ -48,13 +46,6 @@ func (h *Handler) personOptions(ctx context.Context) []personOption {
 	return opts
 }
 
-// personNameByID returns a map of person ID → name for quick lookup.
-func personNameByID(notifications []*ent.OneTimeNotification) map[int]string {
-	// We no longer have edges, so we return empty.
-	// The handler loads names separately.
-	return nil
-}
-
 func (h *Handler) notificationsList(w http.ResponseWriter, r *http.Request) {
 	notifications, err := h.oneTimeNots.List(r.Context())
 	if err != nil {
@@ -63,15 +54,16 @@ func (h *Handler) notificationsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Build a person name lookup for notifications that have a person_id
-	personNames := make(map[int]string)
+	// Build a person name lookup for notifications that have a person_id.
+	// Uses string keys so templates can index with printf "%d" .PersonID.
+	personNames := make(map[string]string)
 	for _, n := range notifications {
 		if n.PersonID != nil {
-			id := *n.PersonID
-			if _, ok := personNames[id]; !ok {
-				p, err := h.people.Get(r.Context(), id)
+			key := strconv.Itoa(*n.PersonID)
+			if _, ok := personNames[key]; !ok {
+				p, err := h.people.Get(r.Context(), *n.PersonID)
 				if err == nil && p != nil {
-					personNames[id] = p.Name
+					personNames[key] = p.Name
 				}
 			}
 		}
@@ -315,23 +307,7 @@ func (h *Handler) testNotificationNow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := "Datey Test Notification"
-	var err error
-	switch channel {
-	case "email":
-		n := notifier.NewEmailNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
-	case "gotify":
-		n := notifier.NewGotifyNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
-	case "telegram":
-		n := notifier.NewTelegramNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
-	default:
-		http.Error(w, "unknown channel", http.StatusBadRequest)
-		return
-	}
-
-	if err != nil {
+	if err := h.notifReg.Send(r.Context(), channel, title, message); err != nil {
 		slog.Error("test notification now failed", "channel", channel, "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf(`<div class="alert alert-danger py-2 mb-0">Failed: %s</div>`, err.Error())))
