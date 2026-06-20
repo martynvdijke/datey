@@ -1,3 +1,10 @@
+## [1.14.3](https://github.com/martynvdijke/datey/compare/v1.14.2...v1.14.3) (2026-06-20)
+
+
+### Bug Fixes
+
+* **notifications:** add tests for per-person notifications and test-send ([3ecbaf6](https://github.com/martynvdijke/datey/commit/3ecbaf6d3250b096d363169c4531f30b72a668e4))
+
 ## [1.14.2](https://github.com/martynvdijke/datey/compare/v1.14.1...v1.14.2) (2026-06-20)
 
 ## [1.14.1](https://github.com/martynvdijke/datey/compare/v1.14.0...v1.14.1) (2026-06-19)
