@@ -1,3 +1,15 @@
+# [1.15.0](https://github.com/martynvdijke/datey/compare/v1.14.4...v1.15.0) (2026-06-22)
+
+
+### Bug Fixes
+
+* **ci:** bump golangci-lint-action from v6 to v9 ([b03a616](https://github.com/martynvdijke/datey/commit/b03a616e7dcd62529356664e8bc77afbcda6da68))
+
+
+### Features
+
+* UI/UX design system, accessibility, security hardening, and tech debt cleanup ([1c6644c](https://github.com/martynvdijke/datey/commit/1c6644c8e335bf053b694ef51540bc147e06e233))
+
 ## [1.14.4](https://github.com/martynvdijke/datey/compare/v1.14.3...v1.14.4) (2026-06-22)
 
 
