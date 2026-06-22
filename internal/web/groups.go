@@ -31,6 +31,25 @@ func (h *Handler) createGroup(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	description := r.FormValue("description")
 
+	errors := make(map[string]string)
+	if name == "" {
+		errors["name"] = "Name is required"
+	}
+
+	if len(errors) > 0 {
+		groups, _ := h.groups.List(r.Context())
+		h.render(w, r, "groups.html", map[string]any{
+			"Title":  "Datey - Groups",
+			"Groups": groups,
+			"Errors": errors,
+			"FormData": map[string]string{
+				"Name":        name,
+				"Description": description,
+			},
+		})
+		return
+	}
+
 	_, err := h.groups.Create(r.Context(), name, description)
 	if err != nil {
 		slog.Error("create group", "error", err)

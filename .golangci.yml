@@ -1,0 +1,41 @@
+version: "2"
+
+run:
+  go: "1.26"
+
+linters:
+  default: standard
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - ineffassign
+    - gocritic
+    - revive
+  settings:
+    staticcheck:
+      checks: ["all", "-ST1000"]
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: unused-parameter
+          disabled: true
+        - name: redefines-builtin-id
+          disabled: true
+    gocritic:
+      disabled-checks:
+        - exitAfterDefer
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters: [errcheck]
+      - path: ent/
+        linters: [all]
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

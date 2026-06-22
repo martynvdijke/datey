@@ -78,6 +78,18 @@ var (
 		Columns:    GroupsColumns,
 		PrimaryKey: []*schema.Column{GroupsColumns[0]},
 	}
+	// MigrationLogsColumns holds the columns for the "migration_logs" table.
+	MigrationLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "applied_at", Type: field.TypeTime},
+	}
+	// MigrationLogsTable holds the schema information for the "migration_logs" table.
+	MigrationLogsTable = &schema.Table{
+		Name:       "migration_logs",
+		Columns:    MigrationLogsColumns,
+		PrimaryKey: []*schema.Column{MigrationLogsColumns[0]},
+	}
 	// NotificationDeliveriesColumns holds the columns for the "notification_deliveries" table.
 	NotificationDeliveriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -248,6 +260,7 @@ var (
 		ContactsTable,
 		EventsTable,
 		GroupsTable,
+		MigrationLogsTable,
 		NotificationDeliveriesTable,
 		NotificationLogsTable,
 		OneTimeNotificationsTable,

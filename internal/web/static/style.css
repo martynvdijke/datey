@@ -2,6 +2,53 @@
    Datey — Lean Overrides (Bootstrap 5.3+)
    ═══════════════════════════════════════════ */
 
+/* ── Design Tokens ── */
+/* Single source of truth for event-type colors, state borders, and focus ring.
+   Bootstrap's --bs-* variables already adapt per data-bs-theme; these tokens
+   reference them so event colors stay consistent across Light/Dark/E-Ink. */
+
+:root {
+  --event-birthday: var(--bs-primary);
+  --event-anniversary: var(--bs-success);
+  --event-wedding: var(--bs-warning);
+  --event-holiday: var(--bs-danger);
+  --event-meeting: var(--bs-purple, #6f42c1);
+  --event-custom: var(--bs-secondary);
+
+  --state-border: var(--bs-border-color);
+  --focus-ring-width: 0.25rem;
+  --focus-ring-color: rgba(var(--bs-primary-rgb), 0.25);
+
+  /* Calendar tokens (theme-aware; overridden in E-Ink via eink.css) */
+  --calendar-bg: var(--bs-body-bg);
+  --calendar-btn-bg: var(--bs-emphasis-color);
+  --calendar-btn-border: var(--bs-emphasis-color);
+  --calendar-btn-hover-bg: var(--bs-secondary-color);
+  --calendar-btn-hover-border: var(--bs-secondary-color);
+  --calendar-btn-active-bg: var(--bs-emphasis-color);
+  --calendar-btn-active-border: var(--bs-emphasis-color);
+  --calendar-loading-color: var(--bs-secondary-color);
+  --calendar-error-color: var(--bs-danger);
+}
+
+/* ── Focus Ring ── */
+
+:focus-visible {
+  outline: 2px solid var(--bs-emphasis-color);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--bs-emphasis-color);
+  outline-offset: 2px;
+}
+
+.form-control:focus-visible,
+.form-select:focus-visible {
+  border-color: var(--bs-emphasis-color);
+  box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring-color);
+}
+
 /* ── Event Card Accent Bar ── */
 
 .event-card {
@@ -18,12 +65,49 @@
   width: 4px;
 }
 
-.event-card.event-birthday::before { background: var(--bs-primary); }
-.event-card.event-anniversary::before { background: var(--bs-success); }
-.event-card.event-wedding::before { background: var(--bs-warning); }
-.event-card.event-holiday::before { background: var(--bs-danger); }
-.event-card.event-meeting::before { background: var(--bs-purple, #6f42c1); }
-.event-card.event-custom::before { background: var(--bs-secondary); }
+.event-card.event-birthday::before { background: var(--event-birthday); }
+.event-card.event-anniversary::before { background: var(--event-anniversary); }
+.event-card.event-wedding::before { background: var(--event-wedding); }
+.event-card.event-holiday::before { background: var(--event-holiday); }
+.event-card.event-meeting::before { background: var(--event-meeting); }
+.event-card.event-custom::before { background: var(--event-custom); }
+
+/* ── Event Type Badge Colors ── */
+/* Applied via .event-{{Type}} class on badges — single color system
+   shared with dashboard cards and person detail. */
+
+.event-type-badge.event-birthday { background-color: var(--event-birthday); color: #fff; }
+.event-type-badge.event-anniversary { background-color: var(--event-anniversary); color: #fff; }
+.event-type-badge.event-wedding { background-color: var(--event-wedding); color: #000; }
+.event-type-badge.event-holiday { background-color: var(--event-holiday); color: #fff; }
+.event-type-badge.event-meeting { background-color: var(--event-meeting); color: #fff; }
+.event-type-badge.event-custom { background-color: var(--event-custom); color: #fff; }
+
+/* ── Calendar (theme-aware) ── */
+
+#calendar {
+  background: var(--calendar-bg);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.fc .fc-button-primary {
+  background-color: var(--calendar-btn-bg);
+  border-color: var(--calendar-btn-border);
+}
+.fc .fc-button-primary:hover {
+  background-color: var(--calendar-btn-hover-bg);
+  border-color: var(--calendar-btn-hover-border);
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: var(--calendar-btn-active-bg);
+  border-color: var(--calendar-btn-active-border);
+}
+.fc .fc-daygrid-event { white-space: normal; cursor: pointer; }
+
+.calendar-loading { text-align: center; padding: 3rem; color: var(--calendar-loading-color); }
+.calendar-error { display: none; text-align: center; padding: 2rem; color: var(--calendar-error-color); }
 
 /* ── Toast Container ── */
 
@@ -184,58 +268,31 @@
   white-space: nowrap;
 }
 
-/* ── Theme Toggle ── */
+/* ── Skip-to-content link (accessibility) ── */
 
-.theme-toggle .theme-icon-light,
-.theme-toggle .theme-icon-dark,
-.theme-toggle .theme-icon-eink {
-  display: none;
-}
-
-[data-bs-theme="light"] .theme-toggle .theme-icon-light,
-[data-bs-theme="dark"] .theme-toggle .theme-icon-dark,
-[data-bs-theme="eink"] .theme-toggle .theme-icon-eink {
-  display: inline-flex;
-}
-
-/* ── Navbar text/icon button for theme toggle ── */
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: var(--bs-secondary-color);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.btn-icon:hover {
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-body-color);
-}
-
-/* ── Theme Badge (3-way toggle state label) ── */
-
-.theme-badge {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  padding: 0.2em 0.5em;
-  border-radius: var(--bs-border-radius-pill);
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-secondary-color);
-  margin-left: 0.25rem;
-}
-
-/* ── Navbar tweaks for e-ink mode ── */
-
-[data-bs-theme="eink"] .theme-badge {
-  background: #000;
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 1100;
+  padding: 0.5rem 1rem;
+  background: var(--bs-primary);
   color: #fff;
+  text-decoration: none;
+  border-radius: 0 0 var(--bs-border-radius) 0;
+  font-weight: 600;
+}
+
+.skip-to-content:focus {
+  top: 0;
+  color: #fff;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* ── Theme Select (navbar) ── */
+
+.theme-select {
+  width: auto;
+  cursor: pointer;
 }

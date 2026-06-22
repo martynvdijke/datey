@@ -11,13 +11,14 @@
           <div class="alert alert-danger">{{.Error}}</div>
         {{end}}
         <form method="POST" action="/login">
+          {{template "csrfField" .}}
           <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required autofocus>
+            <label for="username" class="form-label">Username {{template "requiredIndicator" .}}</label>
+            <input type="text" class="form-control" id="username" name="username" required autofocus autocomplete="username" value="{{if .FormData}}{{.FormData.Username}}{{end}}">
           </div>
           <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
+            <label for="password" class="form-label">Password {{template "requiredIndicator" .}}</label>
+            <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
           </div>
           <button type="submit" class="btn btn-dark w-100">Log In</button>
         </form>

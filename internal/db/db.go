@@ -2,37 +2,70 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/datey/datey/ent"
+	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/internal/config"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// migrationContactsToPeople is the name recorded in the migration_log table
+// when the contacts→people data migration has been applied.
+const migrationContactsToPeople = "contacts_to_people"
+
 // MigrateContactsToPeople copies data from the contacts table to the people table
 // and updates event foreign keys to point to the new person records.
+//
+// The migration is gated by the migration_log table: once recorded it never
+// runs again, replacing the previous fragile "count contacts vs people" heuristic.
 func MigrateContactsToPeople(ctx context.Context, client *ent.Client) error {
-	// Check if migration is needed by counting contacts
+	// Primary gate: if the migration is already recorded, never run again.
+	applied, err := client.MigrationLog.Query().
+		Where(migrationlog.NameEQ(migrationContactsToPeople)).
+		Exist(ctx)
+	if err != nil {
+		return fmt.Errorf("check migration log: %w", err)
+	}
+	if applied {
+		slog.Info("migration: contacts→people already applied, skipping", "source", "db")
+		return nil
+	}
+
+	// recordMigrationLog writes the migration_log entry so we never re-run.
+	recordMigrationLog := func() error {
+		if _, err := client.MigrationLog.Create().
+			SetName(migrationContactsToPeople).
+			SetAppliedAt(time.Now()).
+			Save(ctx); err != nil {
+			return fmt.Errorf("record migration log: %w", err)
+		}
+		return nil
+	}
+
+	// Check if there are contacts to migrate.
 	count, err := client.Contact.Query().Count(ctx)
 	if err != nil {
 		return err
 	}
 	if count == 0 {
-		slog.Info("migration: no contacts to migrate", "source", "db")
-		return nil
+		slog.Info("migration: no contacts to migrate, recording", "source", "db")
+		return recordMigrationLog()
 	}
 
-	// Check if people already exist (migration already run)
+	// Safety net: if people already exist alongside contacts, assume a prior
+	// (pre-log) migration and skip to avoid creating duplicate people.
 	peopleCount, err := client.Person.Query().Count(ctx)
 	if err != nil {
 		return err
 	}
 	if peopleCount > 0 {
-		slog.Info("migration: people already exist, skipping", "source", "db", "people_count", peopleCount)
-		return nil
+		slog.Warn("migration: people already exist with contacts present, skipping to avoid duplicates", "source", "db", "contacts", count, "people", peopleCount)
+		return recordMigrationLog()
 	}
 
 	slog.Info("migration: starting contacts → people migration", "source", "db", "contact_count", count)
@@ -71,6 +104,10 @@ func MigrateContactsToPeople(ctx context.Context, client *ent.Client) error {
 	deleted, err := client.Contact.Delete().Exec(ctx)
 	if err != nil {
 		slog.Error("migration: delete contacts", "source", "db", "error", err)
+		return err
+	}
+
+	if err := recordMigrationLog(); err != nil {
 		return err
 	}
 
@@ -126,6 +163,8 @@ func seedBuiltInRules(ctx context.Context, client *ent.Client) {
 			SetDay(r.Day).
 			SetCreatedAt(time.Now())
 
-		q.Save(ctx)
+		if _, err := q.Save(ctx); err != nil {
+			slog.Warn("seed built-in rule", "name", r.Name, "error", err)
+		}
 	}
 }

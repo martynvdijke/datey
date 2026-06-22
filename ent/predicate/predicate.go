@@ -15,6 +15,9 @@ type Event func(*sql.Selector)
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 
+// MigrationLog is the predicate function for migrationlog builders.
+type MigrationLog func(*sql.Selector)
+
 // NotificationDelivery is the predicate function for notificationdelivery builders.
 type NotificationDelivery func(*sql.Selector)
 

@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -14,11 +15,13 @@ var Version = "dev"
 // HealthCheck returns basic health status.
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	if err := json.NewEncoder(w).Encode(map[string]any{
 		"status":  "ok",
 		"time":    time.Now().Format(time.RFC3339),
 		"version": Version,
-	})
+	}); err != nil {
+		slog.Error("health check: encode response", "error", err)
+	}
 }
 
 // DBHealthCheck returns health status including database connectivity.
@@ -46,10 +49,13 @@ func DBHealthCheck(client *ent.Client) http.HandlerFunc {
 		}
 
 		if dbStatus == "error" {
-			resp["database_error"] = err.Error()
+			slog.Error("db health check: database error", "error", err)
+			resp["database_error"] = "database connection failed"
 			w.WriteHeader(http.StatusServiceUnavailable)
 		}
 
-		json.NewEncoder(w).Encode(resp)
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			slog.Error("db health check: encode response", "error", err)
+		}
 	}
 }

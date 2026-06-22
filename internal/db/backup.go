@@ -29,10 +29,10 @@ func Backup(dbPath, backupDir string, retentionDays int) error {
 	}
 
 	if _, err := conn.Exec("PRAGMA wal_checkpoint(TRUNCATE)"); err != nil {
-		conn.Close()
+		_ = conn.Close()
 		return fmt.Errorf("wal checkpoint: %w", err)
 	}
-	conn.Close()
+	_ = conn.Close()
 
 	// Copy the database file.
 	timestamp := time.Now().Format("20060102_150405")
@@ -42,13 +42,13 @@ func Backup(dbPath, backupDir string, retentionDays int) error {
 	if err != nil {
 		return fmt.Errorf("open source: %w", err)
 	}
-	defer src.Close()
+	defer func() { _ = src.Close() }()
 
 	dst, err := os.Create(backupFile)
 	if err != nil {
 		return fmt.Errorf("create backup: %w", err)
 	}
-	defer dst.Close()
+	defer func() { _ = dst.Close() }()
 
 	if _, err := io.Copy(dst, src); err != nil {
 		return fmt.Errorf("copy: %w", err)

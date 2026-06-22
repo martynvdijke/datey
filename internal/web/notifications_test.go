@@ -703,7 +703,7 @@ func TestTestNotificationNow_SendFailure(t *testing.T) {
 		t.Errorf("expected 500 for send failure, got %d", w.Code)
 	}
 	respBody := w.Body.String()
-	if !strings.Contains(respBody, "Failed:") {
+	if !strings.Contains(respBody, "Failed to send test notification") {
 		t.Errorf("expected failure message, got: %s", respBody)
 	}
 }

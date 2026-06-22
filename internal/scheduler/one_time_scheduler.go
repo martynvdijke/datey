@@ -114,13 +114,17 @@ func (s *OneTimeNotificationScheduler) processDue(ctx context.Context) {
 			if err := s.registry.Send(ctx, ch, "One-Time Notification", n.Message); err != nil {
 				slog.Error("one-time scheduler: send failed", "source", "scheduler", "id", n.ID, "channel", ch, "error", err)
 				if d, ok := deliveryByChannel[ch]; ok {
-					s.deliveryRepo.MarkFailed(ctx, d.ID, err.Error())
+					if markErr := s.deliveryRepo.MarkFailed(ctx, d.ID, err.Error()); markErr != nil {
+						slog.Error("one-time scheduler: mark delivery failed", "source", "scheduler", "id", n.ID, "channel", ch, "error", markErr)
+					}
 				}
 			} else {
 				anySuccess = true
 				slog.Info("one-time scheduler: sent via channel", "source", "scheduler", "id", n.ID, "channel", ch)
 				if d, ok := deliveryByChannel[ch]; ok {
-					s.deliveryRepo.MarkSent(ctx, d.ID)
+					if err := s.deliveryRepo.MarkSent(ctx, d.ID); err != nil {
+						slog.Error("one-time scheduler: mark delivery sent", "source", "scheduler", "id", n.ID, "channel", ch, "error", err)
+					}
 				}
 			}
 		}

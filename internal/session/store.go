@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -74,7 +75,9 @@ func (s *Store) GetByToken(ctx context.Context, rawToken string) (*ent.Session, 
 
 	if time.Now().After(sess.ExpiresAt) {
 		// Session expired — clean it up
-		s.client.Session.DeleteOne(sess).Exec(ctx)
+		if err := s.client.Session.DeleteOne(sess).Exec(ctx); err != nil {
+			slog.Warn("delete expired session", "error", err)
+		}
 		return nil, fmt.Errorf("session expired")
 	}
 

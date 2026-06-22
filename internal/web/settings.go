@@ -63,7 +63,9 @@ func (h *Handler) settingsEinkToggle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]bool{"eink_mode": newVal})
+	if err := json.NewEncoder(w).Encode(map[string]bool{"eink_mode": newVal}); err != nil {
+		slog.Error("encode response", "error", err)
+	}
 }
 
 func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {
@@ -167,11 +169,15 @@ func (h *Handler) settingsBackupRun(w http.ResponseWriter, r *http.Request) {
 	dbPath := h.cfg.DataDir + "/datey.db"
 	if err := db.Backup(dbPath, h.cfg.BackupDir, h.cfg.BackupRetentionDays); err != nil {
 		slog.Error("manual backup failed", "error", err)
-		w.Write([]byte(`<div class="alert alert-danger">Backup failed: ` + err.Error() + `</div>`))
+		if _, err := w.Write([]byte(`<div class="alert alert-danger">Backup failed. Check server logs for details.</div>`)); err != nil {
+			slog.Error("write response", "error", err)
+		}
 		return
 	}
 	slog.Info("manual backup completed", "dir", h.cfg.BackupDir)
-	w.Write([]byte(`<div class="alert alert-success">Backup completed successfully!</div>`))
+	if _, err := w.Write([]byte(`<div class="alert alert-success">Backup completed successfully!</div>`)); err != nil {
+		slog.Error("write response", "error", err)
+	}
 }
 
 func (h *Handler) oldLogsRedirect(w http.ResponseWriter, r *http.Request) {
@@ -209,12 +215,14 @@ func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		slog.Error("test notification failed", "source", "settings", "channel", channel, "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to send test notification", http.StatusInternalServerError)
 		return
 	}
 
 	slog.Info("test notification sent", "source", "settings", "channel", channel)
-	w.Write([]byte("✅ Test sent!"))
+	if _, err := w.Write([]byte("✅ Test sent!")); err != nil {
+		slog.Error("write response", "error", err)
+	}
 }
 
 func (h *Handler) setLogLevel(w http.ResponseWriter, r *http.Request) {
@@ -238,7 +246,9 @@ func (h *Handler) setLogLevel(w http.ResponseWriter, r *http.Request) {
 	slog.Info("log level changed", "from", prev, "to", req.Level)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	if err := json.NewEncoder(w).Encode(map[string]any{
 		"level": req.Level,
-	})
+	}); err != nil {
+		slog.Error("encode response", "error", err)
+	}
 }

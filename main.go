@@ -63,7 +63,7 @@ func main() {
 		slog.Error("failed to init database", "error", err)
 		os.Exit(1)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	reg := notifier.NewRegistry()
 	reg.Register(notifier.NewEmailNotifier(cfg))

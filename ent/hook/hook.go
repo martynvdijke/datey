@@ -45,6 +45,18 @@ func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupMutation", m)
 }
 
+// The MigrationLogFunc type is an adapter to allow the use of ordinary
+// function as MigrationLog mutator.
+type MigrationLogFunc func(context.Context, *ent.MigrationLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MigrationLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MigrationLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MigrationLogMutation", m)
+}
+
 // The NotificationDeliveryFunc type is an adapter to allow the use of ordinary
 // function as NotificationDelivery mutator.
 type NotificationDeliveryFunc func(context.Context, *ent.NotificationDeliveryMutation) (ent.Value, error)

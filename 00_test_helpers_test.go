@@ -29,10 +29,11 @@ import (
 )
 
 var (
-	testRouter  *chi.Mux
-	adminToken  string
-	testDataDir string
-	testClient  *ent.Client
+	testRouter   *chi.Mux
+	adminToken   string
+	testCSRFToken string
+	testDataDir  string
+	testClient   *ent.Client
 )
 
 func TestMain(m *testing.M) {
@@ -98,6 +99,10 @@ func TestMain(m *testing.M) {
 
 	adminToken = raw
 
+	// Generate a fixed CSRF token for test requests. The CSRF middleware
+	// accepts any cookie value that matches the submitted header/form field.
+	testCSRFToken = "test-csrf-token-fixed-for-testing-0"
+
 	// Create config
 	backupDir := filepath.Join(testDataDir, "backups")
 	cfg := &config.Config{
@@ -128,13 +133,16 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// adminRequest creates an authenticated HTTP request with the admin session cookie.
+// adminRequest creates an authenticated HTTP request with the admin session cookie
+// and a CSRF token (cookie + header) for state-changing requests.
 func adminRequest(method, path string, body []byte) *http.Request {
 	req, _ := http.NewRequest(method, path, bytes.NewReader(body))
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	req.AddCookie(&http.Cookie{Name: "session", Value: adminToken})
+	req.AddCookie(&http.Cookie{Name: "csrf_token", Value: testCSRFToken})
+	req.Header.Set("X-CSRF-Token", testCSRFToken)
 	return req
 }
 
@@ -172,34 +180,4 @@ func unauthenticatedRequest(method, path string) *http.Request {
 	return req
 }
 
-// seedTestEvent creates an event for the given contact and returns the event ID.
-func seedTestEvent(contactID int, eventType string, date time.Time) int {
-	event, err := testClient.Event.Create().
-		SetType(eventType).
-		SetDate(date).
-		SetDescription("Test event").
-		SetCreatedAt(time.Now()).
-		SetContactID(contactID).
-		Save(context.Background())
-	if err != nil {
-		log.Printf("seedTestEvent: failed to create event: %v", err)
-		return 0
-	}
-	return event.ID
-}
 
-// seedTestNotification creates a one-time notification and returns its ID.
-func seedTestNotification() int {
-	n, err := testClient.OneTimeNotification.Create().
-		SetMessage("Test notification").
-		SetScheduledAt(time.Now().Add(24 * time.Hour)).
-		SetChannelTargets(`["email"]`).
-		SetStatus("pending").
-		SetCreatedAt(time.Now()).
-		Save(context.Background())
-	if err != nil {
-		log.Printf("seedTestNotification: failed to create notification: %v", err)
-		return 0
-	}
-	return n.ID
-}

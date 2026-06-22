@@ -16,16 +16,17 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	var people []*ent.Person
 	var err error
 
-	if groupIDStr != "" {
+	switch {
+	case groupIDStr != "":
 		groupID, parseErr := strconv.Atoi(groupIDStr)
 		if parseErr == nil {
 			people, err = h.groups.ListPeopleInGroup(r.Context(), groupID)
 		} else {
 			people, err = h.people.List(r.Context())
 		}
-	} else if q != "" {
+	case q != "":
 		people, err = h.people.Search(r.Context(), q)
-	} else {
+	default:
 		people, err = h.people.List(r.Context())
 	}
 
@@ -39,9 +40,7 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	for _, p := range people {
 		events, err := h.events.ListByContact(r.Context(), p.ID)
 		if err == nil {
-			for _, e := range events {
-				p.Edges.Events = append(p.Edges.Events, e)
-			}
+			p.Edges.Events = append(p.Edges.Events, events...)
 		}
 	}
 
@@ -73,6 +72,27 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 
 	name := r.FormValue("name")
 	notes := r.FormValue("notes")
+	groupIDs := r.Form["groups"]
+
+	errors := make(map[string]string)
+	if name == "" {
+		errors["name"] = "Name is required"
+	}
+
+	if len(errors) > 0 {
+		groups, _ := h.groups.List(r.Context())
+		h.render(w, r, "person_form.html", map[string]any{
+			"Title":  "Datey - Add Person",
+			"Groups": groups,
+			"Errors": errors,
+			"FormData": map[string]any{
+				"Name":     name,
+				"Notes":    notes,
+				"GroupIDs": groupIDs,
+			},
+		})
+		return
+	}
 
 	p, err := h.people.Create(r.Context(), name, notes)
 	if err != nil {
@@ -82,7 +102,6 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add to selected groups
-	groupIDs := r.Form["groups"]
 	for _, gidStr := range groupIDs {
 		gid, parseErr := strconv.Atoi(gidStr)
 		if parseErr == nil {

@@ -49,8 +49,11 @@ func TestCreateEvent_InvalidDate(t *testing.T) {
 
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("expected 400, got %d", w.Code)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200 (form re-rendered with errors), got %d", w.Code)
+	}
+	if !strings.Contains(w.Body.String(), "Invalid date format") {
+		t.Errorf("expected inline error 'Invalid date format', got: %s", w.Body.String()[:200])
 	}
 }
 

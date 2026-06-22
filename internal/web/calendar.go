@@ -9,8 +9,38 @@ import (
 )
 
 func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
+	// Fetch upcoming events for the <noscript> fallback (next 30 days).
+	now := time.Now()
+	end := now.AddDate(0, 0, 30)
+	events, err := h.events.ListUpcoming(r.Context(), now, end)
+	if err != nil {
+		slog.Error("calendar page: list upcoming", "error", err)
+		events = nil // degrade gracefully — noscript list will be empty
+	}
+
+	type upcomingEvent struct {
+		Name string
+		Date string
+		Type string
+	}
+	var upcoming []upcomingEvent
+	for _, e := range events {
+		name := ""
+		if p := e.Edges.Person; p != nil {
+			name = p.Name
+		} else if c := e.Edges.Contact; c != nil {
+			name = c.Name
+		}
+		upcoming = append(upcoming, upcomingEvent{
+			Name: name,
+			Date: e.Date.Format("Jan 2, 2006"),
+			Type: e.Type,
+		})
+	}
+
 	h.render(w, r, "calendar.html", map[string]any{
-		"Title": "Datey - Calendar",
+		"Title":          "Datey - Calendar",
+		"UpcomingEvents": upcoming,
 	})
 }
 
@@ -89,5 +119,7 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		slog.Error("calendar: encode events", "error", err)
+	}
 }

@@ -77,13 +77,13 @@ func (n *EmailNotifier) sendDirectTLS(ctx context.Context, addr, msg string, tim
 	if err != nil {
 		return fmt.Errorf("tls dial: %w", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	client, err := smtp.NewClient(conn, n.cfg.SMTPHost)
 	if err != nil {
 		return fmt.Errorf("smtp client: %w", err)
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	return n.sendWithClient(client, msg)
 }
@@ -96,17 +96,17 @@ func (n *EmailNotifier) sendSTARTTLS(ctx context.Context, addr, msg string, time
 
 	client, err := smtp.NewClient(conn, n.cfg.SMTPHost)
 	if err != nil {
-		conn.Close()
+		_ = conn.Close()
 		return fmt.Errorf("smtp client: %w", err)
 	}
 
 	if err := client.StartTLS(&tls.Config{ServerName: n.cfg.SMTPHost}); err != nil {
-		client.Close()
+		_ = client.Close()
 		return fmt.Errorf("starttls: %w", err)
 	}
 
 	err = n.sendWithClient(client, msg)
-	client.Close()
+	_ = client.Close()
 	return err
 }
 
@@ -118,12 +118,12 @@ func (n *EmailNotifier) sendPlain(ctx context.Context, addr, msg string, timeout
 
 	client, err := smtp.NewClient(conn, n.cfg.SMTPHost)
 	if err != nil {
-		conn.Close()
+		_ = conn.Close()
 		return fmt.Errorf("smtp client: %w", err)
 	}
 
 	err = n.sendWithClient(client, msg)
-	client.Close()
+	_ = client.Close()
 	return err
 }
 
@@ -153,7 +153,7 @@ func (n *EmailNotifier) sendWithClient(client *smtp.Client, msg string) error {
 	}
 
 	if _, err := w.Write([]byte(msg)); err != nil {
-		w.Close()
+		_ = w.Close()
 		return fmt.Errorf("write: %w", err)
 	}
 

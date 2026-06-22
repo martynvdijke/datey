@@ -28,13 +28,13 @@ type Handler struct {
 	templates   map[string]*template.Template
 	users       *repository.UserRepository
 	sessions    *session.Store
-	contacts    *repository.ContactRepository
 	people      *repository.PersonRepository
 	groups      *repository.GroupRepository
 	events      *repository.EventRepository
 	oneTimeNots *repository.OneTimeNotificationRepository
 	notifReg    *notifier.Registry
 	logStore    *logstore.Store
+	loginLimiter *rateLimiter
 }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry, logStore *logstore.Store) *Handler {
@@ -43,18 +43,18 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		panic(err)
 	}
 	return &Handler{
-		cfg:         cfg,
-		client:      client,
-		templates:   templates,
-		users:       repository.NewUserRepository(client),
-		sessions:    session.NewStore(client),
-		contacts:    repository.NewContactRepository(client),
-		people:      repository.NewPersonRepository(client),
-		groups:      repository.NewGroupRepository(client),
-		events:      repository.NewEventRepository(client),
-		oneTimeNots: repository.NewOneTimeNotificationRepository(client),
-		notifReg:    notifReg,
-		logStore:    logStore,
+		cfg:          cfg,
+		client:       client,
+		templates:    templates,
+		users:        repository.NewUserRepository(client),
+		sessions:     session.NewStore(client),
+		people:       repository.NewPersonRepository(client),
+		groups:       repository.NewGroupRepository(client),
+		events:       repository.NewEventRepository(client),
+		oneTimeNots:  repository.NewOneTimeNotificationRepository(client),
+		notifReg:     notifReg,
+		logStore:     logStore,
+		loginLimiter: newRateLimiter(5, 60*time.Second),
 	}
 }
 
@@ -74,6 +74,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	// All other routes with middleware applied via group
 	r.Group(func(r chi.Router) {
 		r.Use(h.SetupRedirect)
+		r.Use(h.CSRF)
 
 		r.NotFound(h.notFound)
 
@@ -231,19 +232,38 @@ func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	role := r.FormValue("role")
 
+	errors := make(map[string]string)
 	if username == "" {
-		http.Redirect(w, r, "/users?error=Username+is+required", http.StatusSeeOther)
-		return
+		errors["username"] = "Username is required"
 	}
 	if len(password) < 8 {
-		http.Redirect(w, r, "/users?error=Password+must+be+at+least+8+characters", http.StatusSeeOther)
-		return
+		errors["password"] = "Password must be at least 8 characters"
 	}
 
 	// Check for duplicate username
-	existing, err := h.users.GetByUsername(r.Context(), username)
-	if err == nil && existing != nil {
-		http.Redirect(w, r, "/users?error=Username+"+username+"+is+already+taken", http.StatusSeeOther)
+	if username != "" {
+		existing, err := h.users.GetByUsername(r.Context(), username)
+		if err == nil && existing != nil {
+			errors["username"] = "Username '" + username + "' is already taken"
+		}
+	}
+
+	if len(errors) > 0 {
+		users, err := h.users.List(r.Context())
+		if err != nil {
+			slog.Error("users list", "error", err)
+			h.renderError(w, r, http.StatusInternalServerError)
+			return
+		}
+		h.render(w, r, "users.html", map[string]any{
+			"Title": "Datey - Users",
+			"Users": users,
+			"Errors": errors,
+			"FormData": map[string]string{
+				"Username": username,
+				"Role":     role,
+			},
+		})
 		return
 	}
 
@@ -262,7 +282,20 @@ func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
 	_, err = h.users.Create(r.Context(), username, string(hash), userRole)
 	if err != nil {
 		slog.Error("create user", "error", err)
-		http.Redirect(w, r, "/users?error=Failed+to+create+user", http.StatusSeeOther)
+		users, listErr := h.users.List(r.Context())
+		if listErr != nil {
+			h.renderError(w, r, http.StatusInternalServerError)
+			return
+		}
+		h.render(w, r, "users.html", map[string]any{
+			"Title": "Datey - Users",
+			"Users": users,
+			"Errors": map[string]string{"username": "Failed to create user"},
+			"FormData": map[string]string{
+				"Username": username,
+				"Role":     role,
+			},
+		})
 		return
 	}
 
@@ -278,7 +311,9 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	currentUser := UserFromContext(r.Context())
 	if currentUser != nil && currentUser.ID == id {
-		http.Redirect(w, r, "/users?error=You+cannot+delete+your+own+account", http.StatusSeeOther)
+		toastHeader(w, "You cannot delete your own account", "error")
+		w.Header().Set("HX-Refresh", "true")
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
@@ -296,15 +331,19 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.users.Delete(r.Context(), id); err != nil {
 		slog.Error("delete user", "error", err)
-		http.Redirect(w, r, "/users?error=Failed+to+delete+user", http.StatusSeeOther)
+		toastHeader(w, "Failed to delete user", "error")
+		w.Header().Set("HX-Refresh", "true")
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	if username != "" {
-		http.Redirect(w, r, "/users?success=User+"+username+"+deleted", http.StatusSeeOther)
+		toastHeader(w, "User "+username+" deleted", "success")
 	} else {
-		http.Redirect(w, r, "/users?success=User+deleted", http.StatusSeeOther)
+		toastHeader(w, "User deleted", "success")
 	}
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handler) baseData(r *http.Request, title string) map[string]any {
@@ -318,13 +357,16 @@ func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 		"ActiveNav":       inferActiveNav(r.URL.Path),
 		"EinkMode":        einkMode,
 		"EinkForced":      h.cfg.EinkMode,
+		"CSRFToken":       csrfTokenFromContext(r.Context()),
 	}
 	u := UserFromContext(r.Context())
 	if u != nil {
 		data["User"] = u
 		data["IsAdmin"] = u.Role == user.RoleAdmin
 	}
-	// Flash messages from query params (for redirect-based messages)
+	// Flash messages from query params (for redirect-based messages).
+	// Go's html/template auto-escapes these values when rendered in templates,
+	// preventing XSS from user-crafted URLs (e.g. /login?success=<script>).
 	if s := r.URL.Query().Get("success"); s != "" {
 		data["Success"] = s
 	}
@@ -407,15 +449,5 @@ func toastHeader(w http.ResponseWriter, message, toastType string) {
 }
 
 func (h *Handler) renderError(w http.ResponseWriter, r *http.Request, status int) {
-	w.WriteHeader(status)
-	statusText := http.StatusText(status)
-	h.render(w, r, "error.html", map[string]any{
-		"Title":      "Datey - " + statusText,
-		"StatusCode": status,
-		"StatusText": statusText,
-	})
-	// Trigger error toast for HTMX requests
-	if r.Header.Get("HX-Request") == "true" {
-		toastHeader(w, statusText, "error")
-	}
+	h.renderAppError(w, r, &appError{status: status, message: http.StatusText(status)})
 }

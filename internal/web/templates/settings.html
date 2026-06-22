@@ -57,7 +57,7 @@
       <div class="card-body d-flex align-items-center justify-content-between">
         <div>
           <span class="fw-semibold">Theme</span>
-          <p class="text-muted mb-0 small">Use the theme toggle in the navbar to switch between Light, Dark, and E-Ink modes.</p>
+          <p class="text-muted mb-0 small">Use the theme selector in the navbar to switch between Light, Dark, and E-Ink modes.</p>
           {{if .EinkForced}}
             <span class="badge bg-dark mt-1">E-Ink forced by server config</span>
           {{end}}
@@ -133,13 +133,13 @@
         <span class="fw-semibold">Minimum Level:</span>
         <div class="btn-group" role="group">
           {{$current := .CurrentLevel}}
-          <button class="btn btn-sm {{if eq "debug" $current}}btn-dark{{else}}btn-outline-secondary{{end}}"
+          <button class="btn btn-sm {{if eq "debug" $current}}btn-primary{{else}}btn-outline-secondary{{end}}"
                   hx-post="/settings/logs/level" hx-vals='{"level": "debug"}' hx-target="#settings-level-display" hx-swap="outerHTML">debug</button>
-          <button class="btn btn-sm {{if eq "info" $current}}btn-dark{{else}}btn-outline-secondary{{end}}"
+          <button class="btn btn-sm {{if eq "info" $current}}btn-primary{{else}}btn-outline-secondary{{end}}"
                   hx-post="/settings/logs/level" hx-vals='{"level": "info"}' hx-target="#settings-level-display" hx-swap="outerHTML">info</button>
-          <button class="btn btn-sm {{if eq "warn" $current}}btn-dark{{else}}btn-outline-secondary{{end}}"
+          <button class="btn btn-sm {{if eq "warn" $current}}btn-primary{{else}}btn-outline-secondary{{end}}"
                   hx-post="/settings/logs/level" hx-vals='{"level": "warn"}' hx-target="#settings-level-display" hx-swap="outerHTML">warn</button>
-          <button class="btn btn-sm {{if eq "error" $current}}btn-dark{{else}}btn-outline-secondary{{end}}"
+          <button class="btn btn-sm {{if eq "error" $current}}btn-primary{{else}}btn-outline-secondary{{end}}"
                   hx-post="/settings/logs/level" hx-vals='{"level": "error"}' hx-target="#settings-level-display" hx-swap="outerHTML">error</button>
         </div>
         <span id="settings-level-display" class="badge bg-primary fs-6 ms-2">Current: {{.CurrentLevel}}</span>
@@ -150,6 +150,7 @@
     <div class="row mb-3 g-2">
       <div class="col-auto">
         <select class="form-select form-select-sm" name="level"
+                aria-label="Filter by log level"
                 hx-get="/settings/logs" hx-trigger="change" hx-target="#settings-log-table" hx-swap="outerHTML"
                 hx-include="[name='source']">
           <option value="">All Levels</option>
@@ -162,6 +163,7 @@
       </div>
       <div class="col-auto">
         <input type="text" class="form-control form-control-sm" name="source" placeholder="Filter by source..."
+               aria-label="Filter by source"
                value="{{.SourceFilter}}"
                hx-get="/settings/logs" hx-trigger="keyup changed delay:300ms" hx-target="#settings-log-table" hx-swap="outerHTML"
                hx-include="[name='level']">
@@ -190,7 +192,7 @@
           <tbody>
             {{if .Entries}}
               {{range $i, $entry := .Entries}}
-                <tr role="button" data-bs-toggle="collapse" data-bs-target="#settings-detail-{{$i}}" aria-expanded="false">
+                <tr role="button" tabindex="0" data-bs-toggle="collapse" data-bs-target="#settings-detail-{{$i}}" aria-expanded="false">
                   <td class="text-nowrap small">{{$entry.Timestamp.Format "2006-01-02 15:04:05"}}</td>
                   <td>
                     {{if eq $entry.Level "error"}}

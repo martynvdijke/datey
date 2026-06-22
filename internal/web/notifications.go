@@ -3,7 +3,6 @@ package web
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -277,7 +276,9 @@ func (h *Handler) apiNotifications(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		slog.Error("notifications: encode response", "error", err)
+	}
 }
 
 // testNotificationNow sends a notification immediately via the specified channel.
@@ -310,10 +311,14 @@ func (h *Handler) testNotificationNow(w http.ResponseWriter, r *http.Request) {
 	if err := h.notifReg.Send(r.Context(), channel, title, message); err != nil {
 		slog.Error("test notification now failed", "channel", channel, "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`<div class="alert alert-danger py-2 mb-0">Failed: %s</div>`, err.Error())))
+		if _, err := w.Write([]byte(`<div class="alert alert-danger py-2 mb-0">Failed to send test notification. Check server logs for details.</div>`)); err != nil {
+			slog.Error("write response", "error", err)
+		}
 		return
 	}
 
 	slog.Info("test notification now sent", "channel", channel)
-	w.Write([]byte(`<div class="alert alert-success py-2 mb-0">Test sent!</div>`))
+	if _, err := w.Write([]byte(`<div class="alert alert-success py-2 mb-0">Test sent!</div>`)); err != nil {
+		slog.Error("write response", "error", err)
+	}
 }

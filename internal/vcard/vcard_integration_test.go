@@ -21,7 +21,7 @@ func TestIntegration_ImportAndExportRoundTrip(t *testing.T) {
 	defer client.Close()
 
 	ctx := context.Background()
-	contacts := repository.NewContactRepository(client)
+	people := repository.NewPersonRepository(client)
 
 	vcfContent := `BEGIN:VCARD
 VERSION:3.0
@@ -45,23 +45,23 @@ END:VCARD`
 	}
 
 	for _, pc := range parsed {
-		_, err := contacts.Create(ctx, pc.Name, pc.Notes)
+		_, err := people.Create(ctx, pc.Name, pc.Notes)
 		if err != nil {
-			t.Fatalf("create contact %q: %v", pc.Name, err)
+			t.Fatalf("create person %q: %v", pc.Name, err)
 		}
 	}
 
-	all, err := contacts.List(ctx)
+	all, err := people.List(ctx)
 	if err != nil {
-		t.Fatalf("list contacts: %v", err)
+		t.Fatalf("list people: %v", err)
 	}
 	if len(all) != 2 {
-		t.Fatalf("expected 2 contacts, got %d", len(all))
+		t.Fatalf("expected 2 people, got %d", len(all))
 	}
 
 	items := make([]vcardlib.NameNotes, len(all))
-	for i, c := range all {
-		items[i] = vcardlib.NameNotes{Name: c.Name, Notes: c.Notes}
+	for i, p := range all {
+		items[i] = vcardlib.NameNotes{Name: p.Name, Notes: p.Notes}
 	}
 	data, err := vcardlib.Encode(items)
 	if err != nil {
@@ -91,11 +91,11 @@ func TestIntegration_DuplicateDetection(t *testing.T) {
 	defer client.Close()
 
 	ctx := context.Background()
-	contacts := repository.NewContactRepository(client)
+	people := repository.NewPersonRepository(client)
 
-	_, err := contacts.Create(ctx, "Alice", "First import")
+	_, err := people.Create(ctx, "Alice", "First import")
 	if err != nil {
-		t.Fatalf("create initial contact: %v", err)
+		t.Fatalf("create initial person: %v", err)
 	}
 
 	vcf := `BEGIN:VCARD
@@ -112,10 +112,10 @@ END:VCARD`
 		t.Fatalf("expected 1 parsed contact, got %d", len(parsed))
 	}
 
-	existing, _ := contacts.List(ctx)
+	existing, _ := people.List(ctx)
 	existingNames := make(map[string]bool, len(existing))
-	for _, c := range existing {
-		existingNames[c.Name] = true
+	for _, p := range existing {
+		existingNames[p.Name] = true
 	}
 
 	if existingNames[parsed[0].Name] {
@@ -130,14 +130,14 @@ func TestIntegration_ExportSingle(t *testing.T) {
 	defer client.Close()
 
 	ctx := context.Background()
-	contacts := repository.NewContactRepository(client)
+	people := repository.NewPersonRepository(client)
 
-	c, err := contacts.Create(ctx, "Single Contact", "Just notes")
+	p, err := people.Create(ctx, "Single Contact", "Just notes")
 	if err != nil {
-		t.Fatalf("create contact: %v", err)
+		t.Fatalf("create person: %v", err)
 	}
 
-	data, err := vcardlib.EncodeSingle(c.Name, c.Notes)
+	data, err := vcardlib.EncodeSingle(p.Name, p.Notes)
 	if err != nil {
 		t.Fatalf("encode single: %v", err)
 	}
@@ -205,19 +205,19 @@ func TestIntegration_ExportEmptyDatabase(t *testing.T) {
 	defer client.Close()
 
 	ctx := context.Background()
-	contacts := repository.NewContactRepository(client)
+	people := repository.NewPersonRepository(client)
 
-	all, err := contacts.List(ctx)
+	all, err := people.List(ctx)
 	if err != nil {
-		t.Fatalf("list contacts: %v", err)
+		t.Fatalf("list people: %v", err)
 	}
 	if len(all) != 0 {
-		t.Fatalf("expected 0 contacts, got %d", len(all))
+		t.Fatalf("expected 0 people, got %d", len(all))
 	}
 
 	items := make([]vcardlib.NameNotes, len(all))
-	for i, c := range all {
-		items[i] = vcardlib.NameNotes{Name: c.Name, Notes: c.Notes}
+	for i, p := range all {
+		items[i] = vcardlib.NameNotes{Name: p.Name, Notes: p.Notes}
 	}
 	data, err := vcardlib.Encode(items)
 	if err != nil {

@@ -28,7 +28,7 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/people?error=No+file+uploaded", http.StatusSeeOther)
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	parsed, err := vcard.Parse(file)
 	if err != nil {
@@ -97,7 +97,9 @@ func (h *Handler) handleExportSingleVCard(w http.ResponseWriter, r *http.Request
 	filename := vcard.SanitizeFilename(person.Name) + ".vcf"
 	w.Header().Set("Content-Type", "text/vcard; charset=utf-8")
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
-	w.Write(data)
+	if _, err := w.Write(data); err != nil {
+		slog.Error("write vcard response", "error", err)
+	}
 }
 
 func (h *Handler) handleExportAllVCard(w http.ResponseWriter, r *http.Request) {
@@ -121,5 +123,7 @@ func (h *Handler) handleExportAllVCard(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/vcard; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="datey-contacts.vcf"`)
-	w.Write(data)
+	if _, err := w.Write(data); err != nil {
+		slog.Error("write vcard response", "error", err)
+	}
 }

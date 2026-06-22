@@ -41,10 +41,10 @@ type Config struct {
 func Load() (*Config, error) {
 	cfg := &Config{
 		Port:          getEnvInt("PORT", 6270),
-		DataDir:       getEnv("DATA_DIR", "/db"),
+		DataDir:       getEnvExplicit("DATA_DIR", "/db"),
 		SchedulerHour: getEnvInt("SCHEDULER_HOUR", 8),
 		ReminderDays:  getEnvInt("REMINDER_DAYS", 7),
-		LogLevel:      getEnv("LOG_LEVEL", "info"),
+		LogLevel:      getEnvExplicit("LOG_LEVEL", "info"),
 		LogBufferSize: getEnvInt("LOG_BUFFER_SIZE", 10000),
 		OTLPEndpoint:  getEnv("OTEL_ENDPOINT", ""),
 		SMTPHost:      getEnv("SMTP_HOST", ""),
@@ -79,7 +79,35 @@ func Load() (*Config, error) {
 		cfg.BackupRetentionDays = 30
 	}
 
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
+}
+
+var validLogLevels = map[string]bool{
+	"debug": true,
+	"info":  true,
+	"warn":  true,
+	"error": true,
+}
+
+// Validate checks that configuration values are within allowed ranges.
+func (c *Config) Validate() error {
+	if c.SchedulerHour < 0 || c.SchedulerHour > 23 {
+		return fmt.Errorf("SCHEDULER_HOUR must be between 0 and 23, got %d", c.SchedulerHour)
+	}
+	if c.ReminderDays < 1 || c.ReminderDays > 365 {
+		return fmt.Errorf("REMINDER_DAYS must be between 1 and 365, got %d", c.ReminderDays)
+	}
+	if c.SMTPPort < 1 || c.SMTPPort > 65535 {
+		return fmt.Errorf("SMTP_PORT must be between 1 and 65535, got %d", c.SMTPPort)
+	}
+	if !validLogLevels[c.LogLevel] {
+		return fmt.Errorf("LOG_LEVEL must be one of debug, info, warn, error; got %q", c.LogLevel)
+	}
+	return nil
 }
 
 func getEnv(key, fallback string) string {
@@ -89,8 +117,18 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+// getEnvExplicit returns the env var value if set (including empty string),
+// or the fallback if the var is not set at all. Uses os.LookupEnv to
+// distinguish explicitly-set empty from unset.
+func getEnvExplicit(key, fallback string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
+	}
+	return fallback
+}
+
 func getEnvInt(key string, fallback int) int {
-	if v := os.Getenv(key); v != "" {
+	if v, ok := os.LookupEnv(key); ok && v != "" {
 		if i, err := strconv.Atoi(v); err == nil {
 			return i
 		}

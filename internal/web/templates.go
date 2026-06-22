@@ -24,6 +24,32 @@ var funcMap = template.FuncMap{
 		return r
 	},
 	"list": func(vals ...string) []string { return vals },
+	"inList": func(list any, item string) bool {
+		s, ok := list.([]string)
+		if !ok {
+			return false
+		}
+		for _, v := range s {
+			if v == item {
+				return true
+			}
+		}
+		return false
+	},
+	"dict": func(values ...any) map[string]any {
+		if len(values)%2 != 0 {
+			panic("dict: odd number of arguments")
+		}
+		m := make(map[string]any, len(values)/2)
+		for i := 0; i < len(values); i += 2 {
+			key, ok := values[i].(string)
+			if !ok {
+				panic("dict: non-string key")
+			}
+			m[key] = values[i+1]
+		}
+		return m
+	},
 }
 
 func loadTemplates() (map[string]*template.Template, error) {
@@ -38,9 +64,6 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"person_detail.html",
 		"person_form.html",
 		"groups.html",
-		"contacts.html",
-		"contact_detail.html",
-		"contact_form.html",
 		"event_form.html",
 		"calendar.html",
 		"settings.html",

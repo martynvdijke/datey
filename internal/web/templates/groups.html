@@ -7,13 +7,15 @@
       <div class="card-body">
         <h5 class="card-title">Create Group</h5>
         <form action="/groups/create" method="POST">
+          {{template "csrfField" .}}
           <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+            <label for="name" class="form-label">Name {{template "requiredIndicator" .}}</label>
+            <input type="text" class="form-control" id="name" name="name" required autocomplete="organization" value="{{if .FormData}}{{.FormData.Name}}{{end}}">
+            {{template "fieldError" (dict "Errors" .Errors "Field" "name")}}
           </div>
           <div class="mb-3">
             <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+            <textarea class="form-control" id="description" name="description" rows="2" autocomplete="off">{{if .FormData}}{{.FormData.Description}}{{end}}</textarea>
           </div>
           <button type="submit" class="btn btn-primary">Create Group</button>
         </form>
@@ -41,6 +43,7 @@
             <td>{{len .Edges.People}}</td>
             <td class="text-end">
               <form action="/groups/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete group '{{.Name}}'? People in this group will not be deleted." hx-post="/groups/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
+                {{template "csrfField" $}}
                 <button class="btn btn-outline-danger btn-sm" type="submit">
                   <span class="btn-text">Delete</span>
                   <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
@@ -53,9 +56,7 @@
       </table>
     </div>
     {{else}}
-    <div class="alert alert-info">
-      No groups yet. Create one to organize people.
-    </div>
+    {{template "emptyState" (dict "Message" "No groups yet. Create one to organize people.")}}
     {{end}}
   </div>
 </div>

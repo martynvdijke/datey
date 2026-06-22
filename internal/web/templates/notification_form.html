@@ -3,6 +3,7 @@
 <div class="row">
   <div class="col-md-8 col-lg-6">
     <form action="/notifications/new" method="POST" id="notif-form">
+      {{template "csrfField" .}}
       <div class="mb-3">
         <label for="person_id" class="form-label">Person (optional)</label>
         <select class="form-select" id="person_id" name="person_id">
@@ -25,18 +26,18 @@
         </select>
       </div>
       <div class="mb-3">
-        <label for="message" class="form-label">Message</label>
-        <textarea class="form-control" id="message" name="message" rows="3" required>{{if .FormData}}{{.FormData.Message}}{{end}}</textarea>
-        {{if .Errors.message}}<div class="text-danger mt-1">{{.Errors.message}}</div>{{end}}
+        <label for="message" class="form-label">Message {{template "requiredIndicator" .}}</label>
+        <textarea class="form-control" id="message" name="message" rows="3" required autocomplete="off">{{if .FormData}}{{.FormData.Message}}{{end}}</textarea>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "message")}}
       </div>
       <div class="mb-3">
-        <label for="scheduled_at" class="form-label">Scheduled Date & Time</label>
-        <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required value="{{if .FormData}}{{.FormData.ScheduledAt}}{{end}}">
-        {{if .Errors.scheduled_at}}<div class="text-danger mt-1">{{.Errors.scheduled_at}}</div>{{end}}
+        <label for="scheduled_at" class="form-label">Scheduled Date & Time {{template "requiredIndicator" .}}</label>
+        <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required autocomplete="off" value="{{if .FormData}}{{.FormData.ScheduledAt}}{{end}}">
+        {{template "fieldError" (dict "Errors" .Errors "Field" "scheduled_at")}}
       </div>
       <div class="mb-3">
-        <label class="form-label">Notification Channels</label>
-        {{if .Errors.channels}}<div class="text-danger mt-1">{{.Errors.channels}}</div>{{end}}
+        <label class="form-label">Notification Channels {{template "requiredIndicator" .}}</label>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "channels")}}
         <div class="d-flex gap-3 mt-1">
           {{range .Channels}}
           <div class="form-check">

@@ -102,11 +102,6 @@ func getUserID(r *http.Request) int {
 	return u.ID
 }
 
-// parseIntParam parses an ID from a URL param.
-func parseIntParam(r *http.Request, param string) (int, error) {
-	return strconv.Atoi(r.PathValue(param))
-}
-
 func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request) {
 	// If already authenticated, redirect to dashboard
 	if u := UserFromContext(r.Context()); u != nil {
@@ -131,7 +126,26 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Username and password are required",
+			"FormData": map[string]string{
+				"Username": username,
+			},
 		})
+		return
+	}
+
+	// Rate-limit login attempts per IP+username (spec: security-hardening).
+	rlKey := rateLimitKey(r, username)
+	allowed, retryAfter := h.loginLimiter.allow(rlKey)
+	if !allowed {
+		w.Header().Set("Retry-After", strconv.Itoa(int(retryAfter.Seconds())+1))
+		h.render(w, r, "login.html", map[string]any{
+			"Title": "Datey - Login",
+			"Error": "Too many login attempts. Please try again later.",
+			"FormData": map[string]string{
+				"Username": username,
+			},
+		})
+		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
 
@@ -140,6 +154,9 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
+			"FormData": map[string]string{
+				"Username": username,
+			},
 		})
 		return
 	}
@@ -148,9 +165,15 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
+			"FormData": map[string]string{
+				"Username": username,
+			},
 		})
 		return
 	}
+
+	// Successful login — reset the rate-limit counter.
+	h.loginLimiter.reset(rlKey)
 
 	token, err := h.sessions.Create(r.Context(), u.ID)
 	if err != nil {
@@ -166,7 +189,9 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 	token, err := session.ReadCookie(r)
 	if err == nil && token != "" {
-		h.sessions.Delete(r.Context(), token)
+		if err := h.sessions.Delete(r.Context(), token); err != nil {
+			slog.Warn("logout: delete session", "error", err)
+		}
 	}
 	session.ClearCookie(w)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -203,6 +228,9 @@ func (h *Handler) setupCreate(w http.ResponseWriter, r *http.Request) {
 		h.render(w, r, "setup.html", map[string]any{
 			"Title": "Datey - Setup",
 			"Error": "Username is required",
+			"FormData": map[string]string{
+				"Username": username,
+			},
 		})
 		return
 	}
@@ -211,6 +239,9 @@ func (h *Handler) setupCreate(w http.ResponseWriter, r *http.Request) {
 		h.render(w, r, "setup.html", map[string]any{
 			"Title": "Datey - Setup",
 			"Error": "Password must be at least 8 characters",
+			"FormData": map[string]string{
+				"Username": username,
+			},
 		})
 		return
 	}
@@ -224,9 +255,13 @@ func (h *Handler) setupCreate(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.users.Create(r.Context(), username, string(hash), user.RoleAdmin)
 	if err != nil {
+		slog.Error("setup: create admin user", "error", err, "username", username)
 		h.render(w, r, "setup.html", map[string]any{
 			"Title": "Datey - Setup",
-			"Error": "Failed to create admin user: " + err.Error(),
+			"Error": "Failed to create admin user. Please try again.",
+			"FormData": map[string]string{
+				"Username": username,
+			},
 		})
 		return
 	}

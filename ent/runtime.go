@@ -6,6 +6,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
@@ -50,6 +51,12 @@ func init() {
 	groupDescDescription := groupFields[1].Descriptor()
 	// group.DefaultDescription holds the default value on creation for the description field.
 	group.DefaultDescription = groupDescDescription.Default.(string)
+	migrationlogFields := schema.MigrationLog{}.Fields()
+	_ = migrationlogFields
+	// migrationlogDescName is the schema descriptor for name field.
+	migrationlogDescName := migrationlogFields[0].Descriptor()
+	// migrationlog.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	migrationlog.NameValidator = migrationlogDescName.Validators[0].(func(string) error)
 	notificationdeliveryFields := schema.NotificationDelivery{}.Fields()
 	_ = notificationdeliveryFields
 	// notificationdeliveryDescChannel is the schema descriptor for channel field.

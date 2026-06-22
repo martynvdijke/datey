@@ -3,25 +3,28 @@
 <div class="row">
   <div class="col-md-8 col-lg-6">
     <form action="/people/{{.PersonID}}/events/new" method="POST">
+      {{template "csrfField" .}}
       <div class="mb-3">
-        <label for="type" class="form-label">Type</label>
+        <label for="type" class="form-label">Type {{template "requiredIndicator" .}}</label>
         <select class="form-select" id="type" name="type" required>
-          <option value="birthday">Birthday</option>
-          <option value="anniversary">Anniversary</option>
-          <option value="wedding">Wedding</option>
-          <option value="custom">Custom</option>
+          <option value="birthday"{{if eq .FormData.Type "birthday"}} selected{{end}}>Birthday</option>
+          <option value="anniversary"{{if eq .FormData.Type "anniversary"}} selected{{end}}>Anniversary</option>
+          <option value="wedding"{{if eq .FormData.Type "wedding"}} selected{{end}}>Wedding</option>
+          <option value="custom"{{if eq .FormData.Type "custom"}} selected{{end}}>Custom</option>
         </select>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "type")}}
       </div>
       <div class="mb-3">
-        <label for="date" class="form-label">Date</label>
-        <input type="date" class="form-control" id="date" name="date" required>
+        <label for="date" class="form-label">Date {{template "requiredIndicator" .}}</label>
+        <input type="date" class="form-control" id="date" name="date" required autocomplete="off" value="{{if .FormData}}{{.FormData.Date}}{{end}}">
+        {{template "fieldError" (dict "Errors" .Errors "Field" "date")}}
       </div>
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
-        <input type="text" class="form-control" id="description" name="description">
+        <input type="text" class="form-control" id="description" name="description" autocomplete="off" value="{{if .FormData}}{{.FormData.Description}}{{end}}">
       </div>
       <button type="submit" class="btn btn-primary">Create Event</button>
-      <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancel</a>
+      <a href="/people/{{.PersonID}}" class="btn btn-outline-secondary">Cancel</a>
     </form>
   </div>
 </div>

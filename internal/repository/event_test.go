@@ -6,20 +6,25 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect"
+	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/enttest"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func newTestEventRepo(t *testing.T) (*EventRepository, *ContactRepository) {
+func newTestEventRepo(t *testing.T) (*EventRepository, *ent.Client) {
 	t.Helper()
 	client := enttest.Open(t, dialect.SQLite, "file:test_event_repo?mode=memory&cache=shared&_fk=1")
 	t.Cleanup(func() { client.Close() })
-	return NewEventRepository(client), NewContactRepository(client)
+	return NewEventRepository(client), client
 }
 
-func seedContactForEvent(t *testing.T, contactRepo *ContactRepository, name string) int {
+func seedContactForEvent(t *testing.T, client *ent.Client, name string) int {
 	t.Helper()
-	c, err := contactRepo.Create(context.Background(), name, "")
+	c, err := client.Contact.Create().
+		SetName(name).
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now()).
+		Save(context.Background())
 	if err != nil {
 		t.Fatalf("seed contact: %v", err)
 	}

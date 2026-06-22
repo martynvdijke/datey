@@ -51,8 +51,7 @@ func TestNavbar_RendersForAuthenticatedUser(t *testing.T) {
 		"Calendar",
 		"Notifications",
 		"Search people",
-		"theme-toggle",
-		"theme-icon-eink",
+		"theme-select",
 		"E-Ink",
 		"Light",
 	}
@@ -128,8 +127,7 @@ func TestThemeScript_PresentInBaseTemplate(t *testing.T) {
 		"localStorage.getItem('datey-theme')",
 		"localStorage.setItem('datey-theme', theme)",
 		"prefers-color-scheme",
-		"theme-toggle",
-		"theme-icon-eink",
+		"theme-select",
 		"eink-stylesheet",
 	}
 	for _, s := range mustContain {
@@ -151,7 +149,8 @@ func TestStyleCSS_HasEssentials(t *testing.T) {
 		"#toast-container",
 		".empty-state",
 		"htmx-indicator",
-		".theme-icon-eink",
+		".skip-to-content",
+		".theme-select",
 		"data-bs-theme",
 	}
 	for _, s := range mustContain {

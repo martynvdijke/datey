@@ -8,8 +8,9 @@
   </div>
 </div>
 <form id="import-form" action="/people/import" method="POST" enctype="multipart/form-data" class="d-none mb-3">
+  {{template "csrfField" .}}
   <div class="input-group">
-    <input type="file" name="vcf_file" accept=".vcf" class="form-control" required>
+    <input type="file" name="vcf_file" accept=".vcf" class="form-control" required aria-label="Upload vCard file (required)">
     <button class="btn btn-primary" type="submit">Upload</button>
   </div>
   <div class="form-text">Upload a .vcf file to import people. Supports single and multi-contact vCards.</div>
@@ -17,14 +18,14 @@
 <div class="row mb-3">
   <div class="col-md-6">
     <div class="input-group">
-      <input type="search" class="form-control" name="q" placeholder="Search people..." hx-get="/people" hx-trigger="keyup changed delay:300ms" hx-target="#people-list" hx-select="#people-list" hx-indicator="#search-spinner">
+      <input type="search" class="form-control" name="q" placeholder="Search people..." aria-label="Search people" hx-get="/people" hx-trigger="keyup changed delay:300ms" hx-target="#people-list" hx-select="#people-list" hx-indicator="#search-spinner">
       <span class="input-group-text" id="search-spinner">
         <span class="search-spinner htmx-indicator"></span>
       </span>
     </div>
   </div>
   <div class="col-md-3">
-    <select class="form-select" name="group" hx-get="/people" hx-trigger="change" hx-target="#people-list" hx-select="#people-list">
+    <select class="form-select" name="group" aria-label="Filter by group" hx-get="/people" hx-trigger="change" hx-target="#people-list" hx-select="#people-list">
       <option value="">All Groups</option>
       {{range .Groups}}
         <option value="{{.ID}}"{{if eq $.GroupID (printf "%d" .ID)}} selected{{end}}>{{.Name}}</option>
@@ -57,9 +58,7 @@
       </table>
     </div>
   {{else}}
-    <div class="alert alert-info" role="alert">
-      No people yet. <a href="/people/new" class="alert-link">Add your first person</a>.
-    </div>
+    {{template "emptyState" (dict "Message" "No people yet." "CTAHref" "/people/new" "CTAText" "Add your first person")}}
   {{end}}
 </div>
 {{end}}

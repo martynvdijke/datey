@@ -18,6 +18,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
@@ -38,6 +39,8 @@ type Client struct {
 	Event *EventClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// MigrationLog is the client for interacting with the MigrationLog builders.
+	MigrationLog *MigrationLogClient
 	// NotificationDelivery is the client for interacting with the NotificationDelivery builders.
 	NotificationDelivery *NotificationDeliveryClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
@@ -66,6 +69,7 @@ func (c *Client) init() {
 	c.Contact = NewContactClient(c.config)
 	c.Event = NewEventClient(c.config)
 	c.Group = NewGroupClient(c.config)
+	c.MigrationLog = NewMigrationLogClient(c.config)
 	c.NotificationDelivery = NewNotificationDeliveryClient(c.config)
 	c.NotificationLog = NewNotificationLogClient(c.config)
 	c.OneTimeNotification = NewOneTimeNotificationClient(c.config)
@@ -168,6 +172,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Contact:              NewContactClient(cfg),
 		Event:                NewEventClient(cfg),
 		Group:                NewGroupClient(cfg),
+		MigrationLog:         NewMigrationLogClient(cfg),
 		NotificationDelivery: NewNotificationDeliveryClient(cfg),
 		NotificationLog:      NewNotificationLogClient(cfg),
 		OneTimeNotification:  NewOneTimeNotificationClient(cfg),
@@ -197,6 +202,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Contact:              NewContactClient(cfg),
 		Event:                NewEventClient(cfg),
 		Group:                NewGroupClient(cfg),
+		MigrationLog:         NewMigrationLogClient(cfg),
 		NotificationDelivery: NewNotificationDeliveryClient(cfg),
 		NotificationLog:      NewNotificationLogClient(cfg),
 		OneTimeNotification:  NewOneTimeNotificationClient(cfg),
@@ -233,8 +239,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Contact, c.Event, c.Group, c.NotificationDelivery, c.NotificationLog,
-		c.OneTimeNotification, c.Person, c.RecurringRule, c.Session, c.User,
+		c.Contact, c.Event, c.Group, c.MigrationLog, c.NotificationDelivery,
+		c.NotificationLog, c.OneTimeNotification, c.Person, c.RecurringRule, c.Session,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -244,8 +251,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Contact, c.Event, c.Group, c.NotificationDelivery, c.NotificationLog,
-		c.OneTimeNotification, c.Person, c.RecurringRule, c.Session, c.User,
+		c.Contact, c.Event, c.Group, c.MigrationLog, c.NotificationDelivery,
+		c.NotificationLog, c.OneTimeNotification, c.Person, c.RecurringRule, c.Session,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -260,6 +268,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Event.mutate(ctx, m)
 	case *GroupMutation:
 		return c.Group.mutate(ctx, m)
+	case *MigrationLogMutation:
+		return c.MigrationLog.mutate(ctx, m)
 	case *NotificationDeliveryMutation:
 		return c.NotificationDelivery.mutate(ctx, m)
 	case *NotificationLogMutation:
@@ -755,6 +765,139 @@ func (c *GroupClient) mutate(ctx context.Context, m *GroupMutation) (Value, erro
 		return (&GroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Group mutation op: %q", m.Op())
+	}
+}
+
+// MigrationLogClient is a client for the MigrationLog schema.
+type MigrationLogClient struct {
+	config
+}
+
+// NewMigrationLogClient returns a client for the MigrationLog from the given config.
+func NewMigrationLogClient(c config) *MigrationLogClient {
+	return &MigrationLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `migrationlog.Hooks(f(g(h())))`.
+func (c *MigrationLogClient) Use(hooks ...Hook) {
+	c.hooks.MigrationLog = append(c.hooks.MigrationLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `migrationlog.Intercept(f(g(h())))`.
+func (c *MigrationLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MigrationLog = append(c.inters.MigrationLog, interceptors...)
+}
+
+// Create returns a builder for creating a MigrationLog entity.
+func (c *MigrationLogClient) Create() *MigrationLogCreate {
+	mutation := newMigrationLogMutation(c.config, OpCreate)
+	return &MigrationLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MigrationLog entities.
+func (c *MigrationLogClient) CreateBulk(builders ...*MigrationLogCreate) *MigrationLogCreateBulk {
+	return &MigrationLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MigrationLogClient) MapCreateBulk(slice any, setFunc func(*MigrationLogCreate, int)) *MigrationLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MigrationLogCreateBulk{err: fmt.Errorf("calling to MigrationLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MigrationLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MigrationLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MigrationLog.
+func (c *MigrationLogClient) Update() *MigrationLogUpdate {
+	mutation := newMigrationLogMutation(c.config, OpUpdate)
+	return &MigrationLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MigrationLogClient) UpdateOne(_m *MigrationLog) *MigrationLogUpdateOne {
+	mutation := newMigrationLogMutation(c.config, OpUpdateOne, withMigrationLog(_m))
+	return &MigrationLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MigrationLogClient) UpdateOneID(id int) *MigrationLogUpdateOne {
+	mutation := newMigrationLogMutation(c.config, OpUpdateOne, withMigrationLogID(id))
+	return &MigrationLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MigrationLog.
+func (c *MigrationLogClient) Delete() *MigrationLogDelete {
+	mutation := newMigrationLogMutation(c.config, OpDelete)
+	return &MigrationLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MigrationLogClient) DeleteOne(_m *MigrationLog) *MigrationLogDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MigrationLogClient) DeleteOneID(id int) *MigrationLogDeleteOne {
+	builder := c.Delete().Where(migrationlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MigrationLogDeleteOne{builder}
+}
+
+// Query returns a query builder for MigrationLog.
+func (c *MigrationLogClient) Query() *MigrationLogQuery {
+	return &MigrationLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMigrationLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MigrationLog entity by its id.
+func (c *MigrationLogClient) Get(ctx context.Context, id int) (*MigrationLog, error) {
+	return c.Query().Where(migrationlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MigrationLogClient) GetX(ctx context.Context, id int) *MigrationLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MigrationLogClient) Hooks() []Hook {
+	return c.hooks.MigrationLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *MigrationLogClient) Interceptors() []Interceptor {
+	return c.inters.MigrationLog
+}
+
+func (c *MigrationLogClient) mutate(ctx context.Context, m *MigrationLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MigrationLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MigrationLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MigrationLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MigrationLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MigrationLog mutation op: %q", m.Op())
 	}
 }
 
@@ -1804,11 +1947,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Contact, Event, Group, NotificationDelivery, NotificationLog,
+		Contact, Event, Group, MigrationLog, NotificationDelivery, NotificationLog,
 		OneTimeNotification, Person, RecurringRule, Session, User []ent.Hook
 	}
 	inters struct {
-		Contact, Event, Group, NotificationDelivery, NotificationLog,
+		Contact, Event, Group, MigrationLog, NotificationDelivery, NotificationLog,
 		OneTimeNotification, Person, RecurringRule, Session, User []ent.Interceptor
 	}
 )

@@ -15,6 +15,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
@@ -85,6 +86,7 @@ func checkColumn(t, c string) error {
 			contact.Table:              contact.ValidColumn,
 			event.Table:                event.ValidColumn,
 			group.Table:                group.ValidColumn,
+			migrationlog.Table:         migrationlog.ValidColumn,
 			notificationdelivery.Table: notificationdelivery.ValidColumn,
 			notificationlog.Table:      notificationlog.ValidColumn,
 			onetimenotification.Table:  onetimenotification.ValidColumn,

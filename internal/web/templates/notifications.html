@@ -72,6 +72,7 @@
             </td>
             <td class="text-end">
               <form action="/notifications/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this notification?" hx-post="/notifications/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
+                {{template "csrfField" $}}
                 <button class="btn btn-outline-danger btn-sm" type="submit" hx-indicator="closest form">
                   <span class="btn-text">Delete</span>
                   <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
@@ -84,8 +85,6 @@
     </table>
   </div>
 {{else}}
-  <div class="alert alert-info" role="alert">
-    No one-time notifications yet. <a href="/notifications/new" class="alert-link">Create one</a>.
-  </div>
+  {{template "emptyState" (dict "Message" "No one-time notifications yet." "CTAHref" "/notifications/new" "CTAText" "Create one")}}
 {{end}}
 {{end}}
