@@ -4,10 +4,23 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/datey/datey/ent"
 	"github.com/go-chi/chi/v5"
 )
+
+// personCard holds the data for a single person card in the grid.
+type personCard struct {
+	ID            int
+	Name          string
+	Notes         string
+	EventCount    int
+	NextEventType string
+	NextEventDate string
+	Initial       string
+	AvatarColor   int
+}
 
 func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
@@ -36,23 +49,50 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load events for each person
+	// Load events and build enriched card data
+	now := time.Now()
+	cards := make([]personCard, 0, len(people))
 	for _, p := range people {
 		events, err := h.events.ListByContact(r.Context(), p.ID)
+		eventCount := 0
+		var nextEventType, nextEventDate string
 		if err == nil {
-			p.Edges.Events = append(p.Edges.Events, events...)
+			eventCount = len(events)
+			// Find the next upcoming event
+			var nearest *ent.Event
+			for _, e := range events {
+				if e.Date.After(now) || e.Date.Equal(now) {
+					if nearest == nil || e.Date.Before(nearest.Date) {
+						nearest = e
+					}
+				}
+			}
+			if nearest != nil {
+				nextEventType = nearest.Type
+				nextEventDate = nearest.Date.Format("Jan 2")
+			}
 		}
+		cards = append(cards, personCard{
+			ID:            p.ID,
+			Name:          p.Name,
+			Notes:         p.Notes,
+			EventCount:    eventCount,
+			NextEventType: nextEventType,
+			NextEventDate: nextEventDate,
+			Initial:       personInitial(p.Name),
+			AvatarColor:   avatarColorIndex(p.Name),
+		})
 	}
 
 	// Load all groups for the group filter dropdown
 	groups, _ := h.groups.List(r.Context())
 
 	h.render(w, r, "people.html", map[string]any{
-		"Title":     "Datey - People",
-		"People":    people,
-		"Groups":    groups,
-		"GroupID":   groupIDStr,
-		"Query":     q,
+		"Title":   "Datey - People",
+		"Cards":   cards,
+		"Groups":  groups,
+		"GroupID": groupIDStr,
+		"Query":   q,
 	})
 }
 
@@ -142,11 +182,45 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		groups = nil
 	}
 
+	// Split events into upcoming and past
+	now := time.Now()
+	type eventRow struct {
+		ID            int
+		Type          string
+		Date          string
+		RelativeLabel string
+		Description   string
+		IsUpcoming    bool
+	}
+	eventRows := make([]eventRow, 0, len(events))
+	for _, e := range events {
+		days := int(e.Date.Sub(now).Hours() / 24)
+		var rel string
+		switch {
+		case days <= 0:
+			rel = "Today"
+		case days == 1:
+			rel = "Tomorrow"
+		case days <= 7:
+			rel = "In " + strconv.Itoa(days) + " days"
+		}
+		eventRows = append(eventRows, eventRow{
+			ID:            e.ID,
+			Type:          e.Type,
+			Date:          e.Date.Format("Jan 2, 2006"),
+			RelativeLabel: rel,
+			Description:   e.Description,
+			IsUpcoming:    days >= 0,
+		})
+	}
+
 	h.render(w, r, "person_detail.html", map[string]any{
-		"Title":  "Datey - " + person.Name,
-		"Person": person,
-		"Events": events,
-		"Groups": groups,
+		"Title":       "Datey - " + person.Name,
+		"Person":      person,
+		"Initial":     personInitial(person.Name),
+		"AvatarColor": avatarColorIndex(person.Name),
+		"EventRows":   eventRows,
+		"Groups":      groups,
 	})
 }
 

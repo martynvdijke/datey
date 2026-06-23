@@ -1,67 +1,80 @@
 {{define "content"}}
-<div class="d-flex justify-content-between align-items-start mb-4">
-  <div>
-    <h1 class="mb-1">{{.Person.Name}}</h1>
-    {{if .Person.Notes}}<p class="text-muted">{{.Person.Notes}}</p>{{end}}
+<!-- Hero Header -->
+<div class="person-hero mb-4">
+  <div class="person-hero-avatar">
+    <span class="person-avatar person-avatar-hero avatar-color-{{.AvatarColor}}">{{.Initial}}</span>
   </div>
-  <div class="btn-group">
+  <div class="person-hero-info">
+    <h1 class="person-hero-name mb-1">{{.Person.Name}}</h1>
+    {{if .Person.Notes}}<p class="person-hero-notes mb-1">{{.Person.Notes}}</p>{{end}}
+    <div class="person-hero-meta">
+      {{if .Groups}}
+        {{range .Groups}}
+          <span class="badge bg-secondary me-1">{{.Name}}</span>
+        {{end}}
+      {{end}}
+    </div>
+  </div>
+  <div class="person-hero-actions">
     <a href="/people/{{.Person.ID}}/events/new" class="btn btn-primary">Add Event</a>
     <a href="/people/{{.Person.ID}}/vcard" class="btn btn-outline-secondary">Export vCard</a>
   </div>
 </div>
 
-{{if .Groups}}
-  <div class="mb-3">
-    <strong>Groups:</strong>
-    {{range .Groups}}
-      <span class="badge bg-secondary me-1">{{.Name}}</span>
-    {{end}}
-  </div>
-{{end}}
-
+<!-- Event Timeline -->
 <h2 class="mb-3">Events</h2>
-{{if .Events}}
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead class="table-dark">
-        <tr>
-          <th>Type</th>
-          <th>Date</th>
-          <th>Description</th>
-          <th class="text-end">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{range .Events}}
-          <tr>
-            <td><span class="badge event-type-badge event-{{.Type}}">{{.Type}}</span></td>
-            <td>{{.Date.Format "Jan 2, 2006"}}</td>
-            <td>{{.Description}}</td>
-            <td class="text-end">
-              <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
-                {{template "csrfField" $}}
-                <button class="btn btn-outline-danger btn-sm" type="submit" hx-indicator="closest form">
+{{if .EventRows}}
+  {{$csrf := .}}
+  <div class="event-timeline">
+    {{range .EventRows}}
+      <div class="event-timeline-item{{if .IsUpcoming}} event-upcoming{{end}}">
+        <div class="event-timeline-marker">
+          <div class="event-timeline-dot event-{{.Type}}"></div>
+        </div>
+        <div class="card event-timeline-card">
+          <div class="card-body py-2 px-3 d-flex align-items-center gap-3">
+            <span class="badge event-type-badge event-{{.Type}}">{{.Type}}</span>
+            <div class="event-timeline-date">
+              {{if .RelativeLabel}}
+                <strong>{{.RelativeLabel}}</strong>
+                <span class="text-muted">— {{.Date}}</span>
+              {{else}}
+                {{.Date}}
+              {{end}}
+            </div>
+            {{if .Description}}
+              <span class="event-timeline-desc text-muted small">{{.Description}}</span>
+            {{end}}
+            <div class="ms-auto">
+              <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest .event-timeline-item" hx-swap="outerHTML" hx-indicator="closest form">
+                {{template "csrfField" $csrf}}
+                <button class="btn btn-outline-danger btn-sm py-0" type="submit">
                   <span class="btn-text">Delete</span>
                   <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
                 </button>
               </form>
-            </td>
-          </tr>
-        {{end}}
-      </tbody>
-    </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    {{end}}
   </div>
 {{else}}
-  <div class="alert alert-info" role="alert">
-    No events for this person yet.
+  <div class="empty-state">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-state-icon" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+    <p class="mb-0">No events yet for {{.Person.Name}}.</p>
+    <a href="/people/{{.Person.ID}}/events/new" class="btn btn-sm btn-outline-primary mt-3">Add your first event</a>
   </div>
 {{end}}
 
-<form action="/people/{{.Person.ID}}/delete" method="POST" class="mt-4" hx-confirm="Delete this person and all events?" hx-post="/people/{{.Person.ID}}/delete" hx-target="body" hx-push-url="/people">
-  {{template "csrfField" .}}
-  <button class="btn btn-danger" type="submit" hx-indicator="closest form">
-    <span class="btn-text">Delete Person</span>
-    <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
-  </button>
-</form>
+<!-- Delete -->
+<div class="mt-4 pt-3 border-top">
+  <form action="/people/{{.Person.ID}}/delete" method="POST" hx-confirm="Delete this person and all events?" hx-post="/people/{{.Person.ID}}/delete" hx-target="body" hx-push-url="/people" class="d-inline">
+    {{template "csrfField" .}}
+    <button class="btn btn-outline-danger btn-sm" type="submit" hx-indicator="closest form">
+      <span class="btn-text">Delete Person</span>
+      <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+    </button>
+  </form>
+</div>
 {{end}}

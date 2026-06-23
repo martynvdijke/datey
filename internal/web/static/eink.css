@@ -318,11 +318,7 @@
   color: #000 !important;
 }
 
-/* ── Event Card Accent Bar (e-ink: use border instead of colored bar) ── */
-
-[data-bs-theme="eink"] .event-card::before {
-  display: none !important;
-}
+/* ── Event Card Accent Bar (e-ink: override coloured borders with solid black) ── */
 
 [data-bs-theme="eink"] .event-card {
   border-left: 4px solid #000 !important;

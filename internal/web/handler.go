@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log/slog"
 	"maps"
@@ -177,14 +178,24 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("dashboard: upcoming events", "count", len(events), "from", now.Format("2006-01-02"), "to", end.Format("2006-01-02"), "reminder_days", reminderDays)
 
+	// ── eventView with person context ──
 	type eventView struct {
-		Name          string
+		Name          string // person name
 		Type          string
-		Date          string
+		Date          string // absolute date (e.g. "Dec 25")
 		DaysRemaining int
+		RelativeLabel string // "Today", "Tomorrow", "In 3 days", or empty
+		PersonInitial string // first character for avatar
+		AvatarColor   int    // deterministic colour index 0-7
 	}
 
-	var evs []eventView
+	var (
+		todayEvents     []eventView
+		thisWeekEvents  []eventView
+		thisMonthEvents []eventView
+		laterEvents     []eventView
+	)
+
 	for _, e := range events {
 		personName := ""
 		if p := e.Edges.Person; p != nil {
@@ -192,20 +203,110 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		} else if c := e.Edges.Contact; c != nil {
 			personName = c.Name
 		}
+
 		days := int(e.Date.Sub(now).Hours() / 24)
-		evs = append(evs, eventView{
+
+		// Relative label
+		var relativeLabel string
+		switch {
+		case days <= 0:
+			relativeLabel = "Today"
+		case days == 1:
+			relativeLabel = "Tomorrow"
+		case days <= 7:
+			relativeLabel = fmt.Sprintf("In %d days", days)
+		}
+
+		ev := eventView{
 			Name:          personName,
 			Type:          e.Type,
 			Date:          e.Date.Format("Jan 2"),
 			DaysRemaining: days,
-		})
+			RelativeLabel: relativeLabel,
+			PersonInitial: personInitial(personName),
+			AvatarColor:   avatarColorIndex(personName),
+		}
+
+		// Group by time horizon
+		switch {
+		case days <= 1:
+			todayEvents = append(todayEvents, ev)
+		case days <= 7:
+			thisWeekEvents = append(thisWeekEvents, ev)
+		case days <= 30:
+			thisMonthEvents = append(thisMonthEvents, ev)
+		default:
+			laterEvents = append(laterEvents, ev)
+		}
+	}
+
+	// ── Greeting ──
+	greeting := greetingForTime(now)
+
+	// ── Quick-glance stats ──
+	allPeople, _ := h.people.List(r.Context())
+	peopleCount := len(allPeople)
+	totalEvents := len(events)
+	channels := h.channelInfoList()
+	configuredChannels := 0
+	for _, ch := range channels {
+		if ch.Configured {
+			configuredChannels++
+		}
 	}
 
 	h.render(w, r, "dashboard.html", map[string]any{
-		"Title":        "Datey - Dashboard",
-		"Events":       evs,
-		"ReminderDays": reminderDays,
+		"Title":              "Datey - Dashboard",
+		"Greeting":           greeting,
+		"CurrentDate":        now.Format("Monday, January 2"),
+		"TodayEvents":        todayEvents,
+		"ThisWeekEvents":     thisWeekEvents,
+		"ThisMonthEvents":    thisMonthEvents,
+		"LaterEvents":        laterEvents,
+		"ReminderDays":       reminderDays,
+		"PeopleCount":        peopleCount,
+		"TotalEvents":        totalEvents,
+		"ConfiguredChannels": configuredChannels,
+		"TotalChannels":      len(channels),
 	})
+}
+
+// personInitial returns the first character of a name, uppercased.
+func personInitial(name string) string {
+	if name == "" {
+		return "?"
+	}
+	return string([]rune(name[:1])[0])
+}
+
+// avatarColorIndex deterministically maps a name to a colour index 0-7.
+// Uses a simple FNV-like hash so the same name always gets the same colour.
+func avatarColorIndex(name string) int {
+	if name == "" {
+		return 0
+	}
+	h := 0
+	for _, b := range []byte(name) {
+		h = h*31 + int(b)
+	}
+	idx := h % 8
+	if idx < 0 {
+		idx = -idx
+	}
+	return idx
+}
+
+// greetingForTime returns a time-of-day greeting.
+func greetingForTime(t time.Time) string {
+	hour := t.Hour()
+	switch {
+	case hour < 12:
+		return "Good morning"
+	case hour < 18:
+		return "Good afternoon"
+	default:
+		return "Good evening"
+	}
 }
 
 func (h *Handler) usersList(w http.ResponseWriter, r *http.Request) {

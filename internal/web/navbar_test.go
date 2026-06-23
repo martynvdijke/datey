@@ -50,6 +50,7 @@ func TestNavbar_RendersForAuthenticatedUser(t *testing.T) {
 		"People",
 		"Calendar",
 		"Notifications",
+		"Settings",
 		"Search people",
 		"theme-select",
 		"E-Ink",
@@ -61,8 +62,7 @@ func TestNavbar_RendersForAuthenticatedUser(t *testing.T) {
 		}
 	}
 
-	// Non-admin users must not see admin-only top nav links (Groups/Users).
-	// Settings is reachable from the user dropdown for everyone.
+	// Non-admin users must not see admin-only links (Groups/Users).
 	adminOnly := []string{"href=\"/groups\"", "href=\"/users\""}
 	for _, s := range adminOnly {
 		if strings.Contains(body, s) {
@@ -87,7 +87,7 @@ func TestNavbar_RendersAdminLinksForAdmin(t *testing.T) {
 	}
 	body := w.Body.String()
 
-	adminLinks := []string{"Groups", "Settings", "Users"}
+	adminLinks := []string{"Groups", "Users"}
 	for _, s := range adminLinks {
 		if !strings.Contains(body, s) {
 			t.Errorf("admin navbar missing %q", s)
@@ -145,7 +145,7 @@ func TestStyleCSS_HasEssentials(t *testing.T) {
 	css := string(cssBytes)
 
 	mustContain := []string{
-		".event-card::before",
+		".event-card",
 		"#toast-container",
 		".empty-state",
 		"htmx-indicator",
@@ -176,8 +176,8 @@ func TestDashboard_RendersEmptyState(t *testing.T) {
 	}
 	body := w.Body.String()
 
-	if !strings.Contains(body, "Upcoming Events") {
-		t.Error("dashboard missing heading")
+	if !strings.Contains(body, "Good") && !strings.Contains(body, "greeting") {
+		t.Error("dashboard missing greeting")
 	}
 	if !strings.Contains(body, "Add a person") {
 		t.Error("dashboard empty state missing add-person action")

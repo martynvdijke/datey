@@ -1,10 +1,67 @@
+{{define "eventSection"}}
+  {{$section := index . "section"}}
+  {{$events := index . "events"}}
+  {{$icon := index . "icon"}}
+  {{$label := index . "label"}}
+  {{$count := len $events}}
+  {{if $count}}
+    <div class="timeline-section mb-4">
+      <div class="timeline-section-header">
+        <span class="timeline-section-icon">{{$icon}}</span>
+        <h2 class="timeline-section-title">{{$label}}</h2>
+        <span class="timeline-section-count">{{$count}} event{{if ne $count 1}}s{{end}}</span>
+      </div>
+      <div class="row g-3">
+        {{range $events}}
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 card-hover event-card event-{{.Type}}{{if le .DaysRemaining 3}} event-urgent{{end}}">
+              <div class="card-body">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span class="person-avatar person-avatar-sm avatar-color-{{.AvatarColor}}">{{.PersonInitial}}</span>
+                  <h5 class="card-title mb-0">{{.Name}}</h5>
+                  <span class="badge event-type-badge event-{{.Type}} ms-auto">{{.Type}}</span>
+                </div>
+                <p class="event-date mb-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  {{if .RelativeLabel}}<strong>{{.RelativeLabel}}</strong> — {{end}}{{.Date}}
+                </p>
+                <p class="card-text mb-0 d-flex align-items-center gap-2">
+                  <span class="days-remaining {{if le .DaysRemaining 3}}urgent{{else}}normal{{end}}">{{.DaysRemaining}}</span>
+                  <span class="text-muted">days remaining</span>
+                  {{if le .DaysRemaining 3}}
+                    <span class="celebration-icon" aria-label="Coming soon!" title="Coming soon!">&#10024;</span>
+                  {{end}}
+                </p>
+              </div>
+            </div>
+          </div>
+        {{end}}
+      </div>
+    </div>
+  {{end}}
+{{end}}
+
 {{define "content"}}
-<div class="page-header">
-  <div>
-    <h1>Upcoming Events</h1>
-    <p>Keep track of the dates that matter.</p>
+<!-- Personal Greeting -->
+<div class="dashboard-greeting mb-4">
+  <h1 class="greeting-heading">{{.Greeting}}, <span class="greeting-user">{{.User.Username}}</span></h1>
+  <p class="greeting-date">{{.CurrentDate}}</p>
+</div>
+
+<!-- Quick-Glance Stats -->
+<div class="quick-glance mb-4">
+  <div class="stat-card">
+    <span class="stat-value">{{.PeopleCount}}</span>
+    <span class="stat-label">People</span>
   </div>
-  <a href="/people/new" class="btn btn-primary">+ Add Person</a>
+  <div class="stat-card">
+    <span class="stat-value">{{.TotalEvents}}</span>
+    <span class="stat-label">Upcoming</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{.ConfiguredChannels}}/{{.TotalChannels}}</span>
+    <span class="stat-label">Notifications</span>
+  </div>
 </div>
 
 <!-- Date Finder -->
@@ -19,7 +76,7 @@
                hx-get="/" hx-trigger="change" hx-target="#events-content" hx-select="#events-content"
                hx-vals='{"days": "{{.ReminderDays}}"}'
                oninput="document.getElementById('days-label').textContent = this.value;
-                        this.setAttribute('hx-vals', JSON.stringify({days: this.value}));">
+                       this.setAttribute('hx-vals', JSON.stringify({days: this.value}));">
       </div>
       <div class="col-lg-4 text-lg-end mt-2 mt-lg-0">
         <span class="text-muted small">1 – 365 days</span>
@@ -28,30 +85,20 @@
   </div>
 </div>
 
+<!-- Grouped Events -->
 <div id="events-content">
-  {{if .Events}}
-    <div class="row g-4">
-      {{range .Events}}
-        <div class="col-12 col-md-6 col-lg-4">
-          <div class="card h-100 card-hover event-card event-{{.Type}}">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <h5 class="card-title mb-0">{{.Name}}</h5>
-                <span class="badge event-type-badge event-{{.Type}}">{{.Type}}</span>
-              </div>
-              <p class="event-date mb-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                {{.Date}}
-              </p>
-              <p class="card-text mb-0">
-                <span class="days-remaining {{if le .DaysRemaining 3}}urgent{{else}}normal{{end}}">{{.DaysRemaining}}</span>
-                <span class="text-muted">days remaining</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      {{end}}
+  <div class="htmx-indicator">
+    <div class="skeleton-grid">
+      <div class="skeleton-card" aria-hidden="true"></div>
+      <div class="skeleton-card" aria-hidden="true"></div>
+      <div class="skeleton-card" aria-hidden="true"></div>
     </div>
+  </div>
+  {{if .TotalEvents}}
+    {{template "eventSection" dict "section" "today" "events" .TodayEvents "icon" "☀️" "label" "Today"}}
+    {{template "eventSection" dict "section" "week" "events" .ThisWeekEvents "icon" "📅" "label" "This Week"}}
+    {{template "eventSection" dict "section" "month" "events" .ThisMonthEvents "icon" "📆" "label" "This Month"}}
+    {{template "eventSection" dict "section" "later" "events" .LaterEvents "icon" "🗓️" "label" "Later"}}
   {{else}}
     <div class="empty-state">
       <svg class="empty-state-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
