@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/martynvdijke/datey/compare/v1.15.0...v1.15.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* dashboard template nested define, CSS event-card refactor, eink cleanup ([ddb4514](https://github.com/martynvdijke/datey/commit/ddb45145f54c7579c12a6596a36c7c2dc9445750))
+
 # [1.15.0](https://github.com/martynvdijke/datey/compare/v1.14.4...v1.15.0) (2026-06-22)
 
 
