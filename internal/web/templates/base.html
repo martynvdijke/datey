@@ -86,17 +86,21 @@
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `people`}} active{{end}}" href="/people">People</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `calendar`}} active{{end}}" href="/calendar">Calendar</a></li>
             <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `notifications`}} active{{end}}" href="/notifications">Notifications</a></li>
-            <li class="nav-item"><a class="nav-link{{if eq .ActiveNav `settings`}} active{{end}}" href="/settings">Settings</a></li>
-
-            {{if .IsAdmin}}
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+              <a class="nav-link dropdown-toggle{{if eq .ActiveNav `settings`}} active{{end}}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span class="d-none d-xl-inline">Settings</span>
+              </a>
               <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                {{if .IsAdmin}}
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Administration</h6></li>
                 <li><a class="dropdown-item{{if eq .ActiveNav `groups`}} active{{end}}" href="/groups">Groups</a></li>
                 <li><a class="dropdown-item{{if eq .ActiveNav `users`}} active{{end}}" href="/users">Users</a></li>
+                {{end}}
               </ul>
             </li>
-            {{end}}
 
             <li class="nav-item nav-divider d-none d-xl-block" style="width:1px;height:1.5rem;background:var(--bs-border-color);margin:0 0.25rem;"></li>
 
