@@ -62,7 +62,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	// Static files — no middleware applied
 	r.Get("/static/*", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = r.PathValue("*")
+		r.URL.Path = "static/" + r.PathValue("*")
 		http.FileServer(http.FS(staticFS)).ServeHTTP(w, r)
 	})
 
