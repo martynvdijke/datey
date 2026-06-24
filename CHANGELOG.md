@@ -1,3 +1,10 @@
+## [1.15.4](https://github.com/martynvdijke/datey/compare/v1.15.3...v1.15.4) (2026-06-24)
+
+
+### Bug Fixes
+
+* static file handler path bug causing CSS 404, improve login page and slider UI ([91a11af](https://github.com/martynvdijke/datey/commit/91a11af008c467e5d0cba64a35c738da23eb4648))
+
 ## [1.15.3](https://github.com/martynvdijke/datey/compare/v1.15.2...v1.15.3) (2026-06-24)
 
 ## [1.15.2](https://github.com/martynvdijke/datey/compare/v1.15.1...v1.15.2) (2026-06-24)
