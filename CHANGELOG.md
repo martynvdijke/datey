@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/martynvdijke/datey/compare/v1.15.5...v1.16.0) (2026-07-01)
+
+
+### Features
+
+* enrich vCard import with structured BDAY/GENDER/N parsing + auto birthday event ([1e84dd9](https://github.com/martynvdijke/datey/commit/1e84dd92b3ba6d79a4652e5a635f8556500cf099))
+
 ## [1.15.5](https://github.com/martynvdijke/datey/compare/v1.15.4...v1.15.5) (2026-06-26)
 
 
