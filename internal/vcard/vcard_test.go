@@ -3,8 +3,9 @@ package vcard
 import (
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/emersion/go-vcard"
+	govcard "github.com/emersion/go-vcard"
 )
 
 func TestParse_SingleContact(t *testing.T) {
@@ -29,11 +30,11 @@ END:VCARD`
 	if !strings.Contains(contacts[0].Notes, "Met at conference") {
 		t.Errorf("expected notes to contain 'Met at conference', got %q", contacts[0].Notes)
 	}
-	if !strings.Contains(contacts[0].Notes, "TEL: +1-555-0100") {
-		t.Errorf("expected notes to contain TEL property, got %q", contacts[0].Notes)
+	if !strings.Contains(contacts[0].Notes, "Phone: +1-555-0100") {
+		t.Errorf("expected notes to contain 'Phone: +1-555-0100', got %q", contacts[0].Notes)
 	}
-	if !strings.Contains(contacts[0].Notes, "EMAIL: john@example.com") {
-		t.Errorf("expected notes to contain EMAIL property, got %q", contacts[0].Notes)
+	if !strings.Contains(contacts[0].Notes, "Email: john@example.com") {
+		t.Errorf("expected notes to contain 'Email: john@example.com', got %q", contacts[0].Notes)
 	}
 }
 
@@ -110,10 +111,10 @@ END:VCARD`
 }
 
 func TestToContact_FNandNOTE(t *testing.T) {
-	card := make(vcard.Card)
-	card.SetValue(vcard.FieldVersion, "3.0")
-	card.SetValue(vcard.FieldFormattedName, "Jane Smith")
-	card.SetValue(vcard.FieldNote, "Friend from work")
+	card := make(govcard.Card)
+	card.SetValue(govcard.FieldVersion, "3.0")
+	card.SetValue(govcard.FieldFormattedName, "Jane Smith")
+	card.SetValue(govcard.FieldNote, "Friend from work")
 
 	pc := ToContact(card)
 	if pc.Name != "Jane Smith" {
@@ -125,9 +126,9 @@ func TestToContact_FNandNOTE(t *testing.T) {
 }
 
 func TestToContact_OnlyFN(t *testing.T) {
-	card := make(vcard.Card)
-	card.SetValue(vcard.FieldVersion, "3.0")
-	card.SetValue(vcard.FieldFormattedName, "Solo")
+	card := make(govcard.Card)
+	card.SetValue(govcard.FieldVersion, "3.0")
+	card.SetValue(govcard.FieldFormattedName, "Solo")
 
 	pc := ToContact(card)
 	if pc.Name != "Solo" {
@@ -139,19 +140,160 @@ func TestToContact_OnlyFN(t *testing.T) {
 }
 
 func TestToContact_UnrecognizedProps(t *testing.T) {
-	card := make(vcard.Card)
-	card.SetValue(vcard.FieldVersion, "3.0")
-	card.SetValue(vcard.FieldFormattedName, "Full")
-	card.SetValue(vcard.FieldTelephone, "+1-555-0100")
-	card.SetValue(vcard.FieldEmail, "full@example.com")
-	card.AddValue(vcard.FieldEmail, "alt@example.com")
+	card := make(govcard.Card)
+	card.SetValue(govcard.FieldVersion, "3.0")
+	card.SetValue(govcard.FieldFormattedName, "Full")
+	card.SetValue(govcard.FieldTelephone, "+1-555-0100")
+	card.SetValue(govcard.FieldEmail, "full@example.com")
+	card.AddValue(govcard.FieldEmail, "alt@example.com")
 
 	pc := ToContact(card)
-	if !strings.Contains(pc.Notes, "TEL: +1-555-0100") {
-		t.Errorf("expected TEL in notes, got %q", pc.Notes)
+	if !strings.Contains(pc.Notes, "Phone: +1-555-0100") {
+		t.Errorf("expected Phone in notes, got %q", pc.Notes)
 	}
-	if !strings.Contains(pc.Notes, "EMAIL: full@example.com") {
-		t.Errorf("expected EMAIL in notes, got %q", pc.Notes)
+	if !strings.Contains(pc.Notes, "Email: full@example.com") {
+		t.Errorf("expected Email 'full@example.com' in notes, got %q", pc.Notes)
+	}
+}
+
+func TestParse_BDAY(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:4.0
+FN:Dana Vreede
+BDAY:19980129
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	if contacts[0].Birthday == nil {
+		t.Fatal("expected Birthday to be non-nil")
+	}
+	expected := time.Date(1998, 1, 29, 0, 0, 0, 0, time.UTC)
+	if !contacts[0].Birthday.Equal(expected) {
+		t.Errorf("expected Birthday %v, got %v", expected, contacts[0].Birthday)
+	}
+}
+
+func TestParse_BDAY_Extended(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:3.0
+FN:Jane Doe
+BDAY:1998-01-29
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	if contacts[0].Birthday == nil {
+		t.Fatal("expected Birthday to be non-nil")
+	}
+	expected := time.Date(1998, 1, 29, 0, 0, 0, 0, time.UTC)
+	if !contacts[0].Birthday.Equal(expected) {
+		t.Errorf("expected Birthday %v, got %v", expected, contacts[0].Birthday)
+	}
+}
+
+func TestParse_BDAY_Absent(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:3.0
+FN:No Birthday
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	if contacts[0].Birthday != nil {
+		t.Errorf("expected Birthday to be nil, got %v", contacts[0].Birthday)
+	}
+}
+
+func TestParse_GENDER(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:4.0
+FN:Dana Vreede
+GENDER:F
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	if contacts[0].Gender != "F" {
+		t.Errorf("expected Gender 'F', got %q", contacts[0].Gender)
+	}
+}
+
+func TestParse_N_StructuredName(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:4.0
+FN:Dana Vreede
+N:Vreede;Dana;de;;
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	if contacts[0].FamilyName != "Vreede" {
+		t.Errorf("expected FamilyName 'Vreede', got %q", contacts[0].FamilyName)
+	}
+	if contacts[0].GivenName != "Dana" {
+		t.Errorf("expected GivenName 'Dana', got %q", contacts[0].GivenName)
+	}
+}
+
+func TestParse_StructuredFieldsExcludedFromNotes(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:4.0
+FN:Dana Vreede
+BDAY:19980129
+GENDER:F
+N:Vreede;Dana;de;;
+TEL:+1-555-0100
+EMAIL:dana@example.com
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	// Notes should contain phone and email but NOT raw BDAY, GENDER, or N lines.
+	if !strings.Contains(contacts[0].Notes, "Phone: +1-555-0100") {
+		t.Errorf("expected Phone in notes, got %q", contacts[0].Notes)
+	}
+	if !strings.Contains(contacts[0].Notes, "Email: dana@example.com") {
+		t.Errorf("expected Email in notes, got %q", contacts[0].Notes)
+	}
+	if strings.Contains(contacts[0].Notes, "BDAY") {
+		t.Error("Notes should not contain raw BDAY")
+	}
+	if strings.Contains(contacts[0].Notes, "GENDER") {
+		t.Error("Notes should not contain raw GENDER")
+	}
+	if strings.Contains(contacts[0].Notes, "N:") {
+		t.Error("Notes should not contain raw N")
 	}
 }
 

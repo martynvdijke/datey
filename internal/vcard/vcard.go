@@ -5,14 +5,19 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	govcard "github.com/emersion/go-vcard"
 )
 
 // ParsedContact holds the fields extracted from a single vCard entry.
 type ParsedContact struct {
-	Name  string
-	Notes string
+	Name        string
+	Notes       string
+	Birthday    *time.Time
+	Gender      string
+	FamilyName  string
+	GivenName   string
 }
 
 // Parse reads a .vcf file and returns all parsed contacts.
@@ -45,25 +50,55 @@ func Parse(r io.Reader) ([]ParsedContact, error) {
 }
 
 // ToContact maps a vCard card to a ParsedContact.
-// FN → name, NOTE → notes. All other properties are appended to notes.
+// FN → name, BDAY → Birthday, GENDER → Gender, N → FamilyName/GivenName,
+// NOTE/TEL/EMAIL/ADR → Notes in human-readable format.
+// Unknown properties are silently dropped.
 func ToContact(card govcard.Card) ParsedContact {
 	pc := ParsedContact{
 		Name: card.Value(govcard.FieldFormattedName),
 	}
 
+	// Parse BDAY: supports YYYYMMDD (v4.0 basic) and YYYY-MM-DD (v3.0 extended).
+	if bday := card.Value(govcard.FieldBirthday); bday != "" {
+		for _, layout := range []string{"20060102", "2006-01-02"} {
+			if t, err := time.Parse(layout, bday); err == nil {
+				pc.Birthday = &t
+				break
+			}
+		}
+	}
+
+	// Extract GENDER.
+	if gender := card.Value(govcard.FieldGender); gender != "" {
+		// Gender may be "F" or "F;identity" — take just the sex component.
+		if idx := strings.IndexByte(gender, ';'); idx >= 0 {
+			pc.Gender = gender[:idx]
+		} else {
+			pc.Gender = gender
+		}
+	}
+
+	// Extract structured name (N).
+	if name := card.Name(); name != nil {
+		pc.FamilyName = name.FamilyName
+		pc.GivenName = name.GivenName
+	}
+
+	// Build human-readable notes from NOTE, TEL, EMAIL, ADR.
 	var noteParts []string
 	if note := card.Value(govcard.FieldNote); note != "" {
 		noteParts = append(noteParts, note)
 	}
-
-	for k, fields := range card {
-		if k == govcard.FieldFormattedName || k == govcard.FieldNote || k == govcard.FieldVersion {
-			continue
-		}
-		for _, f := range fields {
-			if f.Value != "" {
-				noteParts = append(noteParts, k+": "+f.Value)
-			}
+	if tel := card.Value(govcard.FieldTelephone); tel != "" {
+		noteParts = append(noteParts, "Phone: "+tel)
+	}
+	if email := card.Value(govcard.FieldEmail); email != "" {
+		noteParts = append(noteParts, "Email: "+email)
+	}
+	if adr := card.Address(); adr != nil {
+		addrParts := buildAddressParts(adr)
+		if len(addrParts) > 0 {
+			noteParts = append(noteParts, "Address: "+strings.Join(addrParts, ", "))
 		}
 	}
 
@@ -72,6 +107,31 @@ func ToContact(card govcard.Card) ParsedContact {
 	}
 
 	return pc
+}
+
+// buildAddressParts assembles the non-empty components of an address field
+// into a slice suitable for joining with ", ".
+func buildAddressParts(a *govcard.Address) []string {
+	var parts []string
+	if a.StreetAddress != "" {
+		parts = append(parts, a.StreetAddress)
+	}
+	if a.ExtendedAddress != "" {
+		parts = append(parts, a.ExtendedAddress)
+	}
+	if a.Locality != "" {
+		parts = append(parts, a.Locality)
+	}
+	if a.Region != "" {
+		parts = append(parts, a.Region)
+	}
+	if a.PostalCode != "" {
+		parts = append(parts, a.PostalCode)
+	}
+	if a.Country != "" {
+		parts = append(parts, a.Country)
+	}
+	return parts
 }
 
 // ToCard creates a vCard Card from name and notes.

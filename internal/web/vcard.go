@@ -42,7 +42,7 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var imported, skipped int
+	var imported, skipped, birthdays int
 	for _, pc := range parsed {
 		// Duplicate check: skip if person with this name already exists
 		existing, err := h.people.FindByName(r.Context(), pc.Name)
@@ -56,16 +56,30 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		_, err = h.people.Create(r.Context(), pc.Name, pc.Notes)
+		person, err := h.people.Create(r.Context(), pc.Name, pc.Notes)
 		if err != nil {
 			slog.Error("import vcard: create person", "name", pc.Name, "error", err)
 			skipped++
 			continue
 		}
+
+		// Auto-create a birthday event if BDAY was present in the vCard.
+		if pc.Birthday != nil {
+			desc := fmt.Sprintf("Birthday of %s", pc.Name)
+			if _, err := h.events.CreateForPerson(r.Context(), person.ID, "Birthday", *pc.Birthday, desc); err != nil {
+				slog.Error("import vcard: create birthday event", "name", pc.Name, "error", err)
+			} else {
+				birthdays++
+			}
+		}
+
 		imported++
 	}
 
 	msg := fmt.Sprintf("Imported+%d+person(s).+%d+skipped.", imported, skipped)
+	if birthdays > 0 {
+		msg += fmt.Sprintf("+%d+birthday+event(s)+created.", birthdays)
+	}
 	http.Redirect(w, r, "/people?success="+msg, http.StatusSeeOther)
 }
 
