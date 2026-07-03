@@ -234,8 +234,8 @@ END:VCARD`
 	if len(contacts) != 1 {
 		t.Fatalf("expected 1 contact, got %d", len(contacts))
 	}
-	if contacts[0].Gender != "F" {
-		t.Errorf("expected Gender 'F', got %q", contacts[0].Gender)
+	if contacts[0].Gender != "Female" {
+		t.Errorf("expected Gender 'Female', got %q", contacts[0].Gender)
 	}
 }
 
@@ -294,6 +294,10 @@ END:VCARD`
 	}
 	if strings.Contains(contacts[0].Notes, "N:") {
 		t.Error("Notes should not contain raw N")
+	}
+	// But human-readable Gender label should be present.
+	if !strings.Contains(contacts[0].Notes, "Gender: Female") {
+		t.Errorf("expected human-readable Gender in Notes, got %q", contacts[0].Notes)
 	}
 }
 

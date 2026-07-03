@@ -261,8 +261,8 @@ END:VCARD`
 	if !parsed[0].Birthday.Equal(expectedBday) {
 		t.Errorf("expected Birthday %v, got %v", expectedBday, parsed[0].Birthday)
 	}
-	if parsed[0].Gender != "F" {
-		t.Errorf("expected Gender 'F', got %q", parsed[0].Gender)
+	if parsed[0].Gender != "Female" {
+		t.Errorf("expected Gender 'Female', got %q", parsed[0].Gender)
 	}
 	if parsed[0].FamilyName != "Vreede" {
 		t.Errorf("expected FamilyName 'Vreede', got %q", parsed[0].FamilyName)
@@ -270,9 +270,9 @@ END:VCARD`
 	if parsed[0].GivenName != "Dana" {
 		t.Errorf("expected GivenName 'Dana', got %q", parsed[0].GivenName)
 	}
-	// Notes should be empty since there's no NOTE, TEL, EMAIL, or ADR
-	if parsed[0].Notes != "" {
-		t.Errorf("expected empty Notes, got %q", parsed[0].Notes)
+	// Notes should only contain the human-readable Gender label (no NOTE, TEL, EMAIL, or ADR in this vCard)
+	if parsed[0].Notes != "Gender: Female" {
+		t.Errorf("expected Notes 'Gender: Female', got %q", parsed[0].Notes)
 	}
 
 	// Create the person and event (simulating what the web handler does)
@@ -283,7 +283,7 @@ END:VCARD`
 
 	if parsed[0].Birthday != nil {
 		desc := "Birthday of " + parsed[0].Name
-		if _, err := events.CreateForPerson(ctx, p.ID, "Birthday", *parsed[0].Birthday, desc); err != nil {
+		if _, err := events.CreateForPerson(ctx, p.ID, "birthday", *parsed[0].Birthday, desc); err != nil {
 			t.Fatalf("create birthday event: %v", err)
 		}
 	}
@@ -305,8 +305,8 @@ END:VCARD`
 	if len(personEvents) != 1 {
 		t.Fatalf("expected 1 event, got %d", len(personEvents))
 	}
-	if personEvents[0].Type != "Birthday" {
-		t.Errorf("expected event type 'Birthday', got %q", personEvents[0].Type)
+	if personEvents[0].Type != "birthday" {
+		t.Errorf("expected event type 'birthday', got %q", personEvents[0].Type)
 	}
 	if !personEvents[0].Date.Equal(expectedBday) {
 		t.Errorf("expected event date %v, got %v", expectedBday, personEvents[0].Date)
@@ -374,7 +374,7 @@ func TestIntegration_DuplicateImportNoDuplicateEvent(t *testing.T) {
 		t.Fatalf("create person: %v", err)
 	}
 	bday := time.Date(1998, 1, 29, 0, 0, 0, 0, time.UTC)
-	if _, err := events.CreateForPerson(ctx, p.ID, "Birthday", bday, "Birthday of Dana Vreede"); err != nil {
+	if _, err := events.CreateForPerson(ctx, p.ID, "birthday", bday, "Birthday of Dana Vreede"); err != nil {
 		t.Fatalf("create birthday event: %v", err)
 	}
 

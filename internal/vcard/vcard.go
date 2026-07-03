@@ -68,14 +68,14 @@ func ToContact(card govcard.Card) ParsedContact {
 		}
 	}
 
-	// Extract GENDER.
+	// Extract GENDER and map to human-readable form.
 	if gender := card.Value(govcard.FieldGender); gender != "" {
-		// Gender may be "F" or "F;identity" — take just the sex component.
 		if idx := strings.IndexByte(gender, ';'); idx >= 0 {
 			pc.Gender = gender[:idx]
 		} else {
 			pc.Gender = gender
 		}
+		pc.Gender = genderLabel(pc.Gender)
 	}
 
 	// Extract structured name (N).
@@ -84,11 +84,14 @@ func ToContact(card govcard.Card) ParsedContact {
 		pc.GivenName = name.GivenName
 	}
 
-	// Build human-readable notes from NOTE, TEL, EMAIL, ADR,
+	// Build human-readable notes from NOTE, TEL, EMAIL, ADR, GENDER,
 	// plus any unknown properties as "KEY: value" fallback.
 	var noteParts []string
 	if note := card.Value(govcard.FieldNote); note != "" {
 		noteParts = append(noteParts, note)
+	}
+	if pc.Gender != "" {
+		noteParts = append(noteParts, "Gender: "+pc.Gender)
 	}
 	if tel := card.Value(govcard.FieldTelephone); tel != "" {
 		noteParts = append(noteParts, "Phone: "+tel)
@@ -133,6 +136,23 @@ func ToContact(card govcard.Card) ParsedContact {
 	}
 
 	return pc
+}
+
+// genderLabel maps a vCard Sex code to a human-readable label.
+func genderLabel(s string) string {
+	switch s {
+	case "M":
+		return "Male"
+	case "F":
+		return "Female"
+	case "O":
+		return "Other"
+	case "N":
+		return "None"
+	case "U":
+		return "Unknown"
+	}
+	return s
 }
 
 // buildAddressParts assembles the non-empty components of an address field

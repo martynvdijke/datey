@@ -98,7 +98,7 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 		if pc.Birthday != nil {
 			ir.HasBirthdayBday = pc.Birthday.Format("Jan 2, 2006")
 			desc := fmt.Sprintf("Birthday of %s", pc.Name)
-			if _, err := h.events.CreateForPerson(r.Context(), person.ID, "Birthday", *pc.Birthday, desc); err != nil {
+			if _, err := h.events.CreateForPerson(r.Context(), person.ID, "birthday", *pc.Birthday, desc); err != nil {
 				slog.Error("import vcard: create birthday event", "name", pc.Name, "error", err)
 			} else {
 				birthdays++

@@ -93,6 +93,8 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 			contactName := ""
 			if contact := event.Edges.Contact; contact != nil {
 				contactName = contact.Name
+			} else if p := event.Edges.Person; p != nil {
+				contactName = p.Name
 			}
 
 			title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
