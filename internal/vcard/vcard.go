@@ -84,7 +84,8 @@ func ToContact(card govcard.Card) ParsedContact {
 		pc.GivenName = name.GivenName
 	}
 
-	// Build human-readable notes from NOTE, TEL, EMAIL, ADR.
+	// Build human-readable notes from NOTE, TEL, EMAIL, ADR,
+	// plus any unknown properties as "KEY: value" fallback.
 	var noteParts []string
 	if note := card.Value(govcard.FieldNote); note != "" {
 		noteParts = append(noteParts, note)
@@ -99,6 +100,31 @@ func ToContact(card govcard.Card) ParsedContact {
 		addrParts := buildAddressParts(adr)
 		if len(addrParts) > 0 {
 			noteParts = append(noteParts, "Address: "+strings.Join(addrParts, ", "))
+		}
+	}
+
+	// Preserve any remaining (unknown) properties as "KEY: value" fallback.
+	// This ensures fields like UID, SOURCE, PRODID, REV from real-world
+	// vCards aren't lost.
+	structured := map[string]bool{
+		govcard.FieldFormattedName: true,
+		govcard.FieldVersion:       true,
+		govcard.FieldBirthday:      true,
+		govcard.FieldGender:        true,
+		govcard.FieldName:          true,
+		govcard.FieldNote:          true,
+		govcard.FieldTelephone:     true,
+		govcard.FieldEmail:         true,
+		govcard.FieldAddress:       true,
+	}
+	for k, fields := range card {
+		if structured[k] {
+			continue
+		}
+		for _, f := range fields {
+			if f.Value != "" {
+				noteParts = append(noteParts, k+": "+f.Value)
+			}
 		}
 	}
 

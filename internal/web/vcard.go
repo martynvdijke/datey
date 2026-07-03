@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -12,6 +13,14 @@ import (
 )
 
 const maxUploadSize = 10 << 20 // 10 MB
+
+type importResult struct {
+	Name             string
+	BirthdayCreated  bool
+	HasBirthdayBday  string // formatted birthday date, empty if none
+	Created          bool
+	SkipReason       string // empty if created
+}
 
 func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
@@ -43,16 +52,27 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var imported, skipped, birthdays int
+	results := make([]importResult, 0, len(parsed))
+
 	for _, pc := range parsed {
-		// Duplicate check: skip if person with this name already exists
 		existing, err := h.people.FindByName(r.Context(), pc.Name)
 		if err == nil && existing != nil {
 			skipped++
+			results = append(results, importResult{
+				Name:       pc.Name,
+				Created:    false,
+				SkipReason: "Duplicate name",
+			})
 			continue
 		}
 		if !ent.IsNotFound(err) && err != nil {
 			slog.Error("import vcard: check duplicate", "name", pc.Name, "error", err)
 			skipped++
+			results = append(results, importResult{
+				Name:       pc.Name,
+				Created:    false,
+				SkipReason: "Lookup error",
+			})
 			continue
 		}
 
@@ -60,22 +80,78 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			slog.Error("import vcard: create person", "name", pc.Name, "error", err)
 			skipped++
+			results = append(results, importResult{
+				Name:       pc.Name,
+				Created:    false,
+				SkipReason: "Creation error",
+			})
 			continue
 		}
 
-		// Auto-create a birthday event if BDAY was present in the vCard.
+		imported++
+
+		ir := importResult{
+			Name:    pc.Name,
+			Created: true,
+		}
+
 		if pc.Birthday != nil {
+			ir.HasBirthdayBday = pc.Birthday.Format("Jan 2, 2006")
 			desc := fmt.Sprintf("Birthday of %s", pc.Name)
 			if _, err := h.events.CreateForPerson(r.Context(), person.ID, "Birthday", *pc.Birthday, desc); err != nil {
 				slog.Error("import vcard: create birthday event", "name", pc.Name, "error", err)
 			} else {
 				birthdays++
+				ir.BirthdayCreated = true
 			}
 		}
 
-		imported++
+		results = append(results, ir)
 	}
 
+	// HTMX request — return inline results partial + toast.
+	if r.Header.Get("HX-Request") == "true" {
+		isHX := true
+		toastMsg := fmt.Sprintf("Imported %d person(s). %d skipped.", imported, skipped)
+		if birthdays > 0 {
+			toastMsg += fmt.Sprintf(" %d birthday event(s) created.", birthdays)
+		}
+		toastType := "success"
+		if imported == 0 {
+			toastType = "error"
+		}
+
+		data := map[string]any{
+			"ImportResults": results,
+			"Imported":      imported,
+			"Skipped":       skipped,
+			"Birthdays":     birthdays,
+			"IsHTMX":        isHX,
+		}
+
+		// Render just the importResults partial template.
+		tmpl := h.templates["people.html"]
+		if partial := tmpl.Lookup("importResults"); partial != nil {
+			payload := map[string]any{
+				"show-toast": map[string]string{
+					"message": toastMsg,
+					"type":    toastType,
+				},
+			}
+			b, _ := json.Marshal(payload)
+			w.Header().Set("HX-Trigger", string(b))
+			if err := partial.Execute(w, data); err != nil {
+				slog.Error("import vcard: render results", "error", err)
+				http.Error(w, "internal error", http.StatusInternalServerError)
+			}
+		} else {
+			slog.Error("import vcard: importResults template not found")
+			http.Error(w, "internal error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Non-HTMX fallback: redirect with query-param message.
 	msg := fmt.Sprintf("Imported+%d+person(s).+%d+skipped.", imported, skipped)
 	if birthdays > 0 {
 		msg += fmt.Sprintf("+%d+birthday+event(s)+created.", birthdays)
@@ -141,3 +217,5 @@ func (h *Handler) handleExportAllVCard(w http.ResponseWriter, r *http.Request) {
 		slog.Error("write vcard response", "error", err)
 	}
 }
+
+

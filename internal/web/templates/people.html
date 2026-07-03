@@ -7,7 +7,9 @@
     <a href="/people/export" class="btn btn-outline-secondary">Export All vCard</a>
   </div>
 </div>
-<form id="import-form" action="/people/import" method="POST" enctype="multipart/form-data" class="d-none mb-3">
+<form id="import-form" action="/people/import" method="POST" enctype="multipart/form-data"
+      hx-post="/people/import" hx-target="#import-preview" hx-swap="innerHTML"
+      class="d-none mb-3">
   {{template "csrfField" .}}
   <div class="input-group">
     <input type="file" name="vcf_file" accept=".vcf" class="form-control" required aria-label="Upload vCard file (required)">
@@ -15,6 +17,7 @@
   </div>
   <div class="form-text">Upload a .vcf file to import people. Supports single and multi-contact vCards.</div>
 </form>
+<div id="import-preview"></div>
 <div class="row mb-3">
   <div class="col-md-6">
     <div class="input-group">
@@ -66,5 +69,58 @@
   {{else}}
     {{template "emptyState" (dict "Message" "No people yet." "CTAHref" "/people/new" "CTAText" "Add your first person")}}
   {{end}}
+</div>
+{{end}}
+
+{{define "importResults"}}
+<div class="import-results mb-3 p-3 border rounded">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">Import Results</h5>
+    <button type="button" class="btn-close"
+            hx-get="/people" hx-target="#people-grid" hx-select="#people-grid"
+            onclick="document.getElementById('import-preview').innerHTML=''"
+            aria-label="Close results"></button>
+  </div>
+  {{if .ImportResults}}
+  <table class="table table-sm mb-2">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Birthday</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .ImportResults}}
+      <tr>
+        <td>{{.Name}}</td>
+        <td>
+          {{if .Created}}
+            <span class="text-success">Imported</span>
+          {{else}}
+            <span class="text-muted">Skipped — {{.SkipReason}}</span>
+          {{end}}
+        </td>
+        <td>
+          {{if .HasBirthdayBday}}
+            {{if .BirthdayCreated}}
+              <span class="text-success">{{.HasBirthdayBday}} ✓</span>
+            {{else}}
+              <span class="text-muted">{{.HasBirthdayBday}}</span>
+            {{end}}
+          {{else}}
+            <span class="text-muted">—</span>
+          {{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+  <p class="mb-0 small text-muted">
+    <strong>{{.Imported}}</strong> imported,
+    <strong>{{.Skipped}}</strong> skipped,
+    <strong>{{.Birthdays}}</strong> birthday event(s) created.
+  </p>
 </div>
 {{end}}

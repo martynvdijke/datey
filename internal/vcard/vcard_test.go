@@ -297,6 +297,39 @@ END:VCARD`
 	}
 }
 
+func TestParse_UnknownFieldsPreservedInNotes(t *testing.T) {
+	// Real-world vCards often have UID, SOURCE, PRODID, REV which are not
+	// structured fields — they must be preserved in Notes to avoid data loss.
+	input := `BEGIN:VCARD
+VERSION:4.0
+FN:Test User
+UID:abc123
+SOURCE:https://example.com/contact
+PRODID:-//Test//EN
+REV:20250131T084701Z
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	if !strings.Contains(contacts[0].Notes, "UID: abc123") {
+		t.Errorf("expected Notes to contain 'UID: abc123', got %q", contacts[0].Notes)
+	}
+	if !strings.Contains(contacts[0].Notes, "SOURCE: https://example.com/contact") {
+		t.Errorf("expected Notes to contain SOURCE, got %q", contacts[0].Notes)
+	}
+	if !strings.Contains(contacts[0].Notes, "PRODID: -//Test//EN") {
+		t.Errorf("expected Notes to contain PRODID, got %q", contacts[0].Notes)
+	}
+	if !strings.Contains(contacts[0].Notes, "REV: 20250131T084701Z") {
+		t.Errorf("expected Notes to contain REV, got %q", contacts[0].Notes)
+	}
+}
+
 func TestEncode_SingleContact(t *testing.T) {
 	items := []NameNotes{
 		{Name: "Alice", Notes: "Test note"},
