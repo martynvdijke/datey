@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/martynvdijke/datey/compare/v1.16.0...v1.17.0) (2026-07-03)
+
+
+### Features
+
+* improved vCard import — preserve unknown fields in Notes, HTMX inline results workflow ([3059c56](https://github.com/martynvdijke/datey/commit/3059c56e037f9fe548e0252299f92b59ab0ad6c2))
+
 # [1.16.0](https://github.com/martynvdijke/datey/compare/v1.15.5...v1.16.0) (2026-07-01)
 
 
