@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/martynvdijke/datey/compare/v1.17.0...v1.18.0) (2026-07-03)
+
+
+### Features
+
+* gender support (F→Female/M→Male in Notes) + fix scheduler Person edge for birthday reminders ([ef2c51c](https://github.com/martynvdijke/datey/commit/ef2c51c6d2b64ea20b94c5c5cd93d334dadc8207))
+
 # [1.17.0](https://github.com/martynvdijke/datey/compare/v1.16.0...v1.17.0) (2026-07-03)
 
 
