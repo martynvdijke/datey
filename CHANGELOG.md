@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/martynvdijke/datey/compare/v1.18.0...v1.18.1) (2026-07-03)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([b69b679](https://github.com/martynvdijke/datey/commit/b69b679f6bce20b4c11befa35f6bb4befa97c7fc))
+
 # [1.18.0](https://github.com/martynvdijke/datey/compare/v1.17.0...v1.18.0) (2026-07-03)
 
 
