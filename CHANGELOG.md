@@ -1,3 +1,10 @@
+## [1.18.2](https://github.com/martynvdijke/datey/compare/v1.18.1...v1.18.2) (2026-07-04)
+
+
+### Bug Fixes
+
+* update e2e selectors for people-grid, add vCard test fixtures ([1ec0f22](https://github.com/martynvdijke/datey/commit/1ec0f22a2c3584040133f00671c368d88459ae0a))
+
 ## [1.18.1](https://github.com/martynvdijke/datey/compare/v1.18.0...v1.18.1) (2026-07-03)
 
 
