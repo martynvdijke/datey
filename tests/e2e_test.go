@@ -446,8 +446,8 @@ func TestEmptyStatePeople(t *testing.T) {
 		t.Fatalf("goto /people: %v", err)
 	}
 	bodyContains(t, page, "People")
-	if n, _ := page.Locator("#people-list").Count(); n == 0 {
-		t.Error("expected #people-list container on people page")
+	if n, _ := page.Locator("#people-grid").Count(); n == 0 {
+		t.Error("expected #people-grid container on people page")
 	}
 }
 
@@ -490,7 +490,7 @@ func TestEmptyStateDashboard(t *testing.T) {
 	if _, err := page.Goto(getBaseURL() + "/"); err != nil {
 		t.Fatalf("goto dashboard: %v", err)
 	}
-	bodyContains(t, page, "Upcoming Events")
+	bodyContains(t, page, "Good")
 	if n, _ := page.Locator("#events-content").Count(); n == 0 {
 		t.Error("expected #events-content container on dashboard")
 	}
@@ -835,23 +835,23 @@ func TestFocusRecoveryAfterSwap(t *testing.T) {
 		t.Fatalf("goto people: %v", err)
 	}
 
-	// If there are people, focus a View link inside #people-list and trigger a swap.
-	viewCount, err := page.Locator("#people-list a:has-text('View')").Count()
+	// If there are people, focus a card link inside #people-grid and trigger a swap.
+	cardCount, err := page.Locator("#people-grid a").Count()
 	if err != nil {
-		t.Fatalf("count view links: %v", err)
+		t.Fatalf("count card links: %v", err)
 	}
-	if viewCount == 0 {
-		t.Skip("no people with View links — need seeded data to test focus recovery")
+	if cardCount == 0 {
+		t.Skip("no people cards — need seeded data to test focus recovery")
 	}
 
-	// Focus a View link inside #people-list, then trigger an HTMX swap of #people-list
+	// Focus a card link inside #people-grid, then trigger an HTMX swap of #people-grid
 	// without moving focus to the search input (uses htmx.ajax directly).
 	result, err := page.Evaluate(`() => {
-		var link = document.querySelector('#people-list a');
+		var link = document.querySelector('#people-grid a');
 		if (!link) return "no-link";
 		link.focus();
 		if (typeof htmx === 'undefined') return "no-htmx";
-		htmx.ajax('GET', '/people?q=zzznonexistent', {target: '#people-list', swap: 'outerHTML'});
+		htmx.ajax('GET', '/people?q=zzznonexistent', {target: '#people-grid', swap: 'outerHTML'});
 		return "triggered";
 	}`)
 	if err != nil {
