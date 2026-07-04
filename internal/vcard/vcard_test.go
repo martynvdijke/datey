@@ -1,6 +1,7 @@
 package vcard
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -459,5 +460,96 @@ END:VCARD`
 	}
 	if !strings.Contains(output, "NOTE:Testing") {
 		t.Errorf("round trip failed: NOTE not preserved")
+	}
+}
+
+func TestParse_DanaVCF(t *testing.T) {
+	data, err := os.ReadFile("../../dana.vcf")
+	if err != nil {
+		t.Fatalf("read dana.vcf: %v", err)
+	}
+
+	contacts, err := Parse(strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatalf("parse dana.vcf: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+
+	c := contacts[0]
+	if c.Name != "Dana Vreede" {
+		t.Errorf("expected Name 'Dana Vreede', got %q", c.Name)
+	}
+	if c.Birthday == nil || !c.Birthday.Equal(time.Date(1998, 1, 29, 0, 0, 0, 0, time.UTC)) {
+		t.Errorf("expected Birthday 1998-01-29, got %v", c.Birthday)
+	}
+	if c.Gender != "Female" {
+		t.Errorf("expected Gender 'Female', got %q", c.Gender)
+	}
+	if c.FamilyName != "Vreede" {
+		t.Errorf("expected FamilyName 'Vreede', got %q", c.FamilyName)
+	}
+	if c.GivenName != "Dana" {
+		t.Errorf("expected GivenName 'Dana', got %q", c.GivenName)
+	}
+	if !strings.Contains(c.Notes, "Gender: Female") {
+		t.Errorf("expected 'Gender: Female' in Notes, got %q", c.Notes)
+	}
+	if !strings.Contains(c.Notes, "UID:") {
+		t.Error("expected UID preserved in Notes")
+	}
+	if !strings.Contains(c.Notes, "SOURCE:") {
+		t.Error("expected SOURCE preserved in Notes")
+	}
+	if !strings.Contains(c.Notes, "PRODID:") {
+		t.Error("expected PRODID preserved in Notes")
+	}
+	if !strings.Contains(c.Notes, "REV:") {
+		t.Error("expected REV preserved in Notes")
+	}
+}
+
+func TestParse_DavidVCF(t *testing.T) {
+	data, err := os.ReadFile("../../david.vcf")
+	if err != nil {
+		t.Fatalf("read david.vcf: %v", err)
+	}
+
+	contacts, err := Parse(strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatalf("parse david.vcf: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+
+	c := contacts[0]
+	if c.Name != "David Son" {
+		t.Errorf("expected Name 'David Son', got %q", c.Name)
+	}
+	if c.Birthday == nil || !c.Birthday.Equal(time.Date(1998, 9, 7, 0, 0, 0, 0, time.UTC)) {
+		t.Errorf("expected Birthday 1998-09-07, got %v", c.Birthday)
+	}
+	if c.Gender != "" {
+		t.Errorf("expected empty Gender, got %q", c.Gender)
+	}
+	if c.FamilyName != "Son" {
+		t.Errorf("expected FamilyName 'Son', got %q", c.FamilyName)
+	}
+	if c.GivenName != "David" {
+		t.Errorf("expected GivenName 'David', got %q", c.GivenName)
+	}
+	if !strings.Contains(c.Notes, "UID:") {
+		t.Error("expected UID preserved in Notes")
+	}
+	if !strings.Contains(c.Notes, "SOURCE:") {
+		t.Error("expected SOURCE preserved in Notes")
+	}
+	if !strings.Contains(c.Notes, "PRODID:") {
+		t.Error("expected PRODID preserved in Notes")
+	}
+	if !strings.Contains(c.Notes, "REV:") {
+		t.Error("expected REV preserved in Notes")
 	}
 }
