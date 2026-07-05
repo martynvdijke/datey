@@ -65,6 +65,11 @@ func Notes(v string) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldNotes, v))
 }
 
+// VcardData applies equality check predicate on the "vcard_data" field. It's identical to VcardDataEQ.
+func VcardData(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldVcardData, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCreatedAt, v))
@@ -213,6 +218,81 @@ func NotesEqualFold(v string) predicate.Person {
 // NotesContainsFold applies the ContainsFold predicate on the "notes" field.
 func NotesContainsFold(v string) predicate.Person {
 	return predicate.Person(sql.FieldContainsFold(FieldNotes, v))
+}
+
+// VcardDataEQ applies the EQ predicate on the "vcard_data" field.
+func VcardDataEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldVcardData, v))
+}
+
+// VcardDataNEQ applies the NEQ predicate on the "vcard_data" field.
+func VcardDataNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldVcardData, v))
+}
+
+// VcardDataIn applies the In predicate on the "vcard_data" field.
+func VcardDataIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldVcardData, vs...))
+}
+
+// VcardDataNotIn applies the NotIn predicate on the "vcard_data" field.
+func VcardDataNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldVcardData, vs...))
+}
+
+// VcardDataGT applies the GT predicate on the "vcard_data" field.
+func VcardDataGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldVcardData, v))
+}
+
+// VcardDataGTE applies the GTE predicate on the "vcard_data" field.
+func VcardDataGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldVcardData, v))
+}
+
+// VcardDataLT applies the LT predicate on the "vcard_data" field.
+func VcardDataLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldVcardData, v))
+}
+
+// VcardDataLTE applies the LTE predicate on the "vcard_data" field.
+func VcardDataLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldVcardData, v))
+}
+
+// VcardDataContains applies the Contains predicate on the "vcard_data" field.
+func VcardDataContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldVcardData, v))
+}
+
+// VcardDataHasPrefix applies the HasPrefix predicate on the "vcard_data" field.
+func VcardDataHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldVcardData, v))
+}
+
+// VcardDataHasSuffix applies the HasSuffix predicate on the "vcard_data" field.
+func VcardDataHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldVcardData, v))
+}
+
+// VcardDataIsNil applies the IsNil predicate on the "vcard_data" field.
+func VcardDataIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldVcardData))
+}
+
+// VcardDataNotNil applies the NotNil predicate on the "vcard_data" field.
+func VcardDataNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldVcardData))
+}
+
+// VcardDataEqualFold applies the EqualFold predicate on the "vcard_data" field.
+func VcardDataEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldVcardData, v))
+}
+
+// VcardDataContainsFold applies the ContainsFold predicate on the "vcard_data" field.
+func VcardDataContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldVcardData, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

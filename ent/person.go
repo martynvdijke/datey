@@ -21,6 +21,8 @@ type Person struct {
 	Name string `json:"name,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes string `json:"notes,omitempty"`
+	// VcardData holds the value of the "vcard_data" field.
+	VcardData string `json:"vcard_data,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -67,7 +69,7 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case person.FieldID:
 			values[i] = new(sql.NullInt64)
-		case person.FieldName, person.FieldNotes:
+		case person.FieldName, person.FieldNotes, person.FieldVcardData:
 			values[i] = new(sql.NullString)
 		case person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -103,6 +105,12 @@ func (_m *Person) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
 			} else if value.Valid {
 				_m.Notes = value.String
+			}
+		case person.FieldVcardData:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field vcard_data", values[i])
+			} else if value.Valid {
+				_m.VcardData = value.String
 			}
 		case person.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -167,6 +175,9 @@ func (_m *Person) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("notes=")
 	builder.WriteString(_m.Notes)
+	builder.WriteString(", ")
+	builder.WriteString("vcard_data=")
+	builder.WriteString(_m.VcardData)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

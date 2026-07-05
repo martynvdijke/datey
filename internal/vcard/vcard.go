@@ -18,13 +18,22 @@ type ParsedContact struct {
 	Gender      string
 	FamilyName  string
 	GivenName   string
+	RawData     string
 }
 
 // Parse reads a .vcf file and returns all parsed contacts.
 // Malformed entries are silently skipped. Returns nil, nil for an empty file.
 func Parse(r io.Reader) ([]ParsedContact, error) {
-	dec := govcard.NewDecoder(r)
+	rawBytes, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	rawText := string(rawBytes)
+	rawBlocks := extractRawBlocks(rawText)
+
+	dec := govcard.NewDecoder(strings.NewReader(rawText))
 	var contacts []ParsedContact
+	blockIdx := 0
 
 	for {
 		card, err := dec.Decode()
@@ -32,10 +41,17 @@ func Parse(r io.Reader) ([]ParsedContact, error) {
 			break
 		}
 		if err != nil {
+			blockIdx++
 			continue
 		}
 
-		pc := ToContact(card)
+		var rawData string
+		if blockIdx < len(rawBlocks) {
+			rawData = rawBlocks[blockIdx]
+		}
+		blockIdx++
+
+		pc := ToContact(card, rawData)
 		if pc.Name == "" {
 			continue
 		}
@@ -49,13 +65,35 @@ func Parse(r io.Reader) ([]ParsedContact, error) {
 	return contacts, nil
 }
 
+// extractRawBlocks slices the raw text into individual vCard blocks
+// by finding BEGIN:VCARD / END:VCARD boundaries.
+func extractRawBlocks(rawText string) []string {
+	var blocks []string
+	rest := rawText
+	for {
+		start := strings.Index(rest, "BEGIN:VCARD")
+		if start < 0 {
+			break
+		}
+		end := strings.Index(rest[start:], "END:VCARD")
+		if end < 0 {
+			break
+		}
+		end += start + len("END:VCARD")
+		blocks = append(blocks, rest[start:end])
+		rest = rest[end:]
+	}
+	return blocks
+}
+
 // ToContact maps a vCard card to a ParsedContact.
 // FN → name, BDAY → Birthday, GENDER → Gender, N → FamilyName/GivenName,
 // NOTE/TEL/EMAIL/ADR → Notes in human-readable format.
 // Unknown properties are silently dropped.
-func ToContact(card govcard.Card) ParsedContact {
+func ToContact(card govcard.Card, rawData string) ParsedContact {
 	pc := ParsedContact{
-		Name: card.Value(govcard.FieldFormattedName),
+		Name:    card.Value(govcard.FieldFormattedName),
+		RawData: rawData,
 	}
 
 	// Parse BDAY: supports YYYYMMDD (v4.0 basic) and YYYY-MM-DD (v3.0 extended).

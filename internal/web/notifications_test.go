@@ -414,7 +414,7 @@ func TestCreateNotification_WithPersonAndEventType(t *testing.T) {
 	router := setupNotificationsRouter(h)
 
 	// Create a person to link the notification to
-	person, err := h.people.Create(withUserContext(context.Background()), "Alice", "birthday person")
+	person, err := h.people.Create(withUserContext(context.Background()), "Alice", "birthday person", "")
 	if err != nil {
 		t.Fatalf("failed to create person: %v", err)
 	}
@@ -484,7 +484,7 @@ func TestNotificationForm_IncludesPeople(t *testing.T) {
 	router := setupNotificationsRouter(h)
 
 	// Create a person
-	_, err := h.people.Create(withUserContext(context.Background()), "Bob", "")
+	_, err := h.people.Create(withUserContext(context.Background()), "Bob", "", "")
 	if err != nil {
 		t.Fatalf("failed to create person: %v", err)
 	}
@@ -518,7 +518,7 @@ func TestNotificationsList_ShowsPersonName(t *testing.T) {
 	router := setupNotificationsRouter(h)
 
 	// Create a person
-	person, err := h.people.Create(withUserContext(context.Background()), "Charlie", "")
+	person, err := h.people.Create(withUserContext(context.Background()), "Charlie", "", "")
 	if err != nil {
 		t.Fatalf("failed to create person: %v", err)
 	}
@@ -558,7 +558,7 @@ func TestAPINotifications_IncludesPersonAndEventType(t *testing.T) {
 	h := newTestNotificationsHandler(t)
 	router := setupNotificationsRouter(h)
 
-	person, err := h.people.Create(withUserContext(context.Background()), "Diana", "")
+	person, err := h.people.Create(withUserContext(context.Background()), "Diana", "", "")
 	if err != nil {
 		t.Fatalf("failed to create person: %v", err)
 	}

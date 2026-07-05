@@ -76,7 +76,7 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		person, err := h.people.Create(r.Context(), pc.Name, pc.Notes)
+		person, err := h.people.Create(r.Context(), pc.Name, pc.Notes, pc.RawData)
 		if err != nil {
 			slog.Error("import vcard: create person", "name", pc.Name, "error", err)
 			skipped++

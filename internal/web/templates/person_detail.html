@@ -67,6 +67,15 @@
   </div>
 {{end}}
 
+{{if .VCardData}}
+<div class="mt-4 mb-4">
+  <details>
+    <summary class="fw-medium">Raw vCard Data</summary>
+    <pre class="vcard-raw">{{.VCardData}}</pre>
+  </details>
+</div>
+{{end}}
+
 <!-- Delete -->
 <div class="mt-4 pt-3 border-top">
   <form action="/people/{{.Person.ID}}/delete" method="POST" hx-confirm="Delete this person and all events?" hx-post="/people/{{.Person.ID}}/delete" hx-target="body" hx-push-url="/people" class="d-inline">

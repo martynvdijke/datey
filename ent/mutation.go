@@ -4372,6 +4372,7 @@ type PersonMutation struct {
 	id            *int
 	name          *string
 	notes         *string
+	vcard_data    *string
 	created_at    *time.Time
 	updated_at    *time.Time
 	clearedFields map[string]struct{}
@@ -4567,6 +4568,55 @@ func (m *PersonMutation) NotesCleared() bool {
 func (m *PersonMutation) ResetNotes() {
 	m.notes = nil
 	delete(m.clearedFields, person.FieldNotes)
+}
+
+// SetVcardData sets the "vcard_data" field.
+func (m *PersonMutation) SetVcardData(s string) {
+	m.vcard_data = &s
+}
+
+// VcardData returns the value of the "vcard_data" field in the mutation.
+func (m *PersonMutation) VcardData() (r string, exists bool) {
+	v := m.vcard_data
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVcardData returns the old "vcard_data" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldVcardData(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVcardData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVcardData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVcardData: %w", err)
+	}
+	return oldValue.VcardData, nil
+}
+
+// ClearVcardData clears the value of the "vcard_data" field.
+func (m *PersonMutation) ClearVcardData() {
+	m.vcard_data = nil
+	m.clearedFields[person.FieldVcardData] = struct{}{}
+}
+
+// VcardDataCleared returns if the "vcard_data" field was cleared in this mutation.
+func (m *PersonMutation) VcardDataCleared() bool {
+	_, ok := m.clearedFields[person.FieldVcardData]
+	return ok
+}
+
+// ResetVcardData resets all changes to the "vcard_data" field.
+func (m *PersonMutation) ResetVcardData() {
+	m.vcard_data = nil
+	delete(m.clearedFields, person.FieldVcardData)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -4783,12 +4833,15 @@ func (m *PersonMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PersonMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, person.FieldName)
 	}
 	if m.notes != nil {
 		fields = append(fields, person.FieldNotes)
+	}
+	if m.vcard_data != nil {
+		fields = append(fields, person.FieldVcardData)
 	}
 	if m.created_at != nil {
 		fields = append(fields, person.FieldCreatedAt)
@@ -4808,6 +4861,8 @@ func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case person.FieldNotes:
 		return m.Notes()
+	case person.FieldVcardData:
+		return m.VcardData()
 	case person.FieldCreatedAt:
 		return m.CreatedAt()
 	case person.FieldUpdatedAt:
@@ -4825,6 +4880,8 @@ func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldName(ctx)
 	case person.FieldNotes:
 		return m.OldNotes(ctx)
+	case person.FieldVcardData:
+		return m.OldVcardData(ctx)
 	case person.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case person.FieldUpdatedAt:
@@ -4851,6 +4908,13 @@ func (m *PersonMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNotes(v)
+		return nil
+	case person.FieldVcardData:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVcardData(v)
 		return nil
 	case person.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -4899,6 +4963,9 @@ func (m *PersonMutation) ClearedFields() []string {
 	if m.FieldCleared(person.FieldNotes) {
 		fields = append(fields, person.FieldNotes)
 	}
+	if m.FieldCleared(person.FieldVcardData) {
+		fields = append(fields, person.FieldVcardData)
+	}
 	return fields
 }
 
@@ -4916,6 +4983,9 @@ func (m *PersonMutation) ClearField(name string) error {
 	case person.FieldNotes:
 		m.ClearNotes()
 		return nil
+	case person.FieldVcardData:
+		m.ClearVcardData()
+		return nil
 	}
 	return fmt.Errorf("unknown Person nullable field %s", name)
 }
@@ -4929,6 +4999,9 @@ func (m *PersonMutation) ResetField(name string) error {
 		return nil
 	case person.FieldNotes:
 		m.ResetNotes()
+		return nil
+	case person.FieldVcardData:
+		m.ResetVcardData()
 		return nil
 	case person.FieldCreatedAt:
 		m.ResetCreatedAt()

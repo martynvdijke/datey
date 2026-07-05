@@ -42,6 +42,20 @@ func (_c *PersonCreate) SetNillableNotes(v *string) *PersonCreate {
 	return _c
 }
 
+// SetVcardData sets the "vcard_data" field.
+func (_c *PersonCreate) SetVcardData(v string) *PersonCreate {
+	_c.mutation.SetVcardData(v)
+	return _c
+}
+
+// SetNillableVcardData sets the "vcard_data" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableVcardData(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetVcardData(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *PersonCreate) SetCreatedAt(v time.Time) *PersonCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -174,6 +188,10 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Notes(); ok {
 		_spec.SetField(person.FieldNotes, field.TypeString, value)
 		_node.Notes = value
+	}
+	if value, ok := _c.mutation.VcardData(); ok {
+		_spec.SetField(person.FieldVcardData, field.TypeString, value)
+		_node.VcardData = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)

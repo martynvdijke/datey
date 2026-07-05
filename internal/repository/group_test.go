@@ -86,7 +86,7 @@ func TestGroupAddRemovePerson(t *testing.T) {
 		t.Fatalf("Create group: %v", err)
 	}
 
-	p, err := personRepo.Create(context.Background(), "Member", "")
+	p, err := personRepo.Create(context.Background(), "Member", "", "")
 	if err != nil {
 		t.Fatalf("Create person: %v", err)
 	}

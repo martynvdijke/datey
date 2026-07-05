@@ -64,6 +64,26 @@ func (_u *PersonUpdate) ClearNotes() *PersonUpdate {
 	return _u
 }
 
+// SetVcardData sets the "vcard_data" field.
+func (_u *PersonUpdate) SetVcardData(v string) *PersonUpdate {
+	_u.mutation.SetVcardData(v)
+	return _u
+}
+
+// SetNillableVcardData sets the "vcard_data" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillableVcardData(v *string) *PersonUpdate {
+	if v != nil {
+		_u.SetVcardData(*v)
+	}
+	return _u
+}
+
+// ClearVcardData clears the value of the "vcard_data" field.
+func (_u *PersonUpdate) ClearVcardData() *PersonUpdate {
+	_u.mutation.ClearVcardData()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *PersonUpdate) SetCreatedAt(v time.Time) *PersonUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -227,6 +247,12 @@ func (_u *PersonUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.NotesCleared() {
 		_spec.ClearField(person.FieldNotes, field.TypeString)
 	}
+	if value, ok := _u.mutation.VcardData(); ok {
+		_spec.SetField(person.FieldVcardData, field.TypeString, value)
+	}
+	if _u.mutation.VcardDataCleared() {
+		_spec.ClearField(person.FieldVcardData, field.TypeString)
+	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -374,6 +400,26 @@ func (_u *PersonUpdateOne) SetNillableNotes(v *string) *PersonUpdateOne {
 // ClearNotes clears the value of the "notes" field.
 func (_u *PersonUpdateOne) ClearNotes() *PersonUpdateOne {
 	_u.mutation.ClearNotes()
+	return _u
+}
+
+// SetVcardData sets the "vcard_data" field.
+func (_u *PersonUpdateOne) SetVcardData(v string) *PersonUpdateOne {
+	_u.mutation.SetVcardData(v)
+	return _u
+}
+
+// SetNillableVcardData sets the "vcard_data" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillableVcardData(v *string) *PersonUpdateOne {
+	if v != nil {
+		_u.SetVcardData(*v)
+	}
+	return _u
+}
+
+// ClearVcardData clears the value of the "vcard_data" field.
+func (_u *PersonUpdateOne) ClearVcardData() *PersonUpdateOne {
+	_u.mutation.ClearVcardData()
 	return _u
 }
 
@@ -569,6 +615,12 @@ func (_u *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err erro
 	}
 	if _u.mutation.NotesCleared() {
 		_spec.ClearField(person.FieldNotes, field.TypeString)
+	}
+	if value, ok := _u.mutation.VcardData(); ok {
+		_spec.SetField(person.FieldVcardData, field.TypeString, value)
+	}
+	if _u.mutation.VcardDataCleared() {
+		_spec.ClearField(person.FieldVcardData, field.TypeString)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)

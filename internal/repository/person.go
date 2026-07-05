@@ -16,13 +16,16 @@ func NewPersonRepository(client *ent.Client) *PersonRepository {
 	return &PersonRepository{client: client}
 }
 
-func (r *PersonRepository) Create(ctx context.Context, name, notes string) (*ent.Person, error) {
-	return r.client.Person.Create().
+func (r *PersonRepository) Create(ctx context.Context, name, notes, vcardData string) (*ent.Person, error) {
+	mutation := r.client.Person.Create().
 		SetName(name).
 		SetNotes(notes).
 		SetCreatedAt(time.Now()).
-		SetUpdatedAt(time.Now()).
-		Save(ctx)
+		SetUpdatedAt(time.Now())
+	if vcardData != "" {
+		mutation = mutation.SetVcardData(vcardData)
+	}
+	return mutation.Save(ctx)
 }
 
 func (r *PersonRepository) Get(ctx context.Context, id int) (*ent.Person, error) {

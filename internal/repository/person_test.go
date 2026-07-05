@@ -18,7 +18,7 @@ func newTestPersonRepo(t *testing.T) *PersonRepository {
 
 func seedPerson(t *testing.T, repo *PersonRepository, name, notes string) int {
 	t.Helper()
-	p, err := repo.Create(context.Background(), name, notes)
+	p, err := repo.Create(context.Background(), name, notes, "")
 	if err != nil {
 		t.Fatalf("seed person: %v", err)
 	}
@@ -28,7 +28,7 @@ func seedPerson(t *testing.T, repo *PersonRepository, name, notes string) int {
 func TestPersonCreate(t *testing.T) {
 	repo := newTestPersonRepo(t)
 
-	p, err := repo.Create(context.Background(), "Alice", "Friend")
+	p, err := repo.Create(context.Background(), "Alice", "Friend", "")
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}

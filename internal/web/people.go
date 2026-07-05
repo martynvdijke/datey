@@ -134,7 +134,7 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := h.people.Create(r.Context(), name, notes)
+	p, err := h.people.Create(r.Context(), name, notes, "")
 	if err != nil {
 		slog.Error("create person", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
@@ -221,6 +221,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		"AvatarColor": avatarColorIndex(person.Name),
 		"EventRows":   eventRows,
 		"Groups":      groups,
+		"VCardData":   person.VcardData,
 	})
 }
 

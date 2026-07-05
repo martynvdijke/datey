@@ -117,7 +117,7 @@ func TestToContact_FNandNOTE(t *testing.T) {
 	card.SetValue(govcard.FieldFormattedName, "Jane Smith")
 	card.SetValue(govcard.FieldNote, "Friend from work")
 
-	pc := ToContact(card)
+	pc := ToContact(card, "")
 	if pc.Name != "Jane Smith" {
 		t.Errorf("expected 'Jane Smith', got %q", pc.Name)
 	}
@@ -131,7 +131,7 @@ func TestToContact_OnlyFN(t *testing.T) {
 	card.SetValue(govcard.FieldVersion, "3.0")
 	card.SetValue(govcard.FieldFormattedName, "Solo")
 
-	pc := ToContact(card)
+	pc := ToContact(card, "")
 	if pc.Name != "Solo" {
 		t.Errorf("expected 'Solo', got %q", pc.Name)
 	}
@@ -148,12 +148,69 @@ func TestToContact_UnrecognizedProps(t *testing.T) {
 	card.SetValue(govcard.FieldEmail, "full@example.com")
 	card.AddValue(govcard.FieldEmail, "alt@example.com")
 
-	pc := ToContact(card)
+	pc := ToContact(card, "")
 	if !strings.Contains(pc.Notes, "Phone: +1-555-0100") {
 		t.Errorf("expected Phone in notes, got %q", pc.Notes)
 	}
 	if !strings.Contains(pc.Notes, "Email: full@example.com") {
 		t.Errorf("expected Email 'full@example.com' in notes, got %q", pc.Notes)
+	}
+}
+
+func TestParse_RawData(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:3.0
+FN:Jane Raw
+TEL:+1-555-0100
+EMAIL:jane@example.com
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(contacts))
+	}
+	if contacts[0].RawData != input {
+		t.Errorf("RawData mismatch:\ngot:\n%q\nwant:\n%q", contacts[0].RawData, input)
+	}
+}
+
+func TestParse_RawData_MultiContact(t *testing.T) {
+	input := `BEGIN:VCARD
+VERSION:3.0
+FN:Alice
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Bob
+NOTE:Colleague
+END:VCARD`
+
+	contacts, err := Parse(strings.NewReader(input))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(contacts) != 2 {
+		t.Fatalf("expected 2 contacts, got %d", len(contacts))
+	}
+
+	wantAlice := `BEGIN:VCARD
+VERSION:3.0
+FN:Alice
+END:VCARD`
+	wantBob := `BEGIN:VCARD
+VERSION:3.0
+FN:Bob
+NOTE:Colleague
+END:VCARD`
+
+	if contacts[0].RawData != wantAlice {
+		t.Errorf("Alice RawData mismatch:\ngot: %q\nwant: %q", contacts[0].RawData, wantAlice)
+	}
+	if contacts[1].RawData != wantBob {
+		t.Errorf("Bob RawData mismatch:\ngot: %q\nwant: %q", contacts[1].RawData, wantBob)
 	}
 }
 

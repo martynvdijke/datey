@@ -46,7 +46,7 @@ END:VCARD`
 	}
 
 	for _, pc := range parsed {
-		_, err := people.Create(ctx, pc.Name, pc.Notes)
+		_, err := people.Create(ctx, pc.Name, pc.Notes, pc.RawData)
 		if err != nil {
 			t.Fatalf("create person %q: %v", pc.Name, err)
 		}
@@ -94,7 +94,7 @@ func TestIntegration_DuplicateDetection(t *testing.T) {
 	ctx := context.Background()
 	people := repository.NewPersonRepository(client)
 
-	_, err := people.Create(ctx, "Alice", "First import")
+	_, err := people.Create(ctx, "Alice", "First import", "")
 	if err != nil {
 		t.Fatalf("create initial person: %v", err)
 	}
@@ -133,7 +133,7 @@ func TestIntegration_ExportSingle(t *testing.T) {
 	ctx := context.Background()
 	people := repository.NewPersonRepository(client)
 
-	p, err := people.Create(ctx, "Single Contact", "Just notes")
+	p, err := people.Create(ctx, "Single Contact", "Just notes", "")
 	if err != nil {
 		t.Fatalf("create person: %v", err)
 	}
@@ -276,7 +276,7 @@ END:VCARD`
 	}
 
 	// Create the person and event (simulating what the web handler does)
-	p, err := people.Create(ctx, parsed[0].Name, parsed[0].Notes)
+	p, err := people.Create(ctx, parsed[0].Name, parsed[0].Notes, parsed[0].RawData)
 	if err != nil {
 		t.Fatalf("create person: %v", err)
 	}
@@ -345,7 +345,7 @@ END:VCARD`
 	}
 
 	// Create person (simulating the web handler)
-	p, err := people.Create(ctx, parsed[0].Name, parsed[0].Notes)
+	p, err := people.Create(ctx, parsed[0].Name, parsed[0].Notes, parsed[0].RawData)
 	if err != nil {
 		t.Fatalf("create person: %v", err)
 	}
@@ -369,7 +369,7 @@ func TestIntegration_DuplicateImportNoDuplicateEvent(t *testing.T) {
 	events := repository.NewEventRepository(client)
 
 	// First import: create person + birthday event
-	p, err := people.Create(ctx, "Dana Vreede", "")
+	p, err := people.Create(ctx, "Dana Vreede", "", "")
 	if err != nil {
 		t.Fatalf("create person: %v", err)
 	}

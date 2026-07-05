@@ -14,6 +14,7 @@ func (Person) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty().Unique(),
 		field.Text("notes").Optional().Default(""),
+		field.Text("vcard_data").Optional(),
 		field.Time("created_at"),
 		field.Time("updated_at"),
 	}

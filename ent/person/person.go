@@ -16,6 +16,8 @@ const (
 	FieldName = "name"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
+	// FieldVcardData holds the string denoting the vcard_data field in the database.
+	FieldVcardData = "vcard_data"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -45,6 +47,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldNotes,
+	FieldVcardData,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -88,6 +91,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByNotes orders the results by the notes field.
 func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNotes, opts...).ToFunc()
+}
+
+// ByVcardData orders the results by the vcard_data field.
+func ByVcardData(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVcardData, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
