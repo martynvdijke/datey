@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/martynvdijke/datey/compare/v1.18.2...v1.19.0) (2026-07-05)
+
+
+### Features
+
+* store raw vCard data on import and display on person detail ([fce0d75](https://github.com/martynvdijke/datey/commit/fce0d7529871aa64cfba991b0aa9e9c573e134a4))
+
 ## [1.18.2](https://github.com/martynvdijke/datey/compare/v1.18.1...v1.18.2) (2026-07-04)
 
 
