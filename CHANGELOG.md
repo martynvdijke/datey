@@ -1,3 +1,5 @@
+## [1.19.1](https://github.com/martynvdijke/datey/compare/v1.19.0...v1.19.1) (2026-07-06)
+
 # [1.19.0](https://github.com/martynvdijke/datey/compare/v1.18.2...v1.19.0) (2026-07-05)
 
 
