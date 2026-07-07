@@ -1,3 +1,10 @@
+## [1.19.2](https://github.com/martynvdijke/datey/compare/v1.19.1...v1.19.2) (2026-07-07)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/go-chi/chi/v5 to v5.3.1 ([#17](https://github.com/martynvdijke/datey/issues/17)) ([b5ac3c5](https://github.com/martynvdijke/datey/commit/b5ac3c56d544aa926ebc2972b853c16b76b09dd5))
+
 ## [1.19.1](https://github.com/martynvdijke/datey/compare/v1.19.0...v1.19.1) (2026-07-06)
 
 # [1.19.0](https://github.com/martynvdijke/datey/compare/v1.18.2...v1.19.0) (2026-07-05)
