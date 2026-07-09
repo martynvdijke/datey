@@ -22,7 +22,7 @@ import (
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-const Version = "1.19.3"
+const Version = "1.19.4"
 
 func main() {
 	cfg, err := config.Load()

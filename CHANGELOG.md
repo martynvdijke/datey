@@ -1,3 +1,10 @@
+## [1.19.4](https://github.com/martynvdijke/datey/compare/v1.19.3...v1.19.4) (2026-07-09)
+
+
+### Bug Fixes
+
+* **deps:** update module golang.org/x/crypto to v0.54.0 ([#19](https://github.com/martynvdijke/datey/issues/19)) ([d919761](https://github.com/martynvdijke/datey/commit/d919761a96b66c267c0ae1caccbbd218a2fd8a59))
+
 ## [1.19.3](https://github.com/martynvdijke/datey/compare/v1.19.2...v1.19.3) (2026-07-08)
 
 ## [1.19.2](https://github.com/martynvdijke/datey/compare/v1.19.1...v1.19.2) (2026-07-07)
