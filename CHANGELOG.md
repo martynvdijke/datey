@@ -1,3 +1,15 @@
+# [1.20.0](https://github.com/martynvdijke/datey/compare/v1.19.4...v1.20.0) (2026-07-11)
+
+
+### Bug Fixes
+
+* remove unnecessary nil check on errs map in test ([4fc6536](https://github.com/martynvdijke/datey/commit/4fc6536a1763cd31dcd01cd3c7f734529eac342b))
+
+
+### Features
+
+* allow all settings to be overridden from the database via admin UI ([cc8c53f](https://github.com/martynvdijke/datey/commit/cc8c53fa17d4b25fdd3b57e4ea3515b955f3f14a))
+
 ## [1.19.4](https://github.com/martynvdijke/datey/compare/v1.19.3...v1.19.4) (2026-07-09)
 
 
