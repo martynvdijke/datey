@@ -21,6 +21,7 @@ import (
 	"github.com/datey/datey/internal/web"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/riandyrn/otelchi"
 )
 
 const Version = "1.20.0"
@@ -71,16 +72,17 @@ func main() {
 
 	textHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: store.LevelVar()})
 	var otelFn func(context.Context, slog.Record)
+	var telemetry *logstore.Telemetry
 
-	if cfg.OTLPEndpoint != "" {
-		otelHelper, otelErr := logstore.NewOTelHelper(cfg.OTLPEndpoint)
-		if otelErr != nil {
-			slog.Warn("failed to initialise OTel logger, continuing without OTEL", "error", otelErr)
-		} else if otelHelper != nil {
-			otelFn = func(ctx context.Context, r slog.Record) {
-				otelHelper.Emit(ctx, r)
-			}
-			slog.Info("OTel logging enabled", "endpoint", cfg.OTLPEndpoint)
+	hasOTel := cfg.OTLPEndpoint != "" || os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != ""
+	if hasOTel {
+		var err error
+		telemetry, err = logstore.InitTelemetry(context.Background())
+		if err != nil {
+			slog.Warn("failed to initialise OTel telemetry, continuing without OTel", "error", err)
+		} else if telemetry != nil {
+			otelFn = telemetry.Emit
+			slog.Info("OTel telemetry enabled")
 		}
 	}
 
@@ -95,9 +97,18 @@ func main() {
 	r := chi.NewRouter()
 
 	// Middleware for logging, recovery, and request ID
+	// otelchi middleware must come before other middleware to capture the full span.
+	if telemetry != nil {
+		r.Use(otelchi.Middleware("datey"))
+	}
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.RequestID)
+
+	// Metrics middleware for HTTP request count and duration.
+	if telemetry != nil && telemetry.HTTPMetrics != nil {
+		r.Use(otelMetricsMiddleware(telemetry.HTTPMetrics))
+	}
 
 	handler := web.NewHandler(cfg, client, reg, store)
 	handlers.Version = Version
@@ -142,6 +153,11 @@ func main() {
 		cancel()
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer shutdownCancel()
+		if telemetry != nil {
+			if err := telemetry.Shutdown(shutdownCtx); err != nil {
+				slog.Error("OTel shutdown error", "error", err)
+			}
+		}
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			slog.Error("server shutdown error", "error", err)
 		}
@@ -152,6 +168,29 @@ func main() {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
 	}
+}
+
+// otelMetricsMiddleware records HTTP request count and duration metrics.
+func otelMetricsMiddleware(m *logstore.HTTPMetrics) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			ww := &statusWriter{ResponseWriter: w, statusCode: http.StatusOK}
+			next.ServeHTTP(ww, r)
+			m.RecordHTTPRequest(r.Context(), r.Method, r.URL.Path, ww.statusCode, time.Since(start))
+		})
+	}
+}
+
+// statusWriter wraps http.ResponseWriter to capture the status code.
+type statusWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (w *statusWriter) WriteHeader(code int) {
+	w.statusCode = code
+	w.ResponseWriter.WriteHeader(code)
 }
 
 
