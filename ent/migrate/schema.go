@@ -8,6 +8,40 @@ import (
 )
 
 var (
+	// AppConfigsColumns holds the columns for the "app_configs" table.
+	AppConfigsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "port", Type: field.TypeInt, Nullable: true},
+		{Name: "data_dir", Type: field.TypeString, Nullable: true},
+		{Name: "scheduler_hour", Type: field.TypeInt, Nullable: true},
+		{Name: "reminder_days", Type: field.TypeInt, Nullable: true},
+		{Name: "log_level", Type: field.TypeString, Nullable: true},
+		{Name: "log_buffer_size", Type: field.TypeInt, Nullable: true},
+		{Name: "otel_endpoint", Type: field.TypeString, Nullable: true},
+		{Name: "backup_dir", Type: field.TypeString, Nullable: true},
+		{Name: "backup_retention_days", Type: field.TypeInt, Nullable: true},
+		{Name: "smtp_host", Type: field.TypeString, Nullable: true},
+		{Name: "smtp_port", Type: field.TypeInt, Nullable: true},
+		{Name: "smtp_user", Type: field.TypeString, Nullable: true},
+		{Name: "smtp_pass", Type: field.TypeString, Nullable: true},
+		{Name: "smtp_tls", Type: field.TypeBool, Nullable: true},
+		{Name: "smtp_timeout", Type: field.TypeInt, Nullable: true},
+		{Name: "notify_email", Type: field.TypeString, Nullable: true},
+		{Name: "gotify_url", Type: field.TypeString, Nullable: true},
+		{Name: "gotify_token", Type: field.TypeString, Nullable: true},
+		{Name: "telegram_bot_token", Type: field.TypeString, Nullable: true},
+		{Name: "telegram_chat_id", Type: field.TypeString, Nullable: true},
+		{Name: "umami_url", Type: field.TypeString, Nullable: true},
+		{Name: "umami_website_id", Type: field.TypeString, Nullable: true},
+		{Name: "eink_mode", Type: field.TypeBool, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// AppConfigsTable holds the schema information for the "app_configs" table.
+	AppConfigsTable = &schema.Table{
+		Name:       "app_configs",
+		Columns:    AppConfigsColumns,
+		PrimaryKey: []*schema.Column{AppConfigsColumns[0]},
+	}
 	// ContactsColumns holds the columns for the "contacts" table.
 	ContactsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -258,6 +292,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AppConfigsTable,
 		ContactsTable,
 		EventsTable,
 		GroupsTable,

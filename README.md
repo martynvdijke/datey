@@ -61,24 +61,32 @@ CGO_ENABLED=1 go build -tags fts5 -o datey .
 
 ## Configuration
 
-All configuration is done via environment variables. See `.env.example` for a template.
+Configuration is read from environment variables at startup. Every setting (except `DATA_DIR`) can additionally be overridden from the database by an administrator through the **Settings → Configuration** UI; database values take precedence over environment variables.
+
+- **Database override** — Admin-saved values are persisted in the `app_config` SQLite table (singleton row, `NULL` = fall back to the env value).
+- **Hot-reload** — Most fields (notifications, `REMINDER_DAYS`, `LOG_LEVEL`, `UMAMI_*`, `BACKUP_*`, etc.) take effect immediately after saving.
+- **Restart required** — `PORT`, `SCHEDULER_HOUR`, `LOG_BUFFER_SIZE`, and `OTEL_ENDPOINT` are persisted but only applied on the next boot.
+- **Data directory** — `DATA_DIR` is env-only and shown read-only in the admin UI, because the SQLite database is already open at that path before overrides load.
+
+See `.env.example` for a template.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `6270` | HTTP listen port |
-| `DATA_DIR` | `/data` | Data directory for SQLite database |
-| `SCHEDULER_HOUR` | `8` | Hour of day to run reminder check (**enforced**: 0–23) |
+| `PORT` | `6270` | HTTP listen port *(restart required)* |
+| `DATA_DIR` | `/data` | Data directory for SQLite database *(env-only, not DB-overridable)* |
+| `SCHEDULER_HOUR` | `8` | Hour of day to run reminder check (**enforced**: 0–23) *(restart required)* |
 | `REMINDER_DAYS` | `7` | Days ahead to look for upcoming events (**enforced**: 1–365) |
 | `LOG_LEVEL` | `warn` | Log level (**enforced**: must be one of `debug`, `info`, `warn`, `error`) |
-| `LOG_BUFFER_SIZE` | `10000` | In-memory ring buffer size for log viewer |
+| `LOG_BUFFER_SIZE` | `10000` | In-memory ring buffer size for log viewer *(restart required)* |
 | `BACKUP_DIR` | — | Directory for database backups |
 | `BACKUP_RETENTION_DAYS` | `30` | Days to retain backups before pruning |
-| `OTEL_ENDPOINT` | — | OpenTelemetry OTLP endpoint |
+| `OTEL_ENDPOINT` | — | OpenTelemetry OTLP endpoint *(restart required)* |
 | `SMTP_HOST` | — | SMTP server hostname |
 | `SMTP_PORT` | `587` | SMTP server port (**enforced**: 1–65535) |
 | `SMTP_USER` | — | SMTP authentication username |
 | `SMTP_PASS` | — | SMTP authentication password |
 | `SMTP_TLS` | `true` | Enable TLS for SMTP |
+| `SMTP_TIMEOUT` | `10` | SMTP timeout in seconds |
 | `NOTIFICATION_EMAIL` | — | Email address to receive notifications |
 | `GOTIFY_URL` | — | Gotify server URL |
 | `GOTIFY_TOKEN` | — | Gotify application token |
@@ -86,8 +94,9 @@ All configuration is done via environment variables. See `.env.example` for a te
 | `TELEGRAM_CHAT_ID` | — | Telegram chat ID |
 | `UMAMI_URL` | — | Umami analytics endpoint |
 | `UMAMI_WEBSITE_ID` | — | Umami website ID |
+| `EINK_MODE` | `false` | Force high-contrast E-Ink theme for all users |
 
-> **Note:** Enforced ranges are validated at startup. Invalid values cause the application to exit with an error.
+> **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
 ## Project Structure
 
@@ -180,6 +189,7 @@ datey/
 | `GET` | `/api/notifications` | Notifications JSON API |
 | `GET` | `/settings` | Notification settings & test |
 | `GET` | `/settings/config` | Configuration view |
+| `POST` | `/settings/config` | Save configuration (admin only) |
 | `GET` | `/settings/logs` | Log viewer |
 | `GET` | `/settings/backup` | Backup view |
 | `POST` | `/settings/backup` | Run a backup |

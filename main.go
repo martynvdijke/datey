@@ -17,6 +17,7 @@ import (
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
 	"github.com/datey/datey/internal/scheduler"
+	"github.com/datey/datey/internal/settings"
 	"github.com/datey/datey/internal/web"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
@@ -31,7 +32,36 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Initialise the log store with a ring buffer.
+	client, err := db.Init(cfg)
+	if err != nil {
+		slog.Error("failed to init database", "error", err)
+		os.Exit(1)
+	}
+	defer func() { _ = client.Close() }()
+
+	// Overlay DB-stored settings onto the env-derived config. Non-null columns
+	// from the singleton app_config row win over env values; null columns keep
+	// the env value. DataDir is never overlaid (the DB is already open at the
+	// env path). This happens before the log store, OTel helper, notifiers,
+	// scheduler, and server are constructed so that DB-stored LogBufferSize,
+	// OTLPEndpoint, Port, SchedulerHour, etc. take effect on this boot.
+	settingsStore := settings.New(client)
+	if err := settingsStore.EnsureSeeded(context.Background()); err != nil {
+		slog.Error("failed to seed app_config", "error", err)
+		os.Exit(1)
+	}
+	if err := settingsStore.Overlay(context.Background(), cfg); err != nil {
+		slog.Warn("failed to overlay settings from DB, continuing with env config", "error", err)
+	}
+
+	// Run data migration from contact→person for existing deployments
+	if err := db.MigrateContactsToPeople(context.Background(), client); err != nil {
+		slog.Error("failed to migrate contacts to people", "error", err)
+		os.Exit(1)
+	}
+
+	// Initialise the log store with a ring buffer. Done after the settings
+	// overlay so a DB-stored LogBufferSize/OTLPEndpoint takes effect this boot.
 	store := logstore.NewStore(cfg.LogBufferSize)
 	initialLevel, ok := logstore.ParseLogLevel(cfg.LogLevel)
 	if !ok {
@@ -39,7 +69,6 @@ func main() {
 	}
 	store.InitLevel(initialLevel)
 
-	// Create the custom handler wrapping the default stderr text handler.
 	textHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: store.LevelVar()})
 	var otelFn func(context.Context, slog.Record)
 
@@ -58,13 +87,6 @@ func main() {
 	customHandler := logstore.NewHandler(textHandler, store, otelFn)
 	slog.SetDefault(slog.New(customHandler))
 
-	client, err := db.Init(cfg)
-	if err != nil {
-		slog.Error("failed to init database", "error", err)
-		os.Exit(1)
-	}
-	defer func() { _ = client.Close() }()
-
 	reg := notifier.NewRegistry()
 	reg.Register(notifier.NewEmailNotifier(cfg))
 	reg.Register(notifier.NewGotifyNotifier(cfg))
@@ -76,12 +98,6 @@ func main() {
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.RequestID)
-
-	// Run data migration from contact→person for existing deployments
-	if err := db.MigrateContactsToPeople(context.Background(), client); err != nil {
-		slog.Error("failed to migrate contacts to people", "error", err)
-		os.Exit(1)
-	}
 
 	handler := web.NewHandler(cfg, client, reg, store)
 	handlers.Version = Version

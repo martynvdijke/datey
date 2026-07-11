@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/datey/datey/internal/db"
@@ -66,66 +65,6 @@ func (h *Handler) settingsEinkToggle(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(map[string]bool{"eink_mode": newVal}); err != nil {
 		slog.Error("encode response", "error", err)
 	}
-}
-
-func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {
-	type configItem struct {
-		Key   string
-		Value string
-	}
-
-	cfg := h.cfg
-	items := []configItem{
-		{"Port", fmt.Sprintf("%d", cfg.Port)},
-		{"DataDir", cfg.DataDir},
-		{"SchedulerHour", fmt.Sprintf("%d", cfg.SchedulerHour)},
-		{"ReminderDays", fmt.Sprintf("%d", cfg.ReminderDays)},
-		{"LogLevel", cfg.LogLevel},
-		{"LogBufferSize", fmt.Sprintf("%d", cfg.LogBufferSize)},
-		{"OTLPEndpoint", maskValue(cfg.OTLPEndpoint)},
-		{"SMTPHost", cfg.SMTPHost},
-		{"SMTPPort", fmt.Sprintf("%d", cfg.SMTPPort)},
-		{"SMTPUser", cfg.SMTPUser},
-		{"SMTPPass", maskValue(cfg.SMTPPass)},
-		{"SMTPTLS", fmt.Sprintf("%v", cfg.SMTPTLS)},
-		{"NotifyEmail", maskEmail(cfg.NotifyEmail)},
-		{"GotifyURL", cfg.GotifyURL},
-		{"GotifyToken", maskValue(cfg.GotifyToken)},
-		{"TelegramBotToken", maskValue(cfg.TelegramBotToken)},
-		{"TelegramChatID", cfg.TelegramChatID},
-		{"UmamiURL", cfg.UmamiURL},
-		{"UmamiWebsiteID", cfg.UmamiWebsiteID},
-		{"BackupDir", cfg.BackupDir},
-		{"BackupRetentionDays", fmt.Sprintf("%d", cfg.BackupRetentionDays)},
-		{"EinkMode", fmt.Sprintf("%v", cfg.EinkMode)},
-	}
-
-	h.render(w, r, "settings.html", map[string]any{
-		"Title":       "Datey - Settings",
-		"SettingsTab": "config",
-		"ConfigItems": items,
-	})
-}
-
-func maskValue(s string) string {
-	if s == "" {
-		return "\u2014"
-	}
-	return "****"
-}
-
-// maskEmail partially masks an email address, showing only the first character
-// and domain, e.g. "j***@example.com". Returns the original string if it
-// doesn't contain '@'.
-func maskEmail(s string) string {
-	if s == "" {
-		return "\u2014"
-	}
-	at := strings.Index(s, "@")
-	if at < 1 {
-		return maskValue(s)
-	}
-	return s[:1] + "***" + s[at:]
 }
 
 func (h *Handler) settingsLogs(w http.ResponseWriter, r *http.Request) {

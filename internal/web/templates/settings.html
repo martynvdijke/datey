@@ -102,26 +102,67 @@
   {{if eq .SettingsTab "config"}}
     <!-- Configuration Tab -->
     <h2 class="mb-3">System Configuration</h2>
-    <p class="text-muted mb-3">Current configuration values. Sensitive fields (passwords, tokens) are masked.</p>
-    <div class="table-responsive">
-      <table class="table table-sm table-hover">
-        <thead class="table-dark">
-          <tr>
-            <th style="width: 280px">Setting</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{range .ConfigItems}}
-            <tr>
-              <td class="fw-semibold small">{{.Key}}</td>
-              <td><code>{{.Value}}</code></td>
-            </tr>
+    <p class="text-muted mb-3">
+      Values are read from environment variables at startup and can be overridden here.
+      The admin override is persisted to the database and applied on reload.
+      Fields marked <span class="badge bg-warning text-dark">Restart required</span> only take effect after a server restart.
+    </p>
+
+    <form hx-post="/settings/config" hx-swap="none">
+      {{template "csrfField" .}}
+
+      {{range .ConfigGroups}}
+        <fieldset class="border rounded p-3 mb-4">
+          <legend class="h5 mb-3">{{.Title}}</legend>
+
+          {{range .Fields}}
+            <div class="mb-3">
+              <label class="form-label d-flex align-items-center gap-2" for="{{.Name}}">
+                <span>{{.Label}}</span>
+                {{if .RestartRequired}}
+                  <span class="badge bg-warning text-dark" title="Takes effect after restart">Restart required</span>
+                {{end}}
+                {{if .Secret}}
+                  <span class="badge bg-secondary" title="Secret">Secret</span>
+                {{end}}
+              </label>
+
+              {{if eq .Type "readonly"}}
+                <input class="form-control" type="text" id="{{.Name}}" value="{{.Value}}" readonly aria-describedby="{{.Name}}-help">
+                <div class="form-text text-muted" id="{{.Name}}-help">{{.Help}}</div>
+              {{else if eq .Type "checkbox"}}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="{{.Name}}" name="{{.Name}}" {{if .Checked}}checked{{end}} aria-describedby="{{.Name}}-help">
+                  {{if .Help}}<div class="form-text text-muted" id="{{.Name}}-help">{{.Help}}</div>{{end}}
+                </div>
+              {{else if eq .Type "select"}}
+                <select class="form-select" id="{{.Name}}" name="{{.Name}}" aria-describedby="{{.Name}}-help">
+                  {{$sel := .Selected}}
+                  {{range .Options}}
+                    <option value="{{.}}" {{if eq . $sel}}selected{{end}}>{{.}}</option>
+                  {{end}}
+                </select>
+                {{if .Help}}<div class="form-text text-muted" id="{{.Name}}-help">{{.Help}}</div>{{end}}
+              {{else}}
+                <input class="form-control" type="{{.Type}}" id="{{.Name}}" name="{{.Name}}" value="{{.Value}}"
+                       {{if .Secret}}autocomplete="off"{{end}} aria-describedby="{{.Name}}-help">
+                {{if .Help}}<div class="form-text text-muted" id="{{.Name}}-help">{{.Help}}</div>{{end}}
+              {{end}}
+
+              {{if .Error}}
+                <div class="invalid-feedback d-block text-danger small">{{.Error}}</div>
+              {{end}}
+            </div>
           {{end}}
-        </tbody>
-      </table>
-    </div>
-  {{end}}
+        </fieldset>
+      {{end}}
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </div>
+    </form>
+
+    {{end}}
 
   {{if eq .SettingsTab "logs"}}
     <!-- Logs Tab -->

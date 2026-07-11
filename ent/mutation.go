@@ -11,6 +11,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
@@ -34,6 +35,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAppConfig            = "AppConfig"
 	TypeContact              = "Contact"
 	TypeEvent                = "Event"
 	TypeGroup                = "Group"
@@ -46,6 +48,2274 @@ const (
 	TypeSession              = "Session"
 	TypeUser                 = "User"
 )
+
+// AppConfigMutation represents an operation that mutates the AppConfig nodes in the graph.
+type AppConfigMutation struct {
+	config
+	op                       Op
+	typ                      string
+	id                       *int
+	port                     *int
+	addport                  *int
+	data_dir                 *string
+	scheduler_hour           *int
+	addscheduler_hour        *int
+	reminder_days            *int
+	addreminder_days         *int
+	log_level                *string
+	log_buffer_size          *int
+	addlog_buffer_size       *int
+	otel_endpoint            *string
+	backup_dir               *string
+	backup_retention_days    *int
+	addbackup_retention_days *int
+	smtp_host                *string
+	smtp_port                *int
+	addsmtp_port             *int
+	smtp_user                *string
+	smtp_pass                *string
+	smtp_tls                 *bool
+	smtp_timeout             *int
+	addsmtp_timeout          *int
+	notify_email             *string
+	gotify_url               *string
+	gotify_token             *string
+	telegram_bot_token       *string
+	telegram_chat_id         *string
+	umami_url                *string
+	umami_website_id         *string
+	eink_mode                *bool
+	updated_at               *time.Time
+	clearedFields            map[string]struct{}
+	done                     bool
+	oldValue                 func(context.Context) (*AppConfig, error)
+	predicates               []predicate.AppConfig
+}
+
+var _ ent.Mutation = (*AppConfigMutation)(nil)
+
+// appconfigOption allows management of the mutation configuration using functional options.
+type appconfigOption func(*AppConfigMutation)
+
+// newAppConfigMutation creates new mutation for the AppConfig entity.
+func newAppConfigMutation(c config, op Op, opts ...appconfigOption) *AppConfigMutation {
+	m := &AppConfigMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAppConfig,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAppConfigID sets the ID field of the mutation.
+func withAppConfigID(id int) appconfigOption {
+	return func(m *AppConfigMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AppConfig
+		)
+		m.oldValue = func(ctx context.Context) (*AppConfig, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AppConfig.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAppConfig sets the old AppConfig of the mutation.
+func withAppConfig(node *AppConfig) appconfigOption {
+	return func(m *AppConfigMutation) {
+		m.oldValue = func(context.Context) (*AppConfig, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AppConfigMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AppConfigMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AppConfigMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AppConfigMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AppConfig.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPort sets the "port" field.
+func (m *AppConfigMutation) SetPort(i int) {
+	m.port = &i
+	m.addport = nil
+}
+
+// Port returns the value of the "port" field in the mutation.
+func (m *AppConfigMutation) Port() (r int, exists bool) {
+	v := m.port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPort returns the old "port" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldPort(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPort: %w", err)
+	}
+	return oldValue.Port, nil
+}
+
+// AddPort adds i to the "port" field.
+func (m *AppConfigMutation) AddPort(i int) {
+	if m.addport != nil {
+		*m.addport += i
+	} else {
+		m.addport = &i
+	}
+}
+
+// AddedPort returns the value that was added to the "port" field in this mutation.
+func (m *AppConfigMutation) AddedPort() (r int, exists bool) {
+	v := m.addport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearPort clears the value of the "port" field.
+func (m *AppConfigMutation) ClearPort() {
+	m.port = nil
+	m.addport = nil
+	m.clearedFields[appconfig.FieldPort] = struct{}{}
+}
+
+// PortCleared returns if the "port" field was cleared in this mutation.
+func (m *AppConfigMutation) PortCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldPort]
+	return ok
+}
+
+// ResetPort resets all changes to the "port" field.
+func (m *AppConfigMutation) ResetPort() {
+	m.port = nil
+	m.addport = nil
+	delete(m.clearedFields, appconfig.FieldPort)
+}
+
+// SetDataDir sets the "data_dir" field.
+func (m *AppConfigMutation) SetDataDir(s string) {
+	m.data_dir = &s
+}
+
+// DataDir returns the value of the "data_dir" field in the mutation.
+func (m *AppConfigMutation) DataDir() (r string, exists bool) {
+	v := m.data_dir
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDataDir returns the old "data_dir" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldDataDir(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDataDir is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDataDir requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDataDir: %w", err)
+	}
+	return oldValue.DataDir, nil
+}
+
+// ClearDataDir clears the value of the "data_dir" field.
+func (m *AppConfigMutation) ClearDataDir() {
+	m.data_dir = nil
+	m.clearedFields[appconfig.FieldDataDir] = struct{}{}
+}
+
+// DataDirCleared returns if the "data_dir" field was cleared in this mutation.
+func (m *AppConfigMutation) DataDirCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldDataDir]
+	return ok
+}
+
+// ResetDataDir resets all changes to the "data_dir" field.
+func (m *AppConfigMutation) ResetDataDir() {
+	m.data_dir = nil
+	delete(m.clearedFields, appconfig.FieldDataDir)
+}
+
+// SetSchedulerHour sets the "scheduler_hour" field.
+func (m *AppConfigMutation) SetSchedulerHour(i int) {
+	m.scheduler_hour = &i
+	m.addscheduler_hour = nil
+}
+
+// SchedulerHour returns the value of the "scheduler_hour" field in the mutation.
+func (m *AppConfigMutation) SchedulerHour() (r int, exists bool) {
+	v := m.scheduler_hour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSchedulerHour returns the old "scheduler_hour" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSchedulerHour(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSchedulerHour is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSchedulerHour requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSchedulerHour: %w", err)
+	}
+	return oldValue.SchedulerHour, nil
+}
+
+// AddSchedulerHour adds i to the "scheduler_hour" field.
+func (m *AppConfigMutation) AddSchedulerHour(i int) {
+	if m.addscheduler_hour != nil {
+		*m.addscheduler_hour += i
+	} else {
+		m.addscheduler_hour = &i
+	}
+}
+
+// AddedSchedulerHour returns the value that was added to the "scheduler_hour" field in this mutation.
+func (m *AppConfigMutation) AddedSchedulerHour() (r int, exists bool) {
+	v := m.addscheduler_hour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSchedulerHour clears the value of the "scheduler_hour" field.
+func (m *AppConfigMutation) ClearSchedulerHour() {
+	m.scheduler_hour = nil
+	m.addscheduler_hour = nil
+	m.clearedFields[appconfig.FieldSchedulerHour] = struct{}{}
+}
+
+// SchedulerHourCleared returns if the "scheduler_hour" field was cleared in this mutation.
+func (m *AppConfigMutation) SchedulerHourCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSchedulerHour]
+	return ok
+}
+
+// ResetSchedulerHour resets all changes to the "scheduler_hour" field.
+func (m *AppConfigMutation) ResetSchedulerHour() {
+	m.scheduler_hour = nil
+	m.addscheduler_hour = nil
+	delete(m.clearedFields, appconfig.FieldSchedulerHour)
+}
+
+// SetReminderDays sets the "reminder_days" field.
+func (m *AppConfigMutation) SetReminderDays(i int) {
+	m.reminder_days = &i
+	m.addreminder_days = nil
+}
+
+// ReminderDays returns the value of the "reminder_days" field in the mutation.
+func (m *AppConfigMutation) ReminderDays() (r int, exists bool) {
+	v := m.reminder_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReminderDays returns the old "reminder_days" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldReminderDays(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReminderDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReminderDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReminderDays: %w", err)
+	}
+	return oldValue.ReminderDays, nil
+}
+
+// AddReminderDays adds i to the "reminder_days" field.
+func (m *AppConfigMutation) AddReminderDays(i int) {
+	if m.addreminder_days != nil {
+		*m.addreminder_days += i
+	} else {
+		m.addreminder_days = &i
+	}
+}
+
+// AddedReminderDays returns the value that was added to the "reminder_days" field in this mutation.
+func (m *AppConfigMutation) AddedReminderDays() (r int, exists bool) {
+	v := m.addreminder_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearReminderDays clears the value of the "reminder_days" field.
+func (m *AppConfigMutation) ClearReminderDays() {
+	m.reminder_days = nil
+	m.addreminder_days = nil
+	m.clearedFields[appconfig.FieldReminderDays] = struct{}{}
+}
+
+// ReminderDaysCleared returns if the "reminder_days" field was cleared in this mutation.
+func (m *AppConfigMutation) ReminderDaysCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldReminderDays]
+	return ok
+}
+
+// ResetReminderDays resets all changes to the "reminder_days" field.
+func (m *AppConfigMutation) ResetReminderDays() {
+	m.reminder_days = nil
+	m.addreminder_days = nil
+	delete(m.clearedFields, appconfig.FieldReminderDays)
+}
+
+// SetLogLevel sets the "log_level" field.
+func (m *AppConfigMutation) SetLogLevel(s string) {
+	m.log_level = &s
+}
+
+// LogLevel returns the value of the "log_level" field in the mutation.
+func (m *AppConfigMutation) LogLevel() (r string, exists bool) {
+	v := m.log_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogLevel returns the old "log_level" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldLogLevel(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogLevel: %w", err)
+	}
+	return oldValue.LogLevel, nil
+}
+
+// ClearLogLevel clears the value of the "log_level" field.
+func (m *AppConfigMutation) ClearLogLevel() {
+	m.log_level = nil
+	m.clearedFields[appconfig.FieldLogLevel] = struct{}{}
+}
+
+// LogLevelCleared returns if the "log_level" field was cleared in this mutation.
+func (m *AppConfigMutation) LogLevelCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldLogLevel]
+	return ok
+}
+
+// ResetLogLevel resets all changes to the "log_level" field.
+func (m *AppConfigMutation) ResetLogLevel() {
+	m.log_level = nil
+	delete(m.clearedFields, appconfig.FieldLogLevel)
+}
+
+// SetLogBufferSize sets the "log_buffer_size" field.
+func (m *AppConfigMutation) SetLogBufferSize(i int) {
+	m.log_buffer_size = &i
+	m.addlog_buffer_size = nil
+}
+
+// LogBufferSize returns the value of the "log_buffer_size" field in the mutation.
+func (m *AppConfigMutation) LogBufferSize() (r int, exists bool) {
+	v := m.log_buffer_size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogBufferSize returns the old "log_buffer_size" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldLogBufferSize(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogBufferSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogBufferSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogBufferSize: %w", err)
+	}
+	return oldValue.LogBufferSize, nil
+}
+
+// AddLogBufferSize adds i to the "log_buffer_size" field.
+func (m *AppConfigMutation) AddLogBufferSize(i int) {
+	if m.addlog_buffer_size != nil {
+		*m.addlog_buffer_size += i
+	} else {
+		m.addlog_buffer_size = &i
+	}
+}
+
+// AddedLogBufferSize returns the value that was added to the "log_buffer_size" field in this mutation.
+func (m *AppConfigMutation) AddedLogBufferSize() (r int, exists bool) {
+	v := m.addlog_buffer_size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLogBufferSize clears the value of the "log_buffer_size" field.
+func (m *AppConfigMutation) ClearLogBufferSize() {
+	m.log_buffer_size = nil
+	m.addlog_buffer_size = nil
+	m.clearedFields[appconfig.FieldLogBufferSize] = struct{}{}
+}
+
+// LogBufferSizeCleared returns if the "log_buffer_size" field was cleared in this mutation.
+func (m *AppConfigMutation) LogBufferSizeCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldLogBufferSize]
+	return ok
+}
+
+// ResetLogBufferSize resets all changes to the "log_buffer_size" field.
+func (m *AppConfigMutation) ResetLogBufferSize() {
+	m.log_buffer_size = nil
+	m.addlog_buffer_size = nil
+	delete(m.clearedFields, appconfig.FieldLogBufferSize)
+}
+
+// SetOtelEndpoint sets the "otel_endpoint" field.
+func (m *AppConfigMutation) SetOtelEndpoint(s string) {
+	m.otel_endpoint = &s
+}
+
+// OtelEndpoint returns the value of the "otel_endpoint" field in the mutation.
+func (m *AppConfigMutation) OtelEndpoint() (r string, exists bool) {
+	v := m.otel_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtelEndpoint returns the old "otel_endpoint" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldOtelEndpoint(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtelEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtelEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtelEndpoint: %w", err)
+	}
+	return oldValue.OtelEndpoint, nil
+}
+
+// ClearOtelEndpoint clears the value of the "otel_endpoint" field.
+func (m *AppConfigMutation) ClearOtelEndpoint() {
+	m.otel_endpoint = nil
+	m.clearedFields[appconfig.FieldOtelEndpoint] = struct{}{}
+}
+
+// OtelEndpointCleared returns if the "otel_endpoint" field was cleared in this mutation.
+func (m *AppConfigMutation) OtelEndpointCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldOtelEndpoint]
+	return ok
+}
+
+// ResetOtelEndpoint resets all changes to the "otel_endpoint" field.
+func (m *AppConfigMutation) ResetOtelEndpoint() {
+	m.otel_endpoint = nil
+	delete(m.clearedFields, appconfig.FieldOtelEndpoint)
+}
+
+// SetBackupDir sets the "backup_dir" field.
+func (m *AppConfigMutation) SetBackupDir(s string) {
+	m.backup_dir = &s
+}
+
+// BackupDir returns the value of the "backup_dir" field in the mutation.
+func (m *AppConfigMutation) BackupDir() (r string, exists bool) {
+	v := m.backup_dir
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackupDir returns the old "backup_dir" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldBackupDir(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackupDir is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackupDir requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackupDir: %w", err)
+	}
+	return oldValue.BackupDir, nil
+}
+
+// ClearBackupDir clears the value of the "backup_dir" field.
+func (m *AppConfigMutation) ClearBackupDir() {
+	m.backup_dir = nil
+	m.clearedFields[appconfig.FieldBackupDir] = struct{}{}
+}
+
+// BackupDirCleared returns if the "backup_dir" field was cleared in this mutation.
+func (m *AppConfigMutation) BackupDirCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldBackupDir]
+	return ok
+}
+
+// ResetBackupDir resets all changes to the "backup_dir" field.
+func (m *AppConfigMutation) ResetBackupDir() {
+	m.backup_dir = nil
+	delete(m.clearedFields, appconfig.FieldBackupDir)
+}
+
+// SetBackupRetentionDays sets the "backup_retention_days" field.
+func (m *AppConfigMutation) SetBackupRetentionDays(i int) {
+	m.backup_retention_days = &i
+	m.addbackup_retention_days = nil
+}
+
+// BackupRetentionDays returns the value of the "backup_retention_days" field in the mutation.
+func (m *AppConfigMutation) BackupRetentionDays() (r int, exists bool) {
+	v := m.backup_retention_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackupRetentionDays returns the old "backup_retention_days" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldBackupRetentionDays(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackupRetentionDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackupRetentionDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackupRetentionDays: %w", err)
+	}
+	return oldValue.BackupRetentionDays, nil
+}
+
+// AddBackupRetentionDays adds i to the "backup_retention_days" field.
+func (m *AppConfigMutation) AddBackupRetentionDays(i int) {
+	if m.addbackup_retention_days != nil {
+		*m.addbackup_retention_days += i
+	} else {
+		m.addbackup_retention_days = &i
+	}
+}
+
+// AddedBackupRetentionDays returns the value that was added to the "backup_retention_days" field in this mutation.
+func (m *AppConfigMutation) AddedBackupRetentionDays() (r int, exists bool) {
+	v := m.addbackup_retention_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBackupRetentionDays clears the value of the "backup_retention_days" field.
+func (m *AppConfigMutation) ClearBackupRetentionDays() {
+	m.backup_retention_days = nil
+	m.addbackup_retention_days = nil
+	m.clearedFields[appconfig.FieldBackupRetentionDays] = struct{}{}
+}
+
+// BackupRetentionDaysCleared returns if the "backup_retention_days" field was cleared in this mutation.
+func (m *AppConfigMutation) BackupRetentionDaysCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldBackupRetentionDays]
+	return ok
+}
+
+// ResetBackupRetentionDays resets all changes to the "backup_retention_days" field.
+func (m *AppConfigMutation) ResetBackupRetentionDays() {
+	m.backup_retention_days = nil
+	m.addbackup_retention_days = nil
+	delete(m.clearedFields, appconfig.FieldBackupRetentionDays)
+}
+
+// SetSMTPHost sets the "smtp_host" field.
+func (m *AppConfigMutation) SetSMTPHost(s string) {
+	m.smtp_host = &s
+}
+
+// SMTPHost returns the value of the "smtp_host" field in the mutation.
+func (m *AppConfigMutation) SMTPHost() (r string, exists bool) {
+	v := m.smtp_host
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSMTPHost returns the old "smtp_host" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSMTPHost(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSMTPHost is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSMTPHost requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSMTPHost: %w", err)
+	}
+	return oldValue.SMTPHost, nil
+}
+
+// ClearSMTPHost clears the value of the "smtp_host" field.
+func (m *AppConfigMutation) ClearSMTPHost() {
+	m.smtp_host = nil
+	m.clearedFields[appconfig.FieldSMTPHost] = struct{}{}
+}
+
+// SMTPHostCleared returns if the "smtp_host" field was cleared in this mutation.
+func (m *AppConfigMutation) SMTPHostCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSMTPHost]
+	return ok
+}
+
+// ResetSMTPHost resets all changes to the "smtp_host" field.
+func (m *AppConfigMutation) ResetSMTPHost() {
+	m.smtp_host = nil
+	delete(m.clearedFields, appconfig.FieldSMTPHost)
+}
+
+// SetSMTPPort sets the "smtp_port" field.
+func (m *AppConfigMutation) SetSMTPPort(i int) {
+	m.smtp_port = &i
+	m.addsmtp_port = nil
+}
+
+// SMTPPort returns the value of the "smtp_port" field in the mutation.
+func (m *AppConfigMutation) SMTPPort() (r int, exists bool) {
+	v := m.smtp_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSMTPPort returns the old "smtp_port" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSMTPPort(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSMTPPort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSMTPPort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSMTPPort: %w", err)
+	}
+	return oldValue.SMTPPort, nil
+}
+
+// AddSMTPPort adds i to the "smtp_port" field.
+func (m *AppConfigMutation) AddSMTPPort(i int) {
+	if m.addsmtp_port != nil {
+		*m.addsmtp_port += i
+	} else {
+		m.addsmtp_port = &i
+	}
+}
+
+// AddedSMTPPort returns the value that was added to the "smtp_port" field in this mutation.
+func (m *AppConfigMutation) AddedSMTPPort() (r int, exists bool) {
+	v := m.addsmtp_port
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSMTPPort clears the value of the "smtp_port" field.
+func (m *AppConfigMutation) ClearSMTPPort() {
+	m.smtp_port = nil
+	m.addsmtp_port = nil
+	m.clearedFields[appconfig.FieldSMTPPort] = struct{}{}
+}
+
+// SMTPPortCleared returns if the "smtp_port" field was cleared in this mutation.
+func (m *AppConfigMutation) SMTPPortCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSMTPPort]
+	return ok
+}
+
+// ResetSMTPPort resets all changes to the "smtp_port" field.
+func (m *AppConfigMutation) ResetSMTPPort() {
+	m.smtp_port = nil
+	m.addsmtp_port = nil
+	delete(m.clearedFields, appconfig.FieldSMTPPort)
+}
+
+// SetSMTPUser sets the "smtp_user" field.
+func (m *AppConfigMutation) SetSMTPUser(s string) {
+	m.smtp_user = &s
+}
+
+// SMTPUser returns the value of the "smtp_user" field in the mutation.
+func (m *AppConfigMutation) SMTPUser() (r string, exists bool) {
+	v := m.smtp_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSMTPUser returns the old "smtp_user" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSMTPUser(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSMTPUser is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSMTPUser requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSMTPUser: %w", err)
+	}
+	return oldValue.SMTPUser, nil
+}
+
+// ClearSMTPUser clears the value of the "smtp_user" field.
+func (m *AppConfigMutation) ClearSMTPUser() {
+	m.smtp_user = nil
+	m.clearedFields[appconfig.FieldSMTPUser] = struct{}{}
+}
+
+// SMTPUserCleared returns if the "smtp_user" field was cleared in this mutation.
+func (m *AppConfigMutation) SMTPUserCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSMTPUser]
+	return ok
+}
+
+// ResetSMTPUser resets all changes to the "smtp_user" field.
+func (m *AppConfigMutation) ResetSMTPUser() {
+	m.smtp_user = nil
+	delete(m.clearedFields, appconfig.FieldSMTPUser)
+}
+
+// SetSMTPPass sets the "smtp_pass" field.
+func (m *AppConfigMutation) SetSMTPPass(s string) {
+	m.smtp_pass = &s
+}
+
+// SMTPPass returns the value of the "smtp_pass" field in the mutation.
+func (m *AppConfigMutation) SMTPPass() (r string, exists bool) {
+	v := m.smtp_pass
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSMTPPass returns the old "smtp_pass" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSMTPPass(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSMTPPass is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSMTPPass requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSMTPPass: %w", err)
+	}
+	return oldValue.SMTPPass, nil
+}
+
+// ClearSMTPPass clears the value of the "smtp_pass" field.
+func (m *AppConfigMutation) ClearSMTPPass() {
+	m.smtp_pass = nil
+	m.clearedFields[appconfig.FieldSMTPPass] = struct{}{}
+}
+
+// SMTPPassCleared returns if the "smtp_pass" field was cleared in this mutation.
+func (m *AppConfigMutation) SMTPPassCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSMTPPass]
+	return ok
+}
+
+// ResetSMTPPass resets all changes to the "smtp_pass" field.
+func (m *AppConfigMutation) ResetSMTPPass() {
+	m.smtp_pass = nil
+	delete(m.clearedFields, appconfig.FieldSMTPPass)
+}
+
+// SetSMTPTLS sets the "smtp_tls" field.
+func (m *AppConfigMutation) SetSMTPTLS(b bool) {
+	m.smtp_tls = &b
+}
+
+// SMTPTLS returns the value of the "smtp_tls" field in the mutation.
+func (m *AppConfigMutation) SMTPTLS() (r bool, exists bool) {
+	v := m.smtp_tls
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSMTPTLS returns the old "smtp_tls" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSMTPTLS(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSMTPTLS is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSMTPTLS requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSMTPTLS: %w", err)
+	}
+	return oldValue.SMTPTLS, nil
+}
+
+// ClearSMTPTLS clears the value of the "smtp_tls" field.
+func (m *AppConfigMutation) ClearSMTPTLS() {
+	m.smtp_tls = nil
+	m.clearedFields[appconfig.FieldSMTPTLS] = struct{}{}
+}
+
+// SMTPTLSCleared returns if the "smtp_tls" field was cleared in this mutation.
+func (m *AppConfigMutation) SMTPTLSCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSMTPTLS]
+	return ok
+}
+
+// ResetSMTPTLS resets all changes to the "smtp_tls" field.
+func (m *AppConfigMutation) ResetSMTPTLS() {
+	m.smtp_tls = nil
+	delete(m.clearedFields, appconfig.FieldSMTPTLS)
+}
+
+// SetSMTPTimeout sets the "smtp_timeout" field.
+func (m *AppConfigMutation) SetSMTPTimeout(i int) {
+	m.smtp_timeout = &i
+	m.addsmtp_timeout = nil
+}
+
+// SMTPTimeout returns the value of the "smtp_timeout" field in the mutation.
+func (m *AppConfigMutation) SMTPTimeout() (r int, exists bool) {
+	v := m.smtp_timeout
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSMTPTimeout returns the old "smtp_timeout" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSMTPTimeout(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSMTPTimeout is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSMTPTimeout requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSMTPTimeout: %w", err)
+	}
+	return oldValue.SMTPTimeout, nil
+}
+
+// AddSMTPTimeout adds i to the "smtp_timeout" field.
+func (m *AppConfigMutation) AddSMTPTimeout(i int) {
+	if m.addsmtp_timeout != nil {
+		*m.addsmtp_timeout += i
+	} else {
+		m.addsmtp_timeout = &i
+	}
+}
+
+// AddedSMTPTimeout returns the value that was added to the "smtp_timeout" field in this mutation.
+func (m *AppConfigMutation) AddedSMTPTimeout() (r int, exists bool) {
+	v := m.addsmtp_timeout
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSMTPTimeout clears the value of the "smtp_timeout" field.
+func (m *AppConfigMutation) ClearSMTPTimeout() {
+	m.smtp_timeout = nil
+	m.addsmtp_timeout = nil
+	m.clearedFields[appconfig.FieldSMTPTimeout] = struct{}{}
+}
+
+// SMTPTimeoutCleared returns if the "smtp_timeout" field was cleared in this mutation.
+func (m *AppConfigMutation) SMTPTimeoutCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSMTPTimeout]
+	return ok
+}
+
+// ResetSMTPTimeout resets all changes to the "smtp_timeout" field.
+func (m *AppConfigMutation) ResetSMTPTimeout() {
+	m.smtp_timeout = nil
+	m.addsmtp_timeout = nil
+	delete(m.clearedFields, appconfig.FieldSMTPTimeout)
+}
+
+// SetNotifyEmail sets the "notify_email" field.
+func (m *AppConfigMutation) SetNotifyEmail(s string) {
+	m.notify_email = &s
+}
+
+// NotifyEmail returns the value of the "notify_email" field in the mutation.
+func (m *AppConfigMutation) NotifyEmail() (r string, exists bool) {
+	v := m.notify_email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyEmail returns the old "notify_email" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldNotifyEmail(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyEmail: %w", err)
+	}
+	return oldValue.NotifyEmail, nil
+}
+
+// ClearNotifyEmail clears the value of the "notify_email" field.
+func (m *AppConfigMutation) ClearNotifyEmail() {
+	m.notify_email = nil
+	m.clearedFields[appconfig.FieldNotifyEmail] = struct{}{}
+}
+
+// NotifyEmailCleared returns if the "notify_email" field was cleared in this mutation.
+func (m *AppConfigMutation) NotifyEmailCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldNotifyEmail]
+	return ok
+}
+
+// ResetNotifyEmail resets all changes to the "notify_email" field.
+func (m *AppConfigMutation) ResetNotifyEmail() {
+	m.notify_email = nil
+	delete(m.clearedFields, appconfig.FieldNotifyEmail)
+}
+
+// SetGotifyURL sets the "gotify_url" field.
+func (m *AppConfigMutation) SetGotifyURL(s string) {
+	m.gotify_url = &s
+}
+
+// GotifyURL returns the value of the "gotify_url" field in the mutation.
+func (m *AppConfigMutation) GotifyURL() (r string, exists bool) {
+	v := m.gotify_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGotifyURL returns the old "gotify_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGotifyURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGotifyURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGotifyURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGotifyURL: %w", err)
+	}
+	return oldValue.GotifyURL, nil
+}
+
+// ClearGotifyURL clears the value of the "gotify_url" field.
+func (m *AppConfigMutation) ClearGotifyURL() {
+	m.gotify_url = nil
+	m.clearedFields[appconfig.FieldGotifyURL] = struct{}{}
+}
+
+// GotifyURLCleared returns if the "gotify_url" field was cleared in this mutation.
+func (m *AppConfigMutation) GotifyURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGotifyURL]
+	return ok
+}
+
+// ResetGotifyURL resets all changes to the "gotify_url" field.
+func (m *AppConfigMutation) ResetGotifyURL() {
+	m.gotify_url = nil
+	delete(m.clearedFields, appconfig.FieldGotifyURL)
+}
+
+// SetGotifyToken sets the "gotify_token" field.
+func (m *AppConfigMutation) SetGotifyToken(s string) {
+	m.gotify_token = &s
+}
+
+// GotifyToken returns the value of the "gotify_token" field in the mutation.
+func (m *AppConfigMutation) GotifyToken() (r string, exists bool) {
+	v := m.gotify_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGotifyToken returns the old "gotify_token" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGotifyToken(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGotifyToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGotifyToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGotifyToken: %w", err)
+	}
+	return oldValue.GotifyToken, nil
+}
+
+// ClearGotifyToken clears the value of the "gotify_token" field.
+func (m *AppConfigMutation) ClearGotifyToken() {
+	m.gotify_token = nil
+	m.clearedFields[appconfig.FieldGotifyToken] = struct{}{}
+}
+
+// GotifyTokenCleared returns if the "gotify_token" field was cleared in this mutation.
+func (m *AppConfigMutation) GotifyTokenCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGotifyToken]
+	return ok
+}
+
+// ResetGotifyToken resets all changes to the "gotify_token" field.
+func (m *AppConfigMutation) ResetGotifyToken() {
+	m.gotify_token = nil
+	delete(m.clearedFields, appconfig.FieldGotifyToken)
+}
+
+// SetTelegramBotToken sets the "telegram_bot_token" field.
+func (m *AppConfigMutation) SetTelegramBotToken(s string) {
+	m.telegram_bot_token = &s
+}
+
+// TelegramBotToken returns the value of the "telegram_bot_token" field in the mutation.
+func (m *AppConfigMutation) TelegramBotToken() (r string, exists bool) {
+	v := m.telegram_bot_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTelegramBotToken returns the old "telegram_bot_token" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldTelegramBotToken(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTelegramBotToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTelegramBotToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTelegramBotToken: %w", err)
+	}
+	return oldValue.TelegramBotToken, nil
+}
+
+// ClearTelegramBotToken clears the value of the "telegram_bot_token" field.
+func (m *AppConfigMutation) ClearTelegramBotToken() {
+	m.telegram_bot_token = nil
+	m.clearedFields[appconfig.FieldTelegramBotToken] = struct{}{}
+}
+
+// TelegramBotTokenCleared returns if the "telegram_bot_token" field was cleared in this mutation.
+func (m *AppConfigMutation) TelegramBotTokenCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldTelegramBotToken]
+	return ok
+}
+
+// ResetTelegramBotToken resets all changes to the "telegram_bot_token" field.
+func (m *AppConfigMutation) ResetTelegramBotToken() {
+	m.telegram_bot_token = nil
+	delete(m.clearedFields, appconfig.FieldTelegramBotToken)
+}
+
+// SetTelegramChatID sets the "telegram_chat_id" field.
+func (m *AppConfigMutation) SetTelegramChatID(s string) {
+	m.telegram_chat_id = &s
+}
+
+// TelegramChatID returns the value of the "telegram_chat_id" field in the mutation.
+func (m *AppConfigMutation) TelegramChatID() (r string, exists bool) {
+	v := m.telegram_chat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTelegramChatID returns the old "telegram_chat_id" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldTelegramChatID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTelegramChatID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTelegramChatID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTelegramChatID: %w", err)
+	}
+	return oldValue.TelegramChatID, nil
+}
+
+// ClearTelegramChatID clears the value of the "telegram_chat_id" field.
+func (m *AppConfigMutation) ClearTelegramChatID() {
+	m.telegram_chat_id = nil
+	m.clearedFields[appconfig.FieldTelegramChatID] = struct{}{}
+}
+
+// TelegramChatIDCleared returns if the "telegram_chat_id" field was cleared in this mutation.
+func (m *AppConfigMutation) TelegramChatIDCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldTelegramChatID]
+	return ok
+}
+
+// ResetTelegramChatID resets all changes to the "telegram_chat_id" field.
+func (m *AppConfigMutation) ResetTelegramChatID() {
+	m.telegram_chat_id = nil
+	delete(m.clearedFields, appconfig.FieldTelegramChatID)
+}
+
+// SetUmamiURL sets the "umami_url" field.
+func (m *AppConfigMutation) SetUmamiURL(s string) {
+	m.umami_url = &s
+}
+
+// UmamiURL returns the value of the "umami_url" field in the mutation.
+func (m *AppConfigMutation) UmamiURL() (r string, exists bool) {
+	v := m.umami_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUmamiURL returns the old "umami_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldUmamiURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUmamiURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUmamiURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUmamiURL: %w", err)
+	}
+	return oldValue.UmamiURL, nil
+}
+
+// ClearUmamiURL clears the value of the "umami_url" field.
+func (m *AppConfigMutation) ClearUmamiURL() {
+	m.umami_url = nil
+	m.clearedFields[appconfig.FieldUmamiURL] = struct{}{}
+}
+
+// UmamiURLCleared returns if the "umami_url" field was cleared in this mutation.
+func (m *AppConfigMutation) UmamiURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldUmamiURL]
+	return ok
+}
+
+// ResetUmamiURL resets all changes to the "umami_url" field.
+func (m *AppConfigMutation) ResetUmamiURL() {
+	m.umami_url = nil
+	delete(m.clearedFields, appconfig.FieldUmamiURL)
+}
+
+// SetUmamiWebsiteID sets the "umami_website_id" field.
+func (m *AppConfigMutation) SetUmamiWebsiteID(s string) {
+	m.umami_website_id = &s
+}
+
+// UmamiWebsiteID returns the value of the "umami_website_id" field in the mutation.
+func (m *AppConfigMutation) UmamiWebsiteID() (r string, exists bool) {
+	v := m.umami_website_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUmamiWebsiteID returns the old "umami_website_id" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldUmamiWebsiteID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUmamiWebsiteID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUmamiWebsiteID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUmamiWebsiteID: %w", err)
+	}
+	return oldValue.UmamiWebsiteID, nil
+}
+
+// ClearUmamiWebsiteID clears the value of the "umami_website_id" field.
+func (m *AppConfigMutation) ClearUmamiWebsiteID() {
+	m.umami_website_id = nil
+	m.clearedFields[appconfig.FieldUmamiWebsiteID] = struct{}{}
+}
+
+// UmamiWebsiteIDCleared returns if the "umami_website_id" field was cleared in this mutation.
+func (m *AppConfigMutation) UmamiWebsiteIDCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldUmamiWebsiteID]
+	return ok
+}
+
+// ResetUmamiWebsiteID resets all changes to the "umami_website_id" field.
+func (m *AppConfigMutation) ResetUmamiWebsiteID() {
+	m.umami_website_id = nil
+	delete(m.clearedFields, appconfig.FieldUmamiWebsiteID)
+}
+
+// SetEinkMode sets the "eink_mode" field.
+func (m *AppConfigMutation) SetEinkMode(b bool) {
+	m.eink_mode = &b
+}
+
+// EinkMode returns the value of the "eink_mode" field in the mutation.
+func (m *AppConfigMutation) EinkMode() (r bool, exists bool) {
+	v := m.eink_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEinkMode returns the old "eink_mode" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldEinkMode(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEinkMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEinkMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEinkMode: %w", err)
+	}
+	return oldValue.EinkMode, nil
+}
+
+// ClearEinkMode clears the value of the "eink_mode" field.
+func (m *AppConfigMutation) ClearEinkMode() {
+	m.eink_mode = nil
+	m.clearedFields[appconfig.FieldEinkMode] = struct{}{}
+}
+
+// EinkModeCleared returns if the "eink_mode" field was cleared in this mutation.
+func (m *AppConfigMutation) EinkModeCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldEinkMode]
+	return ok
+}
+
+// ResetEinkMode resets all changes to the "eink_mode" field.
+func (m *AppConfigMutation) ResetEinkMode() {
+	m.eink_mode = nil
+	delete(m.clearedFields, appconfig.FieldEinkMode)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *AppConfigMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *AppConfigMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *AppConfigMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[appconfig.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *AppConfigMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *AppConfigMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, appconfig.FieldUpdatedAt)
+}
+
+// Where appends a list predicates to the AppConfigMutation builder.
+func (m *AppConfigMutation) Where(ps ...predicate.AppConfig) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AppConfigMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AppConfigMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AppConfig, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AppConfigMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AppConfigMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AppConfig).
+func (m *AppConfigMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AppConfigMutation) Fields() []string {
+	fields := make([]string, 0, 24)
+	if m.port != nil {
+		fields = append(fields, appconfig.FieldPort)
+	}
+	if m.data_dir != nil {
+		fields = append(fields, appconfig.FieldDataDir)
+	}
+	if m.scheduler_hour != nil {
+		fields = append(fields, appconfig.FieldSchedulerHour)
+	}
+	if m.reminder_days != nil {
+		fields = append(fields, appconfig.FieldReminderDays)
+	}
+	if m.log_level != nil {
+		fields = append(fields, appconfig.FieldLogLevel)
+	}
+	if m.log_buffer_size != nil {
+		fields = append(fields, appconfig.FieldLogBufferSize)
+	}
+	if m.otel_endpoint != nil {
+		fields = append(fields, appconfig.FieldOtelEndpoint)
+	}
+	if m.backup_dir != nil {
+		fields = append(fields, appconfig.FieldBackupDir)
+	}
+	if m.backup_retention_days != nil {
+		fields = append(fields, appconfig.FieldBackupRetentionDays)
+	}
+	if m.smtp_host != nil {
+		fields = append(fields, appconfig.FieldSMTPHost)
+	}
+	if m.smtp_port != nil {
+		fields = append(fields, appconfig.FieldSMTPPort)
+	}
+	if m.smtp_user != nil {
+		fields = append(fields, appconfig.FieldSMTPUser)
+	}
+	if m.smtp_pass != nil {
+		fields = append(fields, appconfig.FieldSMTPPass)
+	}
+	if m.smtp_tls != nil {
+		fields = append(fields, appconfig.FieldSMTPTLS)
+	}
+	if m.smtp_timeout != nil {
+		fields = append(fields, appconfig.FieldSMTPTimeout)
+	}
+	if m.notify_email != nil {
+		fields = append(fields, appconfig.FieldNotifyEmail)
+	}
+	if m.gotify_url != nil {
+		fields = append(fields, appconfig.FieldGotifyURL)
+	}
+	if m.gotify_token != nil {
+		fields = append(fields, appconfig.FieldGotifyToken)
+	}
+	if m.telegram_bot_token != nil {
+		fields = append(fields, appconfig.FieldTelegramBotToken)
+	}
+	if m.telegram_chat_id != nil {
+		fields = append(fields, appconfig.FieldTelegramChatID)
+	}
+	if m.umami_url != nil {
+		fields = append(fields, appconfig.FieldUmamiURL)
+	}
+	if m.umami_website_id != nil {
+		fields = append(fields, appconfig.FieldUmamiWebsiteID)
+	}
+	if m.eink_mode != nil {
+		fields = append(fields, appconfig.FieldEinkMode)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, appconfig.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case appconfig.FieldPort:
+		return m.Port()
+	case appconfig.FieldDataDir:
+		return m.DataDir()
+	case appconfig.FieldSchedulerHour:
+		return m.SchedulerHour()
+	case appconfig.FieldReminderDays:
+		return m.ReminderDays()
+	case appconfig.FieldLogLevel:
+		return m.LogLevel()
+	case appconfig.FieldLogBufferSize:
+		return m.LogBufferSize()
+	case appconfig.FieldOtelEndpoint:
+		return m.OtelEndpoint()
+	case appconfig.FieldBackupDir:
+		return m.BackupDir()
+	case appconfig.FieldBackupRetentionDays:
+		return m.BackupRetentionDays()
+	case appconfig.FieldSMTPHost:
+		return m.SMTPHost()
+	case appconfig.FieldSMTPPort:
+		return m.SMTPPort()
+	case appconfig.FieldSMTPUser:
+		return m.SMTPUser()
+	case appconfig.FieldSMTPPass:
+		return m.SMTPPass()
+	case appconfig.FieldSMTPTLS:
+		return m.SMTPTLS()
+	case appconfig.FieldSMTPTimeout:
+		return m.SMTPTimeout()
+	case appconfig.FieldNotifyEmail:
+		return m.NotifyEmail()
+	case appconfig.FieldGotifyURL:
+		return m.GotifyURL()
+	case appconfig.FieldGotifyToken:
+		return m.GotifyToken()
+	case appconfig.FieldTelegramBotToken:
+		return m.TelegramBotToken()
+	case appconfig.FieldTelegramChatID:
+		return m.TelegramChatID()
+	case appconfig.FieldUmamiURL:
+		return m.UmamiURL()
+	case appconfig.FieldUmamiWebsiteID:
+		return m.UmamiWebsiteID()
+	case appconfig.FieldEinkMode:
+		return m.EinkMode()
+	case appconfig.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case appconfig.FieldPort:
+		return m.OldPort(ctx)
+	case appconfig.FieldDataDir:
+		return m.OldDataDir(ctx)
+	case appconfig.FieldSchedulerHour:
+		return m.OldSchedulerHour(ctx)
+	case appconfig.FieldReminderDays:
+		return m.OldReminderDays(ctx)
+	case appconfig.FieldLogLevel:
+		return m.OldLogLevel(ctx)
+	case appconfig.FieldLogBufferSize:
+		return m.OldLogBufferSize(ctx)
+	case appconfig.FieldOtelEndpoint:
+		return m.OldOtelEndpoint(ctx)
+	case appconfig.FieldBackupDir:
+		return m.OldBackupDir(ctx)
+	case appconfig.FieldBackupRetentionDays:
+		return m.OldBackupRetentionDays(ctx)
+	case appconfig.FieldSMTPHost:
+		return m.OldSMTPHost(ctx)
+	case appconfig.FieldSMTPPort:
+		return m.OldSMTPPort(ctx)
+	case appconfig.FieldSMTPUser:
+		return m.OldSMTPUser(ctx)
+	case appconfig.FieldSMTPPass:
+		return m.OldSMTPPass(ctx)
+	case appconfig.FieldSMTPTLS:
+		return m.OldSMTPTLS(ctx)
+	case appconfig.FieldSMTPTimeout:
+		return m.OldSMTPTimeout(ctx)
+	case appconfig.FieldNotifyEmail:
+		return m.OldNotifyEmail(ctx)
+	case appconfig.FieldGotifyURL:
+		return m.OldGotifyURL(ctx)
+	case appconfig.FieldGotifyToken:
+		return m.OldGotifyToken(ctx)
+	case appconfig.FieldTelegramBotToken:
+		return m.OldTelegramBotToken(ctx)
+	case appconfig.FieldTelegramChatID:
+		return m.OldTelegramChatID(ctx)
+	case appconfig.FieldUmamiURL:
+		return m.OldUmamiURL(ctx)
+	case appconfig.FieldUmamiWebsiteID:
+		return m.OldUmamiWebsiteID(ctx)
+	case appconfig.FieldEinkMode:
+		return m.OldEinkMode(ctx)
+	case appconfig.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown AppConfig field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case appconfig.FieldPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPort(v)
+		return nil
+	case appconfig.FieldDataDir:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDataDir(v)
+		return nil
+	case appconfig.FieldSchedulerHour:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSchedulerHour(v)
+		return nil
+	case appconfig.FieldReminderDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReminderDays(v)
+		return nil
+	case appconfig.FieldLogLevel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogLevel(v)
+		return nil
+	case appconfig.FieldLogBufferSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogBufferSize(v)
+		return nil
+	case appconfig.FieldOtelEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtelEndpoint(v)
+		return nil
+	case appconfig.FieldBackupDir:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackupDir(v)
+		return nil
+	case appconfig.FieldBackupRetentionDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackupRetentionDays(v)
+		return nil
+	case appconfig.FieldSMTPHost:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSMTPHost(v)
+		return nil
+	case appconfig.FieldSMTPPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSMTPPort(v)
+		return nil
+	case appconfig.FieldSMTPUser:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSMTPUser(v)
+		return nil
+	case appconfig.FieldSMTPPass:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSMTPPass(v)
+		return nil
+	case appconfig.FieldSMTPTLS:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSMTPTLS(v)
+		return nil
+	case appconfig.FieldSMTPTimeout:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSMTPTimeout(v)
+		return nil
+	case appconfig.FieldNotifyEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyEmail(v)
+		return nil
+	case appconfig.FieldGotifyURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGotifyURL(v)
+		return nil
+	case appconfig.FieldGotifyToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGotifyToken(v)
+		return nil
+	case appconfig.FieldTelegramBotToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTelegramBotToken(v)
+		return nil
+	case appconfig.FieldTelegramChatID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTelegramChatID(v)
+		return nil
+	case appconfig.FieldUmamiURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUmamiURL(v)
+		return nil
+	case appconfig.FieldUmamiWebsiteID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUmamiWebsiteID(v)
+		return nil
+	case appconfig.FieldEinkMode:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEinkMode(v)
+		return nil
+	case appconfig.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AppConfig field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AppConfigMutation) AddedFields() []string {
+	var fields []string
+	if m.addport != nil {
+		fields = append(fields, appconfig.FieldPort)
+	}
+	if m.addscheduler_hour != nil {
+		fields = append(fields, appconfig.FieldSchedulerHour)
+	}
+	if m.addreminder_days != nil {
+		fields = append(fields, appconfig.FieldReminderDays)
+	}
+	if m.addlog_buffer_size != nil {
+		fields = append(fields, appconfig.FieldLogBufferSize)
+	}
+	if m.addbackup_retention_days != nil {
+		fields = append(fields, appconfig.FieldBackupRetentionDays)
+	}
+	if m.addsmtp_port != nil {
+		fields = append(fields, appconfig.FieldSMTPPort)
+	}
+	if m.addsmtp_timeout != nil {
+		fields = append(fields, appconfig.FieldSMTPTimeout)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AppConfigMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case appconfig.FieldPort:
+		return m.AddedPort()
+	case appconfig.FieldSchedulerHour:
+		return m.AddedSchedulerHour()
+	case appconfig.FieldReminderDays:
+		return m.AddedReminderDays()
+	case appconfig.FieldLogBufferSize:
+		return m.AddedLogBufferSize()
+	case appconfig.FieldBackupRetentionDays:
+		return m.AddedBackupRetentionDays()
+	case appconfig.FieldSMTPPort:
+		return m.AddedSMTPPort()
+	case appconfig.FieldSMTPTimeout:
+		return m.AddedSMTPTimeout()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AppConfigMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case appconfig.FieldPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPort(v)
+		return nil
+	case appconfig.FieldSchedulerHour:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSchedulerHour(v)
+		return nil
+	case appconfig.FieldReminderDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddReminderDays(v)
+		return nil
+	case appconfig.FieldLogBufferSize:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLogBufferSize(v)
+		return nil
+	case appconfig.FieldBackupRetentionDays:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBackupRetentionDays(v)
+		return nil
+	case appconfig.FieldSMTPPort:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSMTPPort(v)
+		return nil
+	case appconfig.FieldSMTPTimeout:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSMTPTimeout(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AppConfig numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AppConfigMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(appconfig.FieldPort) {
+		fields = append(fields, appconfig.FieldPort)
+	}
+	if m.FieldCleared(appconfig.FieldDataDir) {
+		fields = append(fields, appconfig.FieldDataDir)
+	}
+	if m.FieldCleared(appconfig.FieldSchedulerHour) {
+		fields = append(fields, appconfig.FieldSchedulerHour)
+	}
+	if m.FieldCleared(appconfig.FieldReminderDays) {
+		fields = append(fields, appconfig.FieldReminderDays)
+	}
+	if m.FieldCleared(appconfig.FieldLogLevel) {
+		fields = append(fields, appconfig.FieldLogLevel)
+	}
+	if m.FieldCleared(appconfig.FieldLogBufferSize) {
+		fields = append(fields, appconfig.FieldLogBufferSize)
+	}
+	if m.FieldCleared(appconfig.FieldOtelEndpoint) {
+		fields = append(fields, appconfig.FieldOtelEndpoint)
+	}
+	if m.FieldCleared(appconfig.FieldBackupDir) {
+		fields = append(fields, appconfig.FieldBackupDir)
+	}
+	if m.FieldCleared(appconfig.FieldBackupRetentionDays) {
+		fields = append(fields, appconfig.FieldBackupRetentionDays)
+	}
+	if m.FieldCleared(appconfig.FieldSMTPHost) {
+		fields = append(fields, appconfig.FieldSMTPHost)
+	}
+	if m.FieldCleared(appconfig.FieldSMTPPort) {
+		fields = append(fields, appconfig.FieldSMTPPort)
+	}
+	if m.FieldCleared(appconfig.FieldSMTPUser) {
+		fields = append(fields, appconfig.FieldSMTPUser)
+	}
+	if m.FieldCleared(appconfig.FieldSMTPPass) {
+		fields = append(fields, appconfig.FieldSMTPPass)
+	}
+	if m.FieldCleared(appconfig.FieldSMTPTLS) {
+		fields = append(fields, appconfig.FieldSMTPTLS)
+	}
+	if m.FieldCleared(appconfig.FieldSMTPTimeout) {
+		fields = append(fields, appconfig.FieldSMTPTimeout)
+	}
+	if m.FieldCleared(appconfig.FieldNotifyEmail) {
+		fields = append(fields, appconfig.FieldNotifyEmail)
+	}
+	if m.FieldCleared(appconfig.FieldGotifyURL) {
+		fields = append(fields, appconfig.FieldGotifyURL)
+	}
+	if m.FieldCleared(appconfig.FieldGotifyToken) {
+		fields = append(fields, appconfig.FieldGotifyToken)
+	}
+	if m.FieldCleared(appconfig.FieldTelegramBotToken) {
+		fields = append(fields, appconfig.FieldTelegramBotToken)
+	}
+	if m.FieldCleared(appconfig.FieldTelegramChatID) {
+		fields = append(fields, appconfig.FieldTelegramChatID)
+	}
+	if m.FieldCleared(appconfig.FieldUmamiURL) {
+		fields = append(fields, appconfig.FieldUmamiURL)
+	}
+	if m.FieldCleared(appconfig.FieldUmamiWebsiteID) {
+		fields = append(fields, appconfig.FieldUmamiWebsiteID)
+	}
+	if m.FieldCleared(appconfig.FieldEinkMode) {
+		fields = append(fields, appconfig.FieldEinkMode)
+	}
+	if m.FieldCleared(appconfig.FieldUpdatedAt) {
+		fields = append(fields, appconfig.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AppConfigMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AppConfigMutation) ClearField(name string) error {
+	switch name {
+	case appconfig.FieldPort:
+		m.ClearPort()
+		return nil
+	case appconfig.FieldDataDir:
+		m.ClearDataDir()
+		return nil
+	case appconfig.FieldSchedulerHour:
+		m.ClearSchedulerHour()
+		return nil
+	case appconfig.FieldReminderDays:
+		m.ClearReminderDays()
+		return nil
+	case appconfig.FieldLogLevel:
+		m.ClearLogLevel()
+		return nil
+	case appconfig.FieldLogBufferSize:
+		m.ClearLogBufferSize()
+		return nil
+	case appconfig.FieldOtelEndpoint:
+		m.ClearOtelEndpoint()
+		return nil
+	case appconfig.FieldBackupDir:
+		m.ClearBackupDir()
+		return nil
+	case appconfig.FieldBackupRetentionDays:
+		m.ClearBackupRetentionDays()
+		return nil
+	case appconfig.FieldSMTPHost:
+		m.ClearSMTPHost()
+		return nil
+	case appconfig.FieldSMTPPort:
+		m.ClearSMTPPort()
+		return nil
+	case appconfig.FieldSMTPUser:
+		m.ClearSMTPUser()
+		return nil
+	case appconfig.FieldSMTPPass:
+		m.ClearSMTPPass()
+		return nil
+	case appconfig.FieldSMTPTLS:
+		m.ClearSMTPTLS()
+		return nil
+	case appconfig.FieldSMTPTimeout:
+		m.ClearSMTPTimeout()
+		return nil
+	case appconfig.FieldNotifyEmail:
+		m.ClearNotifyEmail()
+		return nil
+	case appconfig.FieldGotifyURL:
+		m.ClearGotifyURL()
+		return nil
+	case appconfig.FieldGotifyToken:
+		m.ClearGotifyToken()
+		return nil
+	case appconfig.FieldTelegramBotToken:
+		m.ClearTelegramBotToken()
+		return nil
+	case appconfig.FieldTelegramChatID:
+		m.ClearTelegramChatID()
+		return nil
+	case appconfig.FieldUmamiURL:
+		m.ClearUmamiURL()
+		return nil
+	case appconfig.FieldUmamiWebsiteID:
+		m.ClearUmamiWebsiteID()
+		return nil
+	case appconfig.FieldEinkMode:
+		m.ClearEinkMode()
+		return nil
+	case appconfig.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AppConfig nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AppConfigMutation) ResetField(name string) error {
+	switch name {
+	case appconfig.FieldPort:
+		m.ResetPort()
+		return nil
+	case appconfig.FieldDataDir:
+		m.ResetDataDir()
+		return nil
+	case appconfig.FieldSchedulerHour:
+		m.ResetSchedulerHour()
+		return nil
+	case appconfig.FieldReminderDays:
+		m.ResetReminderDays()
+		return nil
+	case appconfig.FieldLogLevel:
+		m.ResetLogLevel()
+		return nil
+	case appconfig.FieldLogBufferSize:
+		m.ResetLogBufferSize()
+		return nil
+	case appconfig.FieldOtelEndpoint:
+		m.ResetOtelEndpoint()
+		return nil
+	case appconfig.FieldBackupDir:
+		m.ResetBackupDir()
+		return nil
+	case appconfig.FieldBackupRetentionDays:
+		m.ResetBackupRetentionDays()
+		return nil
+	case appconfig.FieldSMTPHost:
+		m.ResetSMTPHost()
+		return nil
+	case appconfig.FieldSMTPPort:
+		m.ResetSMTPPort()
+		return nil
+	case appconfig.FieldSMTPUser:
+		m.ResetSMTPUser()
+		return nil
+	case appconfig.FieldSMTPPass:
+		m.ResetSMTPPass()
+		return nil
+	case appconfig.FieldSMTPTLS:
+		m.ResetSMTPTLS()
+		return nil
+	case appconfig.FieldSMTPTimeout:
+		m.ResetSMTPTimeout()
+		return nil
+	case appconfig.FieldNotifyEmail:
+		m.ResetNotifyEmail()
+		return nil
+	case appconfig.FieldGotifyURL:
+		m.ResetGotifyURL()
+		return nil
+	case appconfig.FieldGotifyToken:
+		m.ResetGotifyToken()
+		return nil
+	case appconfig.FieldTelegramBotToken:
+		m.ResetTelegramBotToken()
+		return nil
+	case appconfig.FieldTelegramChatID:
+		m.ResetTelegramChatID()
+		return nil
+	case appconfig.FieldUmamiURL:
+		m.ResetUmamiURL()
+		return nil
+	case appconfig.FieldUmamiWebsiteID:
+		m.ResetUmamiWebsiteID()
+		return nil
+	case appconfig.FieldEinkMode:
+		m.ResetEinkMode()
+		return nil
+	case appconfig.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AppConfig field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AppConfigMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AppConfigMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AppConfigMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AppConfigMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AppConfigMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AppConfigMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AppConfigMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown AppConfig unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AppConfigMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown AppConfig edge %s", name)
+}
 
 // ContactMutation represents an operation that mutates the Contact nodes in the graph.
 type ContactMutation struct {

@@ -20,6 +20,7 @@ import (
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
 	"github.com/datey/datey/internal/session"
+	"github.com/datey/datey/internal/settings"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -34,7 +35,8 @@ type Handler struct {
 	events      *repository.EventRepository
 	oneTimeNots *repository.OneTimeNotificationRepository
 	notifReg    *notifier.Registry
-	logStore    *logstore.Store
+	logStore      *logstore.Store
+	settingsStore *settings.Store
 	loginLimiter *rateLimiter
 }
 
@@ -54,8 +56,9 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		events:       repository.NewEventRepository(client),
 		oneTimeNots:  repository.NewOneTimeNotificationRepository(client),
 		notifReg:     notifReg,
-		logStore:     logStore,
-		loginLimiter: newRateLimiter(5, 60*time.Second),
+		logStore:      logStore,
+		settingsStore: settings.New(client),
+		loginLimiter:  newRateLimiter(5, 60*time.Second),
 	}
 }
 
@@ -136,6 +139,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 				r.Get("/settings", h.settings)
 				r.Get("/settings/config", h.settingsConfig)
+			r.Post("/settings/config", h.settingsConfigSave)
 				r.Get("/settings/logs", h.settingsLogs)
 				r.Get("/settings/backup", h.settingsBackup)
 				r.Post("/settings/backup", h.settingsBackupRun)
