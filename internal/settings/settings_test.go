@@ -365,7 +365,7 @@ func TestApplyForm_EmptyNumericFallsBackToEnv(t *testing.T) {
 	if err != nil {
 		t.Fatalf("apply empty form: %v", err)
 	}
-	if errs != nil && len(errs) > 0 {
+	if len(errs) > 0 {
 		t.Fatalf("expected no errors for empty form, got %v", errs)
 	}
 
