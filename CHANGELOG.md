@@ -1,3 +1,15 @@
+# [1.21.0](https://github.com/martynvdijke/datey/compare/v1.20.0...v1.21.0) (2026-07-12)
+
+
+### Bug Fixes
+
+* suppress unused errcheck warning on os.Setenv in otel.go ([9bcc724](https://github.com/martynvdijke/datey/commit/9bcc7242cc25156d7784f8f8731808fd07ce88ef))
+
+
+### Features
+
+* add OpenTelemetry observability with traces, metrics, and logs ([982c919](https://github.com/martynvdijke/datey/commit/982c9193aeabdf3a50a931643f17dab478bb93e1))
+
 # [1.20.0](https://github.com/martynvdijke/datey/compare/v1.19.4...v1.20.0) (2026-07-11)
 
 
