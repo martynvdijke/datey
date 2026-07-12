@@ -91,8 +91,10 @@ func InitTelemetry(ctx context.Context) (*Telemetry, error) {
 	}
 
 	// Ensure the standard env var is set for downstream OTel SDK auto-detection.
+	// Setenv only fails on invalid key (e.g. contains null byte), which can't
+	// happen with the string literal used here.
 	if os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") == "" {
-		os.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", endpoint)
+		_ = os.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", endpoint)
 	}
 
 	// ── Resource detection ──────────────────────────────────────────────
