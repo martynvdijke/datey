@@ -1,3 +1,10 @@
+## [1.21.1](https://github.com/martynvdijke/datey/compare/v1.21.0...v1.21.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#20](https://github.com/martynvdijke/datey/issues/20)) ([19a14cf](https://github.com/martynvdijke/datey/commit/19a14cf656b6ffab9c639b07465fb84502671685))
+
 # [1.21.0](https://github.com/martynvdijke/datey/compare/v1.20.0...v1.21.0) (2026-07-12)
 
 
