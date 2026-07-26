@@ -24,7 +24,7 @@ import (
 	"github.com/riandyrn/otelchi"
 )
 
-const Version = "1.21.5"
+const Version = "1.21.6"
 
 func main() {
 	cfg, err := config.Load()
