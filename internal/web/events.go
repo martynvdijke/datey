@@ -84,8 +84,7 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toastHeader(w, "Event created", "success")
-	http.Redirect(w, r, fmt.Sprintf("/people/%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/people/%d?success=Event+created", id), http.StatusSeeOther)
 }
 
 func (h *Handler) deleteEvent(w http.ResponseWriter, r *http.Request) {

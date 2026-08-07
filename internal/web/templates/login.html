@@ -5,12 +5,6 @@
       <div class="card-body">
         <h3 class="card-title text-center mb-1">Welcome back</h3>
         <p class="text-center text-muted small mb-4">Log in to Datey to manage your reminders</p>
-        {{if .Success}}
-          <div class="alert alert-success">{{.Success}}</div>
-        {{end}}
-        {{if .Error}}
-          <div class="alert alert-danger">{{.Error}}</div>
-        {{end}}
         <form method="POST" action="/login">
           {{template "csrfField" .}}
           <div class="mb-3">

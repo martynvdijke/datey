@@ -232,6 +232,17 @@
         return div.innerHTML;
       }
 
+      // Flash messages from redirect flows (?success= / ?error=) shown as toasts
+      // (spec: polish-ui-ux). Dispatched after the show-toast listener is registered above.
+      var flashSuccess = {{if .Success}}"{{.Success}}"{{else}}null{{end}};
+      var flashError = {{if .Error}}"{{.Error}}"{{else}}null{{end}};
+      if (flashSuccess) {
+        document.body.dispatchEvent(new CustomEvent('show-toast', { detail: { message: flashSuccess, type: 'success' } }));
+      }
+      if (flashError) {
+        document.body.dispatchEvent(new CustomEvent('show-toast', { detail: { message: flashError, type: 'error' } }));
+      }
+
       var path = window.location.pathname;
       document.querySelectorAll('.navbar-nav .nav-link').forEach(function(link) {
         var href = link.getAttribute('href');

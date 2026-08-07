@@ -103,7 +103,7 @@ func TestCreateEvent_Success(t *testing.T) {
 		t.Errorf("expected 303 redirect, got %d", w.Code)
 	}
 	loc := w.Header().Get("Location")
-	expected := "/people/" + itoa(person.ID)
+	expected := "/people/" + itoa(person.ID) + "?success=Event+created"
 	if loc != expected {
 		t.Errorf("expected redirect to %s, got %s", expected, loc)
 	}

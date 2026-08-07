@@ -153,8 +153,8 @@ func TestCreateNotification_Success(t *testing.T) {
 		t.Errorf("expected 303 redirect, got %d", w.Code)
 	}
 	loc := w.Header().Get("Location")
-	if loc != "/notifications" {
-		t.Errorf("expected redirect to /notifications, got %s", loc)
+	if loc != "/notifications?success=Notification+created" {
+		t.Errorf("expected redirect to /notifications?success=Notification+created, got %s", loc)
 	}
 }
 

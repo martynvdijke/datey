@@ -197,8 +197,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toastHeader(w, "Notification created", "success")
-	http.Redirect(w, r, "/notifications", http.StatusSeeOther)
+	http.Redirect(w, r, "/notifications?success=Notification+created", http.StatusSeeOther)
 }
 
 func (h *Handler) deleteNotification(w http.ResponseWriter, r *http.Request) {
