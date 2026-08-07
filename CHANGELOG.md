@@ -1,3 +1,10 @@
+## [1.21.14](https://github.com/martynvdijke/datey/compare/v1.21.13...v1.21.14) (2026-08-07)
+
+
+### Bug Fixes
+
+* **ui:** show flash messages as toasts on redirect-based flows ([afe5963](https://github.com/martynvdijke/datey/commit/afe596316a49fdc3557a3425223ccfaf651417d7))
+
 ## [1.21.13](https://github.com/martynvdijke/datey/compare/v1.21.12...v1.21.13) (2026-08-05)
 
 
