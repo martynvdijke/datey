@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/martynvdijke/datey/compare/v1.22.0...v1.23.0) (2026-08-08)
+
+
+### Features
+
+* **trmnl:** add TRMNL e-ink stats plugin with public stats feed ([0162ef5](https://github.com/martynvdijke/datey/commit/0162ef5a6c0b1fef51482c174d10da950c3924f9))
+
 # [1.22.0](https://github.com/martynvdijke/datey/compare/v1.21.14...v1.22.0) (2026-08-08)
 
 
