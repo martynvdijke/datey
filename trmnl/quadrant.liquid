@@ -1,0 +1,55 @@
+<div class="grid grid--cols-2">
+  <div class="col col--start gap">
+    {% if IDX_0.next_event %}
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--medium">{{ IDX_0.next_event.name }}</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label">{{ IDX_0.next_event.date }} ({{ IDX_0.next_event.relative }})</span>
+        </div>
+      </div>
+    {% else %}
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--medium">No upcoming dates</span>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  <div class="col col--start gap">
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="label">{{ IDX_0.stats.people_count }} people</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="label">{{ IDX_0.stats.events_next_7_days }} events/7d</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="label">{{ IDX_0.stats.events_next_30_days }} events/30d</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="meta"></div>
+      <div class="content">
+        <span class="label">{{ IDX_0.stats.configured_channels }} channels</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="title_bar">
+  <span class="title">Datey — {{ trml.plugin_settings.custom_fields_values.url }}</span>
+</div>

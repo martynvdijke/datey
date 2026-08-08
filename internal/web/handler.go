@@ -96,6 +96,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/ical.ics", h.icalFeedGlobal)
 		r.Get("/ical/{personID}.ics", h.icalFeedPerson)
 
+		// Public TRMNL e-ink stats feed — unauthenticated (TRMNL devices cannot log in)
+		r.Get("/api/trmnl/stats", h.trmnlStats)
+
 		// Protected routes — require authentication
 		r.Group(func(r chi.Router) {
 			r.Use(h.Auth)

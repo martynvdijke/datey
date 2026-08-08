@@ -29,6 +29,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📇 vCard Import/Export** — Import and export contacts via vCard files.
 - **💾 Database Backup** — On-demand SQLite backup with configurable retention.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
+- **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
@@ -210,6 +211,7 @@ datey/
 | `POST` | `/setup` | Create admin user |
 | `GET` | `/ical.ics` | Public iCal feed — all dates (`?key=...` required; 404 when disabled) |
 | `GET` | `/ical/{personID}.ics` | Public iCal feed — single person's dates (`?key=...` required; 404 when disabled) |
+| `GET` | `/api/trmnl/stats` | Public JSON stats feed for the TRMNL e-ink plugin |
 | `GET` | `/health` | Health check |
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |
