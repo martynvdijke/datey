@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/martynvdijke/datey/compare/v1.21.14...v1.22.0) (2026-08-08)
+
+
+### Features
+
+* **ical:** add public iCal feed with configurable event timing ([a8d1a58](https://github.com/martynvdijke/datey/commit/a8d1a58d6f36a1d76abe4472bf4f804dfc1f5894))
+
 ## [1.21.14](https://github.com/martynvdijke/datey/compare/v1.21.13...v1.21.14) (2026-08-07)
 
 
