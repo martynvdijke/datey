@@ -57,6 +57,14 @@ const (
 	FieldUmamiWebsiteID = "umami_website_id"
 	// FieldEinkMode holds the string denoting the eink_mode field in the database.
 	FieldEinkMode = "eink_mode"
+	// FieldIcalEnabled holds the string denoting the ical_enabled field in the database.
+	FieldIcalEnabled = "ical_enabled"
+	// FieldIcalEventStart holds the string denoting the ical_event_start field in the database.
+	FieldIcalEventStart = "ical_event_start"
+	// FieldIcalDurationMinutes holds the string denoting the ical_duration_minutes field in the database.
+	FieldIcalDurationMinutes = "ical_duration_minutes"
+	// FieldIcalFeedKey holds the string denoting the ical_feed_key field in the database.
+	FieldIcalFeedKey = "ical_feed_key"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the appconfig in the database.
@@ -89,6 +97,10 @@ var Columns = []string{
 	FieldUmamiURL,
 	FieldUmamiWebsiteID,
 	FieldEinkMode,
+	FieldIcalEnabled,
+	FieldIcalEventStart,
+	FieldIcalDurationMinutes,
+	FieldIcalFeedKey,
 	FieldUpdatedAt,
 }
 
@@ -223,6 +235,26 @@ func ByUmamiWebsiteID(opts ...sql.OrderTermOption) OrderOption {
 // ByEinkMode orders the results by the eink_mode field.
 func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEinkMode, opts...).ToFunc()
+}
+
+// ByIcalEnabled orders the results by the ical_enabled field.
+func ByIcalEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIcalEnabled, opts...).ToFunc()
+}
+
+// ByIcalEventStart orders the results by the ical_event_start field.
+func ByIcalEventStart(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIcalEventStart, opts...).ToFunc()
+}
+
+// ByIcalDurationMinutes orders the results by the ical_duration_minutes field.
+func ByIcalDurationMinutes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIcalDurationMinutes, opts...).ToFunc()
+}
+
+// ByIcalFeedKey orders the results by the ical_feed_key field.
+func ByIcalFeedKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIcalFeedKey, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

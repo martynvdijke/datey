@@ -63,6 +63,14 @@ type AppConfig struct {
 	UmamiWebsiteID *string `json:"umami_website_id,omitempty"`
 	// EinkMode holds the value of the "eink_mode" field.
 	EinkMode *bool `json:"eink_mode,omitempty"`
+	// IcalEnabled holds the value of the "ical_enabled" field.
+	IcalEnabled *bool `json:"ical_enabled,omitempty"`
+	// IcalEventStart holds the value of the "ical_event_start" field.
+	IcalEventStart *string `json:"ical_event_start,omitempty"`
+	// IcalDurationMinutes holds the value of the "ical_duration_minutes" field.
+	IcalDurationMinutes *int `json:"ical_duration_minutes,omitempty"`
+	// IcalFeedKey holds the value of the "ical_feed_key" field.
+	IcalFeedKey *string `json:"ical_feed_key,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -73,11 +81,11 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case appconfig.FieldSMTPTLS, appconfig.FieldEinkMode:
+		case appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled:
 			values[i] = new(sql.NullBool)
-		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout:
+		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID:
+		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -263,6 +271,34 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 				_m.EinkMode = new(bool)
 				*_m.EinkMode = value.Bool
 			}
+		case appconfig.FieldIcalEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field ical_enabled", values[i])
+			} else if value.Valid {
+				_m.IcalEnabled = new(bool)
+				*_m.IcalEnabled = value.Bool
+			}
+		case appconfig.FieldIcalEventStart:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ical_event_start", values[i])
+			} else if value.Valid {
+				_m.IcalEventStart = new(string)
+				*_m.IcalEventStart = value.String
+			}
+		case appconfig.FieldIcalDurationMinutes:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field ical_duration_minutes", values[i])
+			} else if value.Valid {
+				_m.IcalDurationMinutes = new(int)
+				*_m.IcalDurationMinutes = int(value.Int64)
+			}
+		case appconfig.FieldIcalFeedKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ical_feed_key", values[i])
+			} else if value.Valid {
+				_m.IcalFeedKey = new(string)
+				*_m.IcalFeedKey = value.String
+			}
 		case appconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -419,6 +455,26 @@ func (_m *AppConfig) String() string {
 	if v := _m.EinkMode; v != nil {
 		builder.WriteString("eink_mode=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.IcalEnabled; v != nil {
+		builder.WriteString("ical_enabled=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.IcalEventStart; v != nil {
+		builder.WriteString("ical_event_start=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.IcalDurationMinutes; v != nil {
+		builder.WriteString("ical_duration_minutes=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.IcalFeedKey; v != nil {
+		builder.WriteString("ical_feed_key=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	if v := _m.UpdatedAt; v != nil {

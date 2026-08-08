@@ -50,6 +50,11 @@ func (AppConfig) Fields() []ent.Field {
 
 		field.Bool("eink_mode").Optional().Nillable(),
 
+		field.Bool("ical_enabled").Optional().Nillable(),
+		field.String("ical_event_start").Optional().Nillable(),
+		field.Int("ical_duration_minutes").Optional().Nillable(),
+		field.String("ical_feed_key").Optional().Nillable(),
+
 		field.Time("updated_at").Optional().Nillable(),
 	}
 }

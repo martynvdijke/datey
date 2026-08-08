@@ -176,5 +176,21 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "OTEL_ENDPOINT", Label: "OTLP Endpoint", Value: val("OTEL_ENDPOINT", cfg.OTLPEndpoint), Type: "text", RestartRequired: true, Help: "Requires restart to apply.", Error: errFor("OTEL_ENDPOINT")},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, analytics, obs}
+	icalFeedKey := cfg.ICalFeedKey
+	if submitted != nil {
+		if v, ok := submitted["ICAL_FEED_KEY"]; ok && len(v) > 0 {
+			icalFeedKey = v[0]
+		}
+	}
+
+	ical := configGroup{Title: "iCal Feed", Fields: []configField{
+		{Name: "ICAL_FEED_ENABLED", Label: "Enable Public iCal Feed", Type: "checkbox", Checked: checked("ICAL_FEED_ENABLED", cfg.ICalEnabled), Help: "Exposes all tracked dates as a public iCal feed (e.g. for Google Calendar). Disabled by default; dates are personal data."},
+		{Name: "ICAL_EVENT_START", Label: "Event Start Time", Value: val("ICAL_EVENT_START", cfg.ICalEventStart), Type: "text", Help: "Start time in 24h HH:MM format (e.g. 09:00), or leave empty for all-day events.", Error: errFor("ICAL_EVENT_START")},
+		{Name: "ICAL_EVENT_DURATION", Label: "Event Duration (minutes)", Value: val("ICAL_EVENT_DURATION", strconv.Itoa(cfg.ICalDurationMinutes)), Type: "number", Help: "How long each event lasts (1-1440). Used when a start time is set.", Error: errFor("ICAL_EVENT_DURATION")},
+		{Name: "ICAL_FEED_KEY", Label: "Feed Secret Key", Value: val("ICAL_FEED_KEY", icalFeedKey), Type: "text", Help: "Required as ?key=... in feed URLs. Auto-generated on first enable; change it here to rotate."},
+		{Name: "ICAL_FEED_URL_GLOBAL", Label: "iCal Feed URL (all dates)", Value: "/ical.ics?key=" + icalFeedKey, Type: "readonly", ReadOnly: true, Help: "Subscribe in Google Calendar. Prepend your server origin (e.g. https://datey.example.com)."},
+		{Name: "ICAL_FEED_URL_PERSON", Label: "iCal Feed URL (single person)", Value: "/ical/{personID}.ics?key=" + icalFeedKey, Type: "readonly", ReadOnly: true, Help: "Replace {personID} with the person's ID (the number in their page URL)."},
+	}}
+
+	return []configGroup{general, backup, email, gotify, telegram, analytics, obs, ical}
 }

@@ -341,6 +341,62 @@ func (_c *AppConfigCreate) SetNillableEinkMode(v *bool) *AppConfigCreate {
 	return _c
 }
 
+// SetIcalEnabled sets the "ical_enabled" field.
+func (_c *AppConfigCreate) SetIcalEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetIcalEnabled(v)
+	return _c
+}
+
+// SetNillableIcalEnabled sets the "ical_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableIcalEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetIcalEnabled(*v)
+	}
+	return _c
+}
+
+// SetIcalEventStart sets the "ical_event_start" field.
+func (_c *AppConfigCreate) SetIcalEventStart(v string) *AppConfigCreate {
+	_c.mutation.SetIcalEventStart(v)
+	return _c
+}
+
+// SetNillableIcalEventStart sets the "ical_event_start" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableIcalEventStart(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetIcalEventStart(*v)
+	}
+	return _c
+}
+
+// SetIcalDurationMinutes sets the "ical_duration_minutes" field.
+func (_c *AppConfigCreate) SetIcalDurationMinutes(v int) *AppConfigCreate {
+	_c.mutation.SetIcalDurationMinutes(v)
+	return _c
+}
+
+// SetNillableIcalDurationMinutes sets the "ical_duration_minutes" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableIcalDurationMinutes(v *int) *AppConfigCreate {
+	if v != nil {
+		_c.SetIcalDurationMinutes(*v)
+	}
+	return _c
+}
+
+// SetIcalFeedKey sets the "ical_feed_key" field.
+func (_c *AppConfigCreate) SetIcalFeedKey(v string) *AppConfigCreate {
+	_c.mutation.SetIcalFeedKey(v)
+	return _c
+}
+
+// SetNillableIcalFeedKey sets the "ical_feed_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableIcalFeedKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetIcalFeedKey(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -506,6 +562,22 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.EinkMode(); ok {
 		_spec.SetField(appconfig.FieldEinkMode, field.TypeBool, value)
 		_node.EinkMode = &value
+	}
+	if value, ok := _c.mutation.IcalEnabled(); ok {
+		_spec.SetField(appconfig.FieldIcalEnabled, field.TypeBool, value)
+		_node.IcalEnabled = &value
+	}
+	if value, ok := _c.mutation.IcalEventStart(); ok {
+		_spec.SetField(appconfig.FieldIcalEventStart, field.TypeString, value)
+		_node.IcalEventStart = &value
+	}
+	if value, ok := _c.mutation.IcalDurationMinutes(); ok {
+		_spec.SetField(appconfig.FieldIcalDurationMinutes, field.TypeInt, value)
+		_node.IcalDurationMinutes = &value
+	}
+	if value, ok := _c.mutation.IcalFeedKey(); ok {
+		_spec.SetField(appconfig.FieldIcalFeedKey, field.TypeString, value)
+		_node.IcalFeedKey = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

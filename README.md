@@ -95,6 +95,10 @@ See `.env.example` for a template.
 | `UMAMI_URL` | — | Umami analytics endpoint |
 | `UMAMI_WEBSITE_ID` | — | Umami website ID |
 | `EINK_MODE` | `false` | Force high-contrast E-Ink theme for all users |
+| `ICAL_FEED_ENABLED` | `false` | Enable the public iCal feed (all dates / per person) for external calendar apps |
+| `ICAL_EVENT_START` | — | Feed event start time in `HH:MM` (24h); empty = all-day events (**enforced**: 0–23 / 0–59) |
+| `ICAL_EVENT_DURATION` | `60` | Feed event duration in minutes, used when a start time is set (**enforced**: 1–1440) |
+| `ICAL_FEED_KEY` | — | Secret key required in feed URLs (`?key=...`); auto-generated on first enable via the UI |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
@@ -204,6 +208,8 @@ datey/
 | `GET` | `/logout` | Logout |
 | `GET` | `/setup` | Initial setup (first run only) |
 | `POST` | `/setup` | Create admin user |
+| `GET` | `/ical.ics` | Public iCal feed — all dates (`?key=...` required; 404 when disabled) |
+| `GET` | `/ical/{personID}.ics` | Public iCal feed — single person's dates (`?key=...` required; 404 when disabled) |
 | `GET` | `/health` | Health check |
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |

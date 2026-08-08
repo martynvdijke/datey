@@ -45,6 +45,8 @@ func (r *EventRepository) Get(ctx context.Context, id int) (*ent.Event, error) {
 func (r *EventRepository) List(ctx context.Context) ([]*ent.Event, error) {
 	return r.client.Event.Query().
 		Order(ent.Asc(event.FieldDate)).
+		WithContact().
+		WithPerson().
 		All(ctx)
 }
 
@@ -59,6 +61,8 @@ func (r *EventRepository) ListByPerson(ctx context.Context, personID int) ([]*en
 	return r.client.Event.Query().
 		Where(event.HasPersonWith(person.IDEQ(personID))).
 		Order(ent.Asc(event.FieldDate)).
+		WithContact().
+		WithPerson().
 		All(ctx)
 }
 

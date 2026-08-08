@@ -169,6 +169,26 @@ func EinkMode(v bool) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldEinkMode, v))
 }
 
+// IcalEnabled applies equality check predicate on the "ical_enabled" field. It's identical to IcalEnabledEQ.
+func IcalEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalEnabled, v))
+}
+
+// IcalEventStart applies equality check predicate on the "ical_event_start" field. It's identical to IcalEventStartEQ.
+func IcalEventStart(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalEventStart, v))
+}
+
+// IcalDurationMinutes applies equality check predicate on the "ical_duration_minutes" field. It's identical to IcalDurationMinutesEQ.
+func IcalDurationMinutes(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalDurationMinutes, v))
+}
+
+// IcalFeedKey applies equality check predicate on the "ical_feed_key" field. It's identical to IcalFeedKeyEQ.
+func IcalFeedKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalFeedKey, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpdatedAt, v))
@@ -1612,6 +1632,226 @@ func EinkModeIsNil() predicate.AppConfig {
 // EinkModeNotNil applies the NotNil predicate on the "eink_mode" field.
 func EinkModeNotNil() predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotNull(FieldEinkMode))
+}
+
+// IcalEnabledEQ applies the EQ predicate on the "ical_enabled" field.
+func IcalEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalEnabled, v))
+}
+
+// IcalEnabledNEQ applies the NEQ predicate on the "ical_enabled" field.
+func IcalEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldIcalEnabled, v))
+}
+
+// IcalEnabledIsNil applies the IsNil predicate on the "ical_enabled" field.
+func IcalEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldIcalEnabled))
+}
+
+// IcalEnabledNotNil applies the NotNil predicate on the "ical_enabled" field.
+func IcalEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldIcalEnabled))
+}
+
+// IcalEventStartEQ applies the EQ predicate on the "ical_event_start" field.
+func IcalEventStartEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalEventStart, v))
+}
+
+// IcalEventStartNEQ applies the NEQ predicate on the "ical_event_start" field.
+func IcalEventStartNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldIcalEventStart, v))
+}
+
+// IcalEventStartIn applies the In predicate on the "ical_event_start" field.
+func IcalEventStartIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldIcalEventStart, vs...))
+}
+
+// IcalEventStartNotIn applies the NotIn predicate on the "ical_event_start" field.
+func IcalEventStartNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldIcalEventStart, vs...))
+}
+
+// IcalEventStartGT applies the GT predicate on the "ical_event_start" field.
+func IcalEventStartGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldIcalEventStart, v))
+}
+
+// IcalEventStartGTE applies the GTE predicate on the "ical_event_start" field.
+func IcalEventStartGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldIcalEventStart, v))
+}
+
+// IcalEventStartLT applies the LT predicate on the "ical_event_start" field.
+func IcalEventStartLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldIcalEventStart, v))
+}
+
+// IcalEventStartLTE applies the LTE predicate on the "ical_event_start" field.
+func IcalEventStartLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldIcalEventStart, v))
+}
+
+// IcalEventStartContains applies the Contains predicate on the "ical_event_start" field.
+func IcalEventStartContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldIcalEventStart, v))
+}
+
+// IcalEventStartHasPrefix applies the HasPrefix predicate on the "ical_event_start" field.
+func IcalEventStartHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldIcalEventStart, v))
+}
+
+// IcalEventStartHasSuffix applies the HasSuffix predicate on the "ical_event_start" field.
+func IcalEventStartHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldIcalEventStart, v))
+}
+
+// IcalEventStartIsNil applies the IsNil predicate on the "ical_event_start" field.
+func IcalEventStartIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldIcalEventStart))
+}
+
+// IcalEventStartNotNil applies the NotNil predicate on the "ical_event_start" field.
+func IcalEventStartNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldIcalEventStart))
+}
+
+// IcalEventStartEqualFold applies the EqualFold predicate on the "ical_event_start" field.
+func IcalEventStartEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldIcalEventStart, v))
+}
+
+// IcalEventStartContainsFold applies the ContainsFold predicate on the "ical_event_start" field.
+func IcalEventStartContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldIcalEventStart, v))
+}
+
+// IcalDurationMinutesEQ applies the EQ predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalDurationMinutes, v))
+}
+
+// IcalDurationMinutesNEQ applies the NEQ predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesNEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldIcalDurationMinutes, v))
+}
+
+// IcalDurationMinutesIn applies the In predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldIcalDurationMinutes, vs...))
+}
+
+// IcalDurationMinutesNotIn applies the NotIn predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesNotIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldIcalDurationMinutes, vs...))
+}
+
+// IcalDurationMinutesGT applies the GT predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesGT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldIcalDurationMinutes, v))
+}
+
+// IcalDurationMinutesGTE applies the GTE predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesGTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldIcalDurationMinutes, v))
+}
+
+// IcalDurationMinutesLT applies the LT predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesLT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldIcalDurationMinutes, v))
+}
+
+// IcalDurationMinutesLTE applies the LTE predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesLTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldIcalDurationMinutes, v))
+}
+
+// IcalDurationMinutesIsNil applies the IsNil predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldIcalDurationMinutes))
+}
+
+// IcalDurationMinutesNotNil applies the NotNil predicate on the "ical_duration_minutes" field.
+func IcalDurationMinutesNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldIcalDurationMinutes))
+}
+
+// IcalFeedKeyEQ applies the EQ predicate on the "ical_feed_key" field.
+func IcalFeedKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyNEQ applies the NEQ predicate on the "ical_feed_key" field.
+func IcalFeedKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyIn applies the In predicate on the "ical_feed_key" field.
+func IcalFeedKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldIcalFeedKey, vs...))
+}
+
+// IcalFeedKeyNotIn applies the NotIn predicate on the "ical_feed_key" field.
+func IcalFeedKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldIcalFeedKey, vs...))
+}
+
+// IcalFeedKeyGT applies the GT predicate on the "ical_feed_key" field.
+func IcalFeedKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyGTE applies the GTE predicate on the "ical_feed_key" field.
+func IcalFeedKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyLT applies the LT predicate on the "ical_feed_key" field.
+func IcalFeedKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyLTE applies the LTE predicate on the "ical_feed_key" field.
+func IcalFeedKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyContains applies the Contains predicate on the "ical_feed_key" field.
+func IcalFeedKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyHasPrefix applies the HasPrefix predicate on the "ical_feed_key" field.
+func IcalFeedKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyHasSuffix applies the HasSuffix predicate on the "ical_feed_key" field.
+func IcalFeedKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyIsNil applies the IsNil predicate on the "ical_feed_key" field.
+func IcalFeedKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldIcalFeedKey))
+}
+
+// IcalFeedKeyNotNil applies the NotNil predicate on the "ical_feed_key" field.
+func IcalFeedKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldIcalFeedKey))
+}
+
+// IcalFeedKeyEqualFold applies the EqualFold predicate on the "ical_feed_key" field.
+func IcalFeedKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldIcalFeedKey, v))
+}
+
+// IcalFeedKeyContainsFold applies the ContainsFold predicate on the "ical_feed_key" field.
+func IcalFeedKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldIcalFeedKey, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

@@ -36,6 +36,11 @@ type Config struct {
 	UmamiWebsiteID string
 
 	EinkMode bool
+
+	ICalEnabled         bool
+	ICalEventStart      string
+	ICalDurationMinutes int
+	ICalFeedKey         string
 }
 
 func Load() (*Config, error) {
@@ -66,6 +71,11 @@ func Load() (*Config, error) {
 		UmamiWebsiteID: getEnv("UMAMI_WEBSITE_ID", ""),
 
 		EinkMode: getEnv("EINK_MODE", "") == "true",
+
+		ICalEnabled:         getEnv("ICAL_FEED_ENABLED", "") == "true",
+		ICalEventStart:      getEnv("ICAL_EVENT_START", ""),
+		ICalDurationMinutes: getEnvInt("ICAL_EVENT_DURATION", 60),
+		ICalFeedKey:         getEnv("ICAL_FEED_KEY", ""),
 	}
 
 	if cfg.DataDir == "" {
@@ -107,7 +117,41 @@ func (c *Config) Validate() error {
 	if !validLogLevels[c.LogLevel] {
 		return fmt.Errorf("LOG_LEVEL must be one of debug, info, warn, error; got %q", c.LogLevel)
 	}
+	if c.ICalEventStart != "" {
+		hour, minute, err := ParseClockTime(c.ICalEventStart)
+		if err != nil {
+			return fmt.Errorf("ICAL_EVENT_START must be in HH:MM format (e.g. 09:00), got %q", c.ICalEventStart)
+		}
+		if hour < 0 || hour > 23 {
+			return fmt.Errorf("ICAL_EVENT_START hour must be between 0 and 23, got %d", hour)
+		}
+		if minute < 0 || minute > 59 {
+			return fmt.Errorf("ICAL_EVENT_START minute must be between 0 and 59, got %d", minute)
+		}
+	}
+	if c.ICalDurationMinutes < 1 || c.ICalDurationMinutes > 1440 {
+		return fmt.Errorf("ICAL_EVENT_DURATION must be between 1 and 1440, got %d", c.ICalDurationMinutes)
+	}
+	if c.ICalEnabled && c.ICalFeedKey == "" {
+		return fmt.Errorf("ICAL_FEED_KEY must be set when ICAL_FEED_ENABLED is true")
+	}
 	return nil
+}
+
+// ParseClockTime parses a 24-hour "HH:MM" clock string (e.g. "09:30") into its
+// hour and minute components.
+func ParseClockTime(s string) (hour, minute int, err error) {
+	parts := []byte(s)
+	if len(parts) != 5 || parts[2] != ':' {
+		return 0, 0, fmt.Errorf("invalid clock time %q", s)
+	}
+	hour = int(parts[0]-'0')*10 + int(parts[1]-'0')
+	minute = int(parts[3]-'0')*10 + int(parts[4]-'0')
+	if parts[0] < '0' || parts[0] > '9' || parts[1] < '0' || parts[1] > '9' ||
+		parts[3] < '0' || parts[3] > '9' || parts[4] < '0' || parts[4] > '9' {
+		return 0, 0, fmt.Errorf("invalid clock time %q", s)
+	}
+	return hour, minute, nil
 }
 
 func getEnv(key, fallback string) string {

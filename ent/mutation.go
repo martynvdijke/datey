@@ -85,6 +85,11 @@ type AppConfigMutation struct {
 	umami_url                *string
 	umami_website_id         *string
 	eink_mode                *bool
+	ical_enabled             *bool
+	ical_event_start         *string
+	ical_duration_minutes    *int
+	addical_duration_minutes *int
+	ical_feed_key            *string
 	updated_at               *time.Time
 	clearedFields            map[string]struct{}
 	done                     bool
@@ -1464,6 +1469,223 @@ func (m *AppConfigMutation) ResetEinkMode() {
 	delete(m.clearedFields, appconfig.FieldEinkMode)
 }
 
+// SetIcalEnabled sets the "ical_enabled" field.
+func (m *AppConfigMutation) SetIcalEnabled(b bool) {
+	m.ical_enabled = &b
+}
+
+// IcalEnabled returns the value of the "ical_enabled" field in the mutation.
+func (m *AppConfigMutation) IcalEnabled() (r bool, exists bool) {
+	v := m.ical_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIcalEnabled returns the old "ical_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldIcalEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIcalEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIcalEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIcalEnabled: %w", err)
+	}
+	return oldValue.IcalEnabled, nil
+}
+
+// ClearIcalEnabled clears the value of the "ical_enabled" field.
+func (m *AppConfigMutation) ClearIcalEnabled() {
+	m.ical_enabled = nil
+	m.clearedFields[appconfig.FieldIcalEnabled] = struct{}{}
+}
+
+// IcalEnabledCleared returns if the "ical_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) IcalEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldIcalEnabled]
+	return ok
+}
+
+// ResetIcalEnabled resets all changes to the "ical_enabled" field.
+func (m *AppConfigMutation) ResetIcalEnabled() {
+	m.ical_enabled = nil
+	delete(m.clearedFields, appconfig.FieldIcalEnabled)
+}
+
+// SetIcalEventStart sets the "ical_event_start" field.
+func (m *AppConfigMutation) SetIcalEventStart(s string) {
+	m.ical_event_start = &s
+}
+
+// IcalEventStart returns the value of the "ical_event_start" field in the mutation.
+func (m *AppConfigMutation) IcalEventStart() (r string, exists bool) {
+	v := m.ical_event_start
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIcalEventStart returns the old "ical_event_start" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldIcalEventStart(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIcalEventStart is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIcalEventStart requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIcalEventStart: %w", err)
+	}
+	return oldValue.IcalEventStart, nil
+}
+
+// ClearIcalEventStart clears the value of the "ical_event_start" field.
+func (m *AppConfigMutation) ClearIcalEventStart() {
+	m.ical_event_start = nil
+	m.clearedFields[appconfig.FieldIcalEventStart] = struct{}{}
+}
+
+// IcalEventStartCleared returns if the "ical_event_start" field was cleared in this mutation.
+func (m *AppConfigMutation) IcalEventStartCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldIcalEventStart]
+	return ok
+}
+
+// ResetIcalEventStart resets all changes to the "ical_event_start" field.
+func (m *AppConfigMutation) ResetIcalEventStart() {
+	m.ical_event_start = nil
+	delete(m.clearedFields, appconfig.FieldIcalEventStart)
+}
+
+// SetIcalDurationMinutes sets the "ical_duration_minutes" field.
+func (m *AppConfigMutation) SetIcalDurationMinutes(i int) {
+	m.ical_duration_minutes = &i
+	m.addical_duration_minutes = nil
+}
+
+// IcalDurationMinutes returns the value of the "ical_duration_minutes" field in the mutation.
+func (m *AppConfigMutation) IcalDurationMinutes() (r int, exists bool) {
+	v := m.ical_duration_minutes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIcalDurationMinutes returns the old "ical_duration_minutes" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldIcalDurationMinutes(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIcalDurationMinutes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIcalDurationMinutes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIcalDurationMinutes: %w", err)
+	}
+	return oldValue.IcalDurationMinutes, nil
+}
+
+// AddIcalDurationMinutes adds i to the "ical_duration_minutes" field.
+func (m *AppConfigMutation) AddIcalDurationMinutes(i int) {
+	if m.addical_duration_minutes != nil {
+		*m.addical_duration_minutes += i
+	} else {
+		m.addical_duration_minutes = &i
+	}
+}
+
+// AddedIcalDurationMinutes returns the value that was added to the "ical_duration_minutes" field in this mutation.
+func (m *AppConfigMutation) AddedIcalDurationMinutes() (r int, exists bool) {
+	v := m.addical_duration_minutes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearIcalDurationMinutes clears the value of the "ical_duration_minutes" field.
+func (m *AppConfigMutation) ClearIcalDurationMinutes() {
+	m.ical_duration_minutes = nil
+	m.addical_duration_minutes = nil
+	m.clearedFields[appconfig.FieldIcalDurationMinutes] = struct{}{}
+}
+
+// IcalDurationMinutesCleared returns if the "ical_duration_minutes" field was cleared in this mutation.
+func (m *AppConfigMutation) IcalDurationMinutesCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldIcalDurationMinutes]
+	return ok
+}
+
+// ResetIcalDurationMinutes resets all changes to the "ical_duration_minutes" field.
+func (m *AppConfigMutation) ResetIcalDurationMinutes() {
+	m.ical_duration_minutes = nil
+	m.addical_duration_minutes = nil
+	delete(m.clearedFields, appconfig.FieldIcalDurationMinutes)
+}
+
+// SetIcalFeedKey sets the "ical_feed_key" field.
+func (m *AppConfigMutation) SetIcalFeedKey(s string) {
+	m.ical_feed_key = &s
+}
+
+// IcalFeedKey returns the value of the "ical_feed_key" field in the mutation.
+func (m *AppConfigMutation) IcalFeedKey() (r string, exists bool) {
+	v := m.ical_feed_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIcalFeedKey returns the old "ical_feed_key" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldIcalFeedKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIcalFeedKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIcalFeedKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIcalFeedKey: %w", err)
+	}
+	return oldValue.IcalFeedKey, nil
+}
+
+// ClearIcalFeedKey clears the value of the "ical_feed_key" field.
+func (m *AppConfigMutation) ClearIcalFeedKey() {
+	m.ical_feed_key = nil
+	m.clearedFields[appconfig.FieldIcalFeedKey] = struct{}{}
+}
+
+// IcalFeedKeyCleared returns if the "ical_feed_key" field was cleared in this mutation.
+func (m *AppConfigMutation) IcalFeedKeyCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldIcalFeedKey]
+	return ok
+}
+
+// ResetIcalFeedKey resets all changes to the "ical_feed_key" field.
+func (m *AppConfigMutation) ResetIcalFeedKey() {
+	m.ical_feed_key = nil
+	delete(m.clearedFields, appconfig.FieldIcalFeedKey)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *AppConfigMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -1547,7 +1769,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 24)
+	fields := make([]string, 0, 28)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -1617,6 +1839,18 @@ func (m *AppConfigMutation) Fields() []string {
 	if m.eink_mode != nil {
 		fields = append(fields, appconfig.FieldEinkMode)
 	}
+	if m.ical_enabled != nil {
+		fields = append(fields, appconfig.FieldIcalEnabled)
+	}
+	if m.ical_event_start != nil {
+		fields = append(fields, appconfig.FieldIcalEventStart)
+	}
+	if m.ical_duration_minutes != nil {
+		fields = append(fields, appconfig.FieldIcalDurationMinutes)
+	}
+	if m.ical_feed_key != nil {
+		fields = append(fields, appconfig.FieldIcalFeedKey)
+	}
 	if m.updated_at != nil {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -1674,6 +1908,14 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.UmamiWebsiteID()
 	case appconfig.FieldEinkMode:
 		return m.EinkMode()
+	case appconfig.FieldIcalEnabled:
+		return m.IcalEnabled()
+	case appconfig.FieldIcalEventStart:
+		return m.IcalEventStart()
+	case appconfig.FieldIcalDurationMinutes:
+		return m.IcalDurationMinutes()
+	case appconfig.FieldIcalFeedKey:
+		return m.IcalFeedKey()
 	case appconfig.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -1731,6 +1973,14 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldUmamiWebsiteID(ctx)
 	case appconfig.FieldEinkMode:
 		return m.OldEinkMode(ctx)
+	case appconfig.FieldIcalEnabled:
+		return m.OldIcalEnabled(ctx)
+	case appconfig.FieldIcalEventStart:
+		return m.OldIcalEventStart(ctx)
+	case appconfig.FieldIcalDurationMinutes:
+		return m.OldIcalDurationMinutes(ctx)
+	case appconfig.FieldIcalFeedKey:
+		return m.OldIcalFeedKey(ctx)
 	case appconfig.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -1903,6 +2153,34 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEinkMode(v)
 		return nil
+	case appconfig.FieldIcalEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIcalEnabled(v)
+		return nil
+	case appconfig.FieldIcalEventStart:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIcalEventStart(v)
+		return nil
+	case appconfig.FieldIcalDurationMinutes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIcalDurationMinutes(v)
+		return nil
+	case appconfig.FieldIcalFeedKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIcalFeedKey(v)
+		return nil
 	case appconfig.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -1939,6 +2217,9 @@ func (m *AppConfigMutation) AddedFields() []string {
 	if m.addsmtp_timeout != nil {
 		fields = append(fields, appconfig.FieldSMTPTimeout)
 	}
+	if m.addical_duration_minutes != nil {
+		fields = append(fields, appconfig.FieldIcalDurationMinutes)
+	}
 	return fields
 }
 
@@ -1961,6 +2242,8 @@ func (m *AppConfigMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedSMTPPort()
 	case appconfig.FieldSMTPTimeout:
 		return m.AddedSMTPTimeout()
+	case appconfig.FieldIcalDurationMinutes:
+		return m.AddedIcalDurationMinutes()
 	}
 	return nil, false
 }
@@ -2018,6 +2301,13 @@ func (m *AppConfigMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddSMTPTimeout(v)
+		return nil
+	case appconfig.FieldIcalDurationMinutes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIcalDurationMinutes(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AppConfig numeric field %s", name)
@@ -2095,6 +2385,18 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(appconfig.FieldEinkMode) {
 		fields = append(fields, appconfig.FieldEinkMode)
+	}
+	if m.FieldCleared(appconfig.FieldIcalEnabled) {
+		fields = append(fields, appconfig.FieldIcalEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldIcalEventStart) {
+		fields = append(fields, appconfig.FieldIcalEventStart)
+	}
+	if m.FieldCleared(appconfig.FieldIcalDurationMinutes) {
+		fields = append(fields, appconfig.FieldIcalDurationMinutes)
+	}
+	if m.FieldCleared(appconfig.FieldIcalFeedKey) {
+		fields = append(fields, appconfig.FieldIcalFeedKey)
 	}
 	if m.FieldCleared(appconfig.FieldUpdatedAt) {
 		fields = append(fields, appconfig.FieldUpdatedAt)
@@ -2182,6 +2484,18 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldEinkMode:
 		m.ClearEinkMode()
 		return nil
+	case appconfig.FieldIcalEnabled:
+		m.ClearIcalEnabled()
+		return nil
+	case appconfig.FieldIcalEventStart:
+		m.ClearIcalEventStart()
+		return nil
+	case appconfig.FieldIcalDurationMinutes:
+		m.ClearIcalDurationMinutes()
+		return nil
+	case appconfig.FieldIcalFeedKey:
+		m.ClearIcalFeedKey()
+		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ClearUpdatedAt()
 		return nil
@@ -2261,6 +2575,18 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldEinkMode:
 		m.ResetEinkMode()
+		return nil
+	case appconfig.FieldIcalEnabled:
+		m.ResetIcalEnabled()
+		return nil
+	case appconfig.FieldIcalEventStart:
+		m.ResetIcalEventStart()
+		return nil
+	case appconfig.FieldIcalDurationMinutes:
+		m.ResetIcalDurationMinutes()
+		return nil
+	case appconfig.FieldIcalFeedKey:
+		m.ResetIcalFeedKey()
 		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ResetUpdatedAt()

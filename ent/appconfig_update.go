@@ -537,6 +537,93 @@ func (_u *AppConfigUpdate) ClearEinkMode() *AppConfigUpdate {
 	return _u
 }
 
+// SetIcalEnabled sets the "ical_enabled" field.
+func (_u *AppConfigUpdate) SetIcalEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetIcalEnabled(v)
+	return _u
+}
+
+// SetNillableIcalEnabled sets the "ical_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableIcalEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetIcalEnabled(*v)
+	}
+	return _u
+}
+
+// ClearIcalEnabled clears the value of the "ical_enabled" field.
+func (_u *AppConfigUpdate) ClearIcalEnabled() *AppConfigUpdate {
+	_u.mutation.ClearIcalEnabled()
+	return _u
+}
+
+// SetIcalEventStart sets the "ical_event_start" field.
+func (_u *AppConfigUpdate) SetIcalEventStart(v string) *AppConfigUpdate {
+	_u.mutation.SetIcalEventStart(v)
+	return _u
+}
+
+// SetNillableIcalEventStart sets the "ical_event_start" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableIcalEventStart(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetIcalEventStart(*v)
+	}
+	return _u
+}
+
+// ClearIcalEventStart clears the value of the "ical_event_start" field.
+func (_u *AppConfigUpdate) ClearIcalEventStart() *AppConfigUpdate {
+	_u.mutation.ClearIcalEventStart()
+	return _u
+}
+
+// SetIcalDurationMinutes sets the "ical_duration_minutes" field.
+func (_u *AppConfigUpdate) SetIcalDurationMinutes(v int) *AppConfigUpdate {
+	_u.mutation.ResetIcalDurationMinutes()
+	_u.mutation.SetIcalDurationMinutes(v)
+	return _u
+}
+
+// SetNillableIcalDurationMinutes sets the "ical_duration_minutes" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableIcalDurationMinutes(v *int) *AppConfigUpdate {
+	if v != nil {
+		_u.SetIcalDurationMinutes(*v)
+	}
+	return _u
+}
+
+// AddIcalDurationMinutes adds value to the "ical_duration_minutes" field.
+func (_u *AppConfigUpdate) AddIcalDurationMinutes(v int) *AppConfigUpdate {
+	_u.mutation.AddIcalDurationMinutes(v)
+	return _u
+}
+
+// ClearIcalDurationMinutes clears the value of the "ical_duration_minutes" field.
+func (_u *AppConfigUpdate) ClearIcalDurationMinutes() *AppConfigUpdate {
+	_u.mutation.ClearIcalDurationMinutes()
+	return _u
+}
+
+// SetIcalFeedKey sets the "ical_feed_key" field.
+func (_u *AppConfigUpdate) SetIcalFeedKey(v string) *AppConfigUpdate {
+	_u.mutation.SetIcalFeedKey(v)
+	return _u
+}
+
+// SetNillableIcalFeedKey sets the "ical_feed_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableIcalFeedKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetIcalFeedKey(*v)
+	}
+	return _u
+}
+
+// ClearIcalFeedKey clears the value of the "ical_feed_key" field.
+func (_u *AppConfigUpdate) ClearIcalFeedKey() *AppConfigUpdate {
+	_u.mutation.ClearIcalFeedKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdate) SetUpdatedAt(v time.Time) *AppConfigUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -756,6 +843,33 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.EinkModeCleared() {
 		_spec.ClearField(appconfig.FieldEinkMode, field.TypeBool)
+	}
+	if value, ok := _u.mutation.IcalEnabled(); ok {
+		_spec.SetField(appconfig.FieldIcalEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.IcalEnabledCleared() {
+		_spec.ClearField(appconfig.FieldIcalEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.IcalEventStart(); ok {
+		_spec.SetField(appconfig.FieldIcalEventStart, field.TypeString, value)
+	}
+	if _u.mutation.IcalEventStartCleared() {
+		_spec.ClearField(appconfig.FieldIcalEventStart, field.TypeString)
+	}
+	if value, ok := _u.mutation.IcalDurationMinutes(); ok {
+		_spec.SetField(appconfig.FieldIcalDurationMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedIcalDurationMinutes(); ok {
+		_spec.AddField(appconfig.FieldIcalDurationMinutes, field.TypeInt, value)
+	}
+	if _u.mutation.IcalDurationMinutesCleared() {
+		_spec.ClearField(appconfig.FieldIcalDurationMinutes, field.TypeInt)
+	}
+	if value, ok := _u.mutation.IcalFeedKey(); ok {
+		_spec.SetField(appconfig.FieldIcalFeedKey, field.TypeString, value)
+	}
+	if _u.mutation.IcalFeedKeyCleared() {
+		_spec.ClearField(appconfig.FieldIcalFeedKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
@@ -1292,6 +1406,93 @@ func (_u *AppConfigUpdateOne) ClearEinkMode() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetIcalEnabled sets the "ical_enabled" field.
+func (_u *AppConfigUpdateOne) SetIcalEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetIcalEnabled(v)
+	return _u
+}
+
+// SetNillableIcalEnabled sets the "ical_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableIcalEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetIcalEnabled(*v)
+	}
+	return _u
+}
+
+// ClearIcalEnabled clears the value of the "ical_enabled" field.
+func (_u *AppConfigUpdateOne) ClearIcalEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearIcalEnabled()
+	return _u
+}
+
+// SetIcalEventStart sets the "ical_event_start" field.
+func (_u *AppConfigUpdateOne) SetIcalEventStart(v string) *AppConfigUpdateOne {
+	_u.mutation.SetIcalEventStart(v)
+	return _u
+}
+
+// SetNillableIcalEventStart sets the "ical_event_start" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableIcalEventStart(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetIcalEventStart(*v)
+	}
+	return _u
+}
+
+// ClearIcalEventStart clears the value of the "ical_event_start" field.
+func (_u *AppConfigUpdateOne) ClearIcalEventStart() *AppConfigUpdateOne {
+	_u.mutation.ClearIcalEventStart()
+	return _u
+}
+
+// SetIcalDurationMinutes sets the "ical_duration_minutes" field.
+func (_u *AppConfigUpdateOne) SetIcalDurationMinutes(v int) *AppConfigUpdateOne {
+	_u.mutation.ResetIcalDurationMinutes()
+	_u.mutation.SetIcalDurationMinutes(v)
+	return _u
+}
+
+// SetNillableIcalDurationMinutes sets the "ical_duration_minutes" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableIcalDurationMinutes(v *int) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetIcalDurationMinutes(*v)
+	}
+	return _u
+}
+
+// AddIcalDurationMinutes adds value to the "ical_duration_minutes" field.
+func (_u *AppConfigUpdateOne) AddIcalDurationMinutes(v int) *AppConfigUpdateOne {
+	_u.mutation.AddIcalDurationMinutes(v)
+	return _u
+}
+
+// ClearIcalDurationMinutes clears the value of the "ical_duration_minutes" field.
+func (_u *AppConfigUpdateOne) ClearIcalDurationMinutes() *AppConfigUpdateOne {
+	_u.mutation.ClearIcalDurationMinutes()
+	return _u
+}
+
+// SetIcalFeedKey sets the "ical_feed_key" field.
+func (_u *AppConfigUpdateOne) SetIcalFeedKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetIcalFeedKey(v)
+	return _u
+}
+
+// SetNillableIcalFeedKey sets the "ical_feed_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableIcalFeedKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetIcalFeedKey(*v)
+	}
+	return _u
+}
+
+// ClearIcalFeedKey clears the value of the "ical_feed_key" field.
+func (_u *AppConfigUpdateOne) ClearIcalFeedKey() *AppConfigUpdateOne {
+	_u.mutation.ClearIcalFeedKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdateOne) SetUpdatedAt(v time.Time) *AppConfigUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -1541,6 +1742,33 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.EinkModeCleared() {
 		_spec.ClearField(appconfig.FieldEinkMode, field.TypeBool)
+	}
+	if value, ok := _u.mutation.IcalEnabled(); ok {
+		_spec.SetField(appconfig.FieldIcalEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.IcalEnabledCleared() {
+		_spec.ClearField(appconfig.FieldIcalEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.IcalEventStart(); ok {
+		_spec.SetField(appconfig.FieldIcalEventStart, field.TypeString, value)
+	}
+	if _u.mutation.IcalEventStartCleared() {
+		_spec.ClearField(appconfig.FieldIcalEventStart, field.TypeString)
+	}
+	if value, ok := _u.mutation.IcalDurationMinutes(); ok {
+		_spec.SetField(appconfig.FieldIcalDurationMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedIcalDurationMinutes(); ok {
+		_spec.AddField(appconfig.FieldIcalDurationMinutes, field.TypeInt, value)
+	}
+	if _u.mutation.IcalDurationMinutesCleared() {
+		_spec.ClearField(appconfig.FieldIcalDurationMinutes, field.TypeInt)
+	}
+	if value, ok := _u.mutation.IcalFeedKey(); ok {
+		_spec.SetField(appconfig.FieldIcalFeedKey, field.TypeString, value)
+	}
+	if _u.mutation.IcalFeedKeyCleared() {
+		_spec.ClearField(appconfig.FieldIcalFeedKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

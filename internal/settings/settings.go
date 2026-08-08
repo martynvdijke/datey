@@ -2,6 +2,8 @@ package settings
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -133,6 +135,18 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.EinkMode; v != nil {
 		cfg.EinkMode = *v
 	}
+	if v := row.IcalEnabled; v != nil {
+		cfg.ICalEnabled = *v
+	}
+	if v := row.IcalEventStart; v != nil {
+		cfg.ICalEventStart = *v
+	}
+	if v := row.IcalDurationMinutes; v != nil {
+		cfg.ICalDurationMinutes = *v
+	}
+	if v := row.IcalFeedKey; v != nil {
+		cfg.ICalFeedKey = *v
+	}
 	return nil
 }
 
@@ -181,6 +195,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	umamiURL := form.Get("UMAMI_URL")
 	umamiWebsiteID := form.Get("UMAMI_WEBSITE_ID")
 	einkMode := form.Get("EINK_MODE") == "on"
+	icalEnabled := form.Get("ICAL_FEED_ENABLED") == "on"
+	icalEventStart := form.Get("ICAL_EVENT_START")
+	icalDuration := parseIntPtr(form, "ICAL_EVENT_DURATION", errs)
+	icalFeedKey := form.Get("ICAL_FEED_KEY")
 
 	if port != nil && (*port < 1 || *port > 65535) {
 		errs["PORT"] = "Port must be between 1 and 65535"
@@ -206,6 +224,20 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	if smtpTimeout != nil && *smtpTimeout < 0 {
 		errs["SMTP_TIMEOUT"] = "SMTP timeout cannot be negative"
 	}
+	if icalEventStart != "" {
+		hour, minute, err := config.ParseClockTime(icalEventStart)
+		switch {
+		case err != nil:
+			errs["ICAL_EVENT_START"] = "Start time must be in HH:MM format (e.g. 09:00)"
+		case hour < 0 || hour > 23:
+			errs["ICAL_EVENT_START"] = "Start hour must be between 0 and 23"
+		case minute < 0 || minute > 59:
+			errs["ICAL_EVENT_START"] = "Start minute must be between 0 and 59"
+		}
+	}
+	if icalDuration != nil && (*icalDuration < 1 || *icalDuration > 1440) {
+		errs["ICAL_EVENT_DURATION"] = "Event duration must be between 1 and 1440 minutes"
+	}
 
 	if len(errs) > 0 {
 		return errs, errInvalid
@@ -221,6 +253,17 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	}
 	if effectiveRetention < 1 {
 		effectiveRetention = 30
+	}
+
+	// Keep the existing key unless the admin supplies a new one; generate a
+	// fresh key when the feed is first enabled so the URLs shown in the UI
+	// are immediately usable.
+	effectiveICalKey := icalFeedKey
+	if effectiveICalKey == "" {
+		effectiveICalKey = cfg.ICalFeedKey
+	}
+	if icalEnabled && effectiveICalKey == "" {
+		effectiveICalKey = generateFeedKey()
 	}
 
 	upd := s.client.AppConfig.UpdateOneID(row.ID).
@@ -246,6 +289,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableUmamiURL(nillableStr(umamiURL)).
 		SetNillableUmamiWebsiteID(nillableStr(umamiWebsiteID)).
 		SetNillableEinkMode(&einkMode).
+		SetNillableIcalEnabled(&icalEnabled).
+		SetNillableIcalEventStart(nillableStr(icalEventStart)).
+		SetNillableIcalDurationMinutes(icalDuration).
+		SetNillableIcalFeedKey(nillableStr(effectiveICalKey)).
 		SetUpdatedAt(time.Now())
 
 	if _, err := upd.Save(ctx); err != nil {
@@ -275,6 +322,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.UmamiURL = umamiURL
 	cfg.UmamiWebsiteID = umamiWebsiteID
 	cfg.EinkMode = einkMode
+	cfg.ICalEnabled = icalEnabled
+	cfg.ICalEventStart = icalEventStart
+	cfg.ICalDurationMinutes = deref(icalDuration, cfg.ICalDurationMinutes)
+	cfg.ICalFeedKey = effectiveICalKey
 
 	return nil, nil
 }
@@ -294,6 +345,18 @@ func parseIntPtr(form url.Values, key string, errs map[string]string) *int {
 
 func nillableStr(s string) *string {
 	return &s
+}
+
+// generateFeedKey returns a 32-hex-char random secret used to protect feed
+// URLs from enumeration.
+func generateFeedKey() string {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		// crypto/rand does not fail on supported platforms; this fallback
+		// keeps settings saveable as a last resort.
+		return fmt.Sprintf("%x", time.Now().UnixNano())
+	}
+	return hex.EncodeToString(b)
 }
 
 func deref[T any](v *T, fallback T) T {

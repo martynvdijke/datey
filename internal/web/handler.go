@@ -35,6 +35,7 @@ type Handler struct {
 	events      *repository.EventRepository
 	oneTimeNots *repository.OneTimeNotificationRepository
 	notifReg    *notifier.Registry
+	recurringRules *repository.RecurringRuleRepository
 	logStore      *logstore.Store
 	settingsStore *settings.Store
 	loginLimiter *rateLimiter
@@ -56,6 +57,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		events:       repository.NewEventRepository(client),
 		oneTimeNots:  repository.NewOneTimeNotificationRepository(client),
 		notifReg:     notifReg,
+		recurringRules: repository.NewRecurringRuleRepository(client),
 		logStore:      logStore,
 		settingsStore: settings.New(client),
 		loginLimiter:  newRateLimiter(5, 60*time.Second),
@@ -88,6 +90,11 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/login", h.loginPage)
 		r.Post("/login", h.loginPost)
 		r.Get("/logout", h.logout)
+
+		// Public iCal feed — unauthenticated, protected by a secret key
+		// (?key=...) checked inside the handlers. Feed disabled → 404.
+		r.Get("/ical.ics", h.icalFeedGlobal)
+		r.Get("/ical/{personID}.ics", h.icalFeedPerson)
 
 		// Protected routes — require authentication
 		r.Group(func(r chi.Router) {

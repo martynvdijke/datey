@@ -180,3 +180,135 @@ func TestSettingsConfig_SecretsVisibleInForm(t *testing.T) {
 		t.Errorf("expected GOTIFY_TOKEN to be visible to admin, missing from form")
 	}
 }
+
+func TestSettingsConfig_ICalFeedFieldsRender(t *testing.T) {
+	h := newTestWebHandler(t)
+	router := setupConfigRouter(h)
+
+	h.cfg.ICalEnabled = true
+	h.cfg.ICalFeedKey = "abc123feedkey"
+	h.cfg.ICalEventStart = "09:00"
+	h.cfg.ICalDurationMinutes = 30
+
+	req := httptest.NewRequest("GET", "/settings/config", nil)
+	req = req.WithContext(withUserContext(context.Background()))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, `name="ICAL_FEED_ENABLED"`) {
+		t.Errorf("expected ICAL_FEED_ENABLED checkbox, missing from form")
+	}
+	if !strings.Contains(body, `name="ICAL_EVENT_START"`) || !strings.Contains(body, `value="09:00"`) {
+		t.Errorf("expected ICAL_EVENT_START with value 09:00")
+	}
+	if !strings.Contains(body, `name="ICAL_EVENT_DURATION"`) || !strings.Contains(body, `value="30"`) {
+		t.Errorf("expected ICAL_EVENT_DURATION with value 30")
+	}
+	if !strings.Contains(body, "/ical.ics?key=abc123feedkey") {
+		t.Errorf("expected global feed URL with secret key")
+	}
+	if !strings.Contains(body, "/ical/{personID}.ics?key=abc123feedkey") {
+		t.Errorf("expected per-person feed URL template with secret key")
+	}
+}
+
+func TestSettingsConfigSave_ICalFeedSuccess(t *testing.T) {
+	h := newTestWebHandler(t)
+	if err := h.settingsStore.EnsureSeeded(context.Background()); err != nil {
+		t.Fatalf("seed settings: %v", err)
+	}
+	router := setupConfigRouter(h)
+
+	form := url.Values{}
+	form.Set("ICAL_FEED_ENABLED", "on")
+	form.Set("ICAL_EVENT_START", "09:00")
+	form.Set("ICAL_EVENT_DURATION", "60")
+
+	req := httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d (body: %s)", w.Code, w.Body.String()[:300])
+	}
+	if !h.cfg.ICalEnabled {
+		t.Errorf("ICalEnabled hot-reload: want true")
+	}
+	if h.cfg.ICalEventStart != "09:00" {
+		t.Errorf("ICalEventStart hot-reload: got %q want 09:00", h.cfg.ICalEventStart)
+	}
+	if h.cfg.ICalDurationMinutes != 60 {
+		t.Errorf("ICalDurationMinutes hot-reload: got %d want 60", h.cfg.ICalDurationMinutes)
+	}
+	if h.cfg.ICalFeedKey == "" {
+		t.Errorf("expected auto-generated feed key on first enable")
+	}
+}
+
+func TestSettingsConfigSave_ICalFeedKeyRotation(t *testing.T) {
+	h := newTestWebHandler(t)
+	if err := h.settingsStore.EnsureSeeded(context.Background()); err != nil {
+		t.Fatalf("seed settings: %v", err)
+	}
+	router := setupConfigRouter(h)
+
+	form := url.Values{}
+	form.Set("ICAL_FEED_ENABLED", "on")
+	form.Set("ICAL_FEED_KEY", "rotatedkey123")
+
+	req := httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d (body: %s)", w.Code, w.Body.String()[:300])
+	}
+	if h.cfg.ICalFeedKey != "rotatedkey123" {
+		t.Errorf("ICalFeedKey rotation: got %q want rotatedkey123", h.cfg.ICalFeedKey)
+	}
+}
+
+func TestSettingsConfigSave_ICalFeedValidationErrors(t *testing.T) {
+	h := newTestWebHandler(t)
+	if err := h.settingsStore.EnsureSeeded(context.Background()); err != nil {
+		t.Fatalf("seed settings: %v", err)
+	}
+	router := setupConfigRouter(h)
+
+	form := url.Values{}
+	form.Set("ICAL_FEED_ENABLED", "on")
+	form.Set("ICAL_EVENT_START", "25:99")    // invalid hour and minute
+	form.Set("ICAL_EVENT_DURATION", "9999")  // invalid duration
+
+	req := httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 (re-render), got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "Start hour must be between 0 and 23") {
+		t.Errorf("expected inline error for start hour, got: %s", body[:500])
+	}
+	if !strings.Contains(body, "Event duration must be between 1 and 1440 minutes") {
+		t.Errorf("expected inline error for duration, got: %s", body[:500])
+	}
+	// Validation failure must not persist or hot-reload anything.
+	if h.cfg.ICalEnabled {
+		t.Errorf("feed must not be enabled after failed save")
+	}
+	if h.cfg.ICalEventStart != "" {
+		t.Errorf("ICalEventStart must be unchanged after failed save, got %q", h.cfg.ICalEventStart)
+	}
+}
