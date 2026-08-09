@@ -85,6 +85,10 @@ const (
 	FieldUpcomingAPIEnabled = "upcoming_api_enabled"
 	// FieldUpcomingAPIKey holds the string denoting the upcoming_api_key field in the database.
 	FieldUpcomingAPIKey = "upcoming_api_key"
+	// FieldHomeassistantEnabled holds the string denoting the homeassistant_enabled field in the database.
+	FieldHomeassistantEnabled = "homeassistant_enabled"
+	// FieldHomeassistantKey holds the string denoting the homeassistant_key field in the database.
+	FieldHomeassistantKey = "homeassistant_key"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the appconfig in the database.
@@ -131,6 +135,8 @@ var Columns = []string{
 	FieldRssFeedKey,
 	FieldUpcomingAPIEnabled,
 	FieldUpcomingAPIKey,
+	FieldHomeassistantEnabled,
+	FieldHomeassistantKey,
 	FieldUpdatedAt,
 }
 
@@ -335,6 +341,16 @@ func ByUpcomingAPIEnabled(opts ...sql.OrderTermOption) OrderOption {
 // ByUpcomingAPIKey orders the results by the upcoming_api_key field.
 func ByUpcomingAPIKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpcomingAPIKey, opts...).ToFunc()
+}
+
+// ByHomeassistantEnabled orders the results by the homeassistant_enabled field.
+func ByHomeassistantEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHomeassistantEnabled, opts...).ToFunc()
+}
+
+// ByHomeassistantKey orders the results by the homeassistant_key field.
+func ByHomeassistantKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHomeassistantKey, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

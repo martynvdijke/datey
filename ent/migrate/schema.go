@@ -48,6 +48,8 @@ var (
 		{Name: "rss_feed_key", Type: field.TypeString, Nullable: true},
 		{Name: "upcoming_api_enabled", Type: field.TypeBool, Nullable: true},
 		{Name: "upcoming_api_key", Type: field.TypeString, Nullable: true},
+		{Name: "homeassistant_enabled", Type: field.TypeBool, Nullable: true},
+		{Name: "homeassistant_key", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
 	// AppConfigsTable holds the schema information for the "app_configs" table.

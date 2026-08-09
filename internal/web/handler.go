@@ -103,6 +103,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		// Public JSON API of upcoming events — same key protection.
 		r.Get("/api/upcoming", h.upcomingAPI)
 
+		// Public Home Assistant stats feed — same key protection.
+		r.Get("/api/homeassistant/stats", h.homeAssistantStats)
+
 		// Public TRMNL e-ink stats feed — unauthenticated (TRMNL devices cannot log in)
 		r.Get("/api/trmnl/stats", h.trmnlStats)
 

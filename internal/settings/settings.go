@@ -177,6 +177,12 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.UpcomingAPIKey; v != nil {
 		cfg.UpcomingAPIKey = *v
 	}
+	if v := row.HomeassistantEnabled; v != nil {
+		cfg.HomeAssistantEnabled = *v
+	}
+	if v := row.HomeassistantKey; v != nil {
+		cfg.HomeAssistantKey = *v
+	}
 	return nil
 }
 
@@ -239,6 +245,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	rssFeedKey := form.Get("RSS_FEED_KEY")
 	upcomingAPIEnabled := form.Get("UPCOMING_API_ENABLED") == "on"
 	upcomingAPIKey := form.Get("UPCOMING_API_KEY")
+	homeAssistantEnabled := form.Get("HOMEASSISTANT_ENABLED") == "on"
+	homeAssistantKey := form.Get("HOMEASSISTANT_KEY")
 
 	if port != nil && (*port < 1 || *port > 65535) {
 		errs["PORT"] = "Port must be between 1 and 65535"
@@ -328,6 +336,15 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		effectiveUpcomingAPIKey = generateFeedKey()
 	}
 
+	// Same key semantics for the Home Assistant feed.
+	effectiveHomeAssistantKey := homeAssistantKey
+	if effectiveHomeAssistantKey == "" {
+		effectiveHomeAssistantKey = cfg.HomeAssistantKey
+	}
+	if homeAssistantEnabled && effectiveHomeAssistantKey == "" {
+		effectiveHomeAssistantKey = generateFeedKey()
+	}
+
 	upd := s.client.AppConfig.UpdateOneID(row.ID).
 		SetNillablePort(port).
 		SetNillableSchedulerHour(schedulerHour).
@@ -365,6 +382,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableRssFeedKey(nillableStr(effectiveRSSKey)).
 		SetNillableUpcomingAPIEnabled(&upcomingAPIEnabled).
 		SetNillableUpcomingAPIKey(nillableStr(effectiveUpcomingAPIKey)).
+		SetNillableHomeassistantEnabled(&homeAssistantEnabled).
+		SetNillableHomeassistantKey(nillableStr(effectiveHomeAssistantKey)).
 		SetUpdatedAt(time.Now())
 
 	if _, err := upd.Save(ctx); err != nil {
@@ -408,6 +427,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.RSSFeedKey = effectiveRSSKey
 	cfg.UpcomingAPIEnabled = upcomingAPIEnabled
 	cfg.UpcomingAPIKey = effectiveUpcomingAPIKey
+	cfg.HomeAssistantEnabled = homeAssistantEnabled
+	cfg.HomeAssistantKey = effectiveHomeAssistantKey
 
 	return nil, nil
 }

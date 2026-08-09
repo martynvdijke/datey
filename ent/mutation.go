@@ -101,6 +101,8 @@ type AppConfigMutation struct {
 	rss_feed_key             *string
 	upcoming_api_enabled     *bool
 	upcoming_api_key         *string
+	homeassistant_enabled    *bool
+	homeassistant_key        *string
 	updated_at               *time.Time
 	clearedFields            map[string]struct{}
 	done                     bool
@@ -2208,6 +2210,104 @@ func (m *AppConfigMutation) ResetUpcomingAPIKey() {
 	delete(m.clearedFields, appconfig.FieldUpcomingAPIKey)
 }
 
+// SetHomeassistantEnabled sets the "homeassistant_enabled" field.
+func (m *AppConfigMutation) SetHomeassistantEnabled(b bool) {
+	m.homeassistant_enabled = &b
+}
+
+// HomeassistantEnabled returns the value of the "homeassistant_enabled" field in the mutation.
+func (m *AppConfigMutation) HomeassistantEnabled() (r bool, exists bool) {
+	v := m.homeassistant_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHomeassistantEnabled returns the old "homeassistant_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldHomeassistantEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHomeassistantEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHomeassistantEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHomeassistantEnabled: %w", err)
+	}
+	return oldValue.HomeassistantEnabled, nil
+}
+
+// ClearHomeassistantEnabled clears the value of the "homeassistant_enabled" field.
+func (m *AppConfigMutation) ClearHomeassistantEnabled() {
+	m.homeassistant_enabled = nil
+	m.clearedFields[appconfig.FieldHomeassistantEnabled] = struct{}{}
+}
+
+// HomeassistantEnabledCleared returns if the "homeassistant_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) HomeassistantEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldHomeassistantEnabled]
+	return ok
+}
+
+// ResetHomeassistantEnabled resets all changes to the "homeassistant_enabled" field.
+func (m *AppConfigMutation) ResetHomeassistantEnabled() {
+	m.homeassistant_enabled = nil
+	delete(m.clearedFields, appconfig.FieldHomeassistantEnabled)
+}
+
+// SetHomeassistantKey sets the "homeassistant_key" field.
+func (m *AppConfigMutation) SetHomeassistantKey(s string) {
+	m.homeassistant_key = &s
+}
+
+// HomeassistantKey returns the value of the "homeassistant_key" field in the mutation.
+func (m *AppConfigMutation) HomeassistantKey() (r string, exists bool) {
+	v := m.homeassistant_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHomeassistantKey returns the old "homeassistant_key" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldHomeassistantKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHomeassistantKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHomeassistantKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHomeassistantKey: %w", err)
+	}
+	return oldValue.HomeassistantKey, nil
+}
+
+// ClearHomeassistantKey clears the value of the "homeassistant_key" field.
+func (m *AppConfigMutation) ClearHomeassistantKey() {
+	m.homeassistant_key = nil
+	m.clearedFields[appconfig.FieldHomeassistantKey] = struct{}{}
+}
+
+// HomeassistantKeyCleared returns if the "homeassistant_key" field was cleared in this mutation.
+func (m *AppConfigMutation) HomeassistantKeyCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldHomeassistantKey]
+	return ok
+}
+
+// ResetHomeassistantKey resets all changes to the "homeassistant_key" field.
+func (m *AppConfigMutation) ResetHomeassistantKey() {
+	m.homeassistant_key = nil
+	delete(m.clearedFields, appconfig.FieldHomeassistantKey)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *AppConfigMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -2291,7 +2391,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 38)
+	fields := make([]string, 0, 40)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -2403,6 +2503,12 @@ func (m *AppConfigMutation) Fields() []string {
 	if m.upcoming_api_key != nil {
 		fields = append(fields, appconfig.FieldUpcomingAPIKey)
 	}
+	if m.homeassistant_enabled != nil {
+		fields = append(fields, appconfig.FieldHomeassistantEnabled)
+	}
+	if m.homeassistant_key != nil {
+		fields = append(fields, appconfig.FieldHomeassistantKey)
+	}
 	if m.updated_at != nil {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -2488,6 +2594,10 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.UpcomingAPIEnabled()
 	case appconfig.FieldUpcomingAPIKey:
 		return m.UpcomingAPIKey()
+	case appconfig.FieldHomeassistantEnabled:
+		return m.HomeassistantEnabled()
+	case appconfig.FieldHomeassistantKey:
+		return m.HomeassistantKey()
 	case appconfig.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -2573,6 +2683,10 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldUpcomingAPIEnabled(ctx)
 	case appconfig.FieldUpcomingAPIKey:
 		return m.OldUpcomingAPIKey(ctx)
+	case appconfig.FieldHomeassistantEnabled:
+		return m.OldHomeassistantEnabled(ctx)
+	case appconfig.FieldHomeassistantKey:
+		return m.OldHomeassistantKey(ctx)
 	case appconfig.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -2843,6 +2957,20 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpcomingAPIKey(v)
 		return nil
+	case appconfig.FieldHomeassistantEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHomeassistantEnabled(v)
+		return nil
+	case appconfig.FieldHomeassistantKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHomeassistantKey(v)
+		return nil
 	case appconfig.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -3102,6 +3230,12 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldUpcomingAPIKey) {
 		fields = append(fields, appconfig.FieldUpcomingAPIKey)
 	}
+	if m.FieldCleared(appconfig.FieldHomeassistantEnabled) {
+		fields = append(fields, appconfig.FieldHomeassistantEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldHomeassistantKey) {
+		fields = append(fields, appconfig.FieldHomeassistantKey)
+	}
 	if m.FieldCleared(appconfig.FieldUpdatedAt) {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -3230,6 +3364,12 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldUpcomingAPIKey:
 		m.ClearUpcomingAPIKey()
 		return nil
+	case appconfig.FieldHomeassistantEnabled:
+		m.ClearHomeassistantEnabled()
+		return nil
+	case appconfig.FieldHomeassistantKey:
+		m.ClearHomeassistantKey()
+		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ClearUpdatedAt()
 		return nil
@@ -3351,6 +3491,12 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldUpcomingAPIKey:
 		m.ResetUpcomingAPIKey()
+		return nil
+	case appconfig.FieldHomeassistantEnabled:
+		m.ResetHomeassistantEnabled()
+		return nil
+	case appconfig.FieldHomeassistantKey:
+		m.ResetHomeassistantKey()
 		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ResetUpdatedAt()

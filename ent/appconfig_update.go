@@ -831,6 +831,46 @@ func (_u *AppConfigUpdate) ClearUpcomingAPIKey() *AppConfigUpdate {
 	return _u
 }
 
+// SetHomeassistantEnabled sets the "homeassistant_enabled" field.
+func (_u *AppConfigUpdate) SetHomeassistantEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetHomeassistantEnabled(v)
+	return _u
+}
+
+// SetNillableHomeassistantEnabled sets the "homeassistant_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableHomeassistantEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetHomeassistantEnabled(*v)
+	}
+	return _u
+}
+
+// ClearHomeassistantEnabled clears the value of the "homeassistant_enabled" field.
+func (_u *AppConfigUpdate) ClearHomeassistantEnabled() *AppConfigUpdate {
+	_u.mutation.ClearHomeassistantEnabled()
+	return _u
+}
+
+// SetHomeassistantKey sets the "homeassistant_key" field.
+func (_u *AppConfigUpdate) SetHomeassistantKey(v string) *AppConfigUpdate {
+	_u.mutation.SetHomeassistantKey(v)
+	return _u
+}
+
+// SetNillableHomeassistantKey sets the "homeassistant_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableHomeassistantKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetHomeassistantKey(*v)
+	}
+	return _u
+}
+
+// ClearHomeassistantKey clears the value of the "homeassistant_key" field.
+func (_u *AppConfigUpdate) ClearHomeassistantKey() *AppConfigUpdate {
+	_u.mutation.ClearHomeassistantKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdate) SetUpdatedAt(v time.Time) *AppConfigUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -1140,6 +1180,18 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.UpcomingAPIKeyCleared() {
 		_spec.ClearField(appconfig.FieldUpcomingAPIKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.HomeassistantEnabled(); ok {
+		_spec.SetField(appconfig.FieldHomeassistantEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.HomeassistantEnabledCleared() {
+		_spec.ClearField(appconfig.FieldHomeassistantEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.HomeassistantKey(); ok {
+		_spec.SetField(appconfig.FieldHomeassistantKey, field.TypeString, value)
+	}
+	if _u.mutation.HomeassistantKeyCleared() {
+		_spec.ClearField(appconfig.FieldHomeassistantKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
@@ -1970,6 +2022,46 @@ func (_u *AppConfigUpdateOne) ClearUpcomingAPIKey() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetHomeassistantEnabled sets the "homeassistant_enabled" field.
+func (_u *AppConfigUpdateOne) SetHomeassistantEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetHomeassistantEnabled(v)
+	return _u
+}
+
+// SetNillableHomeassistantEnabled sets the "homeassistant_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableHomeassistantEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetHomeassistantEnabled(*v)
+	}
+	return _u
+}
+
+// ClearHomeassistantEnabled clears the value of the "homeassistant_enabled" field.
+func (_u *AppConfigUpdateOne) ClearHomeassistantEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearHomeassistantEnabled()
+	return _u
+}
+
+// SetHomeassistantKey sets the "homeassistant_key" field.
+func (_u *AppConfigUpdateOne) SetHomeassistantKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetHomeassistantKey(v)
+	return _u
+}
+
+// SetNillableHomeassistantKey sets the "homeassistant_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableHomeassistantKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetHomeassistantKey(*v)
+	}
+	return _u
+}
+
+// ClearHomeassistantKey clears the value of the "homeassistant_key" field.
+func (_u *AppConfigUpdateOne) ClearHomeassistantKey() *AppConfigUpdateOne {
+	_u.mutation.ClearHomeassistantKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdateOne) SetUpdatedAt(v time.Time) *AppConfigUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2309,6 +2401,18 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.UpcomingAPIKeyCleared() {
 		_spec.ClearField(appconfig.FieldUpcomingAPIKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.HomeassistantEnabled(); ok {
+		_spec.SetField(appconfig.FieldHomeassistantEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.HomeassistantEnabledCleared() {
+		_spec.ClearField(appconfig.FieldHomeassistantEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.HomeassistantKey(); ok {
+		_spec.SetField(appconfig.FieldHomeassistantKey, field.TypeString, value)
+	}
+	if _u.mutation.HomeassistantKeyCleared() {
+		_spec.ClearField(appconfig.FieldHomeassistantKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

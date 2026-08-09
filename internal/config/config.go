@@ -55,6 +55,9 @@ type Config struct {
 
 	UpcomingAPIEnabled bool
 	UpcomingAPIKey     string
+
+	HomeAssistantEnabled bool
+	HomeAssistantKey     string
 }
 
 func Load() (*Config, error) {
@@ -102,6 +105,9 @@ func Load() (*Config, error) {
 
 		UpcomingAPIEnabled: getEnv("UPCOMING_API_ENABLED", "") == "true",
 		UpcomingAPIKey:     getEnv("UPCOMING_API_KEY", ""),
+
+		HomeAssistantEnabled: getEnv("HOMEASSISTANT_ENABLED", "") == "true",
+		HomeAssistantKey:     getEnv("HOMEASSISTANT_KEY", ""),
 	}
 
 	if cfg.DataDir == "" {
@@ -170,6 +176,9 @@ func (c *Config) Validate() error {
 	}
 	if c.UpcomingAPIEnabled && c.UpcomingAPIKey == "" {
 		return fmt.Errorf("UPCOMING_API_KEY must be set when UPCOMING_API_ENABLED is true")
+	}
+	if c.HomeAssistantEnabled && c.HomeAssistantKey == "" {
+		return fmt.Errorf("HOMEASSISTANT_KEY must be set when HOMEASSISTANT_ENABLED is true")
 	}
 	return nil
 }

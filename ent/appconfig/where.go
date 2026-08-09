@@ -239,6 +239,16 @@ func UpcomingAPIKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpcomingAPIKey, v))
 }
 
+// HomeassistantEnabled applies equality check predicate on the "homeassistant_enabled" field. It's identical to HomeassistantEnabledEQ.
+func HomeassistantEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldHomeassistantEnabled, v))
+}
+
+// HomeassistantKey applies equality check predicate on the "homeassistant_key" field. It's identical to HomeassistantKeyEQ.
+func HomeassistantKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldHomeassistantKey, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpdatedAt, v))
@@ -2517,6 +2527,101 @@ func UpcomingAPIKeyEqualFold(v string) predicate.AppConfig {
 // UpcomingAPIKeyContainsFold applies the ContainsFold predicate on the "upcoming_api_key" field.
 func UpcomingAPIKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldUpcomingAPIKey, v))
+}
+
+// HomeassistantEnabledEQ applies the EQ predicate on the "homeassistant_enabled" field.
+func HomeassistantEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldHomeassistantEnabled, v))
+}
+
+// HomeassistantEnabledNEQ applies the NEQ predicate on the "homeassistant_enabled" field.
+func HomeassistantEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldHomeassistantEnabled, v))
+}
+
+// HomeassistantEnabledIsNil applies the IsNil predicate on the "homeassistant_enabled" field.
+func HomeassistantEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldHomeassistantEnabled))
+}
+
+// HomeassistantEnabledNotNil applies the NotNil predicate on the "homeassistant_enabled" field.
+func HomeassistantEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldHomeassistantEnabled))
+}
+
+// HomeassistantKeyEQ applies the EQ predicate on the "homeassistant_key" field.
+func HomeassistantKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyNEQ applies the NEQ predicate on the "homeassistant_key" field.
+func HomeassistantKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyIn applies the In predicate on the "homeassistant_key" field.
+func HomeassistantKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldHomeassistantKey, vs...))
+}
+
+// HomeassistantKeyNotIn applies the NotIn predicate on the "homeassistant_key" field.
+func HomeassistantKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldHomeassistantKey, vs...))
+}
+
+// HomeassistantKeyGT applies the GT predicate on the "homeassistant_key" field.
+func HomeassistantKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyGTE applies the GTE predicate on the "homeassistant_key" field.
+func HomeassistantKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyLT applies the LT predicate on the "homeassistant_key" field.
+func HomeassistantKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyLTE applies the LTE predicate on the "homeassistant_key" field.
+func HomeassistantKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyContains applies the Contains predicate on the "homeassistant_key" field.
+func HomeassistantKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyHasPrefix applies the HasPrefix predicate on the "homeassistant_key" field.
+func HomeassistantKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyHasSuffix applies the HasSuffix predicate on the "homeassistant_key" field.
+func HomeassistantKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyIsNil applies the IsNil predicate on the "homeassistant_key" field.
+func HomeassistantKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldHomeassistantKey))
+}
+
+// HomeassistantKeyNotNil applies the NotNil predicate on the "homeassistant_key" field.
+func HomeassistantKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldHomeassistantKey))
+}
+
+// HomeassistantKeyEqualFold applies the EqualFold predicate on the "homeassistant_key" field.
+func HomeassistantKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldHomeassistantKey, v))
+}
+
+// HomeassistantKeyContainsFold applies the ContainsFold predicate on the "homeassistant_key" field.
+func HomeassistantKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldHomeassistantKey, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

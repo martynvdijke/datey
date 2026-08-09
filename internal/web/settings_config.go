@@ -230,5 +230,18 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "UPCOMING_API_URL", Label: "API Endpoint URL", Value: "/api/upcoming?key=" + upcomingAPIKey, Type: "readonly", ReadOnly: true, Help: "Optionally add &days=N to override the horizon (default: reminder window, max 365)."},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup}
+	homeAssistantKey := cfg.HomeAssistantKey
+	if submitted != nil {
+		if v, ok := submitted["HOMEASSISTANT_KEY"]; ok && len(v) > 0 {
+			homeAssistantKey = v[0]
+		}
+	}
+
+	homeAssistantGroup := configGroup{Title: "Home Assistant", Fields: []configField{
+		{Name: "HOMEASSISTANT_ENABLED", Label: "Enable Home Assistant Feed", Type: "checkbox", Checked: checked("HOMEASSISTANT_ENABLED", cfg.HomeAssistantEnabled), Help: "Exposes upcoming events as a JSON stats feed for a Home Assistant RESTful sensor. Disabled by default; dates are personal data."},
+		{Name: "HOMEASSISTANT_KEY", Label: "Feed Secret Key", Value: val("HOMEASSISTANT_KEY", homeAssistantKey), Type: "text", Help: "Required as ?key=... in the feed URL. Auto-generated on first enable; change it here to rotate."},
+		{Name: "HOMEASSISTANT_URL", Label: "Feed URL", Value: "/api/homeassistant/stats?key=" + homeAssistantKey, Type: "readonly", ReadOnly: true, Help: "Use in the RESTful sensor's resource. Prepend your server origin (e.g. http://datey.local:6270)."},
+	}}
+
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup}
 }

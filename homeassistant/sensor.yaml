@@ -1,0 +1,13 @@
+# Home Assistant RESTful sensor for Datey
+# Paste under the `sensor:` key in configuration.yaml.
+# Replace YOUR_INSTANCE (host or IP of your Datey server) and YOUR_KEY
+# (shown under Settings → Configuration → Home Assistant → Feed Secret Key).
+# See README.md in this folder for the full setup instructions.
+sensor:
+  - platform: rest
+    name: "Next Datey Event"
+    resource: "http://YOUR_INSTANCE:6270/api/homeassistant/stats?key=YOUR_KEY"
+    value_template: "{{ value_json.next_event_days }}"
+    json_attributes_path: "$.upcoming"
+    json_attributes: ["name", "type", "date", "days"]
+    scan_interval: 3600

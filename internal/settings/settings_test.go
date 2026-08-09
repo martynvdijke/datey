@@ -107,6 +107,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	rssFeedKey := "rss-feed-key"
 	upcomingAPIEnabled := true
 	upcomingAPIKey := "api-key-123"
+	homeAssistantEnabled := true
+	homeAssistantKey := "ha-key"
 	umamiURL := "https://umami.test"
 	eink := true
 	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
@@ -131,6 +133,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 		SetNillableRssFeedKey(&rssFeedKey).
 		SetNillableUpcomingAPIEnabled(&upcomingAPIEnabled).
 		SetNillableUpcomingAPIKey(&upcomingAPIKey).
+		SetNillableHomeassistantEnabled(&homeAssistantEnabled).
+		SetNillableHomeassistantKey(&homeAssistantKey).
 		SetNillableUmamiURL(&umamiURL).
 		SetNillableEinkMode(&eink).
 		Save(ctx); err != nil {
@@ -203,6 +207,12 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	}
 	if cfg.UpcomingAPIKey != upcomingAPIKey {
 		t.Errorf("UpcomingAPIKey: got %q want %q", cfg.UpcomingAPIKey, upcomingAPIKey)
+	}
+	if cfg.HomeAssistantEnabled != homeAssistantEnabled {
+		t.Errorf("HomeAssistantEnabled: got %v want %v", cfg.HomeAssistantEnabled, homeAssistantEnabled)
+	}
+	if cfg.HomeAssistantKey != homeAssistantKey {
+		t.Errorf("HomeAssistantKey: got %q want %q", cfg.HomeAssistantKey, homeAssistantKey)
 	}
 	if cfg.UmamiURL != umamiURL {
 		t.Errorf("UmamiURL: got %q want %q", cfg.UmamiURL, umamiURL)

@@ -537,6 +537,34 @@ func (_c *AppConfigCreate) SetNillableUpcomingAPIKey(v *string) *AppConfigCreate
 	return _c
 }
 
+// SetHomeassistantEnabled sets the "homeassistant_enabled" field.
+func (_c *AppConfigCreate) SetHomeassistantEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetHomeassistantEnabled(v)
+	return _c
+}
+
+// SetNillableHomeassistantEnabled sets the "homeassistant_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableHomeassistantEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetHomeassistantEnabled(*v)
+	}
+	return _c
+}
+
+// SetHomeassistantKey sets the "homeassistant_key" field.
+func (_c *AppConfigCreate) SetHomeassistantKey(v string) *AppConfigCreate {
+	_c.mutation.SetHomeassistantKey(v)
+	return _c
+}
+
+// SetNillableHomeassistantKey sets the "homeassistant_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableHomeassistantKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetHomeassistantKey(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -758,6 +786,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UpcomingAPIKey(); ok {
 		_spec.SetField(appconfig.FieldUpcomingAPIKey, field.TypeString, value)
 		_node.UpcomingAPIKey = &value
+	}
+	if value, ok := _c.mutation.HomeassistantEnabled(); ok {
+		_spec.SetField(appconfig.FieldHomeassistantEnabled, field.TypeBool, value)
+		_node.HomeassistantEnabled = &value
+	}
+	if value, ok := _c.mutation.HomeassistantKey(); ok {
+		_spec.SetField(appconfig.FieldHomeassistantKey, field.TypeString, value)
+		_node.HomeassistantKey = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
