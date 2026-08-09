@@ -1,8 +1,14 @@
 package repository
 
 import (
+	"context"
 	"testing"
 	"time"
+
+	"entgo.io/ent/dialect"
+	"github.com/datey/datey/ent/enttest"
+	"github.com/datey/datey/internal/recurring"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestCalcNthWeekday_MothersDay2026(t *testing.T) {
@@ -90,4 +96,50 @@ func nextOccurrence(date, now time.Time) time.Time {
 		return time.Date(now.Year()+1, date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 	}
 	return currentYear
+}
+
+func newTestRecurringRuleRepo(t *testing.T) *RecurringRuleRepository {
+	t.Helper()
+	client := enttest.Open(t, dialect.SQLite, "file:test_recurring_rule_repo?mode=memory&cache=shared&_fk=1")
+	t.Cleanup(func() { client.Close() })
+	return NewRecurringRuleRepository(client)
+}
+
+func TestCalculateDate_EasterRules_2026(t *testing.T) {
+	repo := newTestRecurringRuleRepo(t)
+
+	cases := []struct {
+		patternType string
+		want        string
+	}{
+		{recurring.EasterSundayRule, "2026-04-05"},
+		{recurring.GoodFridayRule, "2026-04-03"},
+		{recurring.EasterMondayRule, "2026-04-06"},
+		{recurring.AshWednesdayRule, "2026-02-18"},
+		{recurring.PentecostRule, "2026-05-24"},
+	}
+
+	for _, tc := range cases {
+		rule, err := repo.Create(context.Background(), tc.patternType, tc.patternType, 0, 0, 0, 0)
+		if err != nil {
+			t.Fatalf("create rule %q: %v", tc.patternType, err)
+		}
+		got := repo.CalculateDate(rule, 2026).Format("2006-01-02")
+		if got != tc.want {
+			t.Errorf("CalculateDate(%q, 2026): got %s, want %s", tc.patternType, got, tc.want)
+		}
+	}
+}
+
+func TestCalculateDate_EasterRules_2038(t *testing.T) {
+	repo := newTestRecurringRuleRepo(t)
+
+	rule, err := repo.Create(context.Background(), "Easter Sunday", recurring.EasterSundayRule, 0, 0, 0, 0)
+	if err != nil {
+		t.Fatalf("create rule: %v", err)
+	}
+	got := repo.CalculateDate(rule, 2038).Format("2006-01-02")
+	if want := "2038-04-25"; got != want {
+		t.Errorf("CalculateDate(easter, 2038): got %s, want %s", got, want)
+	}
 }

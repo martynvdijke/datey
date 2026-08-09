@@ -12,7 +12,7 @@ A self-hosted web application for tracking important dates and receiving automat
 ## Features
 
 - **📅 Event Tracking** — Manage people and their important events (birthdays, anniversaries, weddings, holidays, meetings, custom) with dates and descriptions.
-- **🔄 Recurring Rules** — Built-in recurring events (Mother's Day, Father's Day, New Year's Day) that auto-generate each year.
+- **🔄 Recurring Rules** — Built-in recurring events (Mother's Day, Father's Day, New Year's Day, Easter-based holidays) that auto-generate each year.
 - **⏰ Daily Scheduler** — Checks for upcoming events daily at a configurable hour and sends reminders.
 - **📧 Email Notifications** — SMTP-based email reminders for upcoming events.
 - **🔔 Gotify Notifications** — Push notifications via Gotify self-hosted server.

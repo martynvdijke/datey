@@ -144,6 +144,13 @@ func seedBuiltInRules(ctx context.Context, client *ent.Client) {
 		{Name: "Mother's Day", PatternType: "nth_weekday", Nth: 2, Weekday: 0, Month: 5},
 		{Name: "Father's Day", PatternType: "nth_weekday", Nth: 3, Weekday: 0, Month: 6},
 		{Name: "New Year's Day", PatternType: "fixed", Month: 1, Day: 1},
+		// Easter-based rules are computable: no fixed date is stored; the
+		// pattern type alone resolves the date for each year.
+		{Name: "Easter Sunday", PatternType: "easter_sunday"},
+		{Name: "Good Friday", PatternType: "good_friday"},
+		{Name: "Easter Monday", PatternType: "easter_monday"},
+		{Name: "Ash Wednesday", PatternType: "ash_wednesday"},
+		{Name: "Pentecost", PatternType: "pentecost"},
 	}
 
 	for _, r := range rules {

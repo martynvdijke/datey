@@ -6,6 +6,7 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/recurringrule"
+	"github.com/datey/datey/internal/recurring"
 )
 
 type RecurringRuleRepository struct {
@@ -65,6 +66,10 @@ func (r *RecurringRuleRepository) CalculateDate(rule *ent.RecurringRule, year in
 	case "fixed":
 		return time.Date(year, time.Month(rule.Month), rule.Day, 0, 0, 0, 0, time.UTC)
 	default:
+		// Easter-based types are computable: no stored date is needed.
+		if recurring.IsEasterBased(rule.PatternType) {
+			return recurring.DateForType(rule.PatternType, year)
+		}
 		return time.Time{}
 	}
 }
