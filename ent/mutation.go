@@ -99,6 +99,8 @@ type AppConfigMutation struct {
 	ical_feed_key            *string
 	rss_enabled              *bool
 	rss_feed_key             *string
+	upcoming_api_enabled     *bool
+	upcoming_api_key         *string
 	updated_at               *time.Time
 	clearedFields            map[string]struct{}
 	done                     bool
@@ -2108,6 +2110,104 @@ func (m *AppConfigMutation) ResetRssFeedKey() {
 	delete(m.clearedFields, appconfig.FieldRssFeedKey)
 }
 
+// SetUpcomingAPIEnabled sets the "upcoming_api_enabled" field.
+func (m *AppConfigMutation) SetUpcomingAPIEnabled(b bool) {
+	m.upcoming_api_enabled = &b
+}
+
+// UpcomingAPIEnabled returns the value of the "upcoming_api_enabled" field in the mutation.
+func (m *AppConfigMutation) UpcomingAPIEnabled() (r bool, exists bool) {
+	v := m.upcoming_api_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpcomingAPIEnabled returns the old "upcoming_api_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldUpcomingAPIEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpcomingAPIEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpcomingAPIEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpcomingAPIEnabled: %w", err)
+	}
+	return oldValue.UpcomingAPIEnabled, nil
+}
+
+// ClearUpcomingAPIEnabled clears the value of the "upcoming_api_enabled" field.
+func (m *AppConfigMutation) ClearUpcomingAPIEnabled() {
+	m.upcoming_api_enabled = nil
+	m.clearedFields[appconfig.FieldUpcomingAPIEnabled] = struct{}{}
+}
+
+// UpcomingAPIEnabledCleared returns if the "upcoming_api_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) UpcomingAPIEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldUpcomingAPIEnabled]
+	return ok
+}
+
+// ResetUpcomingAPIEnabled resets all changes to the "upcoming_api_enabled" field.
+func (m *AppConfigMutation) ResetUpcomingAPIEnabled() {
+	m.upcoming_api_enabled = nil
+	delete(m.clearedFields, appconfig.FieldUpcomingAPIEnabled)
+}
+
+// SetUpcomingAPIKey sets the "upcoming_api_key" field.
+func (m *AppConfigMutation) SetUpcomingAPIKey(s string) {
+	m.upcoming_api_key = &s
+}
+
+// UpcomingAPIKey returns the value of the "upcoming_api_key" field in the mutation.
+func (m *AppConfigMutation) UpcomingAPIKey() (r string, exists bool) {
+	v := m.upcoming_api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpcomingAPIKey returns the old "upcoming_api_key" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldUpcomingAPIKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpcomingAPIKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpcomingAPIKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpcomingAPIKey: %w", err)
+	}
+	return oldValue.UpcomingAPIKey, nil
+}
+
+// ClearUpcomingAPIKey clears the value of the "upcoming_api_key" field.
+func (m *AppConfigMutation) ClearUpcomingAPIKey() {
+	m.upcoming_api_key = nil
+	m.clearedFields[appconfig.FieldUpcomingAPIKey] = struct{}{}
+}
+
+// UpcomingAPIKeyCleared returns if the "upcoming_api_key" field was cleared in this mutation.
+func (m *AppConfigMutation) UpcomingAPIKeyCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldUpcomingAPIKey]
+	return ok
+}
+
+// ResetUpcomingAPIKey resets all changes to the "upcoming_api_key" field.
+func (m *AppConfigMutation) ResetUpcomingAPIKey() {
+	m.upcoming_api_key = nil
+	delete(m.clearedFields, appconfig.FieldUpcomingAPIKey)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *AppConfigMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -2191,7 +2291,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 36)
+	fields := make([]string, 0, 38)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -2297,6 +2397,12 @@ func (m *AppConfigMutation) Fields() []string {
 	if m.rss_feed_key != nil {
 		fields = append(fields, appconfig.FieldRssFeedKey)
 	}
+	if m.upcoming_api_enabled != nil {
+		fields = append(fields, appconfig.FieldUpcomingAPIEnabled)
+	}
+	if m.upcoming_api_key != nil {
+		fields = append(fields, appconfig.FieldUpcomingAPIKey)
+	}
 	if m.updated_at != nil {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -2378,6 +2484,10 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.RssEnabled()
 	case appconfig.FieldRssFeedKey:
 		return m.RssFeedKey()
+	case appconfig.FieldUpcomingAPIEnabled:
+		return m.UpcomingAPIEnabled()
+	case appconfig.FieldUpcomingAPIKey:
+		return m.UpcomingAPIKey()
 	case appconfig.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -2459,6 +2569,10 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldRssEnabled(ctx)
 	case appconfig.FieldRssFeedKey:
 		return m.OldRssFeedKey(ctx)
+	case appconfig.FieldUpcomingAPIEnabled:
+		return m.OldUpcomingAPIEnabled(ctx)
+	case appconfig.FieldUpcomingAPIKey:
+		return m.OldUpcomingAPIKey(ctx)
 	case appconfig.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -2715,6 +2829,20 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRssFeedKey(v)
 		return nil
+	case appconfig.FieldUpcomingAPIEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpcomingAPIEnabled(v)
+		return nil
+	case appconfig.FieldUpcomingAPIKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpcomingAPIKey(v)
+		return nil
 	case appconfig.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -2968,6 +3096,12 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldRssFeedKey) {
 		fields = append(fields, appconfig.FieldRssFeedKey)
 	}
+	if m.FieldCleared(appconfig.FieldUpcomingAPIEnabled) {
+		fields = append(fields, appconfig.FieldUpcomingAPIEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldUpcomingAPIKey) {
+		fields = append(fields, appconfig.FieldUpcomingAPIKey)
+	}
 	if m.FieldCleared(appconfig.FieldUpdatedAt) {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -3090,6 +3224,12 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldRssFeedKey:
 		m.ClearRssFeedKey()
 		return nil
+	case appconfig.FieldUpcomingAPIEnabled:
+		m.ClearUpcomingAPIEnabled()
+		return nil
+	case appconfig.FieldUpcomingAPIKey:
+		m.ClearUpcomingAPIKey()
+		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ClearUpdatedAt()
 		return nil
@@ -3205,6 +3345,12 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldRssFeedKey:
 		m.ResetRssFeedKey()
+		return nil
+	case appconfig.FieldUpcomingAPIEnabled:
+		m.ResetUpcomingAPIEnabled()
+		return nil
+	case appconfig.FieldUpcomingAPIKey:
+		m.ResetUpcomingAPIKey()
 		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ResetUpdatedAt()

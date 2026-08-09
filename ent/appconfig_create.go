@@ -509,6 +509,34 @@ func (_c *AppConfigCreate) SetNillableRssFeedKey(v *string) *AppConfigCreate {
 	return _c
 }
 
+// SetUpcomingAPIEnabled sets the "upcoming_api_enabled" field.
+func (_c *AppConfigCreate) SetUpcomingAPIEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetUpcomingAPIEnabled(v)
+	return _c
+}
+
+// SetNillableUpcomingAPIEnabled sets the "upcoming_api_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableUpcomingAPIEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetUpcomingAPIEnabled(*v)
+	}
+	return _c
+}
+
+// SetUpcomingAPIKey sets the "upcoming_api_key" field.
+func (_c *AppConfigCreate) SetUpcomingAPIKey(v string) *AppConfigCreate {
+	_c.mutation.SetUpcomingAPIKey(v)
+	return _c
+}
+
+// SetNillableUpcomingAPIKey sets the "upcoming_api_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableUpcomingAPIKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetUpcomingAPIKey(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -722,6 +750,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.RssFeedKey(); ok {
 		_spec.SetField(appconfig.FieldRssFeedKey, field.TypeString, value)
 		_node.RssFeedKey = &value
+	}
+	if value, ok := _c.mutation.UpcomingAPIEnabled(); ok {
+		_spec.SetField(appconfig.FieldUpcomingAPIEnabled, field.TypeBool, value)
+		_node.UpcomingAPIEnabled = &value
+	}
+	if value, ok := _c.mutation.UpcomingAPIKey(); ok {
+		_spec.SetField(appconfig.FieldUpcomingAPIKey, field.TypeString, value)
+		_node.UpcomingAPIKey = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

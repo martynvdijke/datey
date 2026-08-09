@@ -66,6 +66,9 @@ func (AppConfig) Fields() []ent.Field {
 		field.Bool("rss_enabled").Optional().Nillable(),
 		field.String("rss_feed_key").Optional().Nillable(),
 
+		field.Bool("upcoming_api_enabled").Optional().Nillable(),
+		field.String("upcoming_api_key").Optional().Nillable(),
+
 		field.Time("updated_at").Optional().Nillable(),
 	}
 }

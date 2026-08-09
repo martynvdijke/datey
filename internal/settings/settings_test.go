@@ -105,6 +105,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	webhookSecret := "wh-secret"
 	rssEnabled := true
 	rssFeedKey := "rss-feed-key"
+	upcomingAPIEnabled := true
+	upcomingAPIKey := "api-key-123"
 	umamiURL := "https://umami.test"
 	eink := true
 	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
@@ -127,6 +129,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 		SetNillableWebhookSecret(&webhookSecret).
 		SetNillableRssEnabled(&rssEnabled).
 		SetNillableRssFeedKey(&rssFeedKey).
+		SetNillableUpcomingAPIEnabled(&upcomingAPIEnabled).
+		SetNillableUpcomingAPIKey(&upcomingAPIKey).
 		SetNillableUmamiURL(&umamiURL).
 		SetNillableEinkMode(&eink).
 		Save(ctx); err != nil {
@@ -193,6 +197,12 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	}
 	if cfg.RSSFeedKey != rssFeedKey {
 		t.Errorf("RSSFeedKey: got %q want %q", cfg.RSSFeedKey, rssFeedKey)
+	}
+	if cfg.UpcomingAPIEnabled != upcomingAPIEnabled {
+		t.Errorf("UpcomingAPIEnabled: got %v want %v", cfg.UpcomingAPIEnabled, upcomingAPIEnabled)
+	}
+	if cfg.UpcomingAPIKey != upcomingAPIKey {
+		t.Errorf("UpcomingAPIKey: got %q want %q", cfg.UpcomingAPIKey, upcomingAPIKey)
 	}
 	if cfg.UmamiURL != umamiURL {
 		t.Errorf("UmamiURL: got %q want %q", cfg.UmamiURL, umamiURL)

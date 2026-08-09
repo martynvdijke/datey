@@ -229,6 +229,16 @@ func RssFeedKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldRssFeedKey, v))
 }
 
+// UpcomingAPIEnabled applies equality check predicate on the "upcoming_api_enabled" field. It's identical to UpcomingAPIEnabledEQ.
+func UpcomingAPIEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldUpcomingAPIEnabled, v))
+}
+
+// UpcomingAPIKey applies equality check predicate on the "upcoming_api_key" field. It's identical to UpcomingAPIKeyEQ.
+func UpcomingAPIKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldUpcomingAPIKey, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpdatedAt, v))
@@ -2412,6 +2422,101 @@ func RssFeedKeyEqualFold(v string) predicate.AppConfig {
 // RssFeedKeyContainsFold applies the ContainsFold predicate on the "rss_feed_key" field.
 func RssFeedKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldRssFeedKey, v))
+}
+
+// UpcomingAPIEnabledEQ applies the EQ predicate on the "upcoming_api_enabled" field.
+func UpcomingAPIEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldUpcomingAPIEnabled, v))
+}
+
+// UpcomingAPIEnabledNEQ applies the NEQ predicate on the "upcoming_api_enabled" field.
+func UpcomingAPIEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldUpcomingAPIEnabled, v))
+}
+
+// UpcomingAPIEnabledIsNil applies the IsNil predicate on the "upcoming_api_enabled" field.
+func UpcomingAPIEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldUpcomingAPIEnabled))
+}
+
+// UpcomingAPIEnabledNotNil applies the NotNil predicate on the "upcoming_api_enabled" field.
+func UpcomingAPIEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldUpcomingAPIEnabled))
+}
+
+// UpcomingAPIKeyEQ applies the EQ predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyNEQ applies the NEQ predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyIn applies the In predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldUpcomingAPIKey, vs...))
+}
+
+// UpcomingAPIKeyNotIn applies the NotIn predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldUpcomingAPIKey, vs...))
+}
+
+// UpcomingAPIKeyGT applies the GT predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyGTE applies the GTE predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyLT applies the LT predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyLTE applies the LTE predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyContains applies the Contains predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyHasPrefix applies the HasPrefix predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyHasSuffix applies the HasSuffix predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyIsNil applies the IsNil predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldUpcomingAPIKey))
+}
+
+// UpcomingAPIKeyNotNil applies the NotNil predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldUpcomingAPIKey))
+}
+
+// UpcomingAPIKeyEqualFold applies the EqualFold predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldUpcomingAPIKey, v))
+}
+
+// UpcomingAPIKeyContainsFold applies the ContainsFold predicate on the "upcoming_api_key" field.
+func UpcomingAPIKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldUpcomingAPIKey, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

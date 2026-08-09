@@ -217,5 +217,18 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "RSS_FEED_URL", Label: "RSS Feed URL", Value: "/rss.xml?key=" + rssFeedKey, Type: "readonly", ReadOnly: true, Help: "Subscribe in your feed reader. Prepend your server origin (e.g. https://datey.example.com)."},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup}
+	upcomingAPIKey := cfg.UpcomingAPIKey
+	if submitted != nil {
+		if v, ok := submitted["UPCOMING_API_KEY"]; ok && len(v) > 0 {
+			upcomingAPIKey = v[0]
+		}
+	}
+
+	upcomingAPIGroup := configGroup{Title: "Upcoming Events API", Fields: []configField{
+		{Name: "UPCOMING_API_ENABLED", Label: "Enable Upcoming Events API", Type: "checkbox", Checked: checked("UPCOMING_API_ENABLED", cfg.UpcomingAPIEnabled), Help: "Exposes upcoming events as JSON for scripts, dashboards and automations. Disabled by default; dates are personal data."},
+		{Name: "UPCOMING_API_KEY", Label: "API Secret Key", Value: val("UPCOMING_API_KEY", upcomingAPIKey), Type: "text", Help: "Required as ?key=... in the endpoint URL. Auto-generated on first enable; change it here to rotate."},
+		{Name: "UPCOMING_API_URL", Label: "API Endpoint URL", Value: "/api/upcoming?key=" + upcomingAPIKey, Type: "readonly", ReadOnly: true, Help: "Optionally add &days=N to override the horizon (default: reminder window, max 365)."},
+	}}
+
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup}
 }

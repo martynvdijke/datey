@@ -100,6 +100,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		// Public RSS feed of upcoming events — same key protection.
 		r.Get("/rss.xml", h.rssFeed)
 
+		// Public JSON API of upcoming events — same key protection.
+		r.Get("/api/upcoming", h.upcomingAPI)
+
 		// Public TRMNL e-ink stats feed — unauthenticated (TRMNL devices cannot log in)
 		r.Get("/api/trmnl/stats", h.trmnlStats)
 

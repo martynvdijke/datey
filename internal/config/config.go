@@ -52,6 +52,9 @@ type Config struct {
 
 	RSSEnabled bool
 	RSSFeedKey string
+
+	UpcomingAPIEnabled bool
+	UpcomingAPIKey     string
 }
 
 func Load() (*Config, error) {
@@ -96,6 +99,9 @@ func Load() (*Config, error) {
 
 		RSSEnabled: getEnv("RSS_FEED_ENABLED", "") == "true",
 		RSSFeedKey: getEnv("RSS_FEED_KEY", ""),
+
+		UpcomingAPIEnabled: getEnv("UPCOMING_API_ENABLED", "") == "true",
+		UpcomingAPIKey:     getEnv("UPCOMING_API_KEY", ""),
 	}
 
 	if cfg.DataDir == "" {
@@ -161,6 +167,9 @@ func (c *Config) Validate() error {
 	}
 	if c.RSSEnabled && c.RSSFeedKey == "" {
 		return fmt.Errorf("RSS_FEED_KEY must be set when RSS_FEED_ENABLED is true")
+	}
+	if c.UpcomingAPIEnabled && c.UpcomingAPIKey == "" {
+		return fmt.Errorf("UPCOMING_API_KEY must be set when UPCOMING_API_ENABLED is true")
 	}
 	return nil
 }

@@ -81,6 +81,10 @@ const (
 	FieldRssEnabled = "rss_enabled"
 	// FieldRssFeedKey holds the string denoting the rss_feed_key field in the database.
 	FieldRssFeedKey = "rss_feed_key"
+	// FieldUpcomingAPIEnabled holds the string denoting the upcoming_api_enabled field in the database.
+	FieldUpcomingAPIEnabled = "upcoming_api_enabled"
+	// FieldUpcomingAPIKey holds the string denoting the upcoming_api_key field in the database.
+	FieldUpcomingAPIKey = "upcoming_api_key"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the appconfig in the database.
@@ -125,6 +129,8 @@ var Columns = []string{
 	FieldIcalFeedKey,
 	FieldRssEnabled,
 	FieldRssFeedKey,
+	FieldUpcomingAPIEnabled,
+	FieldUpcomingAPIKey,
 	FieldUpdatedAt,
 }
 
@@ -319,6 +325,16 @@ func ByRssEnabled(opts ...sql.OrderTermOption) OrderOption {
 // ByRssFeedKey orders the results by the rss_feed_key field.
 func ByRssFeedKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRssFeedKey, opts...).ToFunc()
+}
+
+// ByUpcomingAPIEnabled orders the results by the upcoming_api_enabled field.
+func ByUpcomingAPIEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpcomingAPIEnabled, opts...).ToFunc()
+}
+
+// ByUpcomingAPIKey orders the results by the upcoming_api_key field.
+func ByUpcomingAPIKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpcomingAPIKey, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

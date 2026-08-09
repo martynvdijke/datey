@@ -791,6 +791,46 @@ func (_u *AppConfigUpdate) ClearRssFeedKey() *AppConfigUpdate {
 	return _u
 }
 
+// SetUpcomingAPIEnabled sets the "upcoming_api_enabled" field.
+func (_u *AppConfigUpdate) SetUpcomingAPIEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetUpcomingAPIEnabled(v)
+	return _u
+}
+
+// SetNillableUpcomingAPIEnabled sets the "upcoming_api_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableUpcomingAPIEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetUpcomingAPIEnabled(*v)
+	}
+	return _u
+}
+
+// ClearUpcomingAPIEnabled clears the value of the "upcoming_api_enabled" field.
+func (_u *AppConfigUpdate) ClearUpcomingAPIEnabled() *AppConfigUpdate {
+	_u.mutation.ClearUpcomingAPIEnabled()
+	return _u
+}
+
+// SetUpcomingAPIKey sets the "upcoming_api_key" field.
+func (_u *AppConfigUpdate) SetUpcomingAPIKey(v string) *AppConfigUpdate {
+	_u.mutation.SetUpcomingAPIKey(v)
+	return _u
+}
+
+// SetNillableUpcomingAPIKey sets the "upcoming_api_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableUpcomingAPIKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetUpcomingAPIKey(*v)
+	}
+	return _u
+}
+
+// ClearUpcomingAPIKey clears the value of the "upcoming_api_key" field.
+func (_u *AppConfigUpdate) ClearUpcomingAPIKey() *AppConfigUpdate {
+	_u.mutation.ClearUpcomingAPIKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdate) SetUpdatedAt(v time.Time) *AppConfigUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -1088,6 +1128,18 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.RssFeedKeyCleared() {
 		_spec.ClearField(appconfig.FieldRssFeedKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.UpcomingAPIEnabled(); ok {
+		_spec.SetField(appconfig.FieldUpcomingAPIEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.UpcomingAPIEnabledCleared() {
+		_spec.ClearField(appconfig.FieldUpcomingAPIEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.UpcomingAPIKey(); ok {
+		_spec.SetField(appconfig.FieldUpcomingAPIKey, field.TypeString, value)
+	}
+	if _u.mutation.UpcomingAPIKeyCleared() {
+		_spec.ClearField(appconfig.FieldUpcomingAPIKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
@@ -1878,6 +1930,46 @@ func (_u *AppConfigUpdateOne) ClearRssFeedKey() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetUpcomingAPIEnabled sets the "upcoming_api_enabled" field.
+func (_u *AppConfigUpdateOne) SetUpcomingAPIEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetUpcomingAPIEnabled(v)
+	return _u
+}
+
+// SetNillableUpcomingAPIEnabled sets the "upcoming_api_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableUpcomingAPIEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetUpcomingAPIEnabled(*v)
+	}
+	return _u
+}
+
+// ClearUpcomingAPIEnabled clears the value of the "upcoming_api_enabled" field.
+func (_u *AppConfigUpdateOne) ClearUpcomingAPIEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearUpcomingAPIEnabled()
+	return _u
+}
+
+// SetUpcomingAPIKey sets the "upcoming_api_key" field.
+func (_u *AppConfigUpdateOne) SetUpcomingAPIKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetUpcomingAPIKey(v)
+	return _u
+}
+
+// SetNillableUpcomingAPIKey sets the "upcoming_api_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableUpcomingAPIKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetUpcomingAPIKey(*v)
+	}
+	return _u
+}
+
+// ClearUpcomingAPIKey clears the value of the "upcoming_api_key" field.
+func (_u *AppConfigUpdateOne) ClearUpcomingAPIKey() *AppConfigUpdateOne {
+	_u.mutation.ClearUpcomingAPIKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdateOne) SetUpdatedAt(v time.Time) *AppConfigUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2205,6 +2297,18 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.RssFeedKeyCleared() {
 		_spec.ClearField(appconfig.FieldRssFeedKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.UpcomingAPIEnabled(); ok {
+		_spec.SetField(appconfig.FieldUpcomingAPIEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.UpcomingAPIEnabledCleared() {
+		_spec.ClearField(appconfig.FieldUpcomingAPIEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.UpcomingAPIKey(); ok {
+		_spec.SetField(appconfig.FieldUpcomingAPIKey, field.TypeString, value)
+	}
+	if _u.mutation.UpcomingAPIKeyCleared() {
+		_spec.ClearField(appconfig.FieldUpcomingAPIKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

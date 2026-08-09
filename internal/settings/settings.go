@@ -171,6 +171,12 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.RssFeedKey; v != nil {
 		cfg.RSSFeedKey = *v
 	}
+	if v := row.UpcomingAPIEnabled; v != nil {
+		cfg.UpcomingAPIEnabled = *v
+	}
+	if v := row.UpcomingAPIKey; v != nil {
+		cfg.UpcomingAPIKey = *v
+	}
 	return nil
 }
 
@@ -231,6 +237,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	icalFeedKey := form.Get("ICAL_FEED_KEY")
 	rssEnabled := form.Get("RSS_FEED_ENABLED") == "on"
 	rssFeedKey := form.Get("RSS_FEED_KEY")
+	upcomingAPIEnabled := form.Get("UPCOMING_API_ENABLED") == "on"
+	upcomingAPIKey := form.Get("UPCOMING_API_KEY")
 
 	if port != nil && (*port < 1 || *port > 65535) {
 		errs["PORT"] = "Port must be between 1 and 65535"
@@ -311,6 +319,15 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		effectiveRSSKey = generateFeedKey()
 	}
 
+	// Same key semantics for the Upcoming Events API.
+	effectiveUpcomingAPIKey := upcomingAPIKey
+	if effectiveUpcomingAPIKey == "" {
+		effectiveUpcomingAPIKey = cfg.UpcomingAPIKey
+	}
+	if upcomingAPIEnabled && effectiveUpcomingAPIKey == "" {
+		effectiveUpcomingAPIKey = generateFeedKey()
+	}
+
 	upd := s.client.AppConfig.UpdateOneID(row.ID).
 		SetNillablePort(port).
 		SetNillableSchedulerHour(schedulerHour).
@@ -346,6 +363,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableIcalFeedKey(nillableStr(effectiveICalKey)).
 		SetNillableRssEnabled(&rssEnabled).
 		SetNillableRssFeedKey(nillableStr(effectiveRSSKey)).
+		SetNillableUpcomingAPIEnabled(&upcomingAPIEnabled).
+		SetNillableUpcomingAPIKey(nillableStr(effectiveUpcomingAPIKey)).
 		SetUpdatedAt(time.Now())
 
 	if _, err := upd.Save(ctx); err != nil {
@@ -387,6 +406,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.ICalFeedKey = effectiveICalKey
 	cfg.RSSEnabled = rssEnabled
 	cfg.RSSFeedKey = effectiveRSSKey
+	cfg.UpcomingAPIEnabled = upcomingAPIEnabled
+	cfg.UpcomingAPIKey = effectiveUpcomingAPIKey
 
 	return nil, nil
 }

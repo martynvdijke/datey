@@ -34,6 +34,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
  - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
  - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
+ - **🔌 Upcoming Events API** — Public, key-protected JSON API (`/api/upcoming`) for scripts, dashboards and automations.
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
@@ -108,6 +109,8 @@ See `.env.example` for a template.
 | `ICAL_FEED_KEY` | — | Secret key required in feed URLs (`?key=...`); auto-generated on first enable via the UI |
 | `RSS_FEED_ENABLED` | `false` | Enable the public RSS feed of upcoming events for feed readers |
 | `RSS_FEED_KEY` | — | Secret key required in the feed URL (`?key=...`); auto-generated on first enable via the UI |
+| `UPCOMING_API_ENABLED` | `false` | Enable the public JSON API of upcoming events |
+| `UPCOMING_API_KEY` | — | Secret key required in the API URL (`?key=...`); auto-generated on first enable via the UI |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
@@ -225,6 +228,7 @@ datey/
 | `GET` | `/ical/{personID}.ics` | Public iCal feed — single person's dates (`?key=...` required; 404 when disabled) |
 | `GET` | `/api/trmnl/stats` | Public JSON stats feed for the TRMNL e-ink plugin |
 | `GET` | `/rss.xml` | Public RSS 2.0 feed of upcoming events (`?key=...` required; 404 when disabled) |
+| `GET` | `/api/upcoming` | Public JSON API of upcoming events (`?key=...` required; `days` optional, max 365; 404 when disabled) |
 | `GET` | `/health` | Health check |
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |
