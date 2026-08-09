@@ -97,6 +97,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/ical.ics", h.icalFeedGlobal)
 		r.Get("/ical/{personID}.ics", h.icalFeedPerson)
 
+		// Public RSS feed of upcoming events — same key protection.
+		r.Get("/rss.xml", h.rssFeed)
+
 		// Public TRMNL e-ink stats feed — unauthenticated (TRMNL devices cannot log in)
 		r.Get("/api/trmnl/stats", h.trmnlStats)
 

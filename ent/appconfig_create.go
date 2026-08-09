@@ -481,6 +481,34 @@ func (_c *AppConfigCreate) SetNillableIcalFeedKey(v *string) *AppConfigCreate {
 	return _c
 }
 
+// SetRssEnabled sets the "rss_enabled" field.
+func (_c *AppConfigCreate) SetRssEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetRssEnabled(v)
+	return _c
+}
+
+// SetNillableRssEnabled sets the "rss_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableRssEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetRssEnabled(*v)
+	}
+	return _c
+}
+
+// SetRssFeedKey sets the "rss_feed_key" field.
+func (_c *AppConfigCreate) SetRssFeedKey(v string) *AppConfigCreate {
+	_c.mutation.SetRssFeedKey(v)
+	return _c
+}
+
+// SetNillableRssFeedKey sets the "rss_feed_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableRssFeedKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetRssFeedKey(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -686,6 +714,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IcalFeedKey(); ok {
 		_spec.SetField(appconfig.FieldIcalFeedKey, field.TypeString, value)
 		_node.IcalFeedKey = &value
+	}
+	if value, ok := _c.mutation.RssEnabled(); ok {
+		_spec.SetField(appconfig.FieldRssEnabled, field.TypeBool, value)
+		_node.RssEnabled = &value
+	}
+	if value, ok := _c.mutation.RssFeedKey(); ok {
+		_spec.SetField(appconfig.FieldRssFeedKey, field.TypeString, value)
+		_node.RssFeedKey = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

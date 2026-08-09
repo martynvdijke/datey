@@ -32,7 +32,8 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
 - **💾 Database Backup** — On-demand SQLite backup with configurable retention.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
-- **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
+ - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
+ - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
@@ -105,6 +106,8 @@ See `.env.example` for a template.
 | `ICAL_EVENT_START` | — | Feed event start time in `HH:MM` (24h); empty = all-day events (**enforced**: 0–23 / 0–59) |
 | `ICAL_EVENT_DURATION` | `60` | Feed event duration in minutes, used when a start time is set (**enforced**: 1–1440) |
 | `ICAL_FEED_KEY` | — | Secret key required in feed URLs (`?key=...`); auto-generated on first enable via the UI |
+| `RSS_FEED_ENABLED` | `false` | Enable the public RSS feed of upcoming events for feed readers |
+| `RSS_FEED_KEY` | — | Secret key required in the feed URL (`?key=...`); auto-generated on first enable via the UI |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
@@ -221,6 +224,7 @@ datey/
 | `GET` | `/ical.ics` | Public iCal feed — all dates (`?key=...` required; 404 when disabled) |
 | `GET` | `/ical/{personID}.ics` | Public iCal feed — single person's dates (`?key=...` required; 404 when disabled) |
 | `GET` | `/api/trmnl/stats` | Public JSON stats feed for the TRMNL e-ink plugin |
+| `GET` | `/rss.xml` | Public RSS 2.0 feed of upcoming events (`?key=...` required; 404 when disabled) |
 | `GET` | `/health` | Health check |
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |

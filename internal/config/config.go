@@ -49,6 +49,9 @@ type Config struct {
 	ICalEventStart      string
 	ICalDurationMinutes int
 	ICalFeedKey         string
+
+	RSSEnabled bool
+	RSSFeedKey string
 }
 
 func Load() (*Config, error) {
@@ -90,6 +93,9 @@ func Load() (*Config, error) {
 		ICalEventStart:      getEnv("ICAL_EVENT_START", ""),
 		ICalDurationMinutes: getEnvInt("ICAL_EVENT_DURATION", 60),
 		ICalFeedKey:         getEnv("ICAL_FEED_KEY", ""),
+
+		RSSEnabled: getEnv("RSS_FEED_ENABLED", "") == "true",
+		RSSFeedKey: getEnv("RSS_FEED_KEY", ""),
 	}
 
 	if cfg.DataDir == "" {
@@ -152,6 +158,9 @@ func (c *Config) Validate() error {
 	}
 	if c.ICalEnabled && c.ICalFeedKey == "" {
 		return fmt.Errorf("ICAL_FEED_KEY must be set when ICAL_FEED_ENABLED is true")
+	}
+	if c.RSSEnabled && c.RSSFeedKey == "" {
+		return fmt.Errorf("RSS_FEED_KEY must be set when RSS_FEED_ENABLED is true")
 	}
 	return nil
 }

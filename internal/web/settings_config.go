@@ -204,5 +204,18 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "ICAL_FEED_URL_PERSON", Label: "iCal Feed URL (single person)", Value: "/ical/{personID}.ics?key=" + icalFeedKey, Type: "readonly", ReadOnly: true, Help: "Replace {personID} with the person's ID (the number in their page URL)."},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical}
+	rssFeedKey := cfg.RSSFeedKey
+	if submitted != nil {
+		if v, ok := submitted["RSS_FEED_KEY"]; ok && len(v) > 0 {
+			rssFeedKey = v[0]
+		}
+	}
+
+	rssGroup := configGroup{Title: "RSS Feed", Fields: []configField{
+		{Name: "RSS_FEED_ENABLED", Label: "Enable Public RSS Feed", Type: "checkbox", Checked: checked("RSS_FEED_ENABLED", cfg.RSSEnabled), Help: "Exposes upcoming events as an RSS 2.0 feed for feed readers and aggregators. Disabled by default; dates are personal data."},
+		{Name: "RSS_FEED_KEY", Label: "Feed Secret Key", Value: val("RSS_FEED_KEY", rssFeedKey), Type: "text", Help: "Required as ?key=... in the feed URL. Auto-generated on first enable; change it here to rotate."},
+		{Name: "RSS_FEED_URL", Label: "RSS Feed URL", Value: "/rss.xml?key=" + rssFeedKey, Type: "readonly", ReadOnly: true, Help: "Subscribe in your feed reader. Prepend your server origin (e.g. https://datey.example.com)."},
+	}}
+
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup}
 }

@@ -97,6 +97,8 @@ type AppConfigMutation struct {
 	ical_duration_minutes    *int
 	addical_duration_minutes *int
 	ical_feed_key            *string
+	rss_enabled              *bool
+	rss_feed_key             *string
 	updated_at               *time.Time
 	clearedFields            map[string]struct{}
 	done                     bool
@@ -2008,6 +2010,104 @@ func (m *AppConfigMutation) ResetIcalFeedKey() {
 	delete(m.clearedFields, appconfig.FieldIcalFeedKey)
 }
 
+// SetRssEnabled sets the "rss_enabled" field.
+func (m *AppConfigMutation) SetRssEnabled(b bool) {
+	m.rss_enabled = &b
+}
+
+// RssEnabled returns the value of the "rss_enabled" field in the mutation.
+func (m *AppConfigMutation) RssEnabled() (r bool, exists bool) {
+	v := m.rss_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRssEnabled returns the old "rss_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldRssEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRssEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRssEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRssEnabled: %w", err)
+	}
+	return oldValue.RssEnabled, nil
+}
+
+// ClearRssEnabled clears the value of the "rss_enabled" field.
+func (m *AppConfigMutation) ClearRssEnabled() {
+	m.rss_enabled = nil
+	m.clearedFields[appconfig.FieldRssEnabled] = struct{}{}
+}
+
+// RssEnabledCleared returns if the "rss_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) RssEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldRssEnabled]
+	return ok
+}
+
+// ResetRssEnabled resets all changes to the "rss_enabled" field.
+func (m *AppConfigMutation) ResetRssEnabled() {
+	m.rss_enabled = nil
+	delete(m.clearedFields, appconfig.FieldRssEnabled)
+}
+
+// SetRssFeedKey sets the "rss_feed_key" field.
+func (m *AppConfigMutation) SetRssFeedKey(s string) {
+	m.rss_feed_key = &s
+}
+
+// RssFeedKey returns the value of the "rss_feed_key" field in the mutation.
+func (m *AppConfigMutation) RssFeedKey() (r string, exists bool) {
+	v := m.rss_feed_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRssFeedKey returns the old "rss_feed_key" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldRssFeedKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRssFeedKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRssFeedKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRssFeedKey: %w", err)
+	}
+	return oldValue.RssFeedKey, nil
+}
+
+// ClearRssFeedKey clears the value of the "rss_feed_key" field.
+func (m *AppConfigMutation) ClearRssFeedKey() {
+	m.rss_feed_key = nil
+	m.clearedFields[appconfig.FieldRssFeedKey] = struct{}{}
+}
+
+// RssFeedKeyCleared returns if the "rss_feed_key" field was cleared in this mutation.
+func (m *AppConfigMutation) RssFeedKeyCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldRssFeedKey]
+	return ok
+}
+
+// ResetRssFeedKey resets all changes to the "rss_feed_key" field.
+func (m *AppConfigMutation) ResetRssFeedKey() {
+	m.rss_feed_key = nil
+	delete(m.clearedFields, appconfig.FieldRssFeedKey)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *AppConfigMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -2091,7 +2191,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 34)
+	fields := make([]string, 0, 36)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -2191,6 +2291,12 @@ func (m *AppConfigMutation) Fields() []string {
 	if m.ical_feed_key != nil {
 		fields = append(fields, appconfig.FieldIcalFeedKey)
 	}
+	if m.rss_enabled != nil {
+		fields = append(fields, appconfig.FieldRssEnabled)
+	}
+	if m.rss_feed_key != nil {
+		fields = append(fields, appconfig.FieldRssFeedKey)
+	}
 	if m.updated_at != nil {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -2268,6 +2374,10 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.IcalDurationMinutes()
 	case appconfig.FieldIcalFeedKey:
 		return m.IcalFeedKey()
+	case appconfig.FieldRssEnabled:
+		return m.RssEnabled()
+	case appconfig.FieldRssFeedKey:
+		return m.RssFeedKey()
 	case appconfig.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -2345,6 +2455,10 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldIcalDurationMinutes(ctx)
 	case appconfig.FieldIcalFeedKey:
 		return m.OldIcalFeedKey(ctx)
+	case appconfig.FieldRssEnabled:
+		return m.OldRssEnabled(ctx)
+	case appconfig.FieldRssFeedKey:
+		return m.OldRssFeedKey(ctx)
 	case appconfig.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -2586,6 +2700,20 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIcalFeedKey(v)
+		return nil
+	case appconfig.FieldRssEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRssEnabled(v)
+		return nil
+	case appconfig.FieldRssFeedKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRssFeedKey(v)
 		return nil
 	case appconfig.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -2834,6 +2962,12 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldIcalFeedKey) {
 		fields = append(fields, appconfig.FieldIcalFeedKey)
 	}
+	if m.FieldCleared(appconfig.FieldRssEnabled) {
+		fields = append(fields, appconfig.FieldRssEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldRssFeedKey) {
+		fields = append(fields, appconfig.FieldRssFeedKey)
+	}
 	if m.FieldCleared(appconfig.FieldUpdatedAt) {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -2950,6 +3084,12 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldIcalFeedKey:
 		m.ClearIcalFeedKey()
 		return nil
+	case appconfig.FieldRssEnabled:
+		m.ClearRssEnabled()
+		return nil
+	case appconfig.FieldRssFeedKey:
+		m.ClearRssFeedKey()
+		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ClearUpdatedAt()
 		return nil
@@ -3059,6 +3199,12 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldIcalFeedKey:
 		m.ResetIcalFeedKey()
+		return nil
+	case appconfig.FieldRssEnabled:
+		m.ResetRssEnabled()
+		return nil
+	case appconfig.FieldRssFeedKey:
+		m.ResetRssFeedKey()
 		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ResetUpdatedAt()

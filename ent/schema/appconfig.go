@@ -63,6 +63,9 @@ func (AppConfig) Fields() []ent.Field {
 		field.Int("ical_duration_minutes").Optional().Nillable(),
 		field.String("ical_feed_key").Optional().Nillable(),
 
+		field.Bool("rss_enabled").Optional().Nillable(),
+		field.String("rss_feed_key").Optional().Nillable(),
+
 		field.Time("updated_at").Optional().Nillable(),
 	}
 }

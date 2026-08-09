@@ -83,6 +83,10 @@ type AppConfig struct {
 	IcalDurationMinutes *int `json:"ical_duration_minutes,omitempty"`
 	// IcalFeedKey holds the value of the "ical_feed_key" field.
 	IcalFeedKey *string `json:"ical_feed_key,omitempty"`
+	// RssEnabled holds the value of the "rss_enabled" field.
+	RssEnabled *bool `json:"rss_enabled,omitempty"`
+	// RssFeedKey holds the value of the "rss_feed_key" field.
+	RssFeedKey *string `json:"rss_feed_key,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -93,11 +97,11 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled:
+		case appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled:
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey:
+		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -353,6 +357,20 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 				_m.IcalFeedKey = new(string)
 				*_m.IcalFeedKey = value.String
 			}
+		case appconfig.FieldRssEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field rss_enabled", values[i])
+			} else if value.Valid {
+				_m.RssEnabled = new(bool)
+				*_m.RssEnabled = value.Bool
+			}
+		case appconfig.FieldRssFeedKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field rss_feed_key", values[i])
+			} else if value.Valid {
+				_m.RssFeedKey = new(string)
+				*_m.RssFeedKey = value.String
+			}
 		case appconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -558,6 +576,16 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.IcalFeedKey; v != nil {
 		builder.WriteString("ical_feed_key=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.RssEnabled; v != nil {
+		builder.WriteString("rss_enabled=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.RssFeedKey; v != nil {
+		builder.WriteString("rss_feed_key=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

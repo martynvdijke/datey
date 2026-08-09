@@ -219,6 +219,16 @@ func IcalFeedKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldIcalFeedKey, v))
 }
 
+// RssEnabled applies equality check predicate on the "rss_enabled" field. It's identical to RssEnabledEQ.
+func RssEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldRssEnabled, v))
+}
+
+// RssFeedKey applies equality check predicate on the "rss_feed_key" field. It's identical to RssFeedKeyEQ.
+func RssFeedKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldRssFeedKey, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpdatedAt, v))
@@ -2307,6 +2317,101 @@ func IcalFeedKeyEqualFold(v string) predicate.AppConfig {
 // IcalFeedKeyContainsFold applies the ContainsFold predicate on the "ical_feed_key" field.
 func IcalFeedKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldIcalFeedKey, v))
+}
+
+// RssEnabledEQ applies the EQ predicate on the "rss_enabled" field.
+func RssEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldRssEnabled, v))
+}
+
+// RssEnabledNEQ applies the NEQ predicate on the "rss_enabled" field.
+func RssEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldRssEnabled, v))
+}
+
+// RssEnabledIsNil applies the IsNil predicate on the "rss_enabled" field.
+func RssEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldRssEnabled))
+}
+
+// RssEnabledNotNil applies the NotNil predicate on the "rss_enabled" field.
+func RssEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldRssEnabled))
+}
+
+// RssFeedKeyEQ applies the EQ predicate on the "rss_feed_key" field.
+func RssFeedKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyNEQ applies the NEQ predicate on the "rss_feed_key" field.
+func RssFeedKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyIn applies the In predicate on the "rss_feed_key" field.
+func RssFeedKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldRssFeedKey, vs...))
+}
+
+// RssFeedKeyNotIn applies the NotIn predicate on the "rss_feed_key" field.
+func RssFeedKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldRssFeedKey, vs...))
+}
+
+// RssFeedKeyGT applies the GT predicate on the "rss_feed_key" field.
+func RssFeedKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyGTE applies the GTE predicate on the "rss_feed_key" field.
+func RssFeedKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyLT applies the LT predicate on the "rss_feed_key" field.
+func RssFeedKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyLTE applies the LTE predicate on the "rss_feed_key" field.
+func RssFeedKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyContains applies the Contains predicate on the "rss_feed_key" field.
+func RssFeedKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyHasPrefix applies the HasPrefix predicate on the "rss_feed_key" field.
+func RssFeedKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyHasSuffix applies the HasSuffix predicate on the "rss_feed_key" field.
+func RssFeedKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyIsNil applies the IsNil predicate on the "rss_feed_key" field.
+func RssFeedKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldRssFeedKey))
+}
+
+// RssFeedKeyNotNil applies the NotNil predicate on the "rss_feed_key" field.
+func RssFeedKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldRssFeedKey))
+}
+
+// RssFeedKeyEqualFold applies the EqualFold predicate on the "rss_feed_key" field.
+func RssFeedKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldRssFeedKey, v))
+}
+
+// RssFeedKeyContainsFold applies the ContainsFold predicate on the "rss_feed_key" field.
+func RssFeedKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldRssFeedKey, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

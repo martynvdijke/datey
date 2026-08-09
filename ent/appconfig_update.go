@@ -751,6 +751,46 @@ func (_u *AppConfigUpdate) ClearIcalFeedKey() *AppConfigUpdate {
 	return _u
 }
 
+// SetRssEnabled sets the "rss_enabled" field.
+func (_u *AppConfigUpdate) SetRssEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetRssEnabled(v)
+	return _u
+}
+
+// SetNillableRssEnabled sets the "rss_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableRssEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetRssEnabled(*v)
+	}
+	return _u
+}
+
+// ClearRssEnabled clears the value of the "rss_enabled" field.
+func (_u *AppConfigUpdate) ClearRssEnabled() *AppConfigUpdate {
+	_u.mutation.ClearRssEnabled()
+	return _u
+}
+
+// SetRssFeedKey sets the "rss_feed_key" field.
+func (_u *AppConfigUpdate) SetRssFeedKey(v string) *AppConfigUpdate {
+	_u.mutation.SetRssFeedKey(v)
+	return _u
+}
+
+// SetNillableRssFeedKey sets the "rss_feed_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableRssFeedKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetRssFeedKey(*v)
+	}
+	return _u
+}
+
+// ClearRssFeedKey clears the value of the "rss_feed_key" field.
+func (_u *AppConfigUpdate) ClearRssFeedKey() *AppConfigUpdate {
+	_u.mutation.ClearRssFeedKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdate) SetUpdatedAt(v time.Time) *AppConfigUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -1036,6 +1076,18 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.IcalFeedKeyCleared() {
 		_spec.ClearField(appconfig.FieldIcalFeedKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.RssEnabled(); ok {
+		_spec.SetField(appconfig.FieldRssEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.RssEnabledCleared() {
+		_spec.ClearField(appconfig.FieldRssEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.RssFeedKey(); ok {
+		_spec.SetField(appconfig.FieldRssFeedKey, field.TypeString, value)
+	}
+	if _u.mutation.RssFeedKeyCleared() {
+		_spec.ClearField(appconfig.FieldRssFeedKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
@@ -1786,6 +1838,46 @@ func (_u *AppConfigUpdateOne) ClearIcalFeedKey() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetRssEnabled sets the "rss_enabled" field.
+func (_u *AppConfigUpdateOne) SetRssEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetRssEnabled(v)
+	return _u
+}
+
+// SetNillableRssEnabled sets the "rss_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableRssEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetRssEnabled(*v)
+	}
+	return _u
+}
+
+// ClearRssEnabled clears the value of the "rss_enabled" field.
+func (_u *AppConfigUpdateOne) ClearRssEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearRssEnabled()
+	return _u
+}
+
+// SetRssFeedKey sets the "rss_feed_key" field.
+func (_u *AppConfigUpdateOne) SetRssFeedKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetRssFeedKey(v)
+	return _u
+}
+
+// SetNillableRssFeedKey sets the "rss_feed_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableRssFeedKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetRssFeedKey(*v)
+	}
+	return _u
+}
+
+// ClearRssFeedKey clears the value of the "rss_feed_key" field.
+func (_u *AppConfigUpdateOne) ClearRssFeedKey() *AppConfigUpdateOne {
+	_u.mutation.ClearRssFeedKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdateOne) SetUpdatedAt(v time.Time) *AppConfigUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2101,6 +2193,18 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.IcalFeedKeyCleared() {
 		_spec.ClearField(appconfig.FieldIcalFeedKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.RssEnabled(); ok {
+		_spec.SetField(appconfig.FieldRssEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.RssEnabledCleared() {
+		_spec.ClearField(appconfig.FieldRssEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.RssFeedKey(); ok {
+		_spec.SetField(appconfig.FieldRssFeedKey, field.TypeString, value)
+	}
+	if _u.mutation.RssFeedKeyCleared() {
+		_spec.ClearField(appconfig.FieldRssFeedKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

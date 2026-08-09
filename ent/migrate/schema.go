@@ -44,6 +44,8 @@ var (
 		{Name: "ical_event_start", Type: field.TypeString, Nullable: true},
 		{Name: "ical_duration_minutes", Type: field.TypeInt, Nullable: true},
 		{Name: "ical_feed_key", Type: field.TypeString, Nullable: true},
+		{Name: "rss_enabled", Type: field.TypeBool, Nullable: true},
+		{Name: "rss_feed_key", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
 	// AppConfigsTable holds the schema information for the "app_configs" table.

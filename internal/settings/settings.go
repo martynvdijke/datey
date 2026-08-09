@@ -165,6 +165,12 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.IcalFeedKey; v != nil {
 		cfg.ICalFeedKey = *v
 	}
+	if v := row.RssEnabled; v != nil {
+		cfg.RSSEnabled = *v
+	}
+	if v := row.RssFeedKey; v != nil {
+		cfg.RSSFeedKey = *v
+	}
 	return nil
 }
 
@@ -223,6 +229,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	icalEventStart := form.Get("ICAL_EVENT_START")
 	icalDuration := parseIntPtr(form, "ICAL_EVENT_DURATION", errs)
 	icalFeedKey := form.Get("ICAL_FEED_KEY")
+	rssEnabled := form.Get("RSS_FEED_ENABLED") == "on"
+	rssFeedKey := form.Get("RSS_FEED_KEY")
 
 	if port != nil && (*port < 1 || *port > 65535) {
 		errs["PORT"] = "Port must be between 1 and 65535"
@@ -293,6 +301,16 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		effectiveICalKey = generateFeedKey()
 	}
 
+	// Same key semantics for the RSS feed: keep the existing key unless the
+	// admin supplies a new one; generate a fresh key on first enable.
+	effectiveRSSKey := rssFeedKey
+	if effectiveRSSKey == "" {
+		effectiveRSSKey = cfg.RSSFeedKey
+	}
+	if rssEnabled && effectiveRSSKey == "" {
+		effectiveRSSKey = generateFeedKey()
+	}
+
 	upd := s.client.AppConfig.UpdateOneID(row.ID).
 		SetNillablePort(port).
 		SetNillableSchedulerHour(schedulerHour).
@@ -326,6 +344,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableIcalEventStart(nillableStr(icalEventStart)).
 		SetNillableIcalDurationMinutes(icalDuration).
 		SetNillableIcalFeedKey(nillableStr(effectiveICalKey)).
+		SetNillableRssEnabled(&rssEnabled).
+		SetNillableRssFeedKey(nillableStr(effectiveRSSKey)).
 		SetUpdatedAt(time.Now())
 
 	if _, err := upd.Save(ctx); err != nil {
@@ -365,6 +385,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.ICalEventStart = icalEventStart
 	cfg.ICalDurationMinutes = deref(icalDuration, cfg.ICalDurationMinutes)
 	cfg.ICalFeedKey = effectiveICalKey
+	cfg.RSSEnabled = rssEnabled
+	cfg.RSSFeedKey = effectiveRSSKey
 
 	return nil, nil
 }

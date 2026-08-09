@@ -103,6 +103,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	ntfyPriority := 5
 	webhookURL := "https://hooks.example.com/a"
 	webhookSecret := "wh-secret"
+	rssEnabled := true
+	rssFeedKey := "rss-feed-key"
 	umamiURL := "https://umami.test"
 	eink := true
 	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
@@ -123,6 +125,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 		SetNillableNtfyPriority(&ntfyPriority).
 		SetNillableWebhookURL(&webhookURL).
 		SetNillableWebhookSecret(&webhookSecret).
+		SetNillableRssEnabled(&rssEnabled).
+		SetNillableRssFeedKey(&rssFeedKey).
 		SetNillableUmamiURL(&umamiURL).
 		SetNillableEinkMode(&eink).
 		Save(ctx); err != nil {
@@ -183,6 +187,12 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	}
 	if cfg.WebhookSecret != webhookSecret {
 		t.Errorf("WebhookSecret: got %q want %q", cfg.WebhookSecret, webhookSecret)
+	}
+	if cfg.RSSEnabled != rssEnabled {
+		t.Errorf("RSSEnabled: got %v want %v", cfg.RSSEnabled, rssEnabled)
+	}
+	if cfg.RSSFeedKey != rssFeedKey {
+		t.Errorf("RSSFeedKey: got %q want %q", cfg.RSSFeedKey, rssFeedKey)
 	}
 	if cfg.UmamiURL != umamiURL {
 		t.Errorf("UmamiURL: got %q want %q", cfg.UmamiURL, umamiURL)

@@ -77,6 +77,10 @@ const (
 	FieldIcalDurationMinutes = "ical_duration_minutes"
 	// FieldIcalFeedKey holds the string denoting the ical_feed_key field in the database.
 	FieldIcalFeedKey = "ical_feed_key"
+	// FieldRssEnabled holds the string denoting the rss_enabled field in the database.
+	FieldRssEnabled = "rss_enabled"
+	// FieldRssFeedKey holds the string denoting the rss_feed_key field in the database.
+	FieldRssFeedKey = "rss_feed_key"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the appconfig in the database.
@@ -119,6 +123,8 @@ var Columns = []string{
 	FieldIcalEventStart,
 	FieldIcalDurationMinutes,
 	FieldIcalFeedKey,
+	FieldRssEnabled,
+	FieldRssFeedKey,
 	FieldUpdatedAt,
 }
 
@@ -303,6 +309,16 @@ func ByIcalDurationMinutes(opts ...sql.OrderTermOption) OrderOption {
 // ByIcalFeedKey orders the results by the ical_feed_key field.
 func ByIcalFeedKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIcalFeedKey, opts...).ToFunc()
+}
+
+// ByRssEnabled orders the results by the rss_enabled field.
+func ByRssEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRssEnabled, opts...).ToFunc()
+}
+
+// ByRssFeedKey orders the results by the rss_feed_key field.
+func ByRssFeedKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRssFeedKey, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.
