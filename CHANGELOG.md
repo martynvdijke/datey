@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/martynvdijke/datey/compare/v1.25.0...v1.26.0) (2026-08-09)
+
+
+### Features
+
+* **ha:** add Home Assistant stats feed and plugin folder ([fb02293](https://github.com/martynvdijke/datey/commit/fb022931543f35b9f5c847ae207547c45b6c75c4))
+
 # [1.25.0](https://github.com/martynvdijke/datey/compare/v1.24.0...v1.25.0) (2026-08-09)
 
 
