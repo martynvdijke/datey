@@ -61,7 +61,9 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-cache")
-	w.Write(body)
+	if _, err := w.Write(body); err != nil {
+		slog.Error("rss: write response", "error", err)
+	}
 }
 
 // rssItem converts a stored event into an RSS item, mirroring the dashboard's
@@ -74,7 +76,7 @@ func (h *Handler) rssItem(e *ent.Event, r *http.Request) rss.Item {
 		name = c.Name
 	}
 
-	days := int(e.Date.Sub(time.Now()).Hours() / 24)
+	days := int(time.Until(e.Date).Hours() / 24)
 	var relative string
 	switch {
 	case days <= 0:

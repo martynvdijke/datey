@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"math"
-	"time"
 
 	"github.com/datey/datey/internal/age"
 )
@@ -57,9 +56,7 @@ var funcMap = template.FuncMap{
 	// birthdayAge derives a person's age from their birthday event date.
 	// HasAge is false when no usable birth year exists; templates then omit
 	// the age text (see internal/age).
-	"birthdayAge": func(birthDate, now time.Time) age.Info {
-		return age.InfoFor(birthDate, now)
-	},
+	"birthdayAge": age.InfoFor,
 	"ordinal": func(n int) string {
 		if n%100 >= 11 && n%100 <= 13 {
 			return fmt.Sprintf("%dth", n)
