@@ -27,6 +27,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📝 In-App Logging** — Ring-buffer log viewer filterable by level and source, with live log level changes.
 - **🔍 People Search** — Quick search through people by name.
 - **📇 vCard Import/Export** — Import and export contacts via vCard files.
+- **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
 - **💾 Database Backup** — On-demand SQLite backup with configurable retention.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
 - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.

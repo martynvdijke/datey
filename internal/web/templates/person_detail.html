@@ -42,6 +42,12 @@
                 {{.Date}}
               {{end}}
             </div>
+            {{if eq .Type "birthday"}}
+              {{$ai := birthdayAge .EventDate $.Now}}
+              {{if $ai.HasAge}}
+                <span class="event-age text-muted small fw-semibold">{{if .IsUpcoming}}Turns {{$ai.Next}}{{else}}Age {{$ai.Current}}{{end}}</span>
+              {{end}}
+            {{end}}
             {{if .Description}}
               <span class="event-timeline-desc text-muted small">{{.Description}}</span>
             {{end}}

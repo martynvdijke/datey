@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/datey/datey/ent"
+	"github.com/datey/datey/internal/age"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -20,6 +21,8 @@ type personCard struct {
 	NextEventDate string
 	Initial       string
 	AvatarColor   int
+	Age           int // current age, shown when HasAge
+	HasAge        bool
 }
 
 func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
@@ -53,9 +56,10 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	cards := make([]personCard, 0, len(people))
 	for _, p := range people {
-		events, err := h.events.ListByContact(r.Context(), p.ID)
+		events, err := h.events.ListByPerson(r.Context(), p.ID)
 		eventCount := 0
 		var nextEventType, nextEventDate string
+		cardAge, hasAge := birthdayAgeForEvents(events, now)
 		if err == nil {
 			eventCount = len(events)
 			// Find the next upcoming event
@@ -81,6 +85,8 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			NextEventDate: nextEventDate,
 			Initial:       personInitial(p.Name),
 			AvatarColor:   avatarColorIndex(p.Name),
+			Age:           cardAge,
+			HasAge:        hasAge,
 		})
 	}
 
@@ -170,7 +176,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	events, err := h.events.ListByContact(r.Context(), id)
+	events, err := h.events.ListByPerson(r.Context(), id)
 	if err != nil {
 		slog.Error("list events by person", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -188,6 +194,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		ID            int
 		Type          string
 		Date          string
+		EventDate     time.Time
 		RelativeLabel string
 		Description   string
 		IsUpcoming    bool
@@ -208,6 +215,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 			ID:            e.ID,
 			Type:          e.Type,
 			Date:          e.Date.Format("Jan 2, 2006"),
+			EventDate:     e.Date,
 			RelativeLabel: rel,
 			Description:   e.Description,
 			IsUpcoming:    days >= 0,
@@ -222,6 +230,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		"EventRows":   eventRows,
 		"Groups":      groups,
 		"VCardData":   person.VcardData,
+		"Now":         now,
 	})
 }
 
@@ -242,7 +251,6 @@ func (h *Handler) deletePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 // --- Redirect handlers for legacy /contacts routes ---
-
 func (h *Handler) redirectContactsList(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/people", http.StatusMovedPermanently)
 }
@@ -254,4 +262,24 @@ func (h *Handler) redirectContactsNew(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) redirectContactsView(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	http.Redirect(w, r, "/people/"+id, http.StatusMovedPermanently)
+}
+
+// birthdayAgeForEvents derives the current age from a person's birthday
+// events. When multiple birthday events exist, the most recent birth date
+// (largest year) is used. ok is false when no birthday event carries a usable
+// birth year.
+func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, ok bool) {
+	var latest *ent.Event
+	for _, e := range events {
+		if e.Type != "birthday" {
+			continue
+		}
+		if latest == nil || e.Date.After(latest.Date) {
+			latest = e
+		}
+	}
+	if latest == nil {
+		return 0, false
+	}
+	return age.AgeAt(latest.Date, now)
 }

@@ -2,8 +2,12 @@ package web
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"math"
+	"time"
+
+	"github.com/datey/datey/internal/age"
 )
 
 //go:embed templates/*.html
@@ -49,6 +53,26 @@ var funcMap = template.FuncMap{
 			m[key] = values[i+1]
 		}
 		return m
+	},
+	// birthdayAge derives a person's age from their birthday event date.
+	// HasAge is false when no usable birth year exists; templates then omit
+	// the age text (see internal/age).
+	"birthdayAge": func(birthDate, now time.Time) age.Info {
+		return age.InfoFor(birthDate, now)
+	},
+	"ordinal": func(n int) string {
+		if n%100 >= 11 && n%100 <= 13 {
+			return fmt.Sprintf("%dth", n)
+		}
+		switch n % 10 {
+		case 1:
+			return fmt.Sprintf("%dst", n)
+		case 2:
+			return fmt.Sprintf("%dnd", n)
+		case 3:
+			return fmt.Sprintf("%drd", n)
+		}
+		return fmt.Sprintf("%dth", n)
 	},
 }
 

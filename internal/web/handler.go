@@ -15,6 +15,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/user"
 	"github.com/datey/datey/handlers"
+	"github.com/datey/datey/internal/age"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
@@ -201,6 +202,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		RelativeLabel string // "Today", "Tomorrow", "In 3 days", or empty
 		PersonInitial string // first character for avatar
 		AvatarColor   int    // deterministic colour index 0-7
+		AgeInfo       age.Info
 	}
 
 	var (
@@ -239,6 +241,9 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 			RelativeLabel: relativeLabel,
 			PersonInitial: personInitial(personName),
 			AvatarColor:   avatarColorIndex(personName),
+		}
+		if e.Type == "birthday" {
+			ev.AgeInfo = age.InfoFor(e.Date, now)
 		}
 
 		// Group by time horizon

@@ -45,7 +45,7 @@
             <div class="d-flex align-items-center gap-3 mb-3">
               <span class="person-avatar person-avatar-lg avatar-color-{{.AvatarColor}}">{{.Initial}}</span>
               <div class="min-width-0">
-                <h5 class="card-title mb-0">{{.Name}}</h5>
+                <h5 class="card-title mb-0">{{.Name}}{{if .HasAge}}, <span class="fw-normal text-muted">{{.Age}}</span>{{end}}</h5>
                 {{if .NextEventDate}}
                   <span class="badge event-type-badge event-{{.NextEventType}} mt-1">{{.NextEventType}}</span>
                 {{end}}
