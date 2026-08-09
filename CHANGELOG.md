@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/martynvdijke/datey/compare/v1.26.0...v1.27.0) (2026-08-09)
+
+
+### Features
+
+* **push:** add web push notifications via VAPID ([886eb80](https://github.com/martynvdijke/datey/commit/886eb80942f23e0b1bdf482b24354d20f556144f))
+
 # [1.26.0](https://github.com/martynvdijke/datey/compare/v1.25.0...v1.26.0) (2026-08-09)
 
 
