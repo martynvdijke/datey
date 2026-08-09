@@ -36,6 +36,7 @@ A self-hosted web application for tracking important dates and receiving automat
  - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
  - **🔌 Upcoming Events API** — Public, key-protected JSON API (`/api/upcoming`) for scripts, dashboards and automations.
  - **🏠 Home Assistant Plugin** — `homeassistant/` plugin folder with a key-protected `/api/homeassistant/stats` feed and a RESTful `sensor.yaml` snippet for Home Assistant dashboards.
+- **🔔 Web Push Notifications** — browser push notifications via VAPID + service worker (`/sw.js`); enabled from Settings → Configuration, requires HTTPS (or localhost).
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
@@ -114,6 +115,9 @@ See `.env.example` for a template.
 | `UPCOMING_API_KEY` | — | Secret key required in the API URL (`?key=...`); auto-generated on first enable via the UI |
 | `HOMEASSISTANT_ENABLED` | `false` | Enable the Home Assistant stats feed |
 | `HOMEASSISTANT_KEY` | — | Secret key required in the feed URL (`?key=...`); auto-generated on first enable via the UI |
+| `PUSH_ENABLED` | `false` | Enable Web Push browser notifications (requires HTTPS or localhost) |
+| `PUSH_VAPID_PUBLIC_KEY` | — | Public VAPID key; auto-generated on first enable via the UI (optional env override) |
+| `PUSH_VAPID_PRIVATE_KEY` | — | Private VAPID signing key (masked in the admin UI; optional env override) |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
@@ -233,6 +237,10 @@ datey/
 | `GET` | `/rss.xml` | Public RSS 2.0 feed of upcoming events (`?key=...` required; 404 when disabled) |
 | `GET` | `/api/upcoming` | Public JSON API of upcoming events (`?key=...` required; `days` optional, max 365; 404 when disabled) |
 | `GET` | `/api/homeassistant/stats` | Public JSON stats feed for the Home Assistant plugin (`?key=...` required; 404 when disabled) |
+| `GET` | `/sw.js` | Service worker for Web Push notifications |
+| `POST` | `/push/subscribe` | Store a Web Push subscription (authenticated) |
+| `POST` | `/push/unsubscribe` | Remove a Web Push subscription (authenticated) |
+| `GET` | `/push/vapid-public-key` | Public VAPID key for establishing browser subscriptions (authenticated) |
 | `GET` | `/health` | Health check |
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |

@@ -26,6 +26,7 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 		{Name: "telegram", Configured: h.notifReg.IsConfigured("telegram")},
 		{Name: "ntfy", Configured: h.notifReg.IsConfigured("ntfy")},
 		{Name: "webhook", Configured: h.notifReg.IsConfigured("webhook")},
+		{Name: "webpush", Configured: h.notifReg.IsConfigured("webpush")},
 	}
 
 	h.render(w, r, "settings.html", map[string]any{
@@ -153,6 +154,9 @@ func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 		err = n.Send(r.Context(), title, message)
 	case "webhook":
 		n := notifier.NewWebhookNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	case "webpush":
+		n := notifier.NewWebPushNotifier(h.cfg, h.pushSubs)
 		err = n.Send(r.Context(), title, message)
 	default:
 		slog.Warn("test notification: unknown channel", "source", "settings", "channel", channel)

@@ -74,7 +74,7 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 	for _, event := range upcomingEvents {
 		eventKey := fmt.Sprintf("%d-%s", event.ID, event.Date.Format("2006-01-02"))
 
-		for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook"} {
+		for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush"} {
 			if !s.registry.IsConfigured(name) {
 				continue
 			}

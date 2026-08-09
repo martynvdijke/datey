@@ -72,6 +72,10 @@ func (AppConfig) Fields() []ent.Field {
 		field.Bool("homeassistant_enabled").Optional().Nillable(),
 		field.String("homeassistant_key").Optional().Nillable(),
 
+		field.Bool("push_enabled").Optional().Nillable(),
+		field.String("push_vapid_public_key").Optional().Nillable(),
+		field.String("push_vapid_private_key").Optional().Nillable(),
+
 		field.Time("updated_at").Optional().Nillable(),
 	}
 }

@@ -254,5 +254,81 @@
       });
     });
   </script>
+  <script>
+    // Web Push subscription management (spec: web-push-notifications).
+    // Auto-subscribes when enabled, on a secure context, and with permission.
+    (function () {
+      var pushConfigured = {{if .PushConfigured}}true{{else}}false{{end}};
+      if (!pushConfigured) return;
+      if (!('serviceWorker' in navigator)) return;
+      if (!window.isSecureContext) return; // Web Push requires HTTPS (or localhost)
+
+      var csrfToken = (document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/) || [])[1] || '';
+
+      function urlBase64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var raw = atob(base64);
+        var array = new Uint8Array(raw.length);
+        for (var i = 0; i < raw.length; i++) { array[i] = raw.charCodeAt(i); }
+        return array;
+      }
+
+      function storeSubscription(subscription) {
+        var sub = subscription.toJSON();
+        return fetch('/push/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          body: JSON.stringify({
+            endpoint: sub.endpoint,
+            p256dh: sub.keys.p256dh,
+            auth: sub.keys.auth
+          })
+        });
+      }
+
+      function subscribe(registration) {
+        if (!('pushManager' in registration)) return Promise.resolve();
+        return registration.pushManager.getSubscription().then(function (existing) {
+          if (existing) {
+            // Already subscribed in this browser — keep the stored copy in sync.
+            return storeSubscription(existing);
+          }
+          if (Notification.permission === 'denied') return;
+          return fetch('/push/vapid-public-key').then(function (resp) {
+            if (!resp.ok) throw new Error('push not configured');
+            return resp.json();
+          }).then(function (data) {
+            return registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(data.public_key)
+            });
+          }).then(storeSubscription);
+        });
+      }
+
+      navigator.serviceWorker.register('/sw.js').then(function (registration) {
+        if (Notification.permission === 'granted') {
+          subscribe(registration);
+        } else if (Notification.permission === 'default') {
+          // Ask once on first user interaction rather than spamming on load.
+          var onFirstInteraction = function () {
+            ['click', 'keydown', 'touchstart'].forEach(function (evt) {
+              document.removeEventListener(evt, onFirstInteraction);
+            });
+            Notification.requestPermission().then(function (perm) {
+              if (perm === 'granted') subscribe(registration);
+            });
+          };
+          ['click', 'keydown', 'touchstart'].forEach(function (evt) {
+            document.addEventListener(evt, onFirstInteraction);
+          });
+        }
+      }).catch(function () { /* service worker unavailable — skip quietly */ });
+    })();
+  </script>
 </body>
 </html>

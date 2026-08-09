@@ -565,6 +565,48 @@ func (_c *AppConfigCreate) SetNillableHomeassistantKey(v *string) *AppConfigCrea
 	return _c
 }
 
+// SetPushEnabled sets the "push_enabled" field.
+func (_c *AppConfigCreate) SetPushEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetPushEnabled(v)
+	return _c
+}
+
+// SetNillablePushEnabled sets the "push_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillablePushEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetPushEnabled(*v)
+	}
+	return _c
+}
+
+// SetPushVapidPublicKey sets the "push_vapid_public_key" field.
+func (_c *AppConfigCreate) SetPushVapidPublicKey(v string) *AppConfigCreate {
+	_c.mutation.SetPushVapidPublicKey(v)
+	return _c
+}
+
+// SetNillablePushVapidPublicKey sets the "push_vapid_public_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillablePushVapidPublicKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetPushVapidPublicKey(*v)
+	}
+	return _c
+}
+
+// SetPushVapidPrivateKey sets the "push_vapid_private_key" field.
+func (_c *AppConfigCreate) SetPushVapidPrivateKey(v string) *AppConfigCreate {
+	_c.mutation.SetPushVapidPrivateKey(v)
+	return _c
+}
+
+// SetNillablePushVapidPrivateKey sets the "push_vapid_private_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillablePushVapidPrivateKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetPushVapidPrivateKey(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -794,6 +836,18 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.HomeassistantKey(); ok {
 		_spec.SetField(appconfig.FieldHomeassistantKey, field.TypeString, value)
 		_node.HomeassistantKey = &value
+	}
+	if value, ok := _c.mutation.PushEnabled(); ok {
+		_spec.SetField(appconfig.FieldPushEnabled, field.TypeBool, value)
+		_node.PushEnabled = &value
+	}
+	if value, ok := _c.mutation.PushVapidPublicKey(); ok {
+		_spec.SetField(appconfig.FieldPushVapidPublicKey, field.TypeString, value)
+		_node.PushVapidPublicKey = &value
+	}
+	if value, ok := _c.mutation.PushVapidPrivateKey(); ok {
+		_spec.SetField(appconfig.FieldPushVapidPrivateKey, field.TypeString, value)
+		_node.PushVapidPrivateKey = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

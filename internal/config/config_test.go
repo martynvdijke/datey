@@ -265,6 +265,18 @@ func TestValidate_NtfyPriorityBoundary(t *testing.T) {
 	}
 }
 
+func TestValidate_PushEnabledRequiresKeys(t *testing.T) {
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, PushEnabled: true}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected error for PUSH_ENABLED=true without VAPID keys, got nil")
+	}
+
+	cfg = &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, PushEnabled: true, PushVAPIDPublicKey: "pub", PushVAPIDPrivateKey: "priv"}
+	if err := cfg.Validate(); err != nil {
+		t.Errorf("expected valid config when both keys are set, got error: %v", err)
+	}
+}
+
 func TestValidate_ICalEnabledRequiresKey(t *testing.T) {
 	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, ICalEnabled: true}
 	if err := cfg.Validate(); err == nil {

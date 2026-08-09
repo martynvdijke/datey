@@ -33,6 +33,9 @@ type OneTimeNotification func(*sql.Selector)
 // Person is the predicate function for person builders.
 type Person func(*sql.Selector)
 
+// PushSubscription is the predicate function for pushsubscription builders.
+type PushSubscription func(*sql.Selector)
+
 // RecurringRule is the predicate function for recurringrule builders.
 type RecurringRule func(*sql.Selector)
 

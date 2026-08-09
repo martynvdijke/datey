@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/internal/config"
+	"github.com/SherClockHolmes/webpush-go"
 )
 
 // Store reads and writes the singleton app_config row that backs the
@@ -183,6 +184,15 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.HomeassistantKey; v != nil {
 		cfg.HomeAssistantKey = *v
 	}
+	if v := row.PushEnabled; v != nil {
+		cfg.PushEnabled = *v
+	}
+	if v := row.PushVapidPublicKey; v != nil {
+		cfg.PushVAPIDPublicKey = *v
+	}
+	if v := row.PushVapidPrivateKey; v != nil {
+		cfg.PushVAPIDPrivateKey = *v
+	}
 	return nil
 }
 
@@ -247,6 +257,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	upcomingAPIKey := form.Get("UPCOMING_API_KEY")
 	homeAssistantEnabled := form.Get("HOMEASSISTANT_ENABLED") == "on"
 	homeAssistantKey := form.Get("HOMEASSISTANT_KEY")
+	pushEnabled := form.Get("PUSH_ENABLED") == "on"
+	pushVAPIDPublicKey := form.Get("PUSH_VAPID_PUBLIC_KEY")
+	pushVAPIDPrivateKey := form.Get("PUSH_VAPID_PRIVATE_KEY")
 
 	if port != nil && (*port < 1 || *port > 65535) {
 		errs["PORT"] = "Port must be between 1 and 65535"
@@ -345,6 +358,27 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		effectiveHomeAssistantKey = generateFeedKey()
 	}
 
+	// VAPID key semantics: keep the existing keys unless the admin supplies new
+	// ones (the private key is never rendered in the form, so an empty
+	// submission means "keep the current one"); generate a fresh keypair on
+	// first enable so the public key endpoint is immediately usable.
+	effectivePushPublicKey := pushVAPIDPublicKey
+	if effectivePushPublicKey == "" {
+		effectivePushPublicKey = cfg.PushVAPIDPublicKey
+	}
+	effectivePushPrivateKey := pushVAPIDPrivateKey
+	if effectivePushPrivateKey == "" {
+		effectivePushPrivateKey = cfg.PushVAPIDPrivateKey
+	}
+	if pushEnabled && (effectivePushPublicKey == "" || effectivePushPrivateKey == "") {
+		priv, pub, err := webpush.GenerateVAPIDKeys()
+		if err != nil {
+			return nil, fmt.Errorf("generate VAPID keys: %w", err)
+		}
+		effectivePushPublicKey = pub
+		effectivePushPrivateKey = priv
+	}
+
 	upd := s.client.AppConfig.UpdateOneID(row.ID).
 		SetNillablePort(port).
 		SetNillableSchedulerHour(schedulerHour).
@@ -384,6 +418,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableUpcomingAPIKey(nillableStr(effectiveUpcomingAPIKey)).
 		SetNillableHomeassistantEnabled(&homeAssistantEnabled).
 		SetNillableHomeassistantKey(nillableStr(effectiveHomeAssistantKey)).
+		SetNillablePushEnabled(&pushEnabled).
+		SetNillablePushVapidPublicKey(nillableStr(effectivePushPublicKey)).
+		SetNillablePushVapidPrivateKey(nillableStr(effectivePushPrivateKey)).
 		SetUpdatedAt(time.Now())
 
 	if _, err := upd.Save(ctx); err != nil {
@@ -429,6 +466,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.UpcomingAPIKey = effectiveUpcomingAPIKey
 	cfg.HomeAssistantEnabled = homeAssistantEnabled
 	cfg.HomeAssistantKey = effectiveHomeAssistantKey
+	cfg.PushEnabled = pushEnabled
+	cfg.PushVAPIDPublicKey = effectivePushPublicKey
+	cfg.PushVAPIDPrivateKey = effectivePushPrivateKey
 
 	return nil, nil
 }

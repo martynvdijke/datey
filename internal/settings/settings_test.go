@@ -109,6 +109,9 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	upcomingAPIKey := "api-key-123"
 	homeAssistantEnabled := true
 	homeAssistantKey := "ha-key"
+	pushEnabled := true
+	pushVapidPublicKey := "push-public"
+	pushVapidPrivateKey := "push-private"
 	umamiURL := "https://umami.test"
 	eink := true
 	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
@@ -135,6 +138,9 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 		SetNillableUpcomingAPIKey(&upcomingAPIKey).
 		SetNillableHomeassistantEnabled(&homeAssistantEnabled).
 		SetNillableHomeassistantKey(&homeAssistantKey).
+		SetNillablePushEnabled(&pushEnabled).
+		SetNillablePushVapidPublicKey(&pushVapidPublicKey).
+		SetNillablePushVapidPrivateKey(&pushVapidPrivateKey).
 		SetNillableUmamiURL(&umamiURL).
 		SetNillableEinkMode(&eink).
 		Save(ctx); err != nil {
@@ -213,6 +219,15 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	}
 	if cfg.HomeAssistantKey != homeAssistantKey {
 		t.Errorf("HomeAssistantKey: got %q want %q", cfg.HomeAssistantKey, homeAssistantKey)
+	}
+	if cfg.PushEnabled != pushEnabled {
+		t.Errorf("PushEnabled: got %v want %v", cfg.PushEnabled, pushEnabled)
+	}
+	if cfg.PushVAPIDPublicKey != pushVapidPublicKey {
+		t.Errorf("PushVAPIDPublicKey: got %q want %q", cfg.PushVAPIDPublicKey, pushVapidPublicKey)
+	}
+	if cfg.PushVAPIDPrivateKey != pushVapidPrivateKey {
+		t.Errorf("PushVAPIDPrivateKey: got %q want %q", cfg.PushVAPIDPrivateKey, pushVapidPrivateKey)
 	}
 	if cfg.UmamiURL != umamiURL {
 		t.Errorf("UmamiURL: got %q want %q", cfg.UmamiURL, umamiURL)

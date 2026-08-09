@@ -21,6 +21,7 @@ import (
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/user"
@@ -93,6 +94,7 @@ func checkColumn(t, c string) error {
 			notificationlog.Table:      notificationlog.ValidColumn,
 			onetimenotification.Table:  onetimenotification.ValidColumn,
 			person.Table:               person.ValidColumn,
+			pushsubscription.Table:     pushsubscription.ValidColumn,
 			recurringrule.Table:        recurringrule.ValidColumn,
 			session.Table:              session.ValidColumn,
 			user.Table:                 user.ValidColumn,

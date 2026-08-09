@@ -89,6 +89,12 @@ const (
 	FieldHomeassistantEnabled = "homeassistant_enabled"
 	// FieldHomeassistantKey holds the string denoting the homeassistant_key field in the database.
 	FieldHomeassistantKey = "homeassistant_key"
+	// FieldPushEnabled holds the string denoting the push_enabled field in the database.
+	FieldPushEnabled = "push_enabled"
+	// FieldPushVapidPublicKey holds the string denoting the push_vapid_public_key field in the database.
+	FieldPushVapidPublicKey = "push_vapid_public_key"
+	// FieldPushVapidPrivateKey holds the string denoting the push_vapid_private_key field in the database.
+	FieldPushVapidPrivateKey = "push_vapid_private_key"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the appconfig in the database.
@@ -137,6 +143,9 @@ var Columns = []string{
 	FieldUpcomingAPIKey,
 	FieldHomeassistantEnabled,
 	FieldHomeassistantKey,
+	FieldPushEnabled,
+	FieldPushVapidPublicKey,
+	FieldPushVapidPrivateKey,
 	FieldUpdatedAt,
 }
 
@@ -351,6 +360,21 @@ func ByHomeassistantEnabled(opts ...sql.OrderTermOption) OrderOption {
 // ByHomeassistantKey orders the results by the homeassistant_key field.
 func ByHomeassistantKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHomeassistantKey, opts...).ToFunc()
+}
+
+// ByPushEnabled orders the results by the push_enabled field.
+func ByPushEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPushEnabled, opts...).ToFunc()
+}
+
+// ByPushVapidPublicKey orders the results by the push_vapid_public_key field.
+func ByPushVapidPublicKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPushVapidPublicKey, opts...).ToFunc()
+}
+
+// ByPushVapidPrivateKey orders the results by the push_vapid_private_key field.
+func ByPushVapidPrivateKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPushVapidPrivateKey, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

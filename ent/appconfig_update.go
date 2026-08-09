@@ -871,6 +871,66 @@ func (_u *AppConfigUpdate) ClearHomeassistantKey() *AppConfigUpdate {
 	return _u
 }
 
+// SetPushEnabled sets the "push_enabled" field.
+func (_u *AppConfigUpdate) SetPushEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetPushEnabled(v)
+	return _u
+}
+
+// SetNillablePushEnabled sets the "push_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillablePushEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetPushEnabled(*v)
+	}
+	return _u
+}
+
+// ClearPushEnabled clears the value of the "push_enabled" field.
+func (_u *AppConfigUpdate) ClearPushEnabled() *AppConfigUpdate {
+	_u.mutation.ClearPushEnabled()
+	return _u
+}
+
+// SetPushVapidPublicKey sets the "push_vapid_public_key" field.
+func (_u *AppConfigUpdate) SetPushVapidPublicKey(v string) *AppConfigUpdate {
+	_u.mutation.SetPushVapidPublicKey(v)
+	return _u
+}
+
+// SetNillablePushVapidPublicKey sets the "push_vapid_public_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillablePushVapidPublicKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetPushVapidPublicKey(*v)
+	}
+	return _u
+}
+
+// ClearPushVapidPublicKey clears the value of the "push_vapid_public_key" field.
+func (_u *AppConfigUpdate) ClearPushVapidPublicKey() *AppConfigUpdate {
+	_u.mutation.ClearPushVapidPublicKey()
+	return _u
+}
+
+// SetPushVapidPrivateKey sets the "push_vapid_private_key" field.
+func (_u *AppConfigUpdate) SetPushVapidPrivateKey(v string) *AppConfigUpdate {
+	_u.mutation.SetPushVapidPrivateKey(v)
+	return _u
+}
+
+// SetNillablePushVapidPrivateKey sets the "push_vapid_private_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillablePushVapidPrivateKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetPushVapidPrivateKey(*v)
+	}
+	return _u
+}
+
+// ClearPushVapidPrivateKey clears the value of the "push_vapid_private_key" field.
+func (_u *AppConfigUpdate) ClearPushVapidPrivateKey() *AppConfigUpdate {
+	_u.mutation.ClearPushVapidPrivateKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdate) SetUpdatedAt(v time.Time) *AppConfigUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -1192,6 +1252,24 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.HomeassistantKeyCleared() {
 		_spec.ClearField(appconfig.FieldHomeassistantKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.PushEnabled(); ok {
+		_spec.SetField(appconfig.FieldPushEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.PushEnabledCleared() {
+		_spec.ClearField(appconfig.FieldPushEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.PushVapidPublicKey(); ok {
+		_spec.SetField(appconfig.FieldPushVapidPublicKey, field.TypeString, value)
+	}
+	if _u.mutation.PushVapidPublicKeyCleared() {
+		_spec.ClearField(appconfig.FieldPushVapidPublicKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.PushVapidPrivateKey(); ok {
+		_spec.SetField(appconfig.FieldPushVapidPrivateKey, field.TypeString, value)
+	}
+	if _u.mutation.PushVapidPrivateKeyCleared() {
+		_spec.ClearField(appconfig.FieldPushVapidPrivateKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
@@ -2062,6 +2140,66 @@ func (_u *AppConfigUpdateOne) ClearHomeassistantKey() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetPushEnabled sets the "push_enabled" field.
+func (_u *AppConfigUpdateOne) SetPushEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetPushEnabled(v)
+	return _u
+}
+
+// SetNillablePushEnabled sets the "push_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillablePushEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetPushEnabled(*v)
+	}
+	return _u
+}
+
+// ClearPushEnabled clears the value of the "push_enabled" field.
+func (_u *AppConfigUpdateOne) ClearPushEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearPushEnabled()
+	return _u
+}
+
+// SetPushVapidPublicKey sets the "push_vapid_public_key" field.
+func (_u *AppConfigUpdateOne) SetPushVapidPublicKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetPushVapidPublicKey(v)
+	return _u
+}
+
+// SetNillablePushVapidPublicKey sets the "push_vapid_public_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillablePushVapidPublicKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetPushVapidPublicKey(*v)
+	}
+	return _u
+}
+
+// ClearPushVapidPublicKey clears the value of the "push_vapid_public_key" field.
+func (_u *AppConfigUpdateOne) ClearPushVapidPublicKey() *AppConfigUpdateOne {
+	_u.mutation.ClearPushVapidPublicKey()
+	return _u
+}
+
+// SetPushVapidPrivateKey sets the "push_vapid_private_key" field.
+func (_u *AppConfigUpdateOne) SetPushVapidPrivateKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetPushVapidPrivateKey(v)
+	return _u
+}
+
+// SetNillablePushVapidPrivateKey sets the "push_vapid_private_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillablePushVapidPrivateKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetPushVapidPrivateKey(*v)
+	}
+	return _u
+}
+
+// ClearPushVapidPrivateKey clears the value of the "push_vapid_private_key" field.
+func (_u *AppConfigUpdateOne) ClearPushVapidPrivateKey() *AppConfigUpdateOne {
+	_u.mutation.ClearPushVapidPrivateKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdateOne) SetUpdatedAt(v time.Time) *AppConfigUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2413,6 +2551,24 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.HomeassistantKeyCleared() {
 		_spec.ClearField(appconfig.FieldHomeassistantKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.PushEnabled(); ok {
+		_spec.SetField(appconfig.FieldPushEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.PushEnabledCleared() {
+		_spec.ClearField(appconfig.FieldPushEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.PushVapidPublicKey(); ok {
+		_spec.SetField(appconfig.FieldPushVapidPublicKey, field.TypeString, value)
+	}
+	if _u.mutation.PushVapidPublicKeyCleared() {
+		_spec.ClearField(appconfig.FieldPushVapidPublicKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.PushVapidPrivateKey(); ok {
+		_spec.SetField(appconfig.FieldPushVapidPrivateKey, field.TypeString, value)
+	}
+	if _u.mutation.PushVapidPrivateKeyCleared() {
+		_spec.ClearField(appconfig.FieldPushVapidPrivateKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

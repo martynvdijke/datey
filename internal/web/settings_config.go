@@ -243,5 +243,11 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "HOMEASSISTANT_URL", Label: "Feed URL", Value: "/api/homeassistant/stats?key=" + homeAssistantKey, Type: "readonly", ReadOnly: true, Help: "Use in the RESTful sensor's resource. Prepend your server origin (e.g. http://datey.local:6270)."},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup}
+	pushGroup := configGroup{Title: "Web Push", Fields: []configField{
+		{Name: "PUSH_ENABLED", Label: "Enable Web Push Notifications", Type: "checkbox", Checked: checked("PUSH_ENABLED", cfg.PushEnabled), Help: "Send reminders as browser notifications via Web Push. Requires HTTPS (or localhost). VAPID keys are generated automatically on first enable."},
+		{Name: "PUSH_VAPID_PUBLIC_KEY", Label: "VAPID Public Key", Value: val("PUSH_VAPID_PUBLIC_KEY", cfg.PushVAPIDPublicKey), Type: "readonly", ReadOnly: true, Help: "Public part of the VAPID key pair; served to browsers to establish subscriptions."},
+		{Name: "PUSH_VAPID_PRIVATE_KEY", Label: "VAPID Private Key", Value: val("PUSH_VAPID_PRIVATE_KEY", cfg.PushVAPIDPrivateKey), Type: "text", Secret: true, Help: "Secret signing key. Never share it; rotate by entering a new key or clearing this field and saving while enabled."},
+	}}
+
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, pushGroup}
 }

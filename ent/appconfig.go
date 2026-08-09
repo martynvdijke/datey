@@ -95,6 +95,12 @@ type AppConfig struct {
 	HomeassistantEnabled *bool `json:"homeassistant_enabled,omitempty"`
 	// HomeassistantKey holds the value of the "homeassistant_key" field.
 	HomeassistantKey *string `json:"homeassistant_key,omitempty"`
+	// PushEnabled holds the value of the "push_enabled" field.
+	PushEnabled *bool `json:"push_enabled,omitempty"`
+	// PushVapidPublicKey holds the value of the "push_vapid_public_key" field.
+	PushVapidPublicKey *string `json:"push_vapid_public_key,omitempty"`
+	// PushVapidPrivateKey holds the value of the "push_vapid_private_key" field.
+	PushVapidPrivateKey *string `json:"push_vapid_private_key,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -105,11 +111,11 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled:
+		case appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldPushEnabled:
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey:
+		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -407,6 +413,27 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 				_m.HomeassistantKey = new(string)
 				*_m.HomeassistantKey = value.String
 			}
+		case appconfig.FieldPushEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field push_enabled", values[i])
+			} else if value.Valid {
+				_m.PushEnabled = new(bool)
+				*_m.PushEnabled = value.Bool
+			}
+		case appconfig.FieldPushVapidPublicKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field push_vapid_public_key", values[i])
+			} else if value.Valid {
+				_m.PushVapidPublicKey = new(string)
+				*_m.PushVapidPublicKey = value.String
+			}
+		case appconfig.FieldPushVapidPrivateKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field push_vapid_private_key", values[i])
+			} else if value.Valid {
+				_m.PushVapidPrivateKey = new(string)
+				*_m.PushVapidPrivateKey = value.String
+			}
 		case appconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -642,6 +669,21 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.HomeassistantKey; v != nil {
 		builder.WriteString("homeassistant_key=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.PushEnabled; v != nil {
+		builder.WriteString("push_enabled=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.PushVapidPublicKey; v != nil {
+		builder.WriteString("push_vapid_public_key=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.PushVapidPrivateKey; v != nil {
+		builder.WriteString("push_vapid_private_key=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

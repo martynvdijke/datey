@@ -79,7 +79,7 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 
 	allPeople, _ := h.people.List(r.Context())
 
-	channels := h.channelInfoList()
+	channels := h.channelInfoList(r.Context())
 	configuredChannels := 0
 	for _, ch := range channels {
 		if ch.Configured {

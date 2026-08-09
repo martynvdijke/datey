@@ -249,6 +249,21 @@ func HomeassistantKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldHomeassistantKey, v))
 }
 
+// PushEnabled applies equality check predicate on the "push_enabled" field. It's identical to PushEnabledEQ.
+func PushEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushEnabled, v))
+}
+
+// PushVapidPublicKey applies equality check predicate on the "push_vapid_public_key" field. It's identical to PushVapidPublicKeyEQ.
+func PushVapidPublicKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPrivateKey applies equality check predicate on the "push_vapid_private_key" field. It's identical to PushVapidPrivateKeyEQ.
+func PushVapidPrivateKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushVapidPrivateKey, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpdatedAt, v))
@@ -2622,6 +2637,176 @@ func HomeassistantKeyEqualFold(v string) predicate.AppConfig {
 // HomeassistantKeyContainsFold applies the ContainsFold predicate on the "homeassistant_key" field.
 func HomeassistantKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldHomeassistantKey, v))
+}
+
+// PushEnabledEQ applies the EQ predicate on the "push_enabled" field.
+func PushEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushEnabled, v))
+}
+
+// PushEnabledNEQ applies the NEQ predicate on the "push_enabled" field.
+func PushEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldPushEnabled, v))
+}
+
+// PushEnabledIsNil applies the IsNil predicate on the "push_enabled" field.
+func PushEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldPushEnabled))
+}
+
+// PushEnabledNotNil applies the NotNil predicate on the "push_enabled" field.
+func PushEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldPushEnabled))
+}
+
+// PushVapidPublicKeyEQ applies the EQ predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyNEQ applies the NEQ predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyIn applies the In predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldPushVapidPublicKey, vs...))
+}
+
+// PushVapidPublicKeyNotIn applies the NotIn predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldPushVapidPublicKey, vs...))
+}
+
+// PushVapidPublicKeyGT applies the GT predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyGTE applies the GTE predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyLT applies the LT predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyLTE applies the LTE predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyContains applies the Contains predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyHasPrefix applies the HasPrefix predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyHasSuffix applies the HasSuffix predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyIsNil applies the IsNil predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldPushVapidPublicKey))
+}
+
+// PushVapidPublicKeyNotNil applies the NotNil predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldPushVapidPublicKey))
+}
+
+// PushVapidPublicKeyEqualFold applies the EqualFold predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPublicKeyContainsFold applies the ContainsFold predicate on the "push_vapid_public_key" field.
+func PushVapidPublicKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldPushVapidPublicKey, v))
+}
+
+// PushVapidPrivateKeyEQ applies the EQ predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyNEQ applies the NEQ predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyIn applies the In predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldPushVapidPrivateKey, vs...))
+}
+
+// PushVapidPrivateKeyNotIn applies the NotIn predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldPushVapidPrivateKey, vs...))
+}
+
+// PushVapidPrivateKeyGT applies the GT predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyGTE applies the GTE predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyLT applies the LT predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyLTE applies the LTE predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyContains applies the Contains predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyHasPrefix applies the HasPrefix predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyHasSuffix applies the HasSuffix predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyIsNil applies the IsNil predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldPushVapidPrivateKey))
+}
+
+// PushVapidPrivateKeyNotNil applies the NotNil predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldPushVapidPrivateKey))
+}
+
+// PushVapidPrivateKeyEqualFold applies the EqualFold predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldPushVapidPrivateKey, v))
+}
+
+// PushVapidPrivateKeyContainsFold applies the ContainsFold predicate on the "push_vapid_private_key" field.
+func PushVapidPrivateKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldPushVapidPrivateKey, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

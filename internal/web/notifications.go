@@ -18,14 +18,24 @@ type channelInfo struct {
 	Configured bool
 }
 
-func (h *Handler) channelInfoList() []channelInfo {
-	return []channelInfo{
+func (h *Handler) channelInfoList(ctx context.Context) []channelInfo {
+	channels := []channelInfo{
 		{"email", "Email", h.notifReg.IsConfigured("email")},
 		{"gotify", "Gotify", h.notifReg.IsConfigured("gotify")},
 		{"telegram", "Telegram", h.notifReg.IsConfigured("telegram")},
 		{"ntfy", "ntfy.sh", h.notifReg.IsConfigured("ntfy")},
 		{"webhook", "Webhook", h.notifReg.IsConfigured("webhook")},
 	}
+	// Web Push is only offered when enabled AND at least one subscription
+	// exists — otherwise the checkbox would let users select a channel with
+	// no browser to deliver to.
+	if h.notifReg.IsConfigured("webpush") {
+		count, err := h.pushSubs.Count(ctx)
+		if err == nil && count > 0 {
+			channels = append(channels, channelInfo{"webpush", "Web Push", true})
+		}
+	}
+	return channels
 }
 
 // personOption is a simplified person representation for form dropdowns.
@@ -80,7 +90,7 @@ func (h *Handler) notificationsList(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) newNotificationForm(w http.ResponseWriter, r *http.Request) {
 	h.render(w, r, "notification_form.html", map[string]any{
 		"Title":    "Datey - Create Notification",
-		"Channels": h.channelInfoList(),
+		"Channels": h.channelInfoList(r.Context()),
 		"People":   h.personOptions(r.Context()),
 	})
 }
@@ -116,7 +126,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 				"PersonID":    personIDStr,
 				"EventType":   eventType,
 			},
-			"Channels": h.channelInfoList(),
+			"Channels": h.channelInfoList(r.Context()),
 			"People":   h.personOptions(r.Context()),
 		})
 		return
@@ -134,7 +144,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 				"PersonID":    personIDStr,
 				"EventType":   eventType,
 			},
-			"Channels": h.channelInfoList(),
+			"Channels": h.channelInfoList(r.Context()),
 			"People":   h.personOptions(r.Context()),
 		})
 		return
@@ -151,7 +161,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 				"PersonID":    personIDStr,
 				"EventType":   eventType,
 			},
-			"Channels": h.channelInfoList(),
+			"Channels": h.channelInfoList(r.Context()),
 			"People":   h.personOptions(r.Context()),
 		})
 		return
@@ -160,7 +170,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 	// Parse selected channel targets (default to all configured if none selected)
 	channels := r.Form["channels"]
 	if len(channels) == 0 {
-		for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook"} {
+		for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush"} {
 			if h.notifReg.IsConfigured(name) {
 				channels = append(channels, name)
 			}
@@ -178,7 +188,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 				"PersonID":    personIDStr,
 				"EventType":   eventType,
 			},
-			"Channels": h.channelInfoList(),
+			"Channels": h.channelInfoList(r.Context()),
 			"People":   h.personOptions(r.Context()),
 		})
 		return

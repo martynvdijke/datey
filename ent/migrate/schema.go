@@ -50,6 +50,9 @@ var (
 		{Name: "upcoming_api_key", Type: field.TypeString, Nullable: true},
 		{Name: "homeassistant_enabled", Type: field.TypeBool, Nullable: true},
 		{Name: "homeassistant_key", Type: field.TypeString, Nullable: true},
+		{Name: "push_enabled", Type: field.TypeBool, Nullable: true},
+		{Name: "push_vapid_public_key", Type: field.TypeString, Nullable: true},
+		{Name: "push_vapid_private_key", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
 	// AppConfigsTable holds the schema information for the "app_configs" table.
@@ -225,6 +228,29 @@ var (
 		Columns:    PersonsColumns,
 		PrimaryKey: []*schema.Column{PersonsColumns[0]},
 	}
+	// PushSubscriptionsColumns holds the columns for the "push_subscriptions" table.
+	PushSubscriptionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "endpoint", Type: field.TypeString, Unique: true},
+		{Name: "p256dh", Type: field.TypeString},
+		{Name: "auth", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_push_subscriptions", Type: field.TypeInt, Nullable: true},
+	}
+	// PushSubscriptionsTable holds the schema information for the "push_subscriptions" table.
+	PushSubscriptionsTable = &schema.Table{
+		Name:       "push_subscriptions",
+		Columns:    PushSubscriptionsColumns,
+		PrimaryKey: []*schema.Column{PushSubscriptionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "push_subscriptions_users_push_subscriptions",
+				Columns:    []*schema.Column{PushSubscriptionsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// RecurringRulesColumns holds the columns for the "recurring_rules" table.
 	RecurringRulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -317,6 +343,7 @@ var (
 		NotificationLogsTable,
 		OneTimeNotificationsTable,
 		PersonsTable,
+		PushSubscriptionsTable,
 		RecurringRulesTable,
 		SessionsTable,
 		UsersTable,
@@ -329,6 +356,7 @@ func init() {
 	EventsTable.ForeignKeys[1].RefTable = PersonsTable
 	NotificationDeliveriesTable.ForeignKeys[0].RefTable = OneTimeNotificationsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable
+	PushSubscriptionsTable.ForeignKeys[0].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	PersonGroupsTable.ForeignKeys[0].RefTable = PersonsTable
 	PersonGroupsTable.ForeignKeys[1].RefTable = GroupsTable

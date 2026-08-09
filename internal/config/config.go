@@ -58,6 +58,10 @@ type Config struct {
 
 	HomeAssistantEnabled bool
 	HomeAssistantKey     string
+
+	PushEnabled            bool
+	PushVAPIDPublicKey     string
+	PushVAPIDPrivateKey    string
 }
 
 func Load() (*Config, error) {
@@ -108,6 +112,10 @@ func Load() (*Config, error) {
 
 		HomeAssistantEnabled: getEnv("HOMEASSISTANT_ENABLED", "") == "true",
 		HomeAssistantKey:     getEnv("HOMEASSISTANT_KEY", ""),
+
+		PushEnabled:         getEnv("PUSH_ENABLED", "") == "true",
+		PushVAPIDPublicKey:  getEnv("PUSH_VAPID_PUBLIC_KEY", ""),
+		PushVAPIDPrivateKey: getEnv("PUSH_VAPID_PRIVATE_KEY", ""),
 	}
 
 	if cfg.DataDir == "" {
@@ -179,6 +187,9 @@ func (c *Config) Validate() error {
 	}
 	if c.HomeAssistantEnabled && c.HomeAssistantKey == "" {
 		return fmt.Errorf("HOMEASSISTANT_KEY must be set when HOMEASSISTANT_ENABLED is true")
+	}
+	if c.PushEnabled && (c.PushVAPIDPublicKey == "" || c.PushVAPIDPrivateKey == "") {
+		return fmt.Errorf("PUSH_VAPID_PUBLIC_KEY and PUSH_VAPID_PRIVATE_KEY must be set when PUSH_ENABLED is true")
 	}
 	return nil
 }

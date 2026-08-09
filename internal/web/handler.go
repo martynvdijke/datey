@@ -37,9 +37,10 @@ type Handler struct {
 	oneTimeNots *repository.OneTimeNotificationRepository
 	notifReg    *notifier.Registry
 	recurringRules *repository.RecurringRuleRepository
-	logStore      *logstore.Store
-	settingsStore *settings.Store
-	loginLimiter *rateLimiter
+	pushSubs       *repository.PushSubscriptionRepository
+	logStore       *logstore.Store
+	settingsStore  *settings.Store
+	loginLimiter   *rateLimiter
 }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry, logStore *logstore.Store) *Handler {
@@ -59,9 +60,10 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		oneTimeNots:  repository.NewOneTimeNotificationRepository(client),
 		notifReg:     notifReg,
 		recurringRules: repository.NewRecurringRuleRepository(client),
-		logStore:      logStore,
-		settingsStore: settings.New(client),
-		loginLimiter:  newRateLimiter(5, 60*time.Second),
+		pushSubs:       repository.NewPushSubscriptionRepository(client),
+		logStore:       logStore,
+		settingsStore:  settings.New(client),
+		loginLimiter:   newRateLimiter(5, 60*time.Second),
 	}
 }
 
@@ -109,6 +111,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		// Public TRMNL e-ink stats feed — unauthenticated (TRMNL devices cannot log in)
 		r.Get("/api/trmnl/stats", h.trmnlStats)
 
+		// Service worker for web push — must live at the origin root for scope.
+		r.Get("/sw.js", h.pushServiceWorker)
+
 		// Protected routes — require authentication
 		r.Group(func(r chi.Router) {
 			r.Use(h.Auth)
@@ -152,6 +157,11 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 			// E-Ink toggle: requires auth (not admin-only, any user can toggle)
 			r.Post("/settings/eink-toggle", h.settingsEinkToggle)
+
+			// Web Push subscription management (authenticated, CSRF-protected)
+			r.Get("/push/vapid-public-key", h.pushVAPIDPublicKey)
+			r.Post("/push/subscribe", h.pushSubscribe)
+			r.Post("/push/unsubscribe", h.pushUnsubscribe)
 
 			// Admin-only routes
 			r.Group(func(r chi.Router) {
@@ -275,7 +285,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	allPeople, _ := h.people.List(r.Context())
 	peopleCount := len(allPeople)
 	totalEvents := len(events)
-	channels := h.channelInfoList()
+	channels := h.channelInfoList(r.Context())
 	configuredChannels := 0
 	for _, ch := range channels {
 		if ch.Configured {
@@ -487,6 +497,7 @@ func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 		"EinkMode":        einkMode,
 		"EinkForced":      h.cfg.EinkMode,
 		"CSRFToken":       csrfTokenFromContext(r.Context()),
+		"PushConfigured":  h.notifReg.IsConfigured("webpush"),
 	}
 	u := UserFromContext(r.Context())
 	if u != nil {
