@@ -50,6 +50,9 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("ntfy_token").Optional().Nillable(),
 		field.Int("ntfy_priority").Optional().Nillable(),
 
+		field.String("webhook_url").Optional().Nillable(),
+		field.String("webhook_secret").Optional().Nillable(),
+
 		field.String("umami_url").Optional().Nillable(),
 		field.String("umami_website_id").Optional().Nillable(),
 

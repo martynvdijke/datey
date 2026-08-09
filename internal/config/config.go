@@ -37,6 +37,9 @@ type Config struct {
 	NtfyToken    string
 	NtfyPriority int
 
+	WebhookURL    string
+	WebhookSecret string
+
 	UmamiURL       string
 	UmamiWebsiteID string
 
@@ -72,6 +75,8 @@ func Load() (*Config, error) {
 		NtfyTopic:        getEnv("NTFY_TOPIC", ""),
 		NtfyToken:        getEnv("NTFY_TOKEN", ""),
 		NtfyPriority:     getEnvInt("NTFY_PRIORITY", 3),
+		WebhookURL:       getEnv("WEBHOOK_URL", ""),
+		WebhookSecret:    getEnv("WEBHOOK_SECRET", ""),
 
 		BackupDir:           getEnv("BACKUP_DIR", ""),
 		BackupRetentionDays: getEnvInt("BACKUP_RETENTION_DAYS", 0),

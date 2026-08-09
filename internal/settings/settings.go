@@ -138,6 +138,12 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.NtfyPriority; v != nil {
 		cfg.NtfyPriority = *v
 	}
+	if v := row.WebhookURL; v != nil {
+		cfg.WebhookURL = *v
+	}
+	if v := row.WebhookSecret; v != nil {
+		cfg.WebhookSecret = *v
+	}
 	if v := row.UmamiURL; v != nil {
 		cfg.UmamiURL = *v
 	}
@@ -208,6 +214,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	ntfyTopic := form.Get("NTFY_TOPIC")
 	ntfyToken := form.Get("NTFY_TOKEN")
 	ntfyPriority := parseIntPtr(form, "NTFY_PRIORITY", errs)
+	webhookURL := form.Get("WEBHOOK_URL")
+	webhookSecret := form.Get("WEBHOOK_SECRET")
 	umamiURL := form.Get("UMAMI_URL")
 	umamiWebsiteID := form.Get("UMAMI_WEBSITE_ID")
 	einkMode := form.Get("EINK_MODE") == "on"
@@ -309,6 +317,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableNtfyTopic(nillableStr(ntfyTopic)).
 		SetNillableNtfyToken(nillableStr(ntfyToken)).
 		SetNillableNtfyPriority(ntfyPriority).
+		SetNillableWebhookURL(nillableStr(webhookURL)).
+		SetNillableWebhookSecret(nillableStr(webhookSecret)).
 		SetNillableUmamiURL(nillableStr(umamiURL)).
 		SetNillableUmamiWebsiteID(nillableStr(umamiWebsiteID)).
 		SetNillableEinkMode(&einkMode).
@@ -346,6 +356,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.NtfyTopic = ntfyTopic
 	cfg.NtfyToken = ntfyToken
 	cfg.NtfyPriority = deref(ntfyPriority, cfg.NtfyPriority)
+	cfg.WebhookURL = webhookURL
+	cfg.WebhookSecret = webhookSecret
 	cfg.UmamiURL = umamiURL
 	cfg.UmamiWebsiteID = umamiWebsiteID
 	cfg.EinkMode = einkMode

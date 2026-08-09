@@ -35,6 +35,8 @@ var (
 		{Name: "ntfy_topic", Type: field.TypeString, Nullable: true},
 		{Name: "ntfy_token", Type: field.TypeString, Nullable: true},
 		{Name: "ntfy_priority", Type: field.TypeInt, Nullable: true},
+		{Name: "webhook_url", Type: field.TypeString, Nullable: true},
+		{Name: "webhook_secret", Type: field.TypeString, Nullable: true},
 		{Name: "umami_url", Type: field.TypeString, Nullable: true},
 		{Name: "umami_website_id", Type: field.TypeString, Nullable: true},
 		{Name: "eink_mode", Type: field.TypeBool, Nullable: true},

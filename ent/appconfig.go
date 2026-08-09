@@ -65,6 +65,10 @@ type AppConfig struct {
 	NtfyToken *string `json:"ntfy_token,omitempty"`
 	// NtfyPriority holds the value of the "ntfy_priority" field.
 	NtfyPriority *int `json:"ntfy_priority,omitempty"`
+	// WebhookURL holds the value of the "webhook_url" field.
+	WebhookURL *string `json:"webhook_url,omitempty"`
+	// WebhookSecret holds the value of the "webhook_secret" field.
+	WebhookSecret *string `json:"webhook_secret,omitempty"`
 	// UmamiURL holds the value of the "umami_url" field.
 	UmamiURL *string `json:"umami_url,omitempty"`
 	// UmamiWebsiteID holds the value of the "umami_website_id" field.
@@ -93,7 +97,7 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey:
+		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -285,6 +289,20 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.NtfyPriority = new(int)
 				*_m.NtfyPriority = int(value.Int64)
+			}
+		case appconfig.FieldWebhookURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field webhook_url", values[i])
+			} else if value.Valid {
+				_m.WebhookURL = new(string)
+				*_m.WebhookURL = value.String
+			}
+		case appconfig.FieldWebhookSecret:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field webhook_secret", values[i])
+			} else if value.Valid {
+				_m.WebhookSecret = new(string)
+				*_m.WebhookSecret = value.String
 			}
 		case appconfig.FieldUmamiURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -496,6 +514,16 @@ func (_m *AppConfig) String() string {
 	if v := _m.NtfyPriority; v != nil {
 		builder.WriteString("ntfy_priority=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.WebhookURL; v != nil {
+		builder.WriteString("webhook_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.WebhookSecret; v != nil {
+		builder.WriteString("webhook_secret=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	if v := _m.UmamiURL; v != nil {

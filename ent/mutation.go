@@ -87,6 +87,8 @@ type AppConfigMutation struct {
 	ntfy_token               *string
 	ntfy_priority            *int
 	addntfy_priority         *int
+	webhook_url              *string
+	webhook_secret           *string
 	umami_url                *string
 	umami_website_id         *string
 	eink_mode                *bool
@@ -1544,6 +1546,104 @@ func (m *AppConfigMutation) ResetNtfyPriority() {
 	delete(m.clearedFields, appconfig.FieldNtfyPriority)
 }
 
+// SetWebhookURL sets the "webhook_url" field.
+func (m *AppConfigMutation) SetWebhookURL(s string) {
+	m.webhook_url = &s
+}
+
+// WebhookURL returns the value of the "webhook_url" field in the mutation.
+func (m *AppConfigMutation) WebhookURL() (r string, exists bool) {
+	v := m.webhook_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWebhookURL returns the old "webhook_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldWebhookURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWebhookURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWebhookURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWebhookURL: %w", err)
+	}
+	return oldValue.WebhookURL, nil
+}
+
+// ClearWebhookURL clears the value of the "webhook_url" field.
+func (m *AppConfigMutation) ClearWebhookURL() {
+	m.webhook_url = nil
+	m.clearedFields[appconfig.FieldWebhookURL] = struct{}{}
+}
+
+// WebhookURLCleared returns if the "webhook_url" field was cleared in this mutation.
+func (m *AppConfigMutation) WebhookURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldWebhookURL]
+	return ok
+}
+
+// ResetWebhookURL resets all changes to the "webhook_url" field.
+func (m *AppConfigMutation) ResetWebhookURL() {
+	m.webhook_url = nil
+	delete(m.clearedFields, appconfig.FieldWebhookURL)
+}
+
+// SetWebhookSecret sets the "webhook_secret" field.
+func (m *AppConfigMutation) SetWebhookSecret(s string) {
+	m.webhook_secret = &s
+}
+
+// WebhookSecret returns the value of the "webhook_secret" field in the mutation.
+func (m *AppConfigMutation) WebhookSecret() (r string, exists bool) {
+	v := m.webhook_secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWebhookSecret returns the old "webhook_secret" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldWebhookSecret(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWebhookSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWebhookSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWebhookSecret: %w", err)
+	}
+	return oldValue.WebhookSecret, nil
+}
+
+// ClearWebhookSecret clears the value of the "webhook_secret" field.
+func (m *AppConfigMutation) ClearWebhookSecret() {
+	m.webhook_secret = nil
+	m.clearedFields[appconfig.FieldWebhookSecret] = struct{}{}
+}
+
+// WebhookSecretCleared returns if the "webhook_secret" field was cleared in this mutation.
+func (m *AppConfigMutation) WebhookSecretCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldWebhookSecret]
+	return ok
+}
+
+// ResetWebhookSecret resets all changes to the "webhook_secret" field.
+func (m *AppConfigMutation) ResetWebhookSecret() {
+	m.webhook_secret = nil
+	delete(m.clearedFields, appconfig.FieldWebhookSecret)
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (m *AppConfigMutation) SetUmamiURL(s string) {
 	m.umami_url = &s
@@ -1991,7 +2091,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 32)
+	fields := make([]string, 0, 34)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -2063,6 +2163,12 @@ func (m *AppConfigMutation) Fields() []string {
 	}
 	if m.ntfy_priority != nil {
 		fields = append(fields, appconfig.FieldNtfyPriority)
+	}
+	if m.webhook_url != nil {
+		fields = append(fields, appconfig.FieldWebhookURL)
+	}
+	if m.webhook_secret != nil {
+		fields = append(fields, appconfig.FieldWebhookSecret)
 	}
 	if m.umami_url != nil {
 		fields = append(fields, appconfig.FieldUmamiURL)
@@ -2144,6 +2250,10 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.NtfyToken()
 	case appconfig.FieldNtfyPriority:
 		return m.NtfyPriority()
+	case appconfig.FieldWebhookURL:
+		return m.WebhookURL()
+	case appconfig.FieldWebhookSecret:
+		return m.WebhookSecret()
 	case appconfig.FieldUmamiURL:
 		return m.UmamiURL()
 	case appconfig.FieldUmamiWebsiteID:
@@ -2217,6 +2327,10 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldNtfyToken(ctx)
 	case appconfig.FieldNtfyPriority:
 		return m.OldNtfyPriority(ctx)
+	case appconfig.FieldWebhookURL:
+		return m.OldWebhookURL(ctx)
+	case appconfig.FieldWebhookSecret:
+		return m.OldWebhookSecret(ctx)
 	case appconfig.FieldUmamiURL:
 		return m.OldUmamiURL(ctx)
 	case appconfig.FieldUmamiWebsiteID:
@@ -2409,6 +2523,20 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNtfyPriority(v)
+		return nil
+	case appconfig.FieldWebhookURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWebhookURL(v)
+		return nil
+	case appconfig.FieldWebhookSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWebhookSecret(v)
 		return nil
 	case appconfig.FieldUmamiURL:
 		v, ok := value.(string)
@@ -2679,6 +2807,12 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldNtfyPriority) {
 		fields = append(fields, appconfig.FieldNtfyPriority)
 	}
+	if m.FieldCleared(appconfig.FieldWebhookURL) {
+		fields = append(fields, appconfig.FieldWebhookURL)
+	}
+	if m.FieldCleared(appconfig.FieldWebhookSecret) {
+		fields = append(fields, appconfig.FieldWebhookSecret)
+	}
 	if m.FieldCleared(appconfig.FieldUmamiURL) {
 		fields = append(fields, appconfig.FieldUmamiURL)
 	}
@@ -2789,6 +2923,12 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldNtfyPriority:
 		m.ClearNtfyPriority()
 		return nil
+	case appconfig.FieldWebhookURL:
+		m.ClearWebhookURL()
+		return nil
+	case appconfig.FieldWebhookSecret:
+		m.ClearWebhookSecret()
+		return nil
 	case appconfig.FieldUmamiURL:
 		m.ClearUmamiURL()
 		return nil
@@ -2892,6 +3032,12 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldNtfyPriority:
 		m.ResetNtfyPriority()
+		return nil
+	case appconfig.FieldWebhookURL:
+		m.ResetWebhookURL()
+		return nil
+	case appconfig.FieldWebhookSecret:
+		m.ResetWebhookSecret()
 		return nil
 	case appconfig.FieldUmamiURL:
 		m.ResetUmamiURL()

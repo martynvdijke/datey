@@ -564,6 +564,46 @@ func (_u *AppConfigUpdate) ClearNtfyPriority() *AppConfigUpdate {
 	return _u
 }
 
+// SetWebhookURL sets the "webhook_url" field.
+func (_u *AppConfigUpdate) SetWebhookURL(v string) *AppConfigUpdate {
+	_u.mutation.SetWebhookURL(v)
+	return _u
+}
+
+// SetNillableWebhookURL sets the "webhook_url" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableWebhookURL(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetWebhookURL(*v)
+	}
+	return _u
+}
+
+// ClearWebhookURL clears the value of the "webhook_url" field.
+func (_u *AppConfigUpdate) ClearWebhookURL() *AppConfigUpdate {
+	_u.mutation.ClearWebhookURL()
+	return _u
+}
+
+// SetWebhookSecret sets the "webhook_secret" field.
+func (_u *AppConfigUpdate) SetWebhookSecret(v string) *AppConfigUpdate {
+	_u.mutation.SetWebhookSecret(v)
+	return _u
+}
+
+// SetNillableWebhookSecret sets the "webhook_secret" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableWebhookSecret(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetWebhookSecret(*v)
+	}
+	return _u
+}
+
+// ClearWebhookSecret clears the value of the "webhook_secret" field.
+func (_u *AppConfigUpdate) ClearWebhookSecret() *AppConfigUpdate {
+	_u.mutation.ClearWebhookSecret()
+	return _u
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_u *AppConfigUpdate) SetUmamiURL(v string) *AppConfigUpdate {
 	_u.mutation.SetUmamiURL(v)
@@ -939,6 +979,18 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.NtfyPriorityCleared() {
 		_spec.ClearField(appconfig.FieldNtfyPriority, field.TypeInt)
+	}
+	if value, ok := _u.mutation.WebhookURL(); ok {
+		_spec.SetField(appconfig.FieldWebhookURL, field.TypeString, value)
+	}
+	if _u.mutation.WebhookURLCleared() {
+		_spec.ClearField(appconfig.FieldWebhookURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.WebhookSecret(); ok {
+		_spec.SetField(appconfig.FieldWebhookSecret, field.TypeString, value)
+	}
+	if _u.mutation.WebhookSecretCleared() {
+		_spec.ClearField(appconfig.FieldWebhookSecret, field.TypeString)
 	}
 	if value, ok := _u.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)
@@ -1547,6 +1599,46 @@ func (_u *AppConfigUpdateOne) ClearNtfyPriority() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetWebhookURL sets the "webhook_url" field.
+func (_u *AppConfigUpdateOne) SetWebhookURL(v string) *AppConfigUpdateOne {
+	_u.mutation.SetWebhookURL(v)
+	return _u
+}
+
+// SetNillableWebhookURL sets the "webhook_url" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableWebhookURL(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetWebhookURL(*v)
+	}
+	return _u
+}
+
+// ClearWebhookURL clears the value of the "webhook_url" field.
+func (_u *AppConfigUpdateOne) ClearWebhookURL() *AppConfigUpdateOne {
+	_u.mutation.ClearWebhookURL()
+	return _u
+}
+
+// SetWebhookSecret sets the "webhook_secret" field.
+func (_u *AppConfigUpdateOne) SetWebhookSecret(v string) *AppConfigUpdateOne {
+	_u.mutation.SetWebhookSecret(v)
+	return _u
+}
+
+// SetNillableWebhookSecret sets the "webhook_secret" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableWebhookSecret(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetWebhookSecret(*v)
+	}
+	return _u
+}
+
+// ClearWebhookSecret clears the value of the "webhook_secret" field.
+func (_u *AppConfigUpdateOne) ClearWebhookSecret() *AppConfigUpdateOne {
+	_u.mutation.ClearWebhookSecret()
+	return _u
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_u *AppConfigUpdateOne) SetUmamiURL(v string) *AppConfigUpdateOne {
 	_u.mutation.SetUmamiURL(v)
@@ -1952,6 +2044,18 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.NtfyPriorityCleared() {
 		_spec.ClearField(appconfig.FieldNtfyPriority, field.TypeInt)
+	}
+	if value, ok := _u.mutation.WebhookURL(); ok {
+		_spec.SetField(appconfig.FieldWebhookURL, field.TypeString, value)
+	}
+	if _u.mutation.WebhookURLCleared() {
+		_spec.ClearField(appconfig.FieldWebhookURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.WebhookSecret(); ok {
+		_spec.SetField(appconfig.FieldWebhookSecret, field.TypeString, value)
+	}
+	if _u.mutation.WebhookSecretCleared() {
+		_spec.ClearField(appconfig.FieldWebhookSecret, field.TypeString)
 	}
 	if value, ok := _u.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)

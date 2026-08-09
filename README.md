@@ -18,6 +18,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🔔 Gotify Notifications** — Push notifications via Gotify self-hosted server.
 - **🤖 Telegram Notifications** — Reminders sent via Telegram bot.
 - **🔔 ntfy Notifications** — Push notifications via ntfy.sh (or any self-hosted ntfy server), with optional bearer-token auth and priority levels.
+- **🔗 Webhook Notifications** — Generic JSON-POST webhooks for any endpoint (Slack, Discord, IFTTT, custom scripts), with optional HMAC-SHA256 request signing.
 - **🔧 Multi-Notification Registry** — Configure one or multiple channels; each is tested independently.
 - **✅ Test Notifications** — Send test messages per channel from the settings page.
 - **🔔 One-Time Notifications** — Schedule ad-hoc reminders independent of recurring events.
@@ -95,6 +96,8 @@ See `.env.example` for a template.
 | `GOTIFY_TOKEN` | — | Gotify application token |
 | `TELEGRAM_BOT_TOKEN` | — | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | — | Telegram chat ID |
+| `WEBHOOK_URL` | — | Comma-separated list of URLs that receive a JSON POST per reminder (required to enable webhook) |
+| `WEBHOOK_SECRET` | — | Optional secret used to sign webhook requests (`X-Datey-Signature: sha256=<hmac>`) |
 | `UMAMI_URL` | — | Umami analytics endpoint |
 | `UMAMI_WEBSITE_ID` | — | Umami website ID |
 | `EINK_MODE` | `false` | Force high-contrast E-Ink theme for all users |
@@ -104,6 +107,8 @@ See `.env.example` for a template.
 | `ICAL_FEED_KEY` | — | Secret key required in feed URLs (`?key=...`); auto-generated on first enable via the UI |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
+
+> **Webhook receivers:** each reminder is POSTed as JSON `{"title": "...", "message": "...", "channel": "webhook", "sent_at": "<RFC3339>"}` to every configured URL. When `WEBHOOK_SECRET` is set, requests carry an `X-Datey-Signature: sha256=<hex>` header — recompute the HMAC-SHA256 of the raw body with your shared secret to verify the request came from datey. Use the "Webhook" test button in Settings → Notifications to confirm delivery before wiring up automation.
 
 ## Project Structure
 
@@ -126,7 +131,9 @@ datey/
 │   │   ├── registry.go        # Multi-channel notification registry
 │   │   ├── email.go           # Email (SMTP) notifier
 │   │   ├── gotify.go          # Gotify push notifier
-│   │   └── telegram.go        # Telegram bot notifier
+│   │   ├── telegram.go        # Telegram bot notifier
+│   │   ├── ntfy.go            # ntfy.sh push notifier
+│   │   └── webhook.go         # Generic JSON-POST webhook notifier
 │   ├── repository/
 │   │   ├── person.go          # Person repository
 │   │   ├── event.go           # Event repository

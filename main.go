@@ -94,6 +94,7 @@ func main() {
 	reg.Register(notifier.NewGotifyNotifier(cfg))
 	reg.Register(notifier.NewTelegramNotifier(cfg))
 	reg.Register(notifier.NewNtfyNotifier(cfg))
+	reg.Register(notifier.NewWebhookNotifier(cfg))
 
 	r := chi.NewRouter()
 

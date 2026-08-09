@@ -355,6 +355,34 @@ func (_c *AppConfigCreate) SetNillableNtfyPriority(v *int) *AppConfigCreate {
 	return _c
 }
 
+// SetWebhookURL sets the "webhook_url" field.
+func (_c *AppConfigCreate) SetWebhookURL(v string) *AppConfigCreate {
+	_c.mutation.SetWebhookURL(v)
+	return _c
+}
+
+// SetNillableWebhookURL sets the "webhook_url" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableWebhookURL(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetWebhookURL(*v)
+	}
+	return _c
+}
+
+// SetWebhookSecret sets the "webhook_secret" field.
+func (_c *AppConfigCreate) SetWebhookSecret(v string) *AppConfigCreate {
+	_c.mutation.SetWebhookSecret(v)
+	return _c
+}
+
+// SetNillableWebhookSecret sets the "webhook_secret" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableWebhookSecret(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetWebhookSecret(*v)
+	}
+	return _c
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_c *AppConfigCreate) SetUmamiURL(v string) *AppConfigCreate {
 	_c.mutation.SetUmamiURL(v)
@@ -622,6 +650,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.NtfyPriority(); ok {
 		_spec.SetField(appconfig.FieldNtfyPriority, field.TypeInt, value)
 		_node.NtfyPriority = &value
+	}
+	if value, ok := _c.mutation.WebhookURL(); ok {
+		_spec.SetField(appconfig.FieldWebhookURL, field.TypeString, value)
+		_node.WebhookURL = &value
+	}
+	if value, ok := _c.mutation.WebhookSecret(); ok {
+		_spec.SetField(appconfig.FieldWebhookSecret, field.TypeString, value)
+		_node.WebhookSecret = &value
 	}
 	if value, ok := _c.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)

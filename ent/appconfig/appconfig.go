@@ -59,6 +59,10 @@ const (
 	FieldNtfyToken = "ntfy_token"
 	// FieldNtfyPriority holds the string denoting the ntfy_priority field in the database.
 	FieldNtfyPriority = "ntfy_priority"
+	// FieldWebhookURL holds the string denoting the webhook_url field in the database.
+	FieldWebhookURL = "webhook_url"
+	// FieldWebhookSecret holds the string denoting the webhook_secret field in the database.
+	FieldWebhookSecret = "webhook_secret"
 	// FieldUmamiURL holds the string denoting the umami_url field in the database.
 	FieldUmamiURL = "umami_url"
 	// FieldUmamiWebsiteID holds the string denoting the umami_website_id field in the database.
@@ -106,6 +110,8 @@ var Columns = []string{
 	FieldNtfyTopic,
 	FieldNtfyToken,
 	FieldNtfyPriority,
+	FieldWebhookURL,
+	FieldWebhookSecret,
 	FieldUmamiURL,
 	FieldUmamiWebsiteID,
 	FieldEinkMode,
@@ -252,6 +258,16 @@ func ByNtfyToken(opts ...sql.OrderTermOption) OrderOption {
 // ByNtfyPriority orders the results by the ntfy_priority field.
 func ByNtfyPriority(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNtfyPriority, opts...).ToFunc()
+}
+
+// ByWebhookURL orders the results by the webhook_url field.
+func ByWebhookURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWebhookURL, opts...).ToFunc()
+}
+
+// ByWebhookSecret orders the results by the webhook_secret field.
+func ByWebhookSecret(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWebhookSecret, opts...).ToFunc()
 }
 
 // ByUmamiURL orders the results by the umami_url field.

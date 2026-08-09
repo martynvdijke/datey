@@ -101,6 +101,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	gotifyURL, gotifyToken := "https://gotify.test", "gt-token"
 	ntfyURL, ntfyTopic, ntfyToken := "https://ntfy.example.com", "reminders", "ntfy-tok"
 	ntfyPriority := 5
+	webhookURL := "https://hooks.example.com/a"
+	webhookSecret := "wh-secret"
 	umamiURL := "https://umami.test"
 	eink := true
 	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
@@ -119,6 +121,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 		SetNillableNtfyTopic(&ntfyTopic).
 		SetNillableNtfyToken(&ntfyToken).
 		SetNillableNtfyPriority(&ntfyPriority).
+		SetNillableWebhookURL(&webhookURL).
+		SetNillableWebhookSecret(&webhookSecret).
 		SetNillableUmamiURL(&umamiURL).
 		SetNillableEinkMode(&eink).
 		Save(ctx); err != nil {
@@ -173,6 +177,12 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	}
 	if cfg.NtfyPriority != ntfyPriority {
 		t.Errorf("NtfyPriority: got %d want %d", cfg.NtfyPriority, ntfyPriority)
+	}
+	if cfg.WebhookURL != webhookURL {
+		t.Errorf("WebhookURL: got %q want %q", cfg.WebhookURL, webhookURL)
+	}
+	if cfg.WebhookSecret != webhookSecret {
+		t.Errorf("WebhookSecret: got %q want %q", cfg.WebhookSecret, webhookSecret)
 	}
 	if cfg.UmamiURL != umamiURL {
 		t.Errorf("UmamiURL: got %q want %q", cfg.UmamiURL, umamiURL)
