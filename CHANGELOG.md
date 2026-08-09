@@ -1,3 +1,19 @@
+# [1.24.0](https://github.com/martynvdijke/datey/compare/v1.23.0...v1.24.0) (2026-08-09)
+
+
+### Bug Fixes
+
+* **lint:** resolve golangci-lint issues blocking CI ([6ffbf28](https://github.com/martynvdijke/datey/commit/6ffbf28a6ba1598e8df3170c7474905dacf5025d))
+
+
+### Features
+
+* **feed:** add public RSS feed of upcoming events ([836bfec](https://github.com/martynvdijke/datey/commit/836bfec34a9f6158f0409c2e33b6979d149568d3))
+* **notify:** add generic JSON webhook notification channel ([68f3d75](https://github.com/martynvdijke/datey/commit/68f3d75bb83f333d3ecd0f3fb983e975eafa3738))
+* **notify:** add ntfy.sh push notification channel ([82a8293](https://github.com/martynvdijke/datey/commit/82a82938bdb55dfa638e2a5ba1d7f24e148c526f))
+* **people:** show calculated ages from birthday events ([613a7c5](https://github.com/martynvdijke/datey/commit/613a7c5c2d6907ccbb758c9219f75474f4a01a32))
+* **rules:** add Easter-based recurring rules computed via Gregorian computus ([6a95a7c](https://github.com/martynvdijke/datey/commit/6a95a7ce4bd55ce5c732dc9e583ba8b7520b1fc5))
+
 # [1.23.0](https://github.com/martynvdijke/datey/compare/v1.22.0...v1.23.0) (2026-08-08)
 
 
