@@ -477,6 +477,93 @@ func (_u *AppConfigUpdate) ClearTelegramChatID() *AppConfigUpdate {
 	return _u
 }
 
+// SetNtfyURL sets the "ntfy_url" field.
+func (_u *AppConfigUpdate) SetNtfyURL(v string) *AppConfigUpdate {
+	_u.mutation.SetNtfyURL(v)
+	return _u
+}
+
+// SetNillableNtfyURL sets the "ntfy_url" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableNtfyURL(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetNtfyURL(*v)
+	}
+	return _u
+}
+
+// ClearNtfyURL clears the value of the "ntfy_url" field.
+func (_u *AppConfigUpdate) ClearNtfyURL() *AppConfigUpdate {
+	_u.mutation.ClearNtfyURL()
+	return _u
+}
+
+// SetNtfyTopic sets the "ntfy_topic" field.
+func (_u *AppConfigUpdate) SetNtfyTopic(v string) *AppConfigUpdate {
+	_u.mutation.SetNtfyTopic(v)
+	return _u
+}
+
+// SetNillableNtfyTopic sets the "ntfy_topic" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableNtfyTopic(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetNtfyTopic(*v)
+	}
+	return _u
+}
+
+// ClearNtfyTopic clears the value of the "ntfy_topic" field.
+func (_u *AppConfigUpdate) ClearNtfyTopic() *AppConfigUpdate {
+	_u.mutation.ClearNtfyTopic()
+	return _u
+}
+
+// SetNtfyToken sets the "ntfy_token" field.
+func (_u *AppConfigUpdate) SetNtfyToken(v string) *AppConfigUpdate {
+	_u.mutation.SetNtfyToken(v)
+	return _u
+}
+
+// SetNillableNtfyToken sets the "ntfy_token" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableNtfyToken(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetNtfyToken(*v)
+	}
+	return _u
+}
+
+// ClearNtfyToken clears the value of the "ntfy_token" field.
+func (_u *AppConfigUpdate) ClearNtfyToken() *AppConfigUpdate {
+	_u.mutation.ClearNtfyToken()
+	return _u
+}
+
+// SetNtfyPriority sets the "ntfy_priority" field.
+func (_u *AppConfigUpdate) SetNtfyPriority(v int) *AppConfigUpdate {
+	_u.mutation.ResetNtfyPriority()
+	_u.mutation.SetNtfyPriority(v)
+	return _u
+}
+
+// SetNillableNtfyPriority sets the "ntfy_priority" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableNtfyPriority(v *int) *AppConfigUpdate {
+	if v != nil {
+		_u.SetNtfyPriority(*v)
+	}
+	return _u
+}
+
+// AddNtfyPriority adds value to the "ntfy_priority" field.
+func (_u *AppConfigUpdate) AddNtfyPriority(v int) *AppConfigUpdate {
+	_u.mutation.AddNtfyPriority(v)
+	return _u
+}
+
+// ClearNtfyPriority clears the value of the "ntfy_priority" field.
+func (_u *AppConfigUpdate) ClearNtfyPriority() *AppConfigUpdate {
+	_u.mutation.ClearNtfyPriority()
+	return _u
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_u *AppConfigUpdate) SetUmamiURL(v string) *AppConfigUpdate {
 	_u.mutation.SetUmamiURL(v)
@@ -825,6 +912,33 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.TelegramChatIDCleared() {
 		_spec.ClearField(appconfig.FieldTelegramChatID, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyURL(); ok {
+		_spec.SetField(appconfig.FieldNtfyURL, field.TypeString, value)
+	}
+	if _u.mutation.NtfyURLCleared() {
+		_spec.ClearField(appconfig.FieldNtfyURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyTopic(); ok {
+		_spec.SetField(appconfig.FieldNtfyTopic, field.TypeString, value)
+	}
+	if _u.mutation.NtfyTopicCleared() {
+		_spec.ClearField(appconfig.FieldNtfyTopic, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyToken(); ok {
+		_spec.SetField(appconfig.FieldNtfyToken, field.TypeString, value)
+	}
+	if _u.mutation.NtfyTokenCleared() {
+		_spec.ClearField(appconfig.FieldNtfyToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyPriority(); ok {
+		_spec.SetField(appconfig.FieldNtfyPriority, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedNtfyPriority(); ok {
+		_spec.AddField(appconfig.FieldNtfyPriority, field.TypeInt, value)
+	}
+	if _u.mutation.NtfyPriorityCleared() {
+		_spec.ClearField(appconfig.FieldNtfyPriority, field.TypeInt)
 	}
 	if value, ok := _u.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)
@@ -1346,6 +1460,93 @@ func (_u *AppConfigUpdateOne) ClearTelegramChatID() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetNtfyURL sets the "ntfy_url" field.
+func (_u *AppConfigUpdateOne) SetNtfyURL(v string) *AppConfigUpdateOne {
+	_u.mutation.SetNtfyURL(v)
+	return _u
+}
+
+// SetNillableNtfyURL sets the "ntfy_url" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableNtfyURL(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetNtfyURL(*v)
+	}
+	return _u
+}
+
+// ClearNtfyURL clears the value of the "ntfy_url" field.
+func (_u *AppConfigUpdateOne) ClearNtfyURL() *AppConfigUpdateOne {
+	_u.mutation.ClearNtfyURL()
+	return _u
+}
+
+// SetNtfyTopic sets the "ntfy_topic" field.
+func (_u *AppConfigUpdateOne) SetNtfyTopic(v string) *AppConfigUpdateOne {
+	_u.mutation.SetNtfyTopic(v)
+	return _u
+}
+
+// SetNillableNtfyTopic sets the "ntfy_topic" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableNtfyTopic(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetNtfyTopic(*v)
+	}
+	return _u
+}
+
+// ClearNtfyTopic clears the value of the "ntfy_topic" field.
+func (_u *AppConfigUpdateOne) ClearNtfyTopic() *AppConfigUpdateOne {
+	_u.mutation.ClearNtfyTopic()
+	return _u
+}
+
+// SetNtfyToken sets the "ntfy_token" field.
+func (_u *AppConfigUpdateOne) SetNtfyToken(v string) *AppConfigUpdateOne {
+	_u.mutation.SetNtfyToken(v)
+	return _u
+}
+
+// SetNillableNtfyToken sets the "ntfy_token" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableNtfyToken(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetNtfyToken(*v)
+	}
+	return _u
+}
+
+// ClearNtfyToken clears the value of the "ntfy_token" field.
+func (_u *AppConfigUpdateOne) ClearNtfyToken() *AppConfigUpdateOne {
+	_u.mutation.ClearNtfyToken()
+	return _u
+}
+
+// SetNtfyPriority sets the "ntfy_priority" field.
+func (_u *AppConfigUpdateOne) SetNtfyPriority(v int) *AppConfigUpdateOne {
+	_u.mutation.ResetNtfyPriority()
+	_u.mutation.SetNtfyPriority(v)
+	return _u
+}
+
+// SetNillableNtfyPriority sets the "ntfy_priority" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableNtfyPriority(v *int) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetNtfyPriority(*v)
+	}
+	return _u
+}
+
+// AddNtfyPriority adds value to the "ntfy_priority" field.
+func (_u *AppConfigUpdateOne) AddNtfyPriority(v int) *AppConfigUpdateOne {
+	_u.mutation.AddNtfyPriority(v)
+	return _u
+}
+
+// ClearNtfyPriority clears the value of the "ntfy_priority" field.
+func (_u *AppConfigUpdateOne) ClearNtfyPriority() *AppConfigUpdateOne {
+	_u.mutation.ClearNtfyPriority()
+	return _u
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_u *AppConfigUpdateOne) SetUmamiURL(v string) *AppConfigUpdateOne {
 	_u.mutation.SetUmamiURL(v)
@@ -1724,6 +1925,33 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.TelegramChatIDCleared() {
 		_spec.ClearField(appconfig.FieldTelegramChatID, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyURL(); ok {
+		_spec.SetField(appconfig.FieldNtfyURL, field.TypeString, value)
+	}
+	if _u.mutation.NtfyURLCleared() {
+		_spec.ClearField(appconfig.FieldNtfyURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyTopic(); ok {
+		_spec.SetField(appconfig.FieldNtfyTopic, field.TypeString, value)
+	}
+	if _u.mutation.NtfyTopicCleared() {
+		_spec.ClearField(appconfig.FieldNtfyTopic, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyToken(); ok {
+		_spec.SetField(appconfig.FieldNtfyToken, field.TypeString, value)
+	}
+	if _u.mutation.NtfyTokenCleared() {
+		_spec.ClearField(appconfig.FieldNtfyToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.NtfyPriority(); ok {
+		_spec.SetField(appconfig.FieldNtfyPriority, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedNtfyPriority(); ok {
+		_spec.AddField(appconfig.FieldNtfyPriority, field.TypeInt, value)
+	}
+	if _u.mutation.NtfyPriorityCleared() {
+		_spec.ClearField(appconfig.FieldNtfyPriority, field.TypeInt)
 	}
 	if value, ok := _u.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)

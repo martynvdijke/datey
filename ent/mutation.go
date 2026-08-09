@@ -82,6 +82,11 @@ type AppConfigMutation struct {
 	gotify_token             *string
 	telegram_bot_token       *string
 	telegram_chat_id         *string
+	ntfy_url                 *string
+	ntfy_topic               *string
+	ntfy_token               *string
+	ntfy_priority            *int
+	addntfy_priority         *int
 	umami_url                *string
 	umami_website_id         *string
 	eink_mode                *bool
@@ -1322,6 +1327,223 @@ func (m *AppConfigMutation) ResetTelegramChatID() {
 	delete(m.clearedFields, appconfig.FieldTelegramChatID)
 }
 
+// SetNtfyURL sets the "ntfy_url" field.
+func (m *AppConfigMutation) SetNtfyURL(s string) {
+	m.ntfy_url = &s
+}
+
+// NtfyURL returns the value of the "ntfy_url" field in the mutation.
+func (m *AppConfigMutation) NtfyURL() (r string, exists bool) {
+	v := m.ntfy_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNtfyURL returns the old "ntfy_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldNtfyURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNtfyURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNtfyURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNtfyURL: %w", err)
+	}
+	return oldValue.NtfyURL, nil
+}
+
+// ClearNtfyURL clears the value of the "ntfy_url" field.
+func (m *AppConfigMutation) ClearNtfyURL() {
+	m.ntfy_url = nil
+	m.clearedFields[appconfig.FieldNtfyURL] = struct{}{}
+}
+
+// NtfyURLCleared returns if the "ntfy_url" field was cleared in this mutation.
+func (m *AppConfigMutation) NtfyURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldNtfyURL]
+	return ok
+}
+
+// ResetNtfyURL resets all changes to the "ntfy_url" field.
+func (m *AppConfigMutation) ResetNtfyURL() {
+	m.ntfy_url = nil
+	delete(m.clearedFields, appconfig.FieldNtfyURL)
+}
+
+// SetNtfyTopic sets the "ntfy_topic" field.
+func (m *AppConfigMutation) SetNtfyTopic(s string) {
+	m.ntfy_topic = &s
+}
+
+// NtfyTopic returns the value of the "ntfy_topic" field in the mutation.
+func (m *AppConfigMutation) NtfyTopic() (r string, exists bool) {
+	v := m.ntfy_topic
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNtfyTopic returns the old "ntfy_topic" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldNtfyTopic(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNtfyTopic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNtfyTopic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNtfyTopic: %w", err)
+	}
+	return oldValue.NtfyTopic, nil
+}
+
+// ClearNtfyTopic clears the value of the "ntfy_topic" field.
+func (m *AppConfigMutation) ClearNtfyTopic() {
+	m.ntfy_topic = nil
+	m.clearedFields[appconfig.FieldNtfyTopic] = struct{}{}
+}
+
+// NtfyTopicCleared returns if the "ntfy_topic" field was cleared in this mutation.
+func (m *AppConfigMutation) NtfyTopicCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldNtfyTopic]
+	return ok
+}
+
+// ResetNtfyTopic resets all changes to the "ntfy_topic" field.
+func (m *AppConfigMutation) ResetNtfyTopic() {
+	m.ntfy_topic = nil
+	delete(m.clearedFields, appconfig.FieldNtfyTopic)
+}
+
+// SetNtfyToken sets the "ntfy_token" field.
+func (m *AppConfigMutation) SetNtfyToken(s string) {
+	m.ntfy_token = &s
+}
+
+// NtfyToken returns the value of the "ntfy_token" field in the mutation.
+func (m *AppConfigMutation) NtfyToken() (r string, exists bool) {
+	v := m.ntfy_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNtfyToken returns the old "ntfy_token" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldNtfyToken(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNtfyToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNtfyToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNtfyToken: %w", err)
+	}
+	return oldValue.NtfyToken, nil
+}
+
+// ClearNtfyToken clears the value of the "ntfy_token" field.
+func (m *AppConfigMutation) ClearNtfyToken() {
+	m.ntfy_token = nil
+	m.clearedFields[appconfig.FieldNtfyToken] = struct{}{}
+}
+
+// NtfyTokenCleared returns if the "ntfy_token" field was cleared in this mutation.
+func (m *AppConfigMutation) NtfyTokenCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldNtfyToken]
+	return ok
+}
+
+// ResetNtfyToken resets all changes to the "ntfy_token" field.
+func (m *AppConfigMutation) ResetNtfyToken() {
+	m.ntfy_token = nil
+	delete(m.clearedFields, appconfig.FieldNtfyToken)
+}
+
+// SetNtfyPriority sets the "ntfy_priority" field.
+func (m *AppConfigMutation) SetNtfyPriority(i int) {
+	m.ntfy_priority = &i
+	m.addntfy_priority = nil
+}
+
+// NtfyPriority returns the value of the "ntfy_priority" field in the mutation.
+func (m *AppConfigMutation) NtfyPriority() (r int, exists bool) {
+	v := m.ntfy_priority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNtfyPriority returns the old "ntfy_priority" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldNtfyPriority(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNtfyPriority is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNtfyPriority requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNtfyPriority: %w", err)
+	}
+	return oldValue.NtfyPriority, nil
+}
+
+// AddNtfyPriority adds i to the "ntfy_priority" field.
+func (m *AppConfigMutation) AddNtfyPriority(i int) {
+	if m.addntfy_priority != nil {
+		*m.addntfy_priority += i
+	} else {
+		m.addntfy_priority = &i
+	}
+}
+
+// AddedNtfyPriority returns the value that was added to the "ntfy_priority" field in this mutation.
+func (m *AppConfigMutation) AddedNtfyPriority() (r int, exists bool) {
+	v := m.addntfy_priority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearNtfyPriority clears the value of the "ntfy_priority" field.
+func (m *AppConfigMutation) ClearNtfyPriority() {
+	m.ntfy_priority = nil
+	m.addntfy_priority = nil
+	m.clearedFields[appconfig.FieldNtfyPriority] = struct{}{}
+}
+
+// NtfyPriorityCleared returns if the "ntfy_priority" field was cleared in this mutation.
+func (m *AppConfigMutation) NtfyPriorityCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldNtfyPriority]
+	return ok
+}
+
+// ResetNtfyPriority resets all changes to the "ntfy_priority" field.
+func (m *AppConfigMutation) ResetNtfyPriority() {
+	m.ntfy_priority = nil
+	m.addntfy_priority = nil
+	delete(m.clearedFields, appconfig.FieldNtfyPriority)
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (m *AppConfigMutation) SetUmamiURL(s string) {
 	m.umami_url = &s
@@ -1769,7 +1991,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 28)
+	fields := make([]string, 0, 32)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -1829,6 +2051,18 @@ func (m *AppConfigMutation) Fields() []string {
 	}
 	if m.telegram_chat_id != nil {
 		fields = append(fields, appconfig.FieldTelegramChatID)
+	}
+	if m.ntfy_url != nil {
+		fields = append(fields, appconfig.FieldNtfyURL)
+	}
+	if m.ntfy_topic != nil {
+		fields = append(fields, appconfig.FieldNtfyTopic)
+	}
+	if m.ntfy_token != nil {
+		fields = append(fields, appconfig.FieldNtfyToken)
+	}
+	if m.ntfy_priority != nil {
+		fields = append(fields, appconfig.FieldNtfyPriority)
 	}
 	if m.umami_url != nil {
 		fields = append(fields, appconfig.FieldUmamiURL)
@@ -1902,6 +2136,14 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.TelegramBotToken()
 	case appconfig.FieldTelegramChatID:
 		return m.TelegramChatID()
+	case appconfig.FieldNtfyURL:
+		return m.NtfyURL()
+	case appconfig.FieldNtfyTopic:
+		return m.NtfyTopic()
+	case appconfig.FieldNtfyToken:
+		return m.NtfyToken()
+	case appconfig.FieldNtfyPriority:
+		return m.NtfyPriority()
 	case appconfig.FieldUmamiURL:
 		return m.UmamiURL()
 	case appconfig.FieldUmamiWebsiteID:
@@ -1967,6 +2209,14 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldTelegramBotToken(ctx)
 	case appconfig.FieldTelegramChatID:
 		return m.OldTelegramChatID(ctx)
+	case appconfig.FieldNtfyURL:
+		return m.OldNtfyURL(ctx)
+	case appconfig.FieldNtfyTopic:
+		return m.OldNtfyTopic(ctx)
+	case appconfig.FieldNtfyToken:
+		return m.OldNtfyToken(ctx)
+	case appconfig.FieldNtfyPriority:
+		return m.OldNtfyPriority(ctx)
 	case appconfig.FieldUmamiURL:
 		return m.OldUmamiURL(ctx)
 	case appconfig.FieldUmamiWebsiteID:
@@ -2132,6 +2382,34 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTelegramChatID(v)
 		return nil
+	case appconfig.FieldNtfyURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNtfyURL(v)
+		return nil
+	case appconfig.FieldNtfyTopic:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNtfyTopic(v)
+		return nil
+	case appconfig.FieldNtfyToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNtfyToken(v)
+		return nil
+	case appconfig.FieldNtfyPriority:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNtfyPriority(v)
+		return nil
 	case appconfig.FieldUmamiURL:
 		v, ok := value.(string)
 		if !ok {
@@ -2217,6 +2495,9 @@ func (m *AppConfigMutation) AddedFields() []string {
 	if m.addsmtp_timeout != nil {
 		fields = append(fields, appconfig.FieldSMTPTimeout)
 	}
+	if m.addntfy_priority != nil {
+		fields = append(fields, appconfig.FieldNtfyPriority)
+	}
 	if m.addical_duration_minutes != nil {
 		fields = append(fields, appconfig.FieldIcalDurationMinutes)
 	}
@@ -2242,6 +2523,8 @@ func (m *AppConfigMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedSMTPPort()
 	case appconfig.FieldSMTPTimeout:
 		return m.AddedSMTPTimeout()
+	case appconfig.FieldNtfyPriority:
+		return m.AddedNtfyPriority()
 	case appconfig.FieldIcalDurationMinutes:
 		return m.AddedIcalDurationMinutes()
 	}
@@ -2301,6 +2584,13 @@ func (m *AppConfigMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddSMTPTimeout(v)
+		return nil
+	case appconfig.FieldNtfyPriority:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNtfyPriority(v)
 		return nil
 	case appconfig.FieldIcalDurationMinutes:
 		v, ok := value.(int)
@@ -2376,6 +2666,18 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(appconfig.FieldTelegramChatID) {
 		fields = append(fields, appconfig.FieldTelegramChatID)
+	}
+	if m.FieldCleared(appconfig.FieldNtfyURL) {
+		fields = append(fields, appconfig.FieldNtfyURL)
+	}
+	if m.FieldCleared(appconfig.FieldNtfyTopic) {
+		fields = append(fields, appconfig.FieldNtfyTopic)
+	}
+	if m.FieldCleared(appconfig.FieldNtfyToken) {
+		fields = append(fields, appconfig.FieldNtfyToken)
+	}
+	if m.FieldCleared(appconfig.FieldNtfyPriority) {
+		fields = append(fields, appconfig.FieldNtfyPriority)
 	}
 	if m.FieldCleared(appconfig.FieldUmamiURL) {
 		fields = append(fields, appconfig.FieldUmamiURL)
@@ -2475,6 +2777,18 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldTelegramChatID:
 		m.ClearTelegramChatID()
 		return nil
+	case appconfig.FieldNtfyURL:
+		m.ClearNtfyURL()
+		return nil
+	case appconfig.FieldNtfyTopic:
+		m.ClearNtfyTopic()
+		return nil
+	case appconfig.FieldNtfyToken:
+		m.ClearNtfyToken()
+		return nil
+	case appconfig.FieldNtfyPriority:
+		m.ClearNtfyPriority()
+		return nil
 	case appconfig.FieldUmamiURL:
 		m.ClearUmamiURL()
 		return nil
@@ -2566,6 +2880,18 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldTelegramChatID:
 		m.ResetTelegramChatID()
+		return nil
+	case appconfig.FieldNtfyURL:
+		m.ResetNtfyURL()
+		return nil
+	case appconfig.FieldNtfyTopic:
+		m.ResetNtfyTopic()
+		return nil
+	case appconfig.FieldNtfyToken:
+		m.ResetNtfyToken()
+		return nil
+	case appconfig.FieldNtfyPriority:
+		m.ResetNtfyPriority()
 		return nil
 	case appconfig.FieldUmamiURL:
 		m.ResetUmamiURL()

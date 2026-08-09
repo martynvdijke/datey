@@ -45,6 +45,11 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("telegram_bot_token").Optional().Nillable(),
 		field.String("telegram_chat_id").Optional().Nillable(),
 
+		field.String("ntfy_url").Optional().Nillable(),
+		field.String("ntfy_topic").Optional().Nillable(),
+		field.String("ntfy_token").Optional().Nillable(),
+		field.Int("ntfy_priority").Optional().Nillable(),
+
 		field.String("umami_url").Optional().Nillable(),
 		field.String("umami_website_id").Optional().Nillable(),
 

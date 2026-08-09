@@ -17,6 +17,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📧 Email Notifications** — SMTP-based email reminders for upcoming events.
 - **🔔 Gotify Notifications** — Push notifications via Gotify self-hosted server.
 - **🤖 Telegram Notifications** — Reminders sent via Telegram bot.
+- **🔔 ntfy Notifications** — Push notifications via ntfy.sh (or any self-hosted ntfy server), with optional bearer-token auth and priority levels.
 - **🔧 Multi-Notification Registry** — Configure one or multiple channels; each is tested independently.
 - **✅ Test Notifications** — Send test messages per channel from the settings page.
 - **🔔 One-Time Notifications** — Schedule ad-hoc reminders independent of recurring events.

@@ -57,6 +57,14 @@ type AppConfig struct {
 	TelegramBotToken *string `json:"telegram_bot_token,omitempty"`
 	// TelegramChatID holds the value of the "telegram_chat_id" field.
 	TelegramChatID *string `json:"telegram_chat_id,omitempty"`
+	// NtfyURL holds the value of the "ntfy_url" field.
+	NtfyURL *string `json:"ntfy_url,omitempty"`
+	// NtfyTopic holds the value of the "ntfy_topic" field.
+	NtfyTopic *string `json:"ntfy_topic,omitempty"`
+	// NtfyToken holds the value of the "ntfy_token" field.
+	NtfyToken *string `json:"ntfy_token,omitempty"`
+	// NtfyPriority holds the value of the "ntfy_priority" field.
+	NtfyPriority *int `json:"ntfy_priority,omitempty"`
 	// UmamiURL holds the value of the "umami_url" field.
 	UmamiURL *string `json:"umami_url,omitempty"`
 	// UmamiWebsiteID holds the value of the "umami_website_id" field.
@@ -83,9 +91,9 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled:
 			values[i] = new(sql.NullBool)
-		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldIcalDurationMinutes:
+		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey:
+		case appconfig.FieldDataDir, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -249,6 +257,34 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TelegramChatID = new(string)
 				*_m.TelegramChatID = value.String
+			}
+		case appconfig.FieldNtfyURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ntfy_url", values[i])
+			} else if value.Valid {
+				_m.NtfyURL = new(string)
+				*_m.NtfyURL = value.String
+			}
+		case appconfig.FieldNtfyTopic:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ntfy_topic", values[i])
+			} else if value.Valid {
+				_m.NtfyTopic = new(string)
+				*_m.NtfyTopic = value.String
+			}
+		case appconfig.FieldNtfyToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ntfy_token", values[i])
+			} else if value.Valid {
+				_m.NtfyToken = new(string)
+				*_m.NtfyToken = value.String
+			}
+		case appconfig.FieldNtfyPriority:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field ntfy_priority", values[i])
+			} else if value.Valid {
+				_m.NtfyPriority = new(int)
+				*_m.NtfyPriority = int(value.Int64)
 			}
 		case appconfig.FieldUmamiURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -440,6 +476,26 @@ func (_m *AppConfig) String() string {
 	if v := _m.TelegramChatID; v != nil {
 		builder.WriteString("telegram_chat_id=")
 		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.NtfyURL; v != nil {
+		builder.WriteString("ntfy_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.NtfyTopic; v != nil {
+		builder.WriteString("ntfy_topic=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.NtfyToken; v != nil {
+		builder.WriteString("ntfy_token=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.NtfyPriority; v != nil {
+		builder.WriteString("ntfy_priority=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	if v := _m.UmamiURL; v != nil {

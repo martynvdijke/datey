@@ -99,6 +99,8 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	port, sched, reminder, loglevel, logbuf := 9100, 9, 21, "warn", 250
 	smtpHost, smtpPort, smtpTLS, smtpTimeout := "mail.test", 465, false, 30
 	gotifyURL, gotifyToken := "https://gotify.test", "gt-token"
+	ntfyURL, ntfyTopic, ntfyToken := "https://ntfy.example.com", "reminders", "ntfy-tok"
+	ntfyPriority := 5
 	umamiURL := "https://umami.test"
 	eink := true
 	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
@@ -113,6 +115,10 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 		SetNillableSMTPTimeout(&smtpTimeout).
 		SetNillableGotifyURL(&gotifyURL).
 		SetNillableGotifyToken(&gotifyToken).
+		SetNillableNtfyURL(&ntfyURL).
+		SetNillableNtfyTopic(&ntfyTopic).
+		SetNillableNtfyToken(&ntfyToken).
+		SetNillableNtfyPriority(&ntfyPriority).
 		SetNillableUmamiURL(&umamiURL).
 		SetNillableEinkMode(&eink).
 		Save(ctx); err != nil {
@@ -155,6 +161,18 @@ func TestOverlay_AppliesNonNullColumns(t *testing.T) {
 	}
 	if cfg.GotifyToken != gotifyToken {
 		t.Errorf("GotifyToken: got %q want %q", cfg.GotifyToken, gotifyToken)
+	}
+	if cfg.NtfyURL != ntfyURL {
+		t.Errorf("NtfyURL: got %q want %q", cfg.NtfyURL, ntfyURL)
+	}
+	if cfg.NtfyTopic != ntfyTopic {
+		t.Errorf("NtfyTopic: got %q want %q", cfg.NtfyTopic, ntfyTopic)
+	}
+	if cfg.NtfyToken != ntfyToken {
+		t.Errorf("NtfyToken: got %q want %q", cfg.NtfyToken, ntfyToken)
+	}
+	if cfg.NtfyPriority != ntfyPriority {
+		t.Errorf("NtfyPriority: got %d want %d", cfg.NtfyPriority, ntfyPriority)
 	}
 	if cfg.UmamiURL != umamiURL {
 		t.Errorf("UmamiURL: got %q want %q", cfg.UmamiURL, umamiURL)
@@ -318,6 +336,8 @@ func TestApplyForm_ValidationErrors(t *testing.T) {
 		{"bad timeout", url.Values{"SMTP_TIMEOUT": {"-1"}}, []string{"SMTP_TIMEOUT"}},
 		{"non-numeric port", url.Values{"PORT": {"abc"}}, []string{"PORT"}},
 		{"non-numeric retention", url.Values{"BACKUP_RETENTION_DAYS": {"twelve"}}, []string{"BACKUP_RETENTION_DAYS"}},
+		{"bad NTFY_PRIORITY low", url.Values{"NTFY_PRIORITY": {"0"}}, []string{"NTFY_PRIORITY"}},
+		{"bad NTFY_PRIORITY high", url.Values{"NTFY_PRIORITY": {"6"}}, []string{"NTFY_PRIORITY"}},
 		{"multiple",
 			url.Values{"PORT": {"0"}, "SCHEDULER_HOUR": {"99"}, "LOG_LEVEL": {"nope"}},
 			[]string{"PORT", "SCHEDULER_HOUR", "LOG_LEVEL"},

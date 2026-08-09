@@ -154,6 +154,26 @@ func TelegramChatID(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldTelegramChatID, v))
 }
 
+// NtfyURL applies equality check predicate on the "ntfy_url" field. It's identical to NtfyURLEQ.
+func NtfyURL(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyURL, v))
+}
+
+// NtfyTopic applies equality check predicate on the "ntfy_topic" field. It's identical to NtfyTopicEQ.
+func NtfyTopic(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyTopic, v))
+}
+
+// NtfyToken applies equality check predicate on the "ntfy_token" field. It's identical to NtfyTokenEQ.
+func NtfyToken(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyToken, v))
+}
+
+// NtfyPriority applies equality check predicate on the "ntfy_priority" field. It's identical to NtfyPriorityEQ.
+func NtfyPriority(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyPriority, v))
+}
+
 // UmamiURL applies equality check predicate on the "umami_url" field. It's identical to UmamiURLEQ.
 func UmamiURL(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUmamiURL, v))
@@ -1462,6 +1482,281 @@ func TelegramChatIDEqualFold(v string) predicate.AppConfig {
 // TelegramChatIDContainsFold applies the ContainsFold predicate on the "telegram_chat_id" field.
 func TelegramChatIDContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldTelegramChatID, v))
+}
+
+// NtfyURLEQ applies the EQ predicate on the "ntfy_url" field.
+func NtfyURLEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyURL, v))
+}
+
+// NtfyURLNEQ applies the NEQ predicate on the "ntfy_url" field.
+func NtfyURLNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldNtfyURL, v))
+}
+
+// NtfyURLIn applies the In predicate on the "ntfy_url" field.
+func NtfyURLIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldNtfyURL, vs...))
+}
+
+// NtfyURLNotIn applies the NotIn predicate on the "ntfy_url" field.
+func NtfyURLNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldNtfyURL, vs...))
+}
+
+// NtfyURLGT applies the GT predicate on the "ntfy_url" field.
+func NtfyURLGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldNtfyURL, v))
+}
+
+// NtfyURLGTE applies the GTE predicate on the "ntfy_url" field.
+func NtfyURLGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldNtfyURL, v))
+}
+
+// NtfyURLLT applies the LT predicate on the "ntfy_url" field.
+func NtfyURLLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldNtfyURL, v))
+}
+
+// NtfyURLLTE applies the LTE predicate on the "ntfy_url" field.
+func NtfyURLLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldNtfyURL, v))
+}
+
+// NtfyURLContains applies the Contains predicate on the "ntfy_url" field.
+func NtfyURLContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldNtfyURL, v))
+}
+
+// NtfyURLHasPrefix applies the HasPrefix predicate on the "ntfy_url" field.
+func NtfyURLHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldNtfyURL, v))
+}
+
+// NtfyURLHasSuffix applies the HasSuffix predicate on the "ntfy_url" field.
+func NtfyURLHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldNtfyURL, v))
+}
+
+// NtfyURLIsNil applies the IsNil predicate on the "ntfy_url" field.
+func NtfyURLIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldNtfyURL))
+}
+
+// NtfyURLNotNil applies the NotNil predicate on the "ntfy_url" field.
+func NtfyURLNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldNtfyURL))
+}
+
+// NtfyURLEqualFold applies the EqualFold predicate on the "ntfy_url" field.
+func NtfyURLEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldNtfyURL, v))
+}
+
+// NtfyURLContainsFold applies the ContainsFold predicate on the "ntfy_url" field.
+func NtfyURLContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldNtfyURL, v))
+}
+
+// NtfyTopicEQ applies the EQ predicate on the "ntfy_topic" field.
+func NtfyTopicEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyTopic, v))
+}
+
+// NtfyTopicNEQ applies the NEQ predicate on the "ntfy_topic" field.
+func NtfyTopicNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldNtfyTopic, v))
+}
+
+// NtfyTopicIn applies the In predicate on the "ntfy_topic" field.
+func NtfyTopicIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldNtfyTopic, vs...))
+}
+
+// NtfyTopicNotIn applies the NotIn predicate on the "ntfy_topic" field.
+func NtfyTopicNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldNtfyTopic, vs...))
+}
+
+// NtfyTopicGT applies the GT predicate on the "ntfy_topic" field.
+func NtfyTopicGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldNtfyTopic, v))
+}
+
+// NtfyTopicGTE applies the GTE predicate on the "ntfy_topic" field.
+func NtfyTopicGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldNtfyTopic, v))
+}
+
+// NtfyTopicLT applies the LT predicate on the "ntfy_topic" field.
+func NtfyTopicLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldNtfyTopic, v))
+}
+
+// NtfyTopicLTE applies the LTE predicate on the "ntfy_topic" field.
+func NtfyTopicLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldNtfyTopic, v))
+}
+
+// NtfyTopicContains applies the Contains predicate on the "ntfy_topic" field.
+func NtfyTopicContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldNtfyTopic, v))
+}
+
+// NtfyTopicHasPrefix applies the HasPrefix predicate on the "ntfy_topic" field.
+func NtfyTopicHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldNtfyTopic, v))
+}
+
+// NtfyTopicHasSuffix applies the HasSuffix predicate on the "ntfy_topic" field.
+func NtfyTopicHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldNtfyTopic, v))
+}
+
+// NtfyTopicIsNil applies the IsNil predicate on the "ntfy_topic" field.
+func NtfyTopicIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldNtfyTopic))
+}
+
+// NtfyTopicNotNil applies the NotNil predicate on the "ntfy_topic" field.
+func NtfyTopicNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldNtfyTopic))
+}
+
+// NtfyTopicEqualFold applies the EqualFold predicate on the "ntfy_topic" field.
+func NtfyTopicEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldNtfyTopic, v))
+}
+
+// NtfyTopicContainsFold applies the ContainsFold predicate on the "ntfy_topic" field.
+func NtfyTopicContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldNtfyTopic, v))
+}
+
+// NtfyTokenEQ applies the EQ predicate on the "ntfy_token" field.
+func NtfyTokenEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyToken, v))
+}
+
+// NtfyTokenNEQ applies the NEQ predicate on the "ntfy_token" field.
+func NtfyTokenNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldNtfyToken, v))
+}
+
+// NtfyTokenIn applies the In predicate on the "ntfy_token" field.
+func NtfyTokenIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldNtfyToken, vs...))
+}
+
+// NtfyTokenNotIn applies the NotIn predicate on the "ntfy_token" field.
+func NtfyTokenNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldNtfyToken, vs...))
+}
+
+// NtfyTokenGT applies the GT predicate on the "ntfy_token" field.
+func NtfyTokenGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldNtfyToken, v))
+}
+
+// NtfyTokenGTE applies the GTE predicate on the "ntfy_token" field.
+func NtfyTokenGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldNtfyToken, v))
+}
+
+// NtfyTokenLT applies the LT predicate on the "ntfy_token" field.
+func NtfyTokenLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldNtfyToken, v))
+}
+
+// NtfyTokenLTE applies the LTE predicate on the "ntfy_token" field.
+func NtfyTokenLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldNtfyToken, v))
+}
+
+// NtfyTokenContains applies the Contains predicate on the "ntfy_token" field.
+func NtfyTokenContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldNtfyToken, v))
+}
+
+// NtfyTokenHasPrefix applies the HasPrefix predicate on the "ntfy_token" field.
+func NtfyTokenHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldNtfyToken, v))
+}
+
+// NtfyTokenHasSuffix applies the HasSuffix predicate on the "ntfy_token" field.
+func NtfyTokenHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldNtfyToken, v))
+}
+
+// NtfyTokenIsNil applies the IsNil predicate on the "ntfy_token" field.
+func NtfyTokenIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldNtfyToken))
+}
+
+// NtfyTokenNotNil applies the NotNil predicate on the "ntfy_token" field.
+func NtfyTokenNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldNtfyToken))
+}
+
+// NtfyTokenEqualFold applies the EqualFold predicate on the "ntfy_token" field.
+func NtfyTokenEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldNtfyToken, v))
+}
+
+// NtfyTokenContainsFold applies the ContainsFold predicate on the "ntfy_token" field.
+func NtfyTokenContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldNtfyToken, v))
+}
+
+// NtfyPriorityEQ applies the EQ predicate on the "ntfy_priority" field.
+func NtfyPriorityEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNtfyPriority, v))
+}
+
+// NtfyPriorityNEQ applies the NEQ predicate on the "ntfy_priority" field.
+func NtfyPriorityNEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldNtfyPriority, v))
+}
+
+// NtfyPriorityIn applies the In predicate on the "ntfy_priority" field.
+func NtfyPriorityIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldNtfyPriority, vs...))
+}
+
+// NtfyPriorityNotIn applies the NotIn predicate on the "ntfy_priority" field.
+func NtfyPriorityNotIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldNtfyPriority, vs...))
+}
+
+// NtfyPriorityGT applies the GT predicate on the "ntfy_priority" field.
+func NtfyPriorityGT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldNtfyPriority, v))
+}
+
+// NtfyPriorityGTE applies the GTE predicate on the "ntfy_priority" field.
+func NtfyPriorityGTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldNtfyPriority, v))
+}
+
+// NtfyPriorityLT applies the LT predicate on the "ntfy_priority" field.
+func NtfyPriorityLT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldNtfyPriority, v))
+}
+
+// NtfyPriorityLTE applies the LTE predicate on the "ntfy_priority" field.
+func NtfyPriorityLTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldNtfyPriority, v))
+}
+
+// NtfyPriorityIsNil applies the IsNil predicate on the "ntfy_priority" field.
+func NtfyPriorityIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldNtfyPriority))
+}
+
+// NtfyPriorityNotNil applies the NotNil predicate on the "ntfy_priority" field.
+func NtfyPriorityNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldNtfyPriority))
 }
 
 // UmamiURLEQ applies the EQ predicate on the "umami_url" field.

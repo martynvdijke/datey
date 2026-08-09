@@ -24,6 +24,7 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 		{Name: "email", Configured: h.notifReg.IsConfigured("email")},
 		{Name: "gotify", Configured: h.notifReg.IsConfigured("gotify")},
 		{Name: "telegram", Configured: h.notifReg.IsConfigured("telegram")},
+		{Name: "ntfy", Configured: h.notifReg.IsConfigured("ntfy")},
 	}
 
 	h.render(w, r, "settings.html", map[string]any{
@@ -145,6 +146,9 @@ func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 		err = n.Send(r.Context(), title, message)
 	case "telegram":
 		n := notifier.NewTelegramNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	case "ntfy":
+		n := notifier.NewNtfyNotifier(h.cfg)
 		err = n.Send(r.Context(), title, message)
 	default:
 		slog.Warn("test notification: unknown channel", "source", "settings", "channel", channel)

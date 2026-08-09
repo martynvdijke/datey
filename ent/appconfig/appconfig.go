@@ -51,6 +51,14 @@ const (
 	FieldTelegramBotToken = "telegram_bot_token"
 	// FieldTelegramChatID holds the string denoting the telegram_chat_id field in the database.
 	FieldTelegramChatID = "telegram_chat_id"
+	// FieldNtfyURL holds the string denoting the ntfy_url field in the database.
+	FieldNtfyURL = "ntfy_url"
+	// FieldNtfyTopic holds the string denoting the ntfy_topic field in the database.
+	FieldNtfyTopic = "ntfy_topic"
+	// FieldNtfyToken holds the string denoting the ntfy_token field in the database.
+	FieldNtfyToken = "ntfy_token"
+	// FieldNtfyPriority holds the string denoting the ntfy_priority field in the database.
+	FieldNtfyPriority = "ntfy_priority"
 	// FieldUmamiURL holds the string denoting the umami_url field in the database.
 	FieldUmamiURL = "umami_url"
 	// FieldUmamiWebsiteID holds the string denoting the umami_website_id field in the database.
@@ -94,6 +102,10 @@ var Columns = []string{
 	FieldGotifyToken,
 	FieldTelegramBotToken,
 	FieldTelegramChatID,
+	FieldNtfyURL,
+	FieldNtfyTopic,
+	FieldNtfyToken,
+	FieldNtfyPriority,
 	FieldUmamiURL,
 	FieldUmamiWebsiteID,
 	FieldEinkMode,
@@ -220,6 +232,26 @@ func ByTelegramBotToken(opts ...sql.OrderTermOption) OrderOption {
 // ByTelegramChatID orders the results by the telegram_chat_id field.
 func ByTelegramChatID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTelegramChatID, opts...).ToFunc()
+}
+
+// ByNtfyURL orders the results by the ntfy_url field.
+func ByNtfyURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNtfyURL, opts...).ToFunc()
+}
+
+// ByNtfyTopic orders the results by the ntfy_topic field.
+func ByNtfyTopic(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNtfyTopic, opts...).ToFunc()
+}
+
+// ByNtfyToken orders the results by the ntfy_token field.
+func ByNtfyToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNtfyToken, opts...).ToFunc()
+}
+
+// ByNtfyPriority orders the results by the ntfy_priority field.
+func ByNtfyPriority(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNtfyPriority, opts...).ToFunc()
 }
 
 // ByUmamiURL orders the results by the umami_url field.

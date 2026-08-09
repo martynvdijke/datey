@@ -167,6 +167,13 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "TELEGRAM_CHAT_ID", Label: "Chat ID", Value: val("TELEGRAM_CHAT_ID", cfg.TelegramChatID), Type: "text", Error: errFor("TELEGRAM_CHAT_ID")},
 	}}
 
+	ntfy := configGroup{Title: "ntfy", Fields: []configField{
+		{Name: "NTFY_URL", Label: "ntfy Server URL", Value: val("NTFY_URL", cfg.NtfyURL), Type: "text", Help: "Base URL of your ntfy server. Defaults to https://ntfy.sh.", Error: errFor("NTFY_URL")},
+		{Name: "NTFY_TOPIC", Label: "Topic", Value: val("NTFY_TOPIC", cfg.NtfyTopic), Type: "text", Help: "Topic to publish reminders to. Required to enable ntfy.", Error: errFor("NTFY_TOPIC")},
+		{Name: "NTFY_TOKEN", Label: "Access Token", Value: val("NTFY_TOKEN", cfg.NtfyToken), Type: "text", Secret: true, Help: "Optional bearer token for authenticated ntfy servers.", Error: errFor("NTFY_TOKEN")},
+		{Name: "NTFY_PRIORITY", Label: "Priority (1-5)", Value: val("NTFY_PRIORITY", strconv.Itoa(cfg.NtfyPriority)), Type: "number", Help: "1 = min, 3 = default, 5 = max.", Error: errFor("NTFY_PRIORITY")},
+	}}
+
 	analytics := configGroup{Title: "Analytics", Fields: []configField{
 		{Name: "UMAMI_URL", Label: "Umami URL", Value: val("UMAMI_URL", cfg.UmamiURL), Type: "text", Error: errFor("UMAMI_URL")},
 		{Name: "UMAMI_WEBSITE_ID", Label: "Umami Website ID", Value: val("UMAMI_WEBSITE_ID", cfg.UmamiWebsiteID), Type: "text", Error: errFor("UMAMI_WEBSITE_ID")},
@@ -192,5 +199,5 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "ICAL_FEED_URL_PERSON", Label: "iCal Feed URL (single person)", Value: "/ical/{personID}.ics?key=" + icalFeedKey, Type: "readonly", ReadOnly: true, Help: "Replace {personID} with the person's ID (the number in their page URL)."},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, analytics, obs, ical}
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, analytics, obs, ical}
 }

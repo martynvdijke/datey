@@ -32,6 +32,11 @@ type Config struct {
 	TelegramBotToken string
 	TelegramChatID   string
 
+	NtfyURL      string
+	NtfyTopic    string
+	NtfyToken    string
+	NtfyPriority int
+
 	UmamiURL       string
 	UmamiWebsiteID string
 
@@ -63,6 +68,10 @@ func Load() (*Config, error) {
 		GotifyToken:   getEnv("GOTIFY_TOKEN", ""),
 		TelegramBotToken: getEnv("TELEGRAM_BOT_TOKEN", ""),
 		TelegramChatID:   getEnv("TELEGRAM_CHAT_ID", ""),
+		NtfyURL:          getEnv("NTFY_URL", "https://ntfy.sh"),
+		NtfyTopic:        getEnv("NTFY_TOPIC", ""),
+		NtfyToken:        getEnv("NTFY_TOKEN", ""),
+		NtfyPriority:     getEnvInt("NTFY_PRIORITY", 3),
 
 		BackupDir:           getEnv("BACKUP_DIR", ""),
 		BackupRetentionDays: getEnvInt("BACKUP_RETENTION_DAYS", 0),
@@ -116,6 +125,10 @@ func (c *Config) Validate() error {
 	}
 	if !validLogLevels[c.LogLevel] {
 		return fmt.Errorf("LOG_LEVEL must be one of debug, info, warn, error; got %q", c.LogLevel)
+	}
+	// NtfyPriority 0 means "not set"; Load() defaults it to 3.
+	if c.NtfyPriority != 0 && (c.NtfyPriority < 1 || c.NtfyPriority > 5) {
+		return fmt.Errorf("NTFY_PRIORITY must be between 1 and 5, got %d", c.NtfyPriority)
 	}
 	if c.ICalEventStart != "" {
 		hour, minute, err := ParseClockTime(c.ICalEventStart)

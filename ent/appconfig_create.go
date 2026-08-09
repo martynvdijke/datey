@@ -299,6 +299,62 @@ func (_c *AppConfigCreate) SetNillableTelegramChatID(v *string) *AppConfigCreate
 	return _c
 }
 
+// SetNtfyURL sets the "ntfy_url" field.
+func (_c *AppConfigCreate) SetNtfyURL(v string) *AppConfigCreate {
+	_c.mutation.SetNtfyURL(v)
+	return _c
+}
+
+// SetNillableNtfyURL sets the "ntfy_url" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableNtfyURL(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetNtfyURL(*v)
+	}
+	return _c
+}
+
+// SetNtfyTopic sets the "ntfy_topic" field.
+func (_c *AppConfigCreate) SetNtfyTopic(v string) *AppConfigCreate {
+	_c.mutation.SetNtfyTopic(v)
+	return _c
+}
+
+// SetNillableNtfyTopic sets the "ntfy_topic" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableNtfyTopic(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetNtfyTopic(*v)
+	}
+	return _c
+}
+
+// SetNtfyToken sets the "ntfy_token" field.
+func (_c *AppConfigCreate) SetNtfyToken(v string) *AppConfigCreate {
+	_c.mutation.SetNtfyToken(v)
+	return _c
+}
+
+// SetNillableNtfyToken sets the "ntfy_token" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableNtfyToken(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetNtfyToken(*v)
+	}
+	return _c
+}
+
+// SetNtfyPriority sets the "ntfy_priority" field.
+func (_c *AppConfigCreate) SetNtfyPriority(v int) *AppConfigCreate {
+	_c.mutation.SetNtfyPriority(v)
+	return _c
+}
+
+// SetNillableNtfyPriority sets the "ntfy_priority" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableNtfyPriority(v *int) *AppConfigCreate {
+	if v != nil {
+		_c.SetNtfyPriority(*v)
+	}
+	return _c
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_c *AppConfigCreate) SetUmamiURL(v string) *AppConfigCreate {
 	_c.mutation.SetUmamiURL(v)
@@ -550,6 +606,22 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TelegramChatID(); ok {
 		_spec.SetField(appconfig.FieldTelegramChatID, field.TypeString, value)
 		_node.TelegramChatID = &value
+	}
+	if value, ok := _c.mutation.NtfyURL(); ok {
+		_spec.SetField(appconfig.FieldNtfyURL, field.TypeString, value)
+		_node.NtfyURL = &value
+	}
+	if value, ok := _c.mutation.NtfyTopic(); ok {
+		_spec.SetField(appconfig.FieldNtfyTopic, field.TypeString, value)
+		_node.NtfyTopic = &value
+	}
+	if value, ok := _c.mutation.NtfyToken(); ok {
+		_spec.SetField(appconfig.FieldNtfyToken, field.TypeString, value)
+		_node.NtfyToken = &value
+	}
+	if value, ok := _c.mutation.NtfyPriority(); ok {
+		_spec.SetField(appconfig.FieldNtfyPriority, field.TypeInt, value)
+		_node.NtfyPriority = &value
 	}
 	if value, ok := _c.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)

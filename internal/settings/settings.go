@@ -126,6 +126,18 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.TelegramChatID; v != nil {
 		cfg.TelegramChatID = *v
 	}
+	if v := row.NtfyURL; v != nil {
+		cfg.NtfyURL = *v
+	}
+	if v := row.NtfyTopic; v != nil {
+		cfg.NtfyTopic = *v
+	}
+	if v := row.NtfyToken; v != nil {
+		cfg.NtfyToken = *v
+	}
+	if v := row.NtfyPriority; v != nil {
+		cfg.NtfyPriority = *v
+	}
 	if v := row.UmamiURL; v != nil {
 		cfg.UmamiURL = *v
 	}
@@ -192,6 +204,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	gotifyToken := form.Get("GOTIFY_TOKEN")
 	telegramBotToken := form.Get("TELEGRAM_BOT_TOKEN")
 	telegramChatID := form.Get("TELEGRAM_CHAT_ID")
+	ntfyURL := form.Get("NTFY_URL")
+	ntfyTopic := form.Get("NTFY_TOPIC")
+	ntfyToken := form.Get("NTFY_TOKEN")
+	ntfyPriority := parseIntPtr(form, "NTFY_PRIORITY", errs)
 	umamiURL := form.Get("UMAMI_URL")
 	umamiWebsiteID := form.Get("UMAMI_WEBSITE_ID")
 	einkMode := form.Get("EINK_MODE") == "on"
@@ -237,6 +253,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	}
 	if icalDuration != nil && (*icalDuration < 1 || *icalDuration > 1440) {
 		errs["ICAL_EVENT_DURATION"] = "Event duration must be between 1 and 1440 minutes"
+	}
+	if ntfyPriority != nil && (*ntfyPriority < 1 || *ntfyPriority > 5) {
+		errs["NTFY_PRIORITY"] = "Priority must be between 1 and 5"
 	}
 
 	if len(errs) > 0 {
@@ -286,6 +305,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableGotifyToken(nillableStr(gotifyToken)).
 		SetNillableTelegramBotToken(nillableStr(telegramBotToken)).
 		SetNillableTelegramChatID(nillableStr(telegramChatID)).
+		SetNillableNtfyURL(nillableStr(ntfyURL)).
+		SetNillableNtfyTopic(nillableStr(ntfyTopic)).
+		SetNillableNtfyToken(nillableStr(ntfyToken)).
+		SetNillableNtfyPriority(ntfyPriority).
 		SetNillableUmamiURL(nillableStr(umamiURL)).
 		SetNillableUmamiWebsiteID(nillableStr(umamiWebsiteID)).
 		SetNillableEinkMode(&einkMode).
@@ -319,6 +342,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.GotifyToken = gotifyToken
 	cfg.TelegramBotToken = telegramBotToken
 	cfg.TelegramChatID = telegramChatID
+	cfg.NtfyURL = ntfyURL
+	cfg.NtfyTopic = ntfyTopic
+	cfg.NtfyToken = ntfyToken
+	cfg.NtfyPriority = deref(ntfyPriority, cfg.NtfyPriority)
 	cfg.UmamiURL = umamiURL
 	cfg.UmamiWebsiteID = umamiWebsiteID
 	cfg.EinkMode = einkMode

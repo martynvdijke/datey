@@ -23,6 +23,7 @@ func (h *Handler) channelInfoList() []channelInfo {
 		{"email", "Email", h.notifReg.IsConfigured("email")},
 		{"gotify", "Gotify", h.notifReg.IsConfigured("gotify")},
 		{"telegram", "Telegram", h.notifReg.IsConfigured("telegram")},
+		{"ntfy", "ntfy.sh", h.notifReg.IsConfigured("ntfy")},
 	}
 }
 
@@ -158,7 +159,7 @@ func (h *Handler) createNotification(w http.ResponseWriter, r *http.Request) {
 	// Parse selected channel targets (default to all configured if none selected)
 	channels := r.Form["channels"]
 	if len(channels) == 0 {
-		for _, name := range []string{"email", "gotify", "telegram"} {
+		for _, name := range []string{"email", "gotify", "telegram", "ntfy"} {
 			if h.notifReg.IsConfigured(name) {
 				channels = append(channels, name)
 			}

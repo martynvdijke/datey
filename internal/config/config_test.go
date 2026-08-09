@@ -245,6 +245,26 @@ func TestValidate_ICalDurationBoundary(t *testing.T) {
 	}
 }
 
+func TestValidate_NtfyPriorityBoundary(t *testing.T) {
+	for _, p := range []int{1, 3, 5} {
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, NtfyPriority: p}
+		if err := cfg.Validate(); err != nil {
+			t.Errorf("NTFY_PRIORITY=%d should be valid, got error: %v", p, err)
+		}
+	}
+	// 0 = unset (default 3) must be valid too.
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	if err := cfg.Validate(); err != nil {
+		t.Errorf("NTFY_PRIORITY unset (0) should be valid, got error: %v", err)
+	}
+	for _, p := range []int{-1, 6, 99} {
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, NtfyPriority: p}
+		if err := cfg.Validate(); err == nil {
+			t.Errorf("NTFY_PRIORITY=%d should be invalid, got nil", p)
+		}
+	}
+}
+
 func TestValidate_ICalEnabledRequiresKey(t *testing.T) {
 	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, ICalEnabled: true}
 	if err := cfg.Validate(); err == nil {
