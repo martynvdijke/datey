@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/martynvdijke/datey/compare/v1.24.0...v1.25.0) (2026-08-09)
+
+
+### Features
+
+* **api:** add public upcoming events JSON endpoint ([1dbd590](https://github.com/martynvdijke/datey/commit/1dbd59022a88ce1b043aae4a52d04c1b5a1a4b59))
+
 # [1.24.0](https://github.com/martynvdijke/datey/compare/v1.23.0...v1.24.0) (2026-08-09)
 
 
