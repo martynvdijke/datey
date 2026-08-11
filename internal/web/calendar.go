@@ -41,6 +41,7 @@ func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
 	h.render(w, r, "calendar.html", map[string]any{
 		"Title":          "Datey - Calendar",
 		"UpcomingEvents": upcoming,
+		"People":         h.personOptions(r.Context()),
 	})
 }
 

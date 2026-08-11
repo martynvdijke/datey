@@ -147,6 +147,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 			r.Get("/calendar", h.calendarPage)
 			r.Get("/api/calendar-events", h.calendarEvents)
+			r.Post("/calendar/import", h.handleImportICS)
+			r.Post("/calendar/import/confirm", h.handleConfirmICS)
 
 			r.Get("/notifications", h.notificationsList)
 			r.Get("/notifications/new", h.newNotificationForm)

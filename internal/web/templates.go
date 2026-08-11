@@ -2,6 +2,7 @@ package web
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"math"
@@ -57,6 +58,13 @@ var funcMap = template.FuncMap{
 	// HasAge is false when no usable birth year exists; templates then omit
 	// the age text (see internal/age).
 	"birthdayAge": age.InfoFor,
+	"jsonEncode": func(v any) string {
+		b, err := json.Marshal(v)
+		if err != nil {
+			return ""
+		}
+		return string(b)
+	},
 	"ordinal": func(n int) string {
 		if n%100 >= 11 && n%100 <= 13 {
 			return fmt.Sprintf("%dth", n)

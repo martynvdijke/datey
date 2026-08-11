@@ -42,6 +42,46 @@
   {{end}}
 </noscript>
 
+<!-- Import calendar (.ics) -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Import calendar (.ics)</span>
+    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#ics-import-form" aria-expanded="false" aria-controls="ics-import-form">Toggle</button>
+  </div>
+  <div id="ics-import-form" class="collapse">
+    <div class="card-body">
+      <form hx-post="/calendar/import" hx-target="#ics-import-preview" enctype="multipart/form-data" class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label for="ics_file" class="form-label">Calendar file</label>
+          <input class="form-control" type="file" name="ics_file" id="ics_file" accept=".ics,text/calendar">
+          <div class="form-text">All-day and timed events are imported; yearly-recurring events become annual Datey events.</div>
+        </div>
+        <div class="col-md-3">
+          <label for="ics_person" class="form-label">Target person</label>
+          <select class="form-select" name="person_id" id="ics_person" required>
+            {{range .People}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="ics_type" class="form-label">Event type</label>
+          <select class="form-select" name="type" id="ics_type">
+            <option value="custom" selected>custom</option>
+            <option value="birthday">birthday</option>
+            <option value="anniversary">anniversary</option>
+            <option value="wedding">wedding</option>
+            <option value="holiday">holiday</option>
+            <option value="meeting">meeting</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Preview</button>
+        </div>
+      </form>
+    </div>
+    <div id="ics-import-preview"></div>
+  </div>
+</div>
+
 <!-- Event Details Modal -->
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -111,4 +151,51 @@
     calendar.render();
   });
 </script>
+{{end}}
+
+{{define "icsImportPreview"}}
+<div class="card-body border-top" id="ics-import-preview">
+  {{if .Items}}
+  <h6 class="card-title">{{.Ready}} event(s) ready{{if .Dupe}}, {{.Dupe}} duplicate(s) flagged{{end}}</h6>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Summary</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Person</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Items}}
+        <tr{{if .IsDuplicate}} class="table-warning"{{end}}>
+          <td>{{if .Summary}}{{.Summary}}{{else}}Untitled event{{end}}</td>
+          <td>{{.Date}}</td>
+          <td>{{.Type}}</td>
+          <td>{{.PersonName}}</td>
+          <td>{{if .IsDuplicate}}<span class="badge text-bg-warning">duplicate</span>{{else}}<span class="badge text-bg-success">new</span>{{end}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  <form hx-post="/calendar/import/confirm" hx-target="#ics-import-preview" hx-swap="innerHTML">
+    <input type="hidden" name="payload" value="{{jsonEncode .Items}}">
+    <div class="form-text mb-2">Duplicates are skipped by default. No data has been written yet.</div>
+    <button type="submit" class="btn btn-success"{{if eq .Ready 0}} disabled{{end}}>Import {{.Ready}} event(s)</button>
+  </form>
+  {{else}}
+  <div class="text-muted">No events to import. Upload a file and choose a target person to preview.</div>
+  {{end}}
+</div>
+{{end}}
+
+{{define "icsImportResults"}}
+<div id="ics-import-preview">
+  <div class="alert {{if .Imported}}alert-success{{else}}alert-warning{{end}} mb-0">
+    Imported <strong>{{.Imported}}</strong> event(s), skipped <strong>{{.Skipped}}</strong>.
+  </div>
+</div>
 {{end}}
