@@ -45,12 +45,15 @@ func (r *PersonRepository) Search(ctx context.Context, q string) ([]*ent.Person,
 		All(ctx)
 }
 
-func (r *PersonRepository) Update(ctx context.Context, id int, name, notes string) (*ent.Person, error) {
-	return r.client.Person.UpdateOneID(id).
+func (r *PersonRepository) Update(ctx context.Context, id int, name, notes, vcardData string) (*ent.Person, error) {
+	mutation := r.client.Person.UpdateOneID(id).
 		SetName(name).
 		SetNotes(notes).
-		SetUpdatedAt(time.Now()).
-		Save(ctx)
+		SetUpdatedAt(time.Now())
+	if vcardData != "" {
+		mutation = mutation.SetVcardData(vcardData)
+	}
+	return mutation.Save(ctx)
 }
 
 func (r *PersonRepository) FindByName(ctx context.Context, name string) (*ent.Person, error) {

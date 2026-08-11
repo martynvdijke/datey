@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/datey/datey/ent/enttest"
-	vcardlib "github.com/datey/datey/internal/vcard"
 	"github.com/datey/datey/internal/repository"
+	vcardlib "github.com/datey/datey/internal/vcard"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -310,6 +310,77 @@ END:VCARD`
 	}
 	if !personEvents[0].Date.Equal(expectedBday) {
 		t.Errorf("expected event date %v, got %v", expectedBday, personEvents[0].Date)
+	}
+	if personEvents[0].Description != "Birthday of Dana Vreede" {
+		t.Errorf("expected description 'Birthday of Dana Vreede', got %q", personEvents[0].Description)
+	}
+}
+
+func TestIntegration_ImportWithYearlessBirthdayCreatesEvent(t *testing.T) {
+	client := enttest.Open(t, "sqlite3", "file:datey_int_test_yearless?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+
+	ctx := context.Background()
+	people := repository.NewPersonRepository(client)
+	events := repository.NewEventRepository(client)
+
+	vcf := `BEGIN:VCARD
+VERSION:4.0
+FN:Dana Vreede
+BDAY:--0608
+END:VCARD`
+
+	parsed, err := vcardlib.Parse(strings.NewReader(vcf))
+	if err != nil {
+		t.Fatalf("parse error: %v", err)
+	}
+	if len(parsed) != 1 {
+		t.Fatalf("expected 1 contact, got %d", len(parsed))
+	}
+
+	// Year-less BDAY parses to month/day with no usable birth year.
+	if parsed[0].Birthday == nil {
+		t.Fatal("expected Birthday to be parsed")
+	}
+	if got := parsed[0].Birthday.Month(); got != time.June {
+		t.Errorf("expected month June, got %v", got)
+	}
+	if got := parsed[0].Birthday.Day(); got != 8 {
+		t.Errorf("expected day 8, got %d", got)
+	}
+	if got := parsed[0].Birthday.Year(); got > 1 {
+		t.Errorf("expected no usable birth year (year <= 1), got %d", got)
+	}
+
+	// Create the person and event (simulating what the web handler does)
+	p, err := people.Create(ctx, parsed[0].Name, parsed[0].Notes, parsed[0].RawData)
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+
+	if parsed[0].Birthday != nil {
+		desc := "Birthday of " + parsed[0].Name
+		if _, err := events.CreateForPerson(ctx, p.ID, "birthday", *parsed[0].Birthday, desc); err != nil {
+			t.Fatalf("create birthday event: %v", err)
+		}
+	}
+
+	// Verify the birthday event was created with the year-less date.
+	personEvents, err := events.ListByPerson(ctx, p.ID)
+	if err != nil {
+		t.Fatalf("list events: %v", err)
+	}
+	if len(personEvents) != 1 {
+		t.Fatalf("expected 1 event, got %d", len(personEvents))
+	}
+	if personEvents[0].Type != "birthday" {
+		t.Errorf("expected event type 'birthday', got %q", personEvents[0].Type)
+	}
+	if !personEvents[0].Date.Equal(*parsed[0].Birthday) {
+		t.Errorf("expected event date %v, got %v", *parsed[0].Birthday, personEvents[0].Date)
+	}
+	if got := personEvents[0].Date.Year(); got > 1 {
+		t.Errorf("expected event date year <= 1, got %d", got)
 	}
 	if personEvents[0].Description != "Birthday of Dana Vreede" {
 		t.Errorf("expected description 'Birthday of Dana Vreede', got %q", personEvents[0].Description)

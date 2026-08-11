@@ -260,6 +260,63 @@ END:VCARD`
 	}
 }
 
+func TestParse_BDAY_Yearless(t *testing.T) {
+	// Reduced-accuracy date-without-year formats: --MMDD (v3.0 basic),
+	// --MM-DD (v3.0 extended), -MMDD (vCard 2.1), MMDD (compact).
+	cases := []struct {
+		name string
+		bday string
+	}{
+		{"Basic", "--0608"},
+		{"Extended", "--06-08"},
+		{"VCard21", "-0608"},
+		{"Compact", "0608"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			input := "BEGIN:VCARD\nVERSION:4.0\nFN:Dana Vreede\nBDAY:" + tc.bday + "\nEND:VCARD"
+			contacts, err := Parse(strings.NewReader(input))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(contacts) != 1 {
+				t.Fatalf("expected 1 contact, got %d", len(contacts))
+			}
+			if contacts[0].Birthday == nil {
+				t.Fatal("expected Birthday to be non-nil")
+			}
+			if got := contacts[0].Birthday.Month(); got != time.June {
+				t.Errorf("expected month June, got %v", got)
+			}
+			if got := contacts[0].Birthday.Day(); got != 8 {
+				t.Errorf("expected day 8, got %d", got)
+			}
+			if got := contacts[0].Birthday.Year(); got > 1 {
+				t.Errorf("expected no usable birth year (year <= 1), got %d", got)
+			}
+		})
+	}
+}
+
+func TestParse_BDAY_InvalidYearless(t *testing.T) {
+	cases := []string{"--1399", "--0632", "--06-32"}
+	for _, bday := range cases {
+		t.Run(bday, func(t *testing.T) {
+			input := "BEGIN:VCARD\nVERSION:4.0\nFN:Dana Vreede\nBDAY:" + bday + "\nEND:VCARD"
+			contacts, err := Parse(strings.NewReader(input))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(contacts) != 1 {
+				t.Fatalf("expected 1 contact, got %d", len(contacts))
+			}
+			if contacts[0].Birthday != nil {
+				t.Errorf("expected Birthday to be nil for %s, got %v", bday, contacts[0].Birthday)
+			}
+		})
+	}
+}
+
 func TestParse_BDAY_Absent(t *testing.T) {
 	input := `BEGIN:VCARD
 VERSION:3.0

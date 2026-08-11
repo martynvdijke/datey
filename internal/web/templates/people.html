@@ -12,10 +12,14 @@
       class="d-none mb-3">
   {{template "csrfField" .}}
   <div class="input-group">
-    <input type="file" name="vcf_file" accept=".vcf" class="form-control" required aria-label="Upload vCard file (required)">
+    <input type="file" name="vcf_file" accept=".vcf" multiple class="form-control" required aria-label="Upload vCard file(s) (required)">
     <button class="btn btn-primary" type="submit">Upload</button>
   </div>
-  <div class="form-text">Upload a .vcf file to import people. Supports single and multi-contact vCards.</div>
+  <div class="form-check mt-2">
+    <input class="form-check-input" type="checkbox" name="overwrite" value="true" id="overwrite-import">
+    <label class="form-check-label" for="overwrite-import">Overwrite existing people</label>
+  </div>
+  <div class="form-text">Select one or more .vcf files to import people. Supports single and multi-contact vCards.</div>
 </form>
 <div id="import-preview"></div>
 <div class="row mb-3">
@@ -97,6 +101,8 @@
         <td>
           {{if .Created}}
             <span class="text-success">Imported</span>
+          {{else if .Updated}}
+            <span class="text-warning">Updated</span>
           {{else}}
             <span class="text-muted">Skipped — {{.SkipReason}}</span>
           {{end}}
@@ -119,6 +125,7 @@
   {{end}}
   <p class="mb-0 small text-muted">
     <strong>{{.Imported}}</strong> imported,
+    <strong>{{.Updated}}</strong> updated,
     <strong>{{.Skipped}}</strong> skipped,
     <strong>{{.Birthdays}}</strong> birthday event(s) created.
   </p>

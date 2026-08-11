@@ -12,13 +12,13 @@ import (
 
 // ParsedContact holds the fields extracted from a single vCard entry.
 type ParsedContact struct {
-	Name        string
-	Notes       string
-	Birthday    *time.Time
-	Gender      string
-	FamilyName  string
-	GivenName   string
-	RawData     string
+	Name       string
+	Notes      string
+	Birthday   *time.Time
+	Gender     string
+	FamilyName string
+	GivenName  string
+	RawData    string
 }
 
 // Parse reads a .vcf file and returns all parsed contacts.
@@ -96,13 +96,12 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 		RawData: rawData,
 	}
 
-	// Parse BDAY: supports YYYYMMDD (v4.0 basic) and YYYY-MM-DD (v3.0 extended).
+	// Parse BDAY: full dates (YYYY-MM-DD, YYYYMMDD, RFC3339) and, when no year
+	// is present, year-less dates (--MM-DD, --MMDD, -MMDD, MMDD). Year-less
+	// values parse to year 0 so the age logic treats them as date-only entries.
 	if bday := card.Value(govcard.FieldBirthday); bday != "" {
-		for _, layout := range []string{"20060102", "2006-01-02"} {
-			if t, err := time.Parse(layout, bday); err == nil {
-				pc.Birthday = &t
-				break
-			}
+		if t, ok := ParseBDAY(bday); ok {
+			pc.Birthday = &t
 		}
 	}
 
@@ -174,6 +173,31 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 	}
 
 	return pc
+}
+
+// ParseBDAY parses a vCard BDAY value into a time.Time. Full dates are tried
+// first (YYYY-MM-DD, YYYYMMDD, RFC3339). Year-less dates (--MM-DD, --MMDD,
+// -MMDD, MMDD) parse to year 0, which the age logic treats as a date-only
+// entry with no usable birth year. Impossible values (e.g. --1399) are
+// rejected and ok is false.
+func ParseBDAY(s string) (time.Time, bool) {
+	// Order matters: full-date layouts must be tried before year-less ones.
+	layouts := []string{
+		"2006-01-02",
+		"20060102",
+		time.RFC3339,
+		"20060102T150405Z",
+		"--01-02",
+		"--0102",
+		"-0102",
+		"0102",
+	}
+	for _, layout := range layouts {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, true
+		}
+	}
+	return time.Time{}, false
 }
 
 // genderLabel maps a vCard Sex code to a human-readable label.

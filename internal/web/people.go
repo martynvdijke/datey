@@ -214,7 +214,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		eventRows = append(eventRows, eventRow{
 			ID:            e.ID,
 			Type:          e.Type,
-			Date:          e.Date.Format("Jan 2, 2006"),
+			Date:          formatEventDate(e.Date),
 			EventDate:     e.Date,
 			RelativeLabel: rel,
 			Description:   e.Description,
@@ -282,4 +282,14 @@ func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, o
 		return 0, false
 	}
 	return age.AgeAt(latest.Date, now)
+}
+
+// formatEventDate renders an event date for display. Dates without a usable
+// year (year <= 1, e.g. year-less vCard birthdays parsed to year 0) show as
+// month/day only ("Jun 8") instead of the misleading "Jun 8, 1".
+func formatEventDate(t time.Time) string {
+	if t.Year() <= 1 {
+		return t.Format("Jan 2")
+	}
+	return t.Format("Jan 2, 2006")
 }

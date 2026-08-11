@@ -158,7 +158,7 @@ func TestPersonUpdate(t *testing.T) {
 	repo := newTestPersonRepo(t)
 	id := seedPerson(t, repo, "Old", "old notes")
 
-	updated, err := repo.Update(context.Background(), id, "New", "new notes")
+	updated, err := repo.Update(context.Background(), id, "New", "new notes", "BEGIN:VCARD\r\nEND:VCARD")
 	if err != nil {
 		t.Fatalf("Update: %v", err)
 	}
@@ -167,5 +167,8 @@ func TestPersonUpdate(t *testing.T) {
 	}
 	if updated.Notes != "new notes" {
 		t.Errorf("expected 'new notes', got %q", updated.Notes)
+	}
+	if updated.VcardData != "BEGIN:VCARD\r\nEND:VCARD" {
+		t.Errorf("expected vcard data to be persisted, got %q", updated.VcardData)
 	}
 }

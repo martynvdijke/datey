@@ -28,7 +28,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **👤 User Management** — Multi-user support with admin and user roles.
 - **📝 In-App Logging** — Ring-buffer log viewer filterable by level and source, with live log level changes.
 - **🔍 People Search** — Quick search through people by name.
-- **📇 vCard Import/Export** — Import and export contacts via vCard files.
+- **📇 vCard Import/Export** — Import one or more vCard files (with optional overwrite of existing people) and export contacts as vCard. `BDAY` supports full dates (`19951120`, `1995-11-20`) and year-less formats (`--0608`, `--06-08`, `-0608`, `0608`); year-less birthdays import as regular birthday events and are shown without an age.
 - **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
 - **💾 Database Backup** — On-demand SQLite backup with configurable retention.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
