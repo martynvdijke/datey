@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/martynvdijke/datey/compare/v1.27.1...v1.28.0) (2026-08-11)
+
+
+### Features
+
+* **vcard:** multi-file import, overwrite option, and yearless BDAY support ([02b1eaa](https://github.com/martynvdijke/datey/commit/02b1eaa668d8f8387dfb52abf107f6368fc3abe1))
+
 ## [1.27.1](https://github.com/martynvdijke/datey/compare/v1.27.0...v1.27.1) (2026-08-10)
 
 # [1.27.0](https://github.com/martynvdijke/datey/compare/v1.26.0...v1.27.0) (2026-08-09)
