@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/martynvdijke/datey/compare/v1.28.0...v1.29.0) (2026-08-11)
+
+
+### Features
+
+* **ics:** import calendar events from .ics files ([bc02511](https://github.com/martynvdijke/datey/commit/bc0251163e30fdb318806d5e9151217709554df5))
+
 # [1.28.0](https://github.com/martynvdijke/datey/compare/v1.27.1...v1.28.0) (2026-08-11)
 
 
