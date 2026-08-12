@@ -1,3 +1,15 @@
+# [1.31.0](https://github.com/martynvdijke/datey/compare/v1.30.1...v1.31.0) (2026-08-12)
+
+
+### Bug Fixes
+
+* **immich:** check response body close errors ([bd831c0](https://github.com/martynvdijke/datey/commit/bd831c03a0638478099931009e2a57b277c2aead))
+
+
+### Features
+
+* **people:** polish people pages with structured vCard data and Immich photos ([38ed756](https://github.com/martynvdijke/datey/commit/38ed756482c6b733d308675b68d59e5a0646aaa8))
+
 ## [1.30.1](https://github.com/martynvdijke/datey/compare/v1.30.0...v1.30.1) (2026-08-12)
 
 
