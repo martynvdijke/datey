@@ -1,3 +1,11 @@
+# [1.30.0](https://github.com/martynvdijke/datey/compare/v1.29.0...v1.30.0) (2026-08-12)
+
+
+### Features
+
+* **notifications:** remove one-time notification feature ([0aa881b](https://github.com/martynvdijke/datey/commit/0aa881bc4060f8eb2e868733b7bbf230f04ce2e1))
+* **scheduler:** annual birthday notifications ([0e86d7b](https://github.com/martynvdijke/datey/commit/0e86d7bfa3763beb27544a9f9ea06302cc249de0))
+
 # [1.29.0](https://github.com/martynvdijke/datey/compare/v1.28.0...v1.29.0) (2026-08-11)
 
 
