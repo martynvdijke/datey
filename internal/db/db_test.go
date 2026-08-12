@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
@@ -186,5 +187,221 @@ func TestMigrateContactsToPeople_PeopleExist_SkipsWithoutDuplicating(t *testing.
 	}
 	if !applied {
 		t.Fatal("expected migration log to be recorded when skipping due to existing people")
+	}
+}
+
+// TestMigrateBirthdayEvents_CreatesMissing verifies that persons with a
+// parseable BDAY in vcard_data and no birthday event get one created.
+func TestMigrateBirthdayEvents_CreatesMissing(t *testing.T) {
+	client := enttest.Open(t, "sqlite3", "file:bday_backfill_create_test?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+	ctx := context.Background()
+
+	_, err := client.Person.Create().
+		SetName("Dana").
+		SetNotes("").
+		SetVcardData("BEGIN:VCARD\nVERSION:4.0\nFN:Dana\nBDAY:19951120\nEND:VCARD\n").
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+
+	if err := MigrateBirthdayEvents(ctx, client); err != nil {
+		t.Fatalf("backfill: %v", err)
+	}
+
+	events, err := client.Event.Query().All(ctx)
+	if err != nil {
+		t.Fatalf("query events: %v", err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("expected 1 birthday event, got %d", len(events))
+	}
+	if events[0].Type != "birthday" {
+		t.Fatalf("expected type birthday, got %q", events[0].Type)
+	}
+	if want := time.Date(1995, time.November, 20, 0, 0, 0, 0, time.UTC); !events[0].Date.Equal(want) {
+		t.Fatalf("expected date %v, got %v", want, events[0].Date)
+	}
+	if events[0].Description != "Imported from vCard" {
+		t.Fatalf("expected description 'Imported from vCard', got %q", events[0].Description)
+	}
+}
+
+// TestMigrateBirthdayEvents_SkipsExisting verifies that persons who already
+// have a birthday event are not backfilled again.
+func TestMigrateBirthdayEvents_SkipsExisting(t *testing.T) {
+	client := enttest.Open(t, "sqlite3", "file:bday_backfill_existing_test?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+	ctx := context.Background()
+
+	p, err := client.Person.Create().
+		SetName("Dana").
+		SetNotes("").
+		SetVcardData("BEGIN:VCARD\nVERSION:4.0\nFN:Dana\nBDAY:19951120\nEND:VCARD\n").
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	if _, err := client.Event.Create().
+		SetType("birthday").
+		SetDate(time.Date(1995, time.November, 20, 0, 0, 0, 0, time.UTC)).
+		SetCreatedAt(time.Now()).
+		SetPerson(p).
+		Save(ctx); err != nil {
+		t.Fatalf("create existing birthday event: %v", err)
+	}
+
+	if err := MigrateBirthdayEvents(ctx, client); err != nil {
+		t.Fatalf("backfill: %v", err)
+	}
+
+	count, err := client.Event.Query().Count(ctx)
+	if err != nil {
+		t.Fatalf("count events: %v", err)
+	}
+	if count != 1 {
+		t.Fatalf("expected 1 event (no duplicate), got %d", count)
+	}
+}
+
+// TestMigrateBirthdayEvents_NoOpOnRerun verifies the migration_log gate: the
+// second run does nothing even for persons created after the first run.
+func TestMigrateBirthdayEvents_NoOpOnRerun(t *testing.T) {
+	client := enttest.Open(t, "sqlite3", "file:bday_backfill_rerun_test?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+	ctx := context.Background()
+
+	if err := MigrateBirthdayEvents(ctx, client); err != nil {
+		t.Fatalf("first backfill run: %v", err)
+	}
+
+	// Person with parseable BDAY created after the migration was recorded.
+	if _, err := client.Person.Create().
+		SetName("Dana").
+		SetNotes("").
+		SetVcardData("BEGIN:VCARD\nVERSION:4.0\nFN:Dana\nBDAY:19951120\nEND:VCARD\n").
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now()).
+		Save(ctx); err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+
+	if err := MigrateBirthdayEvents(ctx, client); err != nil {
+		t.Fatalf("second backfill run: %v", err)
+	}
+
+	count, err := client.Event.Query().Count(ctx)
+	if err != nil {
+		t.Fatalf("count events: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("expected 0 events on re-run, got %d", count)
+	}
+}
+
+// TestMigrateBirthdayEvents_SkipsUnparseable verifies that persons without
+// vcard_data or with an unparseable BDAY are skipped.
+func TestMigrateBirthdayEvents_SkipsUnparseable(t *testing.T) {
+	client := enttest.Open(t, "sqlite3", "file:bday_backfill_unparseable_test?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+	ctx := context.Background()
+
+	for _, name := range []string{"NoData", "NoBDAY", "BadBDAY"} {
+		create := client.Person.Create().
+			SetName(name).
+			SetNotes("").
+			SetCreatedAt(time.Now()).
+			SetUpdatedAt(time.Now())
+		switch name {
+		case "NoBDAY":
+			create.SetVcardData("BEGIN:VCARD\nVERSION:4.0\nFN:NoBDAY\nEND:VCARD\n")
+		case "BadBDAY":
+			create.SetVcardData("BEGIN:VCARD\nVERSION:4.0\nFN:BadBDAY\nBDAY:--1399\nEND:VCARD\n")
+		}
+		if _, err := create.Save(ctx); err != nil {
+			t.Fatalf("create person %s: %v", name, err)
+		}
+	}
+
+	if err := MigrateBirthdayEvents(ctx, client); err != nil {
+		t.Fatalf("backfill: %v", err)
+	}
+
+	count, err := client.Event.Query().Count(ctx)
+	if err != nil {
+		t.Fatalf("count events: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("expected 0 events for unparseable persons, got %d", count)
+	}
+
+	applied, err := client.MigrationLog.Query().
+		Where(migrationlog.NameEQ(migrationBirthdayBackfill)).
+		Exist(ctx)
+	if err != nil {
+		t.Fatalf("check migration log: %v", err)
+	}
+	if !applied {
+		t.Fatal("expected migration log to be recorded after backfill")
+	}
+}
+
+// TestDropOneTimeNotificationTables verifies the migration drops both tables,
+// records the migration_log entry, and is idempotent on subsequent runs.
+func TestDropOneTimeNotificationTables(t *testing.T) {
+	dsn := "file:migrate_drop_test?mode=memory&cache=shared&_fk=1"
+	client := enttest.Open(t, "sqlite3", dsn)
+	defer client.Close()
+	ctx := context.Background()
+
+	// Seed the tables that the feature used to own (ent no longer knows them,
+	// so create them with raw DDL on a dedicated connection).
+	conn, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		t.Fatalf("open raw connection: %v", err)
+	}
+	defer conn.Close()
+	if _, err := conn.ExecContext(ctx, "CREATE TABLE onetimenotifications (id integer primary key autoincrement, message text)"); err != nil {
+		t.Fatalf("create onetimenotifications: %v", err)
+	}
+	if _, err := conn.ExecContext(ctx, "CREATE TABLE notification_deliveries (id integer primary key autoincrement, channel text)"); err != nil {
+		t.Fatalf("create notification_deliveries: %v", err)
+	}
+	if _, err := conn.ExecContext(ctx, "INSERT INTO onetimenotifications (message) VALUES ('pending')"); err != nil {
+		t.Fatalf("seed row: %v", err)
+	}
+
+	// First run: should drop both tables and record the log entry.
+	if err := DropOneTimeNotificationTables(ctx, client, dsn); err != nil {
+		t.Fatalf("first migration run: %v", err)
+	}
+
+	for _, table := range []string{"onetimenotifications", "notification_deliveries"} {
+		var name string
+		err := conn.QueryRowContext(ctx,
+			"SELECT name FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&name)
+		if err != sql.ErrNoRows {
+			t.Errorf("expected table %s to be dropped, got err=%v", table, err)
+		}
+	}
+
+	applied, err := client.MigrationLog.Query().
+		Where(migrationlog.NameEQ(migrationDropOneTimeNotifications)).
+		Exist(ctx)
+	if err != nil {
+		t.Fatalf("check migration log: %v", err)
+	}
+	if !applied {
+		t.Fatal("expected migration log to be recorded after drop")
+	}
+
+	// Second run: should skip (gated by migration_log).
+	if err := DropOneTimeNotificationTables(ctx, client, dsn); err != nil {
+		t.Fatalf("second migration run: %v", err)
 	}
 }

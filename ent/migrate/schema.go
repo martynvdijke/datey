@@ -15,6 +15,9 @@ var (
 		{Name: "data_dir", Type: field.TypeString, Nullable: true},
 		{Name: "scheduler_hour", Type: field.TypeInt, Nullable: true},
 		{Name: "reminder_days", Type: field.TypeInt, Nullable: true},
+		{Name: "reminder_digest", Type: field.TypeBool, Nullable: true},
+		{Name: "reminder_stages", Type: field.TypeString, Nullable: true},
+		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "log_level", Type: field.TypeString, Nullable: true},
 		{Name: "log_buffer_size", Type: field.TypeInt, Nullable: true},
 		{Name: "otel_endpoint", Type: field.TypeString, Nullable: true},
@@ -81,6 +84,8 @@ var (
 		{Name: "type", Type: field.TypeString},
 		{Name: "date", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "reminder_days", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "contact_events", Type: field.TypeInt, Nullable: true},
 		{Name: "person_events", Type: field.TypeInt, Nullable: true},
@@ -93,13 +98,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "events_contacts_events",
-				Columns:    []*schema.Column{EventsColumns[5]},
+				Columns:    []*schema.Column{EventsColumns[7]},
 				RefColumns: []*schema.Column{ContactsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "events_persons_events",
-				Columns:    []*schema.Column{EventsColumns[6]},
+				Columns:    []*schema.Column{EventsColumns[8]},
 				RefColumns: []*schema.Column{PersonsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -143,29 +148,6 @@ var (
 		Columns:    MigrationLogsColumns,
 		PrimaryKey: []*schema.Column{MigrationLogsColumns[0]},
 	}
-	// NotificationDeliveriesColumns holds the columns for the "notification_deliveries" table.
-	NotificationDeliveriesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "channel", Type: field.TypeString},
-		{Name: "status", Type: field.TypeString, Default: "pending"},
-		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
-		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
-		{Name: "one_time_notification_deliveries", Type: field.TypeInt},
-	}
-	// NotificationDeliveriesTable holds the schema information for the "notification_deliveries" table.
-	NotificationDeliveriesTable = &schema.Table{
-		Name:       "notification_deliveries",
-		Columns:    NotificationDeliveriesColumns,
-		PrimaryKey: []*schema.Column{NotificationDeliveriesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "notification_deliveries_one_time_notifications_deliveries",
-				Columns:    []*schema.Column{NotificationDeliveriesColumns[5]},
-				RefColumns: []*schema.Column{OneTimeNotificationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// NotificationLogsColumns holds the columns for the "notification_logs" table.
 	NotificationLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -195,30 +177,15 @@ var (
 			},
 		},
 	}
-	// OneTimeNotificationsColumns holds the columns for the "one_time_notifications" table.
-	OneTimeNotificationsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "message", Type: field.TypeString, Size: 2147483647},
-		{Name: "scheduled_at", Type: field.TypeTime},
-		{Name: "status", Type: field.TypeString, Default: "pending"},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
-		{Name: "channel_targets", Type: field.TypeString, Nullable: true, Default: ""},
-		{Name: "person_id", Type: field.TypeInt, Nullable: true},
-		{Name: "event_type", Type: field.TypeString, Nullable: true, Default: ""},
-	}
-	// OneTimeNotificationsTable holds the schema information for the "one_time_notifications" table.
-	OneTimeNotificationsTable = &schema.Table{
-		Name:       "one_time_notifications",
-		Columns:    OneTimeNotificationsColumns,
-		PrimaryKey: []*schema.Column{OneTimeNotificationsColumns[0]},
-	}
 	// PersonsColumns holds the columns for the "persons" table.
 	PersonsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "vcard_data", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "notify_birthdays", Type: field.TypeBool, Default: true},
+		{Name: "timezone", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "reminder_days", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -227,6 +194,29 @@ var (
 		Name:       "persons",
 		Columns:    PersonsColumns,
 		PrimaryKey: []*schema.Column{PersonsColumns[0]},
+	}
+	// PersonNotesColumns holds the columns for the "person_notes" table.
+	PersonNotesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "note", Type: field.TypeString, Size: 2147483647},
+		{Name: "note_date", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "person_timeline", Type: field.TypeInt},
+	}
+	// PersonNotesTable holds the schema information for the "person_notes" table.
+	PersonNotesTable = &schema.Table{
+		Name:       "person_notes",
+		Columns:    PersonNotesColumns,
+		PrimaryKey: []*schema.Column{PersonNotesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "person_notes_persons_timeline",
+				Columns:    []*schema.Column{PersonNotesColumns[5]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// PushSubscriptionsColumns holds the columns for the "push_subscriptions" table.
 	PushSubscriptionsColumns = []*schema.Column{
@@ -339,10 +329,9 @@ var (
 		EventsTable,
 		GroupsTable,
 		MigrationLogsTable,
-		NotificationDeliveriesTable,
 		NotificationLogsTable,
-		OneTimeNotificationsTable,
 		PersonsTable,
+		PersonNotesTable,
 		PushSubscriptionsTable,
 		RecurringRulesTable,
 		SessionsTable,
@@ -354,8 +343,8 @@ var (
 func init() {
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
 	EventsTable.ForeignKeys[1].RefTable = PersonsTable
-	NotificationDeliveriesTable.ForeignKeys[0].RefTable = OneTimeNotificationsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable
+	PersonNotesTable.ForeignKeys[0].RefTable = PersonsTable
 	PushSubscriptionsTable.ForeignKeys[0].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	PersonGroupsTable.ForeignKeys[0].RefTable = PersonsTable

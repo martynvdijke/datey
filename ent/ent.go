@@ -17,10 +17,9 @@ import (
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/migrationlog"
-	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
-	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/session"
@@ -85,19 +84,18 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			appconfig.Table:            appconfig.ValidColumn,
-			contact.Table:              contact.ValidColumn,
-			event.Table:                event.ValidColumn,
-			group.Table:                group.ValidColumn,
-			migrationlog.Table:         migrationlog.ValidColumn,
-			notificationdelivery.Table: notificationdelivery.ValidColumn,
-			notificationlog.Table:      notificationlog.ValidColumn,
-			onetimenotification.Table:  onetimenotification.ValidColumn,
-			person.Table:               person.ValidColumn,
-			pushsubscription.Table:     pushsubscription.ValidColumn,
-			recurringrule.Table:        recurringrule.ValidColumn,
-			session.Table:              session.ValidColumn,
-			user.Table:                 user.ValidColumn,
+			appconfig.Table:        appconfig.ValidColumn,
+			contact.Table:          contact.ValidColumn,
+			event.Table:            event.ValidColumn,
+			group.Table:            group.ValidColumn,
+			migrationlog.Table:     migrationlog.ValidColumn,
+			notificationlog.Table:  notificationlog.ValidColumn,
+			person.Table:           person.ValidColumn,
+			personnote.Table:       personnote.ValidColumn,
+			pushsubscription.Table: pushsubscription.ValidColumn,
+			recurringrule.Table:    recurringrule.ValidColumn,
+			session.Table:          session.ValidColumn,
+			user.Table:             user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

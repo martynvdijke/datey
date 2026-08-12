@@ -69,18 +69,6 @@ func (f MigrationLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MigrationLogMutation", m)
 }
 
-// The NotificationDeliveryFunc type is an adapter to allow the use of ordinary
-// function as NotificationDelivery mutator.
-type NotificationDeliveryFunc func(context.Context, *ent.NotificationDeliveryMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f NotificationDeliveryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.NotificationDeliveryMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationDeliveryMutation", m)
-}
-
 // The NotificationLogFunc type is an adapter to allow the use of ordinary
 // function as NotificationLog mutator.
 type NotificationLogFunc func(context.Context, *ent.NotificationLogMutation) (ent.Value, error)
@@ -93,18 +81,6 @@ func (f NotificationLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationLogMutation", m)
 }
 
-// The OneTimeNotificationFunc type is an adapter to allow the use of ordinary
-// function as OneTimeNotification mutator.
-type OneTimeNotificationFunc func(context.Context, *ent.OneTimeNotificationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OneTimeNotificationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OneTimeNotificationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OneTimeNotificationMutation", m)
-}
-
 // The PersonFunc type is an adapter to allow the use of ordinary
 // function as Person mutator.
 type PersonFunc func(context.Context, *ent.PersonMutation) (ent.Value, error)
@@ -115,6 +91,18 @@ func (f PersonFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PersonMutation", m)
+}
+
+// The PersonNoteFunc type is an adapter to allow the use of ordinary
+// function as PersonNote mutator.
+type PersonNoteFunc func(context.Context, *ent.PersonNoteMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PersonNoteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PersonNoteMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PersonNoteMutation", m)
 }
 
 // The PushSubscriptionFunc type is an adapter to allow the use of ordinary

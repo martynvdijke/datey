@@ -172,3 +172,43 @@ func TestPersonUpdate(t *testing.T) {
 		t.Errorf("expected vcard data to be persisted, got %q", updated.VcardData)
 	}
 }
+
+func TestPersonNotifyBirthdaysDefaultsToTrue(t *testing.T) {
+	repo := newTestPersonRepo(t)
+	id := seedPerson(t, repo, "Cara", "")
+
+	p, err := repo.Get(context.Background(), id)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if !p.NotifyBirthdays {
+		t.Errorf("expected notify_birthdays to default to true, got false")
+	}
+}
+
+func TestPersonSetNotifyBirthdaysPersists(t *testing.T) {
+	repo := newTestPersonRepo(t)
+	id := seedPerson(t, repo, "Dana", "")
+
+	if _, err := repo.SetNotifyBirthdays(context.Background(), id, false); err != nil {
+		t.Fatalf("SetNotifyBirthdays(false): %v", err)
+	}
+	p, err := repo.Get(context.Background(), id)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if p.NotifyBirthdays {
+		t.Errorf("expected notify_birthdays false after opt-out")
+	}
+
+	if _, err := repo.SetNotifyBirthdays(context.Background(), id, true); err != nil {
+		t.Fatalf("SetNotifyBirthdays(true): %v", err)
+	}
+	p, err = repo.Get(context.Background(), id)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if !p.NotifyBirthdays {
+		t.Errorf("expected notify_birthdays true after re-enable")
+	}
+}

@@ -18,6 +18,12 @@ const (
 	FieldNotes = "notes"
 	// FieldVcardData holds the string denoting the vcard_data field in the database.
 	FieldVcardData = "vcard_data"
+	// FieldNotifyBirthdays holds the string denoting the notify_birthdays field in the database.
+	FieldNotifyBirthdays = "notify_birthdays"
+	// FieldTimezone holds the string denoting the timezone field in the database.
+	FieldTimezone = "timezone"
+	// FieldReminderDays holds the string denoting the reminder_days field in the database.
+	FieldReminderDays = "reminder_days"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -26,6 +32,8 @@ const (
 	EdgeEvents = "events"
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
+	// EdgeTimeline holds the string denoting the timeline edge name in mutations.
+	EdgeTimeline = "timeline"
 	// Table holds the table name of the person in the database.
 	Table = "persons"
 	// EventsTable is the table that holds the events relation/edge.
@@ -40,6 +48,13 @@ const (
 	// GroupsInverseTable is the table name for the Group entity.
 	// It exists in this package in order to avoid circular dependency with the "group" package.
 	GroupsInverseTable = "groups"
+	// TimelineTable is the table that holds the timeline relation/edge.
+	TimelineTable = "person_notes"
+	// TimelineInverseTable is the table name for the PersonNote entity.
+	// It exists in this package in order to avoid circular dependency with the "personnote" package.
+	TimelineInverseTable = "person_notes"
+	// TimelineColumn is the table column denoting the timeline relation/edge.
+	TimelineColumn = "person_timeline"
 )
 
 // Columns holds all SQL columns for person fields.
@@ -48,6 +63,9 @@ var Columns = []string{
 	FieldName,
 	FieldNotes,
 	FieldVcardData,
+	FieldNotifyBirthdays,
+	FieldTimezone,
+	FieldReminderDays,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -73,6 +91,10 @@ var (
 	NameValidator func(string) error
 	// DefaultNotes holds the default value on creation for the "notes" field.
 	DefaultNotes string
+	// DefaultNotifyBirthdays holds the default value on creation for the "notify_birthdays" field.
+	DefaultNotifyBirthdays bool
+	// DefaultTimezone holds the default value on creation for the "timezone" field.
+	DefaultTimezone string
 )
 
 // OrderOption defines the ordering options for the Person queries.
@@ -96,6 +118,16 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 // ByVcardData orders the results by the vcard_data field.
 func ByVcardData(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldVcardData, opts...).ToFunc()
+}
+
+// ByNotifyBirthdays orders the results by the notify_birthdays field.
+func ByNotifyBirthdays(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyBirthdays, opts...).ToFunc()
+}
+
+// ByTimezone orders the results by the timezone field.
+func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -135,6 +167,20 @@ func ByGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTimelineCount orders the results by timeline count.
+func ByTimelineCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTimelineStep(), opts...)
+	}
+}
+
+// ByTimeline orders the results by timeline terms.
+func ByTimeline(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTimelineStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newEventsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -147,5 +193,12 @@ func newGroupsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GroupsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, GroupsTable, GroupsPrimaryKey...),
+	)
+}
+func newTimelineStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TimelineInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TimelineTable, TimelineColumn),
 	)
 }

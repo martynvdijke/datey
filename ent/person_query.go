@@ -15,18 +15,20 @@ import (
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/predicate"
 )
 
 // PersonQuery is the builder for querying Person entities.
 type PersonQuery struct {
 	config
-	ctx        *QueryContext
-	order      []person.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Person
-	withEvents *EventQuery
-	withGroups *GroupQuery
+	ctx          *QueryContext
+	order        []person.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.Person
+	withEvents   *EventQuery
+	withGroups   *GroupQuery
+	withTimeline *PersonNoteQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -100,6 +102,28 @@ func (_q *PersonQuery) QueryGroups() *GroupQuery {
 			sqlgraph.From(person.Table, person.FieldID, selector),
 			sqlgraph.To(group.Table, group.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, person.GroupsTable, person.GroupsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTimeline chains the current query on the "timeline" edge.
+func (_q *PersonQuery) QueryTimeline() *PersonNoteQuery {
+	query := (&PersonNoteClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, selector),
+			sqlgraph.To(personnote.Table, personnote.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.TimelineTable, person.TimelineColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -294,13 +318,14 @@ func (_q *PersonQuery) Clone() *PersonQuery {
 		return nil
 	}
 	return &PersonQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]person.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Person{}, _q.predicates...),
-		withEvents: _q.withEvents.Clone(),
-		withGroups: _q.withGroups.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]person.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.Person{}, _q.predicates...),
+		withEvents:   _q.withEvents.Clone(),
+		withGroups:   _q.withGroups.Clone(),
+		withTimeline: _q.withTimeline.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -326,6 +351,17 @@ func (_q *PersonQuery) WithGroups(opts ...func(*GroupQuery)) *PersonQuery {
 		opt(query)
 	}
 	_q.withGroups = query
+	return _q
+}
+
+// WithTimeline tells the query-builder to eager-load the nodes that are connected to
+// the "timeline" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PersonQuery) WithTimeline(opts ...func(*PersonNoteQuery)) *PersonQuery {
+	query := (&PersonNoteClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTimeline = query
 	return _q
 }
 
@@ -407,9 +443,10 @@ func (_q *PersonQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Perso
 	var (
 		nodes       = []*Person{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withEvents != nil,
 			_q.withGroups != nil,
+			_q.withTimeline != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -441,6 +478,13 @@ func (_q *PersonQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Perso
 		if err := _q.loadGroups(ctx, query, nodes,
 			func(n *Person) { n.Edges.Groups = []*Group{} },
 			func(n *Person, e *Group) { n.Edges.Groups = append(n.Edges.Groups, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTimeline; query != nil {
+		if err := _q.loadTimeline(ctx, query, nodes,
+			func(n *Person) { n.Edges.Timeline = []*PersonNote{} },
+			func(n *Person, e *PersonNote) { n.Edges.Timeline = append(n.Edges.Timeline, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -536,6 +580,37 @@ func (_q *PersonQuery) loadGroups(ctx context.Context, query *GroupQuery, nodes 
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *PersonQuery) loadTimeline(ctx context.Context, query *PersonNoteQuery, nodes []*Person, init func(*Person), assign func(*Person, *PersonNote)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Person)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.PersonNote(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(person.TimelineColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.person_timeline
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "person_timeline" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "person_timeline" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

@@ -234,6 +234,30 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// toggleNotifyBirthdays updates the per-person birthday notification
+// opt-out. The checkbox posts the form value "on" when enabled.
+func (h *Handler) toggleNotifyBirthdays(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	enabled := r.FormValue("notify_birthdays") == "on"
+
+	if _, err := h.people.SetNotifyBirthdays(r.Context(), id, enabled); err != nil {
+		if ent.IsNotFound(err) {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		slog.Error("set notify birthdays", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/people/"+strconv.Itoa(id), http.StatusSeeOther)
+}
+
 func (h *Handler) deletePerson(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {

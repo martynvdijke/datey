@@ -70,6 +70,11 @@ func Description(v string) predicate.Event {
 	return predicate.Event(sql.FieldEQ(FieldDescription, v))
 }
 
+// Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
+func Notes(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldNotes, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Event {
 	return predicate.Event(sql.FieldEQ(FieldCreatedAt, v))
@@ -253,6 +258,91 @@ func DescriptionEqualFold(v string) predicate.Event {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.Event {
 	return predicate.Event(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// NotesEQ applies the EQ predicate on the "notes" field.
+func NotesEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldNotes, v))
+}
+
+// NotesNEQ applies the NEQ predicate on the "notes" field.
+func NotesNEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldNotes, v))
+}
+
+// NotesIn applies the In predicate on the "notes" field.
+func NotesIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldNotes, vs...))
+}
+
+// NotesNotIn applies the NotIn predicate on the "notes" field.
+func NotesNotIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldNotes, vs...))
+}
+
+// NotesGT applies the GT predicate on the "notes" field.
+func NotesGT(v string) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldNotes, v))
+}
+
+// NotesGTE applies the GTE predicate on the "notes" field.
+func NotesGTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldNotes, v))
+}
+
+// NotesLT applies the LT predicate on the "notes" field.
+func NotesLT(v string) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldNotes, v))
+}
+
+// NotesLTE applies the LTE predicate on the "notes" field.
+func NotesLTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldNotes, v))
+}
+
+// NotesContains applies the Contains predicate on the "notes" field.
+func NotesContains(v string) predicate.Event {
+	return predicate.Event(sql.FieldContains(FieldNotes, v))
+}
+
+// NotesHasPrefix applies the HasPrefix predicate on the "notes" field.
+func NotesHasPrefix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasPrefix(FieldNotes, v))
+}
+
+// NotesHasSuffix applies the HasSuffix predicate on the "notes" field.
+func NotesHasSuffix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasSuffix(FieldNotes, v))
+}
+
+// NotesIsNil applies the IsNil predicate on the "notes" field.
+func NotesIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldNotes))
+}
+
+// NotesNotNil applies the NotNil predicate on the "notes" field.
+func NotesNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldNotes))
+}
+
+// NotesEqualFold applies the EqualFold predicate on the "notes" field.
+func NotesEqualFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldEqualFold(FieldNotes, v))
+}
+
+// NotesContainsFold applies the ContainsFold predicate on the "notes" field.
+func NotesContainsFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldContainsFold(FieldNotes, v))
+}
+
+// ReminderDaysIsNil applies the IsNil predicate on the "reminder_days" field.
+func ReminderDaysIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldReminderDays))
+}
+
+// ReminderDaysNotNil applies the NotNil predicate on the "reminder_days" field.
+func ReminderDaysNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldReminderDays))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

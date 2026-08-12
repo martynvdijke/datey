@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -23,6 +24,12 @@ type Person struct {
 	Notes string `json:"notes,omitempty"`
 	// VcardData holds the value of the "vcard_data" field.
 	VcardData string `json:"vcard_data,omitempty"`
+	// NotifyBirthdays holds the value of the "notify_birthdays" field.
+	NotifyBirthdays bool `json:"notify_birthdays,omitempty"`
+	// Timezone holds the value of the "timezone" field.
+	Timezone string `json:"timezone,omitempty"`
+	// ReminderDays holds the value of the "reminder_days" field.
+	ReminderDays []int `json:"reminder_days,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -39,9 +46,11 @@ type PersonEdges struct {
 	Events []*Event `json:"events,omitempty"`
 	// Groups holds the value of the groups edge.
 	Groups []*Group `json:"groups,omitempty"`
+	// Timeline holds the value of the timeline edge.
+	Timeline []*PersonNote `json:"timeline,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // EventsOrErr returns the Events value or an error if the edge
@@ -62,14 +71,27 @@ func (e PersonEdges) GroupsOrErr() ([]*Group, error) {
 	return nil, &NotLoadedError{edge: "groups"}
 }
 
+// TimelineOrErr returns the Timeline value or an error if the edge
+// was not loaded in eager-loading.
+func (e PersonEdges) TimelineOrErr() ([]*PersonNote, error) {
+	if e.loadedTypes[2] {
+		return e.Timeline, nil
+	}
+	return nil, &NotLoadedError{edge: "timeline"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Person) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case person.FieldReminderDays:
+			values[i] = new([]byte)
+		case person.FieldNotifyBirthdays:
+			values[i] = new(sql.NullBool)
 		case person.FieldID:
 			values[i] = new(sql.NullInt64)
-		case person.FieldName, person.FieldNotes, person.FieldVcardData:
+		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -112,6 +134,26 @@ func (_m *Person) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.VcardData = value.String
 			}
+		case person.FieldNotifyBirthdays:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field notify_birthdays", values[i])
+			} else if value.Valid {
+				_m.NotifyBirthdays = value.Bool
+			}
+		case person.FieldTimezone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone", values[i])
+			} else if value.Valid {
+				_m.Timezone = value.String
+			}
+		case person.FieldReminderDays:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field reminder_days", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.ReminderDays); err != nil {
+					return fmt.Errorf("unmarshal field reminder_days: %w", err)
+				}
+			}
 		case person.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -147,6 +189,11 @@ func (_m *Person) QueryGroups() *GroupQuery {
 	return NewPersonClient(_m.config).QueryGroups(_m)
 }
 
+// QueryTimeline queries the "timeline" edge of the Person entity.
+func (_m *Person) QueryTimeline() *PersonNoteQuery {
+	return NewPersonClient(_m.config).QueryTimeline(_m)
+}
+
 // Update returns a builder for updating this Person.
 // Note that you need to call Person.Unwrap() before calling this method if this Person
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -178,6 +225,15 @@ func (_m *Person) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("vcard_data=")
 	builder.WriteString(_m.VcardData)
+	builder.WriteString(", ")
+	builder.WriteString("notify_birthdays=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotifyBirthdays))
+	builder.WriteString(", ")
+	builder.WriteString("timezone=")
+	builder.WriteString(_m.Timezone)
+	builder.WriteString(", ")
+	builder.WriteString("reminder_days=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ReminderDays))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

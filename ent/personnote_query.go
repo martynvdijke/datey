@@ -11,59 +11,59 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/datey/datey/ent/notificationdelivery"
-	"github.com/datey/datey/ent/onetimenotification"
+	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/predicate"
 )
 
-// NotificationDeliveryQuery is the builder for querying NotificationDelivery entities.
-type NotificationDeliveryQuery struct {
+// PersonNoteQuery is the builder for querying PersonNote entities.
+type PersonNoteQuery struct {
 	config
-	ctx              *QueryContext
-	order            []notificationdelivery.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.NotificationDelivery
-	withNotification *OneTimeNotificationQuery
-	withFKs          bool
+	ctx        *QueryContext
+	order      []personnote.OrderOption
+	inters     []Interceptor
+	predicates []predicate.PersonNote
+	withPerson *PersonQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the NotificationDeliveryQuery builder.
-func (_q *NotificationDeliveryQuery) Where(ps ...predicate.NotificationDelivery) *NotificationDeliveryQuery {
+// Where adds a new predicate for the PersonNoteQuery builder.
+func (_q *PersonNoteQuery) Where(ps ...predicate.PersonNote) *PersonNoteQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *NotificationDeliveryQuery) Limit(limit int) *NotificationDeliveryQuery {
+func (_q *PersonNoteQuery) Limit(limit int) *PersonNoteQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *NotificationDeliveryQuery) Offset(offset int) *NotificationDeliveryQuery {
+func (_q *PersonNoteQuery) Offset(offset int) *PersonNoteQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *NotificationDeliveryQuery) Unique(unique bool) *NotificationDeliveryQuery {
+func (_q *PersonNoteQuery) Unique(unique bool) *PersonNoteQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *NotificationDeliveryQuery) Order(o ...notificationdelivery.OrderOption) *NotificationDeliveryQuery {
+func (_q *PersonNoteQuery) Order(o ...personnote.OrderOption) *PersonNoteQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
-// QueryNotification chains the current query on the "notification" edge.
-func (_q *NotificationDeliveryQuery) QueryNotification() *OneTimeNotificationQuery {
-	query := (&OneTimeNotificationClient{config: _q.config}).Query()
+// QueryPerson chains the current query on the "person" edge.
+func (_q *PersonNoteQuery) QueryPerson() *PersonQuery {
+	query := (&PersonClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -73,9 +73,9 @@ func (_q *NotificationDeliveryQuery) QueryNotification() *OneTimeNotificationQue
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(notificationdelivery.Table, notificationdelivery.FieldID, selector),
-			sqlgraph.To(onetimenotification.Table, onetimenotification.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, notificationdelivery.NotificationTable, notificationdelivery.NotificationColumn),
+			sqlgraph.From(personnote.Table, personnote.FieldID, selector),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, personnote.PersonTable, personnote.PersonColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -83,21 +83,21 @@ func (_q *NotificationDeliveryQuery) QueryNotification() *OneTimeNotificationQue
 	return query
 }
 
-// First returns the first NotificationDelivery entity from the query.
-// Returns a *NotFoundError when no NotificationDelivery was found.
-func (_q *NotificationDeliveryQuery) First(ctx context.Context) (*NotificationDelivery, error) {
+// First returns the first PersonNote entity from the query.
+// Returns a *NotFoundError when no PersonNote was found.
+func (_q *PersonNoteQuery) First(ctx context.Context) (*PersonNote, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{notificationdelivery.Label}
+		return nil, &NotFoundError{personnote.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) FirstX(ctx context.Context) *NotificationDelivery {
+func (_q *PersonNoteQuery) FirstX(ctx context.Context) *PersonNote {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -105,22 +105,22 @@ func (_q *NotificationDeliveryQuery) FirstX(ctx context.Context) *NotificationDe
 	return node
 }
 
-// FirstID returns the first NotificationDelivery ID from the query.
-// Returns a *NotFoundError when no NotificationDelivery ID was found.
-func (_q *NotificationDeliveryQuery) FirstID(ctx context.Context) (id int, err error) {
+// FirstID returns the first PersonNote ID from the query.
+// Returns a *NotFoundError when no PersonNote ID was found.
+func (_q *PersonNoteQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{notificationdelivery.Label}
+		err = &NotFoundError{personnote.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) FirstIDX(ctx context.Context) int {
+func (_q *PersonNoteQuery) FirstIDX(ctx context.Context) int {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -128,10 +128,10 @@ func (_q *NotificationDeliveryQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns a single NotificationDelivery entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one NotificationDelivery entity is found.
-// Returns a *NotFoundError when no NotificationDelivery entities are found.
-func (_q *NotificationDeliveryQuery) Only(ctx context.Context) (*NotificationDelivery, error) {
+// Only returns a single PersonNote entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one PersonNote entity is found.
+// Returns a *NotFoundError when no PersonNote entities are found.
+func (_q *PersonNoteQuery) Only(ctx context.Context) (*PersonNote, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -140,14 +140,14 @@ func (_q *NotificationDeliveryQuery) Only(ctx context.Context) (*NotificationDel
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{notificationdelivery.Label}
+		return nil, &NotFoundError{personnote.Label}
 	default:
-		return nil, &NotSingularError{notificationdelivery.Label}
+		return nil, &NotSingularError{personnote.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) OnlyX(ctx context.Context) *NotificationDelivery {
+func (_q *PersonNoteQuery) OnlyX(ctx context.Context) *PersonNote {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -155,10 +155,10 @@ func (_q *NotificationDeliveryQuery) OnlyX(ctx context.Context) *NotificationDel
 	return node
 }
 
-// OnlyID is like Only, but returns the only NotificationDelivery ID in the query.
-// Returns a *NotSingularError when more than one NotificationDelivery ID is found.
+// OnlyID is like Only, but returns the only PersonNote ID in the query.
+// Returns a *NotSingularError when more than one PersonNote ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *NotificationDeliveryQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *PersonNoteQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -167,15 +167,15 @@ func (_q *NotificationDeliveryQuery) OnlyID(ctx context.Context) (id int, err er
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{notificationdelivery.Label}
+		err = &NotFoundError{personnote.Label}
 	default:
-		err = &NotSingularError{notificationdelivery.Label}
+		err = &NotSingularError{personnote.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) OnlyIDX(ctx context.Context) int {
+func (_q *PersonNoteQuery) OnlyIDX(ctx context.Context) int {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -183,18 +183,18 @@ func (_q *NotificationDeliveryQuery) OnlyIDX(ctx context.Context) int {
 	return id
 }
 
-// All executes the query and returns a list of NotificationDeliveries.
-func (_q *NotificationDeliveryQuery) All(ctx context.Context) ([]*NotificationDelivery, error) {
+// All executes the query and returns a list of PersonNotes.
+func (_q *PersonNoteQuery) All(ctx context.Context) ([]*PersonNote, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*NotificationDelivery, *NotificationDeliveryQuery]()
-	return withInterceptors[[]*NotificationDelivery](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*PersonNote, *PersonNoteQuery]()
+	return withInterceptors[[]*PersonNote](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) AllX(ctx context.Context) []*NotificationDelivery {
+func (_q *PersonNoteQuery) AllX(ctx context.Context) []*PersonNote {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -202,20 +202,20 @@ func (_q *NotificationDeliveryQuery) AllX(ctx context.Context) []*NotificationDe
 	return nodes
 }
 
-// IDs executes the query and returns a list of NotificationDelivery IDs.
-func (_q *NotificationDeliveryQuery) IDs(ctx context.Context) (ids []int, err error) {
+// IDs executes the query and returns a list of PersonNote IDs.
+func (_q *PersonNoteQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(notificationdelivery.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(personnote.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) IDsX(ctx context.Context) []int {
+func (_q *PersonNoteQuery) IDsX(ctx context.Context) []int {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -224,16 +224,16 @@ func (_q *NotificationDeliveryQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (_q *NotificationDeliveryQuery) Count(ctx context.Context) (int, error) {
+func (_q *PersonNoteQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*NotificationDeliveryQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*PersonNoteQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) CountX(ctx context.Context) int {
+func (_q *PersonNoteQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -242,7 +242,7 @@ func (_q *NotificationDeliveryQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *NotificationDeliveryQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *PersonNoteQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -255,7 +255,7 @@ func (_q *NotificationDeliveryQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *NotificationDeliveryQuery) ExistX(ctx context.Context) bool {
+func (_q *PersonNoteQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -263,33 +263,33 @@ func (_q *NotificationDeliveryQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the NotificationDeliveryQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the PersonNoteQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *NotificationDeliveryQuery) Clone() *NotificationDeliveryQuery {
+func (_q *PersonNoteQuery) Clone() *PersonNoteQuery {
 	if _q == nil {
 		return nil
 	}
-	return &NotificationDeliveryQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]notificationdelivery.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.NotificationDelivery{}, _q.predicates...),
-		withNotification: _q.withNotification.Clone(),
+	return &PersonNoteQuery{
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]personnote.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.PersonNote{}, _q.predicates...),
+		withPerson: _q.withPerson.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
 }
 
-// WithNotification tells the query-builder to eager-load the nodes that are connected to
-// the "notification" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *NotificationDeliveryQuery) WithNotification(opts ...func(*OneTimeNotificationQuery)) *NotificationDeliveryQuery {
-	query := (&OneTimeNotificationClient{config: _q.config}).Query()
+// WithPerson tells the query-builder to eager-load the nodes that are connected to
+// the "person" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PersonNoteQuery) WithPerson(opts ...func(*PersonQuery)) *PersonNoteQuery {
+	query := (&PersonClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withNotification = query
+	_q.withPerson = query
 	return _q
 }
 
@@ -299,19 +299,19 @@ func (_q *NotificationDeliveryQuery) WithNotification(opts ...func(*OneTimeNotif
 // Example:
 //
 //	var v []struct {
-//		Channel string `json:"channel,omitempty"`
+//		Note string `json:"note,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.NotificationDelivery.Query().
-//		GroupBy(notificationdelivery.FieldChannel).
+//	client.PersonNote.Query().
+//		GroupBy(personnote.FieldNote).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *NotificationDeliveryQuery) GroupBy(field string, fields ...string) *NotificationDeliveryGroupBy {
+func (_q *PersonNoteQuery) GroupBy(field string, fields ...string) *PersonNoteGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &NotificationDeliveryGroupBy{build: _q}
+	grbuild := &PersonNoteGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = notificationdelivery.Label
+	grbuild.label = personnote.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -322,26 +322,26 @@ func (_q *NotificationDeliveryQuery) GroupBy(field string, fields ...string) *No
 // Example:
 //
 //	var v []struct {
-//		Channel string `json:"channel,omitempty"`
+//		Note string `json:"note,omitempty"`
 //	}
 //
-//	client.NotificationDelivery.Query().
-//		Select(notificationdelivery.FieldChannel).
+//	client.PersonNote.Query().
+//		Select(personnote.FieldNote).
 //		Scan(ctx, &v)
-func (_q *NotificationDeliveryQuery) Select(fields ...string) *NotificationDeliverySelect {
+func (_q *PersonNoteQuery) Select(fields ...string) *PersonNoteSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &NotificationDeliverySelect{NotificationDeliveryQuery: _q}
-	sbuild.label = notificationdelivery.Label
+	sbuild := &PersonNoteSelect{PersonNoteQuery: _q}
+	sbuild.label = personnote.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a NotificationDeliverySelect configured with the given aggregations.
-func (_q *NotificationDeliveryQuery) Aggregate(fns ...AggregateFunc) *NotificationDeliverySelect {
+// Aggregate returns a PersonNoteSelect configured with the given aggregations.
+func (_q *PersonNoteQuery) Aggregate(fns ...AggregateFunc) *PersonNoteSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *NotificationDeliveryQuery) prepareQuery(ctx context.Context) error {
+func (_q *PersonNoteQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -353,7 +353,7 @@ func (_q *NotificationDeliveryQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !notificationdelivery.ValidColumn(f) {
+		if !personnote.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -367,26 +367,26 @@ func (_q *NotificationDeliveryQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (_q *NotificationDeliveryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NotificationDelivery, error) {
+func (_q *PersonNoteQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*PersonNote, error) {
 	var (
-		nodes       = []*NotificationDelivery{}
+		nodes       = []*PersonNote{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			_q.withNotification != nil,
+			_q.withPerson != nil,
 		}
 	)
-	if _q.withNotification != nil {
+	if _q.withPerson != nil {
 		withFKs = true
 	}
 	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, notificationdelivery.ForeignKeys...)
+		_spec.Node.Columns = append(_spec.Node.Columns, personnote.ForeignKeys...)
 	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*NotificationDelivery).scanValues(nil, columns)
+		return (*PersonNote).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &NotificationDelivery{config: _q.config}
+		node := &PersonNote{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
@@ -400,23 +400,23 @@ func (_q *NotificationDeliveryQuery) sqlAll(ctx context.Context, hooks ...queryH
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withNotification; query != nil {
-		if err := _q.loadNotification(ctx, query, nodes, nil,
-			func(n *NotificationDelivery, e *OneTimeNotification) { n.Edges.Notification = e }); err != nil {
+	if query := _q.withPerson; query != nil {
+		if err := _q.loadPerson(ctx, query, nodes, nil,
+			func(n *PersonNote, e *Person) { n.Edges.Person = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *NotificationDeliveryQuery) loadNotification(ctx context.Context, query *OneTimeNotificationQuery, nodes []*NotificationDelivery, init func(*NotificationDelivery), assign func(*NotificationDelivery, *OneTimeNotification)) error {
+func (_q *PersonNoteQuery) loadPerson(ctx context.Context, query *PersonQuery, nodes []*PersonNote, init func(*PersonNote), assign func(*PersonNote, *Person)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*NotificationDelivery)
+	nodeids := make(map[int][]*PersonNote)
 	for i := range nodes {
-		if nodes[i].one_time_notification_deliveries == nil {
+		if nodes[i].person_timeline == nil {
 			continue
 		}
-		fk := *nodes[i].one_time_notification_deliveries
+		fk := *nodes[i].person_timeline
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -425,7 +425,7 @@ func (_q *NotificationDeliveryQuery) loadNotification(ctx context.Context, query
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(onetimenotification.IDIn(ids...))
+	query.Where(person.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -433,7 +433,7 @@ func (_q *NotificationDeliveryQuery) loadNotification(ctx context.Context, query
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "one_time_notification_deliveries" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "person_timeline" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -442,7 +442,7 @@ func (_q *NotificationDeliveryQuery) loadNotification(ctx context.Context, query
 	return nil
 }
 
-func (_q *NotificationDeliveryQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *PersonNoteQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
@@ -451,8 +451,8 @@ func (_q *NotificationDeliveryQuery) sqlCount(ctx context.Context) (int, error) 
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *NotificationDeliveryQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(notificationdelivery.Table, notificationdelivery.Columns, sqlgraph.NewFieldSpec(notificationdelivery.FieldID, field.TypeInt))
+func (_q *PersonNoteQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(personnote.Table, personnote.Columns, sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -461,9 +461,9 @@ func (_q *NotificationDeliveryQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, notificationdelivery.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, personnote.FieldID)
 		for i := range fields {
-			if fields[i] != notificationdelivery.FieldID {
+			if fields[i] != personnote.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -491,12 +491,12 @@ func (_q *NotificationDeliveryQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *NotificationDeliveryQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *PersonNoteQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(notificationdelivery.Table)
+	t1 := builder.Table(personnote.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = notificationdelivery.Columns
+		columns = personnote.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -523,28 +523,28 @@ func (_q *NotificationDeliveryQuery) sqlQuery(ctx context.Context) *sql.Selector
 	return selector
 }
 
-// NotificationDeliveryGroupBy is the group-by builder for NotificationDelivery entities.
-type NotificationDeliveryGroupBy struct {
+// PersonNoteGroupBy is the group-by builder for PersonNote entities.
+type PersonNoteGroupBy struct {
 	selector
-	build *NotificationDeliveryQuery
+	build *PersonNoteQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *NotificationDeliveryGroupBy) Aggregate(fns ...AggregateFunc) *NotificationDeliveryGroupBy {
+func (_g *PersonNoteGroupBy) Aggregate(fns ...AggregateFunc) *PersonNoteGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *NotificationDeliveryGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *PersonNoteGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*NotificationDeliveryQuery, *NotificationDeliveryGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*PersonNoteQuery, *PersonNoteGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *NotificationDeliveryGroupBy) sqlScan(ctx context.Context, root *NotificationDeliveryQuery, v any) error {
+func (_g *PersonNoteGroupBy) sqlScan(ctx context.Context, root *PersonNoteQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -571,28 +571,28 @@ func (_g *NotificationDeliveryGroupBy) sqlScan(ctx context.Context, root *Notifi
 	return sql.ScanSlice(rows, v)
 }
 
-// NotificationDeliverySelect is the builder for selecting fields of NotificationDelivery entities.
-type NotificationDeliverySelect struct {
-	*NotificationDeliveryQuery
+// PersonNoteSelect is the builder for selecting fields of PersonNote entities.
+type PersonNoteSelect struct {
+	*PersonNoteQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *NotificationDeliverySelect) Aggregate(fns ...AggregateFunc) *NotificationDeliverySelect {
+func (_s *PersonNoteSelect) Aggregate(fns ...AggregateFunc) *PersonNoteSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *NotificationDeliverySelect) Scan(ctx context.Context, v any) error {
+func (_s *PersonNoteSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*NotificationDeliveryQuery, *NotificationDeliverySelect](ctx, _s.NotificationDeliveryQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*PersonNoteQuery, *PersonNoteSelect](ctx, _s.PersonNoteQuery, _s, _s.inters, v)
 }
 
-func (_s *NotificationDeliverySelect) sqlScan(ctx context.Context, root *NotificationDeliveryQuery, v any) error {
+func (_s *PersonNoteSelect) sqlScan(ctx context.Context, root *PersonNoteQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {

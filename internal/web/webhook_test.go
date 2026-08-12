@@ -1,14 +1,12 @@
 package web
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"entgo.io/ent/dialect"
 	"github.com/datey/datey/ent/enttest"
@@ -98,38 +96,5 @@ func TestSettingsTestWebhook_UnknownChannel(t *testing.T) {
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("expected 400 for unknown channel, got %d", w.Code)
-	}
-}
-
-func TestCreateNotification_WithWebhookChannel(t *testing.T) {
-	mock := &mockNotifier{name: "webhook", configured: true}
-	h := newTestNotificationsHandlerWithMock(t, mock)
-	router := setupNotificationsRouter(h)
-
-	future := time.Now().Add(24 * time.Hour).Format("2006-01-02T15:04")
-	body := "message=webhook+channel+test&scheduled_at=" + future + "&channels=webhook"
-	req := httptest.NewRequest("POST", "/notifications/new", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req = req.WithContext(withUserContext(req.Context()))
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusSeeOther {
-		t.Errorf("expected 303 redirect, got %d", w.Code)
-	}
-
-	notifs, err := h.oneTimeNots.List(withUserContext(context.Background()))
-	if err != nil {
-		t.Fatalf("List failed: %v", err)
-	}
-	if len(notifs) != 1 {
-		t.Fatalf("expected 1 notification, got %d", len(notifs))
-	}
-	if len(notifs[0].Edges.Deliveries) != 1 {
-		t.Fatalf("expected 1 delivery record, got %d", len(notifs[0].Edges.Deliveries))
-	}
-	if got := notifs[0].Edges.Deliveries[0].Channel; got != "webhook" {
-		t.Errorf("expected delivery channel 'webhook', got '%s'", got)
 	}
 }

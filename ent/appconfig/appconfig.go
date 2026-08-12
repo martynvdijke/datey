@@ -19,6 +19,12 @@ const (
 	FieldSchedulerHour = "scheduler_hour"
 	// FieldReminderDays holds the string denoting the reminder_days field in the database.
 	FieldReminderDays = "reminder_days"
+	// FieldReminderDigest holds the string denoting the reminder_digest field in the database.
+	FieldReminderDigest = "reminder_digest"
+	// FieldReminderStages holds the string denoting the reminder_stages field in the database.
+	FieldReminderStages = "reminder_stages"
+	// FieldTimezone holds the string denoting the timezone field in the database.
+	FieldTimezone = "timezone"
 	// FieldLogLevel holds the string denoting the log_level field in the database.
 	FieldLogLevel = "log_level"
 	// FieldLogBufferSize holds the string denoting the log_buffer_size field in the database.
@@ -108,6 +114,9 @@ var Columns = []string{
 	FieldDataDir,
 	FieldSchedulerHour,
 	FieldReminderDays,
+	FieldReminderDigest,
+	FieldReminderStages,
+	FieldTimezone,
 	FieldLogLevel,
 	FieldLogBufferSize,
 	FieldOtelEndpoint,
@@ -185,6 +194,21 @@ func BySchedulerHour(opts ...sql.OrderTermOption) OrderOption {
 // ByReminderDays orders the results by the reminder_days field.
 func ByReminderDays(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReminderDays, opts...).ToFunc()
+}
+
+// ByReminderDigest orders the results by the reminder_digest field.
+func ByReminderDigest(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReminderDigest, opts...).ToFunc()
+}
+
+// ByReminderStages orders the results by the reminder_stages field.
+func ByReminderStages(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReminderStages, opts...).ToFunc()
+}
+
+// ByTimezone orders the results by the timezone field.
+func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
 }
 
 // ByLogLevel orders the results by the log_level field.

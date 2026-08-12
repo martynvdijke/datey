@@ -21,17 +21,14 @@ type Group func(*sql.Selector)
 // MigrationLog is the predicate function for migrationlog builders.
 type MigrationLog func(*sql.Selector)
 
-// NotificationDelivery is the predicate function for notificationdelivery builders.
-type NotificationDelivery func(*sql.Selector)
-
 // NotificationLog is the predicate function for notificationlog builders.
 type NotificationLog func(*sql.Selector)
 
-// OneTimeNotification is the predicate function for onetimenotification builders.
-type OneTimeNotification func(*sql.Selector)
-
 // Person is the predicate function for person builders.
 type Person func(*sql.Selector)
+
+// PersonNote is the predicate function for personnote builders.
+type PersonNote func(*sql.Selector)
 
 // PushSubscription is the predicate function for pushsubscription builders.
 type PushSubscription func(*sql.Selector)

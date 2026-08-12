@@ -61,6 +61,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Backfill birthday events from stored vCard data so imported birthdays
+	// participate in annual notifications (runs once, gated by migration_log).
+	if err := db.MigrateBirthdayEvents(context.Background(), client); err != nil {
+		slog.Error("failed to backfill birthday events", "error", err)
+		os.Exit(1)
+	}
+
+	// Drop the one-time notification tables now that the feature is removed
+	// (runs once, gated by migration_log; pending one-time notifications are lost).
+	if err := db.DropOneTimeNotificationTables(context.Background(), client, cfg.DataDir+"/datey.db"); err != nil {
+		slog.Error("failed to drop one-time notification tables", "error", err)
+		os.Exit(1)
+	}
+
 	// Initialise the log store with a ring buffer. Done after the settings
 	// overlay so a DB-stored LogBufferSize/OTLPEndpoint takes effect this boot.
 	store := logstore.NewStore(cfg.LogBufferSize)
@@ -122,11 +136,6 @@ func main() {
 
 	sched := scheduler.New(cfg, client, reg)
 	go sched.Start(ctx)
-
-	onRepo := repository.NewOneTimeNotificationRepository(client)
-	onDeliveryRepo := repository.NewNotificationDeliveryRepository(client)
-	onSched := scheduler.NewOneTimeNotificationScheduler(onRepo, onDeliveryRepo, reg)
-	go onSched.Start(ctx)
 
 	// Run an initial backup on startup (non-blocking).
 	go func() {
@@ -195,5 +204,3 @@ func (w *statusWriter) WriteHeader(code int) {
 	w.statusCode = code
 	w.ResponseWriter.WriteHeader(code)
 }
-
-

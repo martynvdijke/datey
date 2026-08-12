@@ -22,14 +22,12 @@ type Tx struct {
 	Group *GroupClient
 	// MigrationLog is the client for interacting with the MigrationLog builders.
 	MigrationLog *MigrationLogClient
-	// NotificationDelivery is the client for interacting with the NotificationDelivery builders.
-	NotificationDelivery *NotificationDeliveryClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
 	NotificationLog *NotificationLogClient
-	// OneTimeNotification is the client for interacting with the OneTimeNotification builders.
-	OneTimeNotification *OneTimeNotificationClient
 	// Person is the client for interacting with the Person builders.
 	Person *PersonClient
+	// PersonNote is the client for interacting with the PersonNote builders.
+	PersonNote *PersonNoteClient
 	// PushSubscription is the client for interacting with the PushSubscription builders.
 	PushSubscription *PushSubscriptionClient
 	// RecurringRule is the client for interacting with the RecurringRule builders.
@@ -174,10 +172,9 @@ func (tx *Tx) init() {
 	tx.Event = NewEventClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.MigrationLog = NewMigrationLogClient(tx.config)
-	tx.NotificationDelivery = NewNotificationDeliveryClient(tx.config)
 	tx.NotificationLog = NewNotificationLogClient(tx.config)
-	tx.OneTimeNotification = NewOneTimeNotificationClient(tx.config)
 	tx.Person = NewPersonClient(tx.config)
+	tx.PersonNote = NewPersonNoteClient(tx.config)
 	tx.PushSubscription = NewPushSubscriptionClient(tx.config)
 	tx.RecurringRule = NewRecurringRuleClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)

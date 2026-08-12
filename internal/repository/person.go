@@ -62,6 +62,14 @@ func (r *PersonRepository) FindByName(ctx context.Context, name string) (*ent.Pe
 		Only(ctx)
 }
 
+// SetNotifyBirthdays updates the per-person birthday notification opt-out.
+func (r *PersonRepository) SetNotifyBirthdays(ctx context.Context, id int, enabled bool) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).
+		SetNotifyBirthdays(enabled).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+}
+
 func (r *PersonRepository) Delete(ctx context.Context, id int) error {
 	return r.client.Person.DeleteOneID(id).Exec(ctx)
 }

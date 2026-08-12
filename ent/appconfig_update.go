@@ -129,6 +129,66 @@ func (_u *AppConfigUpdate) ClearReminderDays() *AppConfigUpdate {
 	return _u
 }
 
+// SetReminderDigest sets the "reminder_digest" field.
+func (_u *AppConfigUpdate) SetReminderDigest(v bool) *AppConfigUpdate {
+	_u.mutation.SetReminderDigest(v)
+	return _u
+}
+
+// SetNillableReminderDigest sets the "reminder_digest" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableReminderDigest(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetReminderDigest(*v)
+	}
+	return _u
+}
+
+// ClearReminderDigest clears the value of the "reminder_digest" field.
+func (_u *AppConfigUpdate) ClearReminderDigest() *AppConfigUpdate {
+	_u.mutation.ClearReminderDigest()
+	return _u
+}
+
+// SetReminderStages sets the "reminder_stages" field.
+func (_u *AppConfigUpdate) SetReminderStages(v string) *AppConfigUpdate {
+	_u.mutation.SetReminderStages(v)
+	return _u
+}
+
+// SetNillableReminderStages sets the "reminder_stages" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableReminderStages(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetReminderStages(*v)
+	}
+	return _u
+}
+
+// ClearReminderStages clears the value of the "reminder_stages" field.
+func (_u *AppConfigUpdate) ClearReminderStages() *AppConfigUpdate {
+	_u.mutation.ClearReminderStages()
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *AppConfigUpdate) SetTimezone(v string) *AppConfigUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableTimezone(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *AppConfigUpdate) ClearTimezone() *AppConfigUpdate {
+	_u.mutation.ClearTimezone()
+	return _u
+}
+
 // SetLogLevel sets the "log_level" field.
 func (_u *AppConfigUpdate) SetLogLevel(v string) *AppConfigUpdate {
 	_u.mutation.SetLogLevel(v)
@@ -1025,6 +1085,24 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.ReminderDaysCleared() {
 		_spec.ClearField(appconfig.FieldReminderDays, field.TypeInt)
 	}
+	if value, ok := _u.mutation.ReminderDigest(); ok {
+		_spec.SetField(appconfig.FieldReminderDigest, field.TypeBool, value)
+	}
+	if _u.mutation.ReminderDigestCleared() {
+		_spec.ClearField(appconfig.FieldReminderDigest, field.TypeBool)
+	}
+	if value, ok := _u.mutation.ReminderStages(); ok {
+		_spec.SetField(appconfig.FieldReminderStages, field.TypeString, value)
+	}
+	if _u.mutation.ReminderStagesCleared() {
+		_spec.ClearField(appconfig.FieldReminderStages, field.TypeString)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(appconfig.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(appconfig.FieldTimezone, field.TypeString)
+	}
 	if value, ok := _u.mutation.LogLevel(); ok {
 		_spec.SetField(appconfig.FieldLogLevel, field.TypeString, value)
 	}
@@ -1395,6 +1473,66 @@ func (_u *AppConfigUpdateOne) AddReminderDays(v int) *AppConfigUpdateOne {
 // ClearReminderDays clears the value of the "reminder_days" field.
 func (_u *AppConfigUpdateOne) ClearReminderDays() *AppConfigUpdateOne {
 	_u.mutation.ClearReminderDays()
+	return _u
+}
+
+// SetReminderDigest sets the "reminder_digest" field.
+func (_u *AppConfigUpdateOne) SetReminderDigest(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetReminderDigest(v)
+	return _u
+}
+
+// SetNillableReminderDigest sets the "reminder_digest" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableReminderDigest(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetReminderDigest(*v)
+	}
+	return _u
+}
+
+// ClearReminderDigest clears the value of the "reminder_digest" field.
+func (_u *AppConfigUpdateOne) ClearReminderDigest() *AppConfigUpdateOne {
+	_u.mutation.ClearReminderDigest()
+	return _u
+}
+
+// SetReminderStages sets the "reminder_stages" field.
+func (_u *AppConfigUpdateOne) SetReminderStages(v string) *AppConfigUpdateOne {
+	_u.mutation.SetReminderStages(v)
+	return _u
+}
+
+// SetNillableReminderStages sets the "reminder_stages" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableReminderStages(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetReminderStages(*v)
+	}
+	return _u
+}
+
+// ClearReminderStages clears the value of the "reminder_stages" field.
+func (_u *AppConfigUpdateOne) ClearReminderStages() *AppConfigUpdateOne {
+	_u.mutation.ClearReminderStages()
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *AppConfigUpdateOne) SetTimezone(v string) *AppConfigUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableTimezone(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *AppConfigUpdateOne) ClearTimezone() *AppConfigUpdateOne {
+	_u.mutation.ClearTimezone()
 	return _u
 }
 
@@ -2323,6 +2461,24 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.ReminderDaysCleared() {
 		_spec.ClearField(appconfig.FieldReminderDays, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ReminderDigest(); ok {
+		_spec.SetField(appconfig.FieldReminderDigest, field.TypeBool, value)
+	}
+	if _u.mutation.ReminderDigestCleared() {
+		_spec.ClearField(appconfig.FieldReminderDigest, field.TypeBool)
+	}
+	if value, ok := _u.mutation.ReminderStages(); ok {
+		_spec.SetField(appconfig.FieldReminderStages, field.TypeString, value)
+	}
+	if _u.mutation.ReminderStagesCleared() {
+		_spec.ClearField(appconfig.FieldReminderStages, field.TypeString)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(appconfig.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(appconfig.FieldTimezone, field.TypeString)
 	}
 	if value, ok := _u.mutation.LogLevel(); ok {
 		_spec.SetField(appconfig.FieldLogLevel, field.TypeString, value)

@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
@@ -76,6 +77,44 @@ func (_u *EventUpdate) SetNillableDescription(v *string) *EventUpdate {
 // ClearDescription clears the value of the "description" field.
 func (_u *EventUpdate) ClearDescription() *EventUpdate {
 	_u.mutation.ClearDescription()
+	return _u
+}
+
+// SetNotes sets the "notes" field.
+func (_u *EventUpdate) SetNotes(v string) *EventUpdate {
+	_u.mutation.SetNotes(v)
+	return _u
+}
+
+// SetNillableNotes sets the "notes" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableNotes(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetNotes(*v)
+	}
+	return _u
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (_u *EventUpdate) ClearNotes() *EventUpdate {
+	_u.mutation.ClearNotes()
+	return _u
+}
+
+// SetReminderDays sets the "reminder_days" field.
+func (_u *EventUpdate) SetReminderDays(v []int) *EventUpdate {
+	_u.mutation.SetReminderDays(v)
+	return _u
+}
+
+// AppendReminderDays appends value to the "reminder_days" field.
+func (_u *EventUpdate) AppendReminderDays(v []int) *EventUpdate {
+	_u.mutation.AppendReminderDays(v)
+	return _u
+}
+
+// ClearReminderDays clears the value of the "reminder_days" field.
+func (_u *EventUpdate) ClearReminderDays() *EventUpdate {
+	_u.mutation.ClearReminderDays()
 	return _u
 }
 
@@ -244,6 +283,23 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(event.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.Notes(); ok {
+		_spec.SetField(event.FieldNotes, field.TypeString, value)
+	}
+	if _u.mutation.NotesCleared() {
+		_spec.ClearField(event.FieldNotes, field.TypeString)
+	}
+	if value, ok := _u.mutation.ReminderDays(); ok {
+		_spec.SetField(event.FieldReminderDays, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedReminderDays(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, event.FieldReminderDays, value)
+		})
+	}
+	if _u.mutation.ReminderDaysCleared() {
+		_spec.ClearField(event.FieldReminderDays, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(event.FieldCreatedAt, field.TypeTime, value)
@@ -416,6 +472,44 @@ func (_u *EventUpdateOne) SetNillableDescription(v *string) *EventUpdateOne {
 // ClearDescription clears the value of the "description" field.
 func (_u *EventUpdateOne) ClearDescription() *EventUpdateOne {
 	_u.mutation.ClearDescription()
+	return _u
+}
+
+// SetNotes sets the "notes" field.
+func (_u *EventUpdateOne) SetNotes(v string) *EventUpdateOne {
+	_u.mutation.SetNotes(v)
+	return _u
+}
+
+// SetNillableNotes sets the "notes" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableNotes(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetNotes(*v)
+	}
+	return _u
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (_u *EventUpdateOne) ClearNotes() *EventUpdateOne {
+	_u.mutation.ClearNotes()
+	return _u
+}
+
+// SetReminderDays sets the "reminder_days" field.
+func (_u *EventUpdateOne) SetReminderDays(v []int) *EventUpdateOne {
+	_u.mutation.SetReminderDays(v)
+	return _u
+}
+
+// AppendReminderDays appends value to the "reminder_days" field.
+func (_u *EventUpdateOne) AppendReminderDays(v []int) *EventUpdateOne {
+	_u.mutation.AppendReminderDays(v)
+	return _u
+}
+
+// ClearReminderDays clears the value of the "reminder_days" field.
+func (_u *EventUpdateOne) ClearReminderDays() *EventUpdateOne {
+	_u.mutation.ClearReminderDays()
 	return _u
 }
 
@@ -614,6 +708,23 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(event.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.Notes(); ok {
+		_spec.SetField(event.FieldNotes, field.TypeString, value)
+	}
+	if _u.mutation.NotesCleared() {
+		_spec.ClearField(event.FieldNotes, field.TypeString)
+	}
+	if value, ok := _u.mutation.ReminderDays(); ok {
+		_spec.SetField(event.FieldReminderDays, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedReminderDays(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, event.FieldReminderDays, value)
+		})
+	}
+	if _u.mutation.ReminderDaysCleared() {
+		_spec.ClearField(event.FieldReminderDays, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(event.FieldCreatedAt, field.TypeTime, value)

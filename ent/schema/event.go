@@ -16,6 +16,8 @@ func (Event) Fields() []ent.Field {
 		field.String("type").NotEmpty(),
 		field.Time("date"),
 		field.Text("description").Optional().Default(""),
+		field.Text("notes").Optional().Default(""),
+		field.Ints("reminder_days").Optional(),
 		field.Time("created_at"),
 	}
 }

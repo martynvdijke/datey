@@ -49,6 +49,26 @@ func (_c *EventCreate) SetNillableDescription(v *string) *EventCreate {
 	return _c
 }
 
+// SetNotes sets the "notes" field.
+func (_c *EventCreate) SetNotes(v string) *EventCreate {
+	_c.mutation.SetNotes(v)
+	return _c
+}
+
+// SetNillableNotes sets the "notes" field if the given value is not nil.
+func (_c *EventCreate) SetNillableNotes(v *string) *EventCreate {
+	if v != nil {
+		_c.SetNotes(*v)
+	}
+	return _c
+}
+
+// SetReminderDays sets the "reminder_days" field.
+func (_c *EventCreate) SetReminderDays(v []int) *EventCreate {
+	_c.mutation.SetReminderDays(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *EventCreate) SetCreatedAt(v time.Time) *EventCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -147,6 +167,10 @@ func (_c *EventCreate) defaults() {
 		v := event.DefaultDescription
 		_c.mutation.SetDescription(v)
 	}
+	if _, ok := _c.mutation.Notes(); !ok {
+		v := event.DefaultNotes
+		_c.mutation.SetNotes(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -202,6 +226,14 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(event.FieldDescription, field.TypeString, value)
 		_node.Description = value
+	}
+	if value, ok := _c.mutation.Notes(); ok {
+		_spec.SetField(event.FieldNotes, field.TypeString, value)
+		_node.Notes = value
+	}
+	if value, ok := _c.mutation.ReminderDays(); ok {
+		_spec.SetField(event.FieldReminderDays, field.TypeJSON, value)
+		_node.ReminderDays = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(event.FieldCreatedAt, field.TypeTime, value)

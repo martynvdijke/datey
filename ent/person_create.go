@@ -13,6 +13,7 @@ import (
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/personnote"
 )
 
 // PersonCreate is the builder for creating a Person entity.
@@ -53,6 +54,40 @@ func (_c *PersonCreate) SetNillableVcardData(v *string) *PersonCreate {
 	if v != nil {
 		_c.SetVcardData(*v)
 	}
+	return _c
+}
+
+// SetNotifyBirthdays sets the "notify_birthdays" field.
+func (_c *PersonCreate) SetNotifyBirthdays(v bool) *PersonCreate {
+	_c.mutation.SetNotifyBirthdays(v)
+	return _c
+}
+
+// SetNillableNotifyBirthdays sets the "notify_birthdays" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableNotifyBirthdays(v *bool) *PersonCreate {
+	if v != nil {
+		_c.SetNotifyBirthdays(*v)
+	}
+	return _c
+}
+
+// SetTimezone sets the "timezone" field.
+func (_c *PersonCreate) SetTimezone(v string) *PersonCreate {
+	_c.mutation.SetTimezone(v)
+	return _c
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableTimezone(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetTimezone(*v)
+	}
+	return _c
+}
+
+// SetReminderDays sets the "reminder_days" field.
+func (_c *PersonCreate) SetReminderDays(v []int) *PersonCreate {
+	_c.mutation.SetReminderDays(v)
 	return _c
 }
 
@@ -98,6 +133,21 @@ func (_c *PersonCreate) AddGroups(v ...*Group) *PersonCreate {
 	return _c.AddGroupIDs(ids...)
 }
 
+// AddTimelineIDs adds the "timeline" edge to the PersonNote entity by IDs.
+func (_c *PersonCreate) AddTimelineIDs(ids ...int) *PersonCreate {
+	_c.mutation.AddTimelineIDs(ids...)
+	return _c
+}
+
+// AddTimeline adds the "timeline" edges to the PersonNote entity.
+func (_c *PersonCreate) AddTimeline(v ...*PersonNote) *PersonCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTimelineIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (_c *PersonCreate) Mutation() *PersonMutation {
 	return _c.mutation
@@ -137,6 +187,14 @@ func (_c *PersonCreate) defaults() {
 		v := person.DefaultNotes
 		_c.mutation.SetNotes(v)
 	}
+	if _, ok := _c.mutation.NotifyBirthdays(); !ok {
+		v := person.DefaultNotifyBirthdays
+		_c.mutation.SetNotifyBirthdays(v)
+	}
+	if _, ok := _c.mutation.Timezone(); !ok {
+		v := person.DefaultTimezone
+		_c.mutation.SetTimezone(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -148,6 +206,9 @@ func (_c *PersonCreate) check() error {
 		if err := person.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Person.name": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.NotifyBirthdays(); !ok {
+		return &ValidationError{Name: "notify_birthdays", err: errors.New(`ent: missing required field "Person.notify_birthdays"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Person.created_at"`)}
@@ -193,6 +254,18 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 		_spec.SetField(person.FieldVcardData, field.TypeString, value)
 		_node.VcardData = value
 	}
+	if value, ok := _c.mutation.NotifyBirthdays(); ok {
+		_spec.SetField(person.FieldNotifyBirthdays, field.TypeBool, value)
+		_node.NotifyBirthdays = value
+	}
+	if value, ok := _c.mutation.Timezone(); ok {
+		_spec.SetField(person.FieldTimezone, field.TypeString, value)
+		_node.Timezone = value
+	}
+	if value, ok := _c.mutation.ReminderDays(); ok {
+		_spec.SetField(person.FieldReminderDays, field.TypeJSON, value)
+		_node.ReminderDays = value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -226,6 +299,22 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TimelineIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.TimelineTable,
+			Columns: []string{person.TimelineColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

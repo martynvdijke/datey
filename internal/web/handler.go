@@ -34,7 +34,6 @@ type Handler struct {
 	people      *repository.PersonRepository
 	groups      *repository.GroupRepository
 	events      *repository.EventRepository
-	oneTimeNots *repository.OneTimeNotificationRepository
 	notifReg    *notifier.Registry
 	recurringRules *repository.RecurringRuleRepository
 	pushSubs       *repository.PushSubscriptionRepository
@@ -57,7 +56,6 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		people:       repository.NewPersonRepository(client),
 		groups:       repository.NewGroupRepository(client),
 		events:       repository.NewEventRepository(client),
-		oneTimeNots:  repository.NewOneTimeNotificationRepository(client),
 		notifReg:     notifReg,
 		recurringRules: repository.NewRecurringRuleRepository(client),
 		pushSubs:       repository.NewPushSubscriptionRepository(client),
@@ -125,6 +123,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/people/new", h.createPerson)
 			r.Get("/people/{id}", h.viewPerson)
 			r.Post("/people/{id}/delete", h.deletePerson)
+			r.Post("/people/{id}/notify-birthdays", h.toggleNotifyBirthdays)
 			r.Post("/people/import", h.handleImportVCard)
 			r.Get("/people/{id}/vcard", h.handleExportSingleVCard)
 			r.Get("/people/export", h.handleExportAllVCard)
@@ -149,13 +148,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/api/calendar-events", h.calendarEvents)
 			r.Post("/calendar/import", h.handleImportICS)
 			r.Post("/calendar/import/confirm", h.handleConfirmICS)
-
-			r.Get("/notifications", h.notificationsList)
-			r.Get("/notifications/new", h.newNotificationForm)
-			r.Post("/notifications/new", h.createNotification)
-			r.Post("/notifications/{id}/delete", h.deleteNotification)
-			r.Post("/notifications/test", h.testNotificationNow)
-			r.Get("/api/notifications", h.apiNotifications)
 
 			// E-Ink toggle: requires auth (not admin-only, any user can toggle)
 			r.Post("/settings/eink-toggle", h.settingsEinkToggle)
@@ -205,14 +197,14 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	end := now.AddDate(0, 0, reminderDays)
 
-	events, err := h.events.ListUpcoming(r.Context(), now, end)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, end)
 	if err != nil {
 		slog.Error("dashboard: list upcoming", "error", err, "from", now.Format(time.RFC3339), "to", end.Format(time.RFC3339))
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
-	slog.Info("dashboard: upcoming events", "count", len(events), "from", now.Format("2006-01-02"), "to", end.Format("2006-01-02"), "reminder_days", reminderDays)
+	slog.Info("dashboard: upcoming events", "count", len(occurrences), "from", now.Format("2006-01-02"), "to", end.Format("2006-01-02"), "reminder_days", reminderDays)
 
 	// ── eventView with person context ──
 	type eventView struct {
@@ -233,7 +225,8 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		laterEvents     []eventView
 	)
 
-	for _, e := range events {
+	for _, occ := range occurrences {
+		e := occ.Event
 		personName := ""
 		if p := e.Edges.Person; p != nil {
 			personName = p.Name
@@ -241,7 +234,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 			personName = c.Name
 		}
 
-		days := int(e.Date.Sub(now).Hours() / 24)
+		days := int(occ.Date.Sub(now).Hours() / 24)
 
 		// Relative label
 		var relativeLabel string
@@ -257,13 +250,14 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		ev := eventView{
 			Name:          personName,
 			Type:          e.Type,
-			Date:          e.Date.Format("Jan 2"),
+			Date:          occ.Date.Format("Jan 2"),
 			DaysRemaining: days,
 			RelativeLabel: relativeLabel,
 			PersonInitial: personInitial(personName),
 			AvatarColor:   avatarColorIndex(personName),
 		}
 		if e.Type == "birthday" {
+			// Age is derived from the stored birth date, not the occurrence.
 			ev.AgeInfo = age.InfoFor(e.Date, now)
 		}
 
@@ -286,7 +280,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	// ── Quick-glance stats ──
 	allPeople, _ := h.people.List(r.Context())
 	peopleCount := len(allPeople)
-	totalEvents := len(events)
+	totalEvents := len(occurrences)
 	channels := h.channelInfoList(r.Context())
 	configuredChannels := 0
 	for _, ch := range channels {
@@ -546,8 +540,6 @@ func inferActiveNav(path string) string {
 		return "groups"
 	case hasPrefix(path, "/calendar") || hasPrefix(path, "/api/calendar"):
 		return "calendar"
-	case hasPrefix(path, "/notifications"):
-		return "notifications"
 	case hasPrefix(path, "/settings") || hasPrefix(path, "/logs") || hasPrefix(path, "/users"):
 		return "settings"
 	default:

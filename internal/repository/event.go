@@ -2,12 +2,14 @@ package repository
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/internal/recurring"
 )
 
 type EventRepository struct {
@@ -94,4 +96,46 @@ func (r *EventRepository) ListUpcoming(ctx context.Context, from, to time.Time) 
 		WithContact().
 		WithPerson().
 		All(ctx)
+}
+
+// EventOccurrence pairs a stored event with the concrete date it fires on.
+// For annual event types (birthday, anniversary, wedding, holiday) Date is
+// the occurrence date — the stored month/day applied to the year the range
+// spans. For all other types it equals the stored event date.
+type EventOccurrence struct {
+	Event *ent.Event
+	Date  time.Time
+}
+
+// ListUpcomingOccurrences returns every event with an occurrence inside the
+// inclusive range [from, to]. Annual event types are expanded to their
+// occurrence dates (so a historical birthday is reported on this year's
+// date); one-off events are reported on their stored date. Results are
+// sorted by occurrence date ascending.
+func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to time.Time) ([]EventOccurrence, error) {
+	events, err := r.client.Event.Query().
+		WithContact().
+		WithPerson().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []EventOccurrence
+	for _, e := range events {
+		if recurring.IsAnnualType(e.Type) {
+			for _, occ := range recurring.OccurrencesIn(e.Date, from, to) {
+				out = append(out, EventOccurrence{Event: e, Date: occ})
+			}
+			continue
+		}
+		if !e.Date.Before(from) && !e.Date.After(to) {
+			out = append(out, EventOccurrence{Event: e, Date: e.Date})
+		}
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].Date.Before(out[j].Date)
+	})
+	return out, nil
 }

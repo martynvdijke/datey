@@ -75,6 +75,48 @@ func (_c *AppConfigCreate) SetNillableReminderDays(v *int) *AppConfigCreate {
 	return _c
 }
 
+// SetReminderDigest sets the "reminder_digest" field.
+func (_c *AppConfigCreate) SetReminderDigest(v bool) *AppConfigCreate {
+	_c.mutation.SetReminderDigest(v)
+	return _c
+}
+
+// SetNillableReminderDigest sets the "reminder_digest" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableReminderDigest(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetReminderDigest(*v)
+	}
+	return _c
+}
+
+// SetReminderStages sets the "reminder_stages" field.
+func (_c *AppConfigCreate) SetReminderStages(v string) *AppConfigCreate {
+	_c.mutation.SetReminderStages(v)
+	return _c
+}
+
+// SetNillableReminderStages sets the "reminder_stages" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableReminderStages(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetReminderStages(*v)
+	}
+	return _c
+}
+
+// SetTimezone sets the "timezone" field.
+func (_c *AppConfigCreate) SetTimezone(v string) *AppConfigCreate {
+	_c.mutation.SetTimezone(v)
+	return _c
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableTimezone(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetTimezone(*v)
+	}
+	return _c
+}
+
 // SetLogLevel sets the "log_level" field.
 func (_c *AppConfigCreate) SetLogLevel(v string) *AppConfigCreate {
 	_c.mutation.SetLogLevel(v)
@@ -696,6 +738,18 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ReminderDays(); ok {
 		_spec.SetField(appconfig.FieldReminderDays, field.TypeInt, value)
 		_node.ReminderDays = &value
+	}
+	if value, ok := _c.mutation.ReminderDigest(); ok {
+		_spec.SetField(appconfig.FieldReminderDigest, field.TypeBool, value)
+		_node.ReminderDigest = &value
+	}
+	if value, ok := _c.mutation.ReminderStages(); ok {
+		_spec.SetField(appconfig.FieldReminderStages, field.TypeString, value)
+		_node.ReminderStages = &value
+	}
+	if value, ok := _c.mutation.Timezone(); ok {
+		_spec.SetField(appconfig.FieldTimezone, field.TypeString, value)
+		_node.Timezone = &value
 	}
 	if value, ok := _c.mutation.LogLevel(); ok {
 		_spec.SetField(appconfig.FieldLogLevel, field.TypeString, value)

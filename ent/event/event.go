@@ -18,6 +18,10 @@ const (
 	FieldDate = "date"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldNotes holds the string denoting the notes field in the database.
+	FieldNotes = "notes"
+	// FieldReminderDays holds the string denoting the reminder_days field in the database.
+	FieldReminderDays = "reminder_days"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeContact holds the string denoting the contact edge name in mutations.
@@ -57,6 +61,8 @@ var Columns = []string{
 	FieldType,
 	FieldDate,
 	FieldDescription,
+	FieldNotes,
+	FieldReminderDays,
 	FieldCreatedAt,
 }
 
@@ -87,6 +93,8 @@ var (
 	TypeValidator func(string) error
 	// DefaultDescription holds the default value on creation for the "description" field.
 	DefaultDescription string
+	// DefaultNotes holds the default value on creation for the "notes" field.
+	DefaultNotes string
 )
 
 // OrderOption defines the ordering options for the Event queries.
@@ -110,6 +118,11 @@ func ByDate(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByNotes orders the results by the notes field.
+func ByNotes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotes, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

@@ -451,16 +451,6 @@ func TestEmptyStatePeople(t *testing.T) {
 	}
 }
 
-func TestEmptyStateNotifications(t *testing.T) {
-	page, cleanup := setupPage(t)
-	defer cleanup()
-	login(t, page)
-	if _, err := page.Goto(getBaseURL() + "/notifications"); err != nil {
-		t.Fatalf("goto /notifications: %v", err)
-	}
-	bodyContains(t, page, "One-Time Notifications")
-}
-
 func TestEmptyStateGroups(t *testing.T) {
 	page, cleanup := setupPage(t)
 	defer cleanup()
@@ -516,23 +506,6 @@ func TestLoginFormErrorBaseline(t *testing.T) {
 	// Current behavior: error rendered in an alert-danger block.
 	if n, _ := page.Locator(".alert-danger").Count(); n == 0 {
 		t.Error("expected .alert-danger error block after failed login")
-	}
-}
-
-func TestNotificationFormErrorBaseline(t *testing.T) {
-	page, cleanup := setupPage(t)
-	defer cleanup()
-	login(t, page)
-	if _, err := page.Goto(getBaseURL() + "/notifications/new"); err != nil {
-		t.Fatalf("goto notification form: %v", err)
-	}
-	// Submit with empty required fields (message + scheduled_at).
-	if err := page.Click("button[type=submit]"); err != nil {
-		t.Fatalf("click submit: %v", err)
-	}
-	// Current behavior: inline errors rendered in .text-danger divs.
-	if n, _ := page.Locator(".text-danger").Count(); n == 0 {
-		t.Error("expected .text-danger inline error(s) after empty notification submit")
 	}
 }
 

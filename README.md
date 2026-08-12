@@ -12,6 +12,7 @@ A self-hosted web application for tracking important dates and receiving automat
 ## Features
 
 - **📅 Event Tracking** — Manage people and their important events (birthdays, anniversaries, weddings, holidays, meetings, custom) with dates and descriptions.
+- **📥 ICS Import** — Preview and import events from `.ics` calendar files (all-day and timed events, yearly recurrences; duplicates skipped).
 - **🔄 Recurring Rules** — Built-in recurring events (Mother's Day, Father's Day, New Year's Day, Easter-based holidays) that auto-generate each year.
 - **⏰ Daily Scheduler** — Checks for upcoming events daily at a configurable hour and sends reminders.
 - **📧 Email Notifications** — SMTP-based email reminders for upcoming events.
@@ -21,7 +22,6 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🔗 Webhook Notifications** — Generic JSON-POST webhooks for any endpoint (Slack, Discord, IFTTT, custom scripts), with optional HMAC-SHA256 request signing.
 - **🔧 Multi-Notification Registry** — Configure one or multiple channels; each is tested independently.
 - **✅ Test Notifications** — Send test messages per channel from the settings page.
-- **🔔 One-Time Notifications** — Schedule ad-hoc reminders independent of recurring events.
 - **📊 Dashboard** — At-a-glance view of upcoming events with days remaining.
 - **🗓️ Calendar View** — Full month calendar with upcoming events, theme-aware, with `<noscript>` fallback.
 - **👥 Groups** — Organize people into groups and filter by group.
@@ -30,6 +30,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🔍 People Search** — Quick search through people by name.
 - **📇 vCard Import/Export** — Import one or more vCard files (with optional overwrite of existing people) and export contacts as vCard. `BDAY` supports full dates (`19951120`, `1995-11-20`) and year-less formats (`--0608`, `--06-08`, `-0608`, `0608`); year-less birthdays import as regular birthday events and are shown without an age.
 - **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
+- **🎈 Annual Notifications** — Birthdays, anniversaries, weddings and holidays fire every year on their occurrence date, even when the stored date is historical (leap-day aware). Birthday reminders are on by default per person and can be turned off with the toggle on a person's detail page. On upgrade, existing people with a parseable `BDAY` in their stored vCard data get a birthday event backfilled once.
 - **💾 Database Backup** — On-demand SQLite backup with configurable retention.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
  - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
@@ -152,12 +153,9 @@ datey/
 │   │   ├── event.go           # Event repository
 │   │   ├── group.go           # Group repository
 │   │   ├── notification_log.go # Notification log repository
-│   │   ├── notificationdelivery.go # One-time notification delivery
-│   │   ├── onetimenotification.go  # One-time notifications
 │   │   └── recurring_rule.go  # Recurring rule repository
 │   ├── scheduler/
-│   │   ├── scheduler.go       # Daily reminder scheduler
-│   │   └── one_time_scheduler.go # One-time notification scheduler
+│   │   └── scheduler.go       # Daily reminder scheduler
 │   ├── session/
 │   │   └── store.go           # Cookie session store
 │   ├── vcard/
@@ -171,7 +169,6 @@ datey/
 │       ├── people.go          # People CRUD + legacy redirects
 │       ├── events.go          # Event CRUD
 │       ├── groups.go          # Group CRUD
-│       ├── notifications.go   # One-time notifications
 │       ├── settings.go        # Settings, backup, test notifications
 │       ├── calendar.go        # Calendar view + API
 │       ├── vcard.go           # vCard import/export handlers
@@ -207,13 +204,9 @@ datey/
 | `POST` | `/groups/create` | Create a group |
 | `POST` | `/groups/{id}/delete` | Delete a group |
 | `GET` | `/calendar` | Calendar view (with `<noscript>` fallback) |
+| `POST` | `/calendar/import` | Preview events from an uploaded `.ics` file |
+| `POST` | `/calendar/import/confirm` | Confirm ICS import (skips duplicate events) |
 | `GET` | `/api/calendar-events` | Calendar events JSON API |
-| `GET` | `/notifications` | List one-time notifications |
-| `GET` | `/notifications/new` | New notification form |
-| `POST` | `/notifications/new` | Create a notification |
-| `POST` | `/notifications/{id}/delete` | Delete a notification |
-| `POST` | `/notifications/test` | Send a notification now |
-| `GET` | `/api/notifications` | Notifications JSON API |
 | `GET` | `/settings` | Notification settings & test |
 | `GET` | `/settings/config` | Configuration view |
 | `POST` | `/settings/config` | Save configuration (admin only) |

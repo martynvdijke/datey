@@ -74,6 +74,21 @@ func ReminderDays(v int) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldReminderDays, v))
 }
 
+// ReminderDigest applies equality check predicate on the "reminder_digest" field. It's identical to ReminderDigestEQ.
+func ReminderDigest(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldReminderDigest, v))
+}
+
+// ReminderStages applies equality check predicate on the "reminder_stages" field. It's identical to ReminderStagesEQ.
+func ReminderStages(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldReminderStages, v))
+}
+
+// Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
+func Timezone(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTimezone, v))
+}
+
 // LogLevel applies equality check predicate on the "log_level" field. It's identical to LogLevelEQ.
 func LogLevel(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldLogLevel, v))
@@ -492,6 +507,176 @@ func ReminderDaysIsNil() predicate.AppConfig {
 // ReminderDaysNotNil applies the NotNil predicate on the "reminder_days" field.
 func ReminderDaysNotNil() predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotNull(FieldReminderDays))
+}
+
+// ReminderDigestEQ applies the EQ predicate on the "reminder_digest" field.
+func ReminderDigestEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldReminderDigest, v))
+}
+
+// ReminderDigestNEQ applies the NEQ predicate on the "reminder_digest" field.
+func ReminderDigestNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldReminderDigest, v))
+}
+
+// ReminderDigestIsNil applies the IsNil predicate on the "reminder_digest" field.
+func ReminderDigestIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldReminderDigest))
+}
+
+// ReminderDigestNotNil applies the NotNil predicate on the "reminder_digest" field.
+func ReminderDigestNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldReminderDigest))
+}
+
+// ReminderStagesEQ applies the EQ predicate on the "reminder_stages" field.
+func ReminderStagesEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldReminderStages, v))
+}
+
+// ReminderStagesNEQ applies the NEQ predicate on the "reminder_stages" field.
+func ReminderStagesNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldReminderStages, v))
+}
+
+// ReminderStagesIn applies the In predicate on the "reminder_stages" field.
+func ReminderStagesIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldReminderStages, vs...))
+}
+
+// ReminderStagesNotIn applies the NotIn predicate on the "reminder_stages" field.
+func ReminderStagesNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldReminderStages, vs...))
+}
+
+// ReminderStagesGT applies the GT predicate on the "reminder_stages" field.
+func ReminderStagesGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldReminderStages, v))
+}
+
+// ReminderStagesGTE applies the GTE predicate on the "reminder_stages" field.
+func ReminderStagesGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldReminderStages, v))
+}
+
+// ReminderStagesLT applies the LT predicate on the "reminder_stages" field.
+func ReminderStagesLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldReminderStages, v))
+}
+
+// ReminderStagesLTE applies the LTE predicate on the "reminder_stages" field.
+func ReminderStagesLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldReminderStages, v))
+}
+
+// ReminderStagesContains applies the Contains predicate on the "reminder_stages" field.
+func ReminderStagesContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldReminderStages, v))
+}
+
+// ReminderStagesHasPrefix applies the HasPrefix predicate on the "reminder_stages" field.
+func ReminderStagesHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldReminderStages, v))
+}
+
+// ReminderStagesHasSuffix applies the HasSuffix predicate on the "reminder_stages" field.
+func ReminderStagesHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldReminderStages, v))
+}
+
+// ReminderStagesIsNil applies the IsNil predicate on the "reminder_stages" field.
+func ReminderStagesIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldReminderStages))
+}
+
+// ReminderStagesNotNil applies the NotNil predicate on the "reminder_stages" field.
+func ReminderStagesNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldReminderStages))
+}
+
+// ReminderStagesEqualFold applies the EqualFold predicate on the "reminder_stages" field.
+func ReminderStagesEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldReminderStages, v))
+}
+
+// ReminderStagesContainsFold applies the ContainsFold predicate on the "reminder_stages" field.
+func ReminderStagesContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldReminderStages, v))
+}
+
+// TimezoneEQ applies the EQ predicate on the "timezone" field.
+func TimezoneEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TimezoneNEQ applies the NEQ predicate on the "timezone" field.
+func TimezoneNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldTimezone, v))
+}
+
+// TimezoneIn applies the In predicate on the "timezone" field.
+func TimezoneIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldTimezone, vs...))
+}
+
+// TimezoneNotIn applies the NotIn predicate on the "timezone" field.
+func TimezoneNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldTimezone, vs...))
+}
+
+// TimezoneGT applies the GT predicate on the "timezone" field.
+func TimezoneGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldTimezone, v))
+}
+
+// TimezoneGTE applies the GTE predicate on the "timezone" field.
+func TimezoneGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldTimezone, v))
+}
+
+// TimezoneLT applies the LT predicate on the "timezone" field.
+func TimezoneLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldTimezone, v))
+}
+
+// TimezoneLTE applies the LTE predicate on the "timezone" field.
+func TimezoneLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldTimezone, v))
+}
+
+// TimezoneContains applies the Contains predicate on the "timezone" field.
+func TimezoneContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldTimezone, v))
+}
+
+// TimezoneHasPrefix applies the HasPrefix predicate on the "timezone" field.
+func TimezoneHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldTimezone, v))
+}
+
+// TimezoneHasSuffix applies the HasSuffix predicate on the "timezone" field.
+func TimezoneHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldTimezone, v))
+}
+
+// TimezoneIsNil applies the IsNil predicate on the "timezone" field.
+func TimezoneIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldTimezone))
+}
+
+// TimezoneNotNil applies the NotNil predicate on the "timezone" field.
+func TimezoneNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldTimezone))
+}
+
+// TimezoneEqualFold applies the EqualFold predicate on the "timezone" field.
+func TimezoneEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldTimezone, v))
+}
+
+// TimezoneContainsFold applies the ContainsFold predicate on the "timezone" field.
+func TimezoneContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldTimezone, v))
 }
 
 // LogLevelEQ applies the EQ predicate on the "log_level" field.

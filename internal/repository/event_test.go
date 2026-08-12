@@ -238,3 +238,94 @@ func TestEventListUpcoming(t *testing.T) {
 		t.Errorf("expected 'Future', got %q", events[0].Description)
 	}
 }
+
+func TestEventListUpcomingOccurrences_AnnualHistoricalDate(t *testing.T) {
+	eventRepo, contactRepo := newTestEventRepo(t)
+	contactID := seedContactForEvent(t, contactRepo, "Occurrence Test")
+
+	// A birthday stored with a historical birth year must surface on its
+	// occurrence within the window (1990-05-12 → 2026-05-12).
+	_, err := eventRepo.Create(context.Background(), contactID, "birthday",
+		time.Date(1990, 5, 12, 0, 0, 0, 0, time.UTC), "Old Birthday")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	from := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
+
+	occs, err := eventRepo.ListUpcomingOccurrences(context.Background(), from, to)
+	if err != nil {
+		t.Fatalf("ListUpcomingOccurrences: %v", err)
+	}
+	if len(occs) != 1 {
+		t.Fatalf("expected 1 occurrence, got %d", len(occs))
+	}
+	want := time.Date(2026, 5, 12, 0, 0, 0, 0, time.UTC)
+	if !occs[0].Date.Equal(want) {
+		t.Errorf("expected occurrence %v, got %v", want, occs[0].Date)
+	}
+	if occs[0].Event.Description != "Old Birthday" {
+		t.Errorf("expected event 'Old Birthday', got %q", occs[0].Event.Description)
+	}
+}
+
+func TestEventListUpcomingOccurrences_NonAnnualPassthrough(t *testing.T) {
+	eventRepo, contactRepo := newTestEventRepo(t)
+	contactID := seedContactForEvent(t, contactRepo, "One-off Test")
+
+	// Non-annual events are reported on their stored date only.
+	_, err := eventRepo.Create(context.Background(), contactID, "meeting",
+		time.Date(2026, 8, 15, 0, 0, 0, 0, time.UTC), "One-off")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	// A second one-off outside the window must not appear.
+	_, err = eventRepo.Create(context.Background(), contactID, "meeting",
+		time.Date(2030, 8, 15, 0, 0, 0, 0, time.UTC), "Far Off")
+	if err != nil {
+		t.Fatalf("create far: %v", err)
+	}
+
+	from := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
+
+	occs, err := eventRepo.ListUpcomingOccurrences(context.Background(), from, to)
+	if err != nil {
+		t.Fatalf("ListUpcomingOccurrences: %v", err)
+	}
+	if len(occs) != 1 {
+		t.Fatalf("expected 1 occurrence, got %d", len(occs))
+	}
+	if occs[0].Event.Description != "One-off" {
+		t.Errorf("expected 'One-off', got %q", occs[0].Event.Description)
+	}
+}
+
+func TestEventListUpcomingOccurrences_YearBoundary(t *testing.T) {
+	eventRepo, contactRepo := newTestEventRepo(t)
+	contactID := seedContactForEvent(t, contactRepo, "Boundary Test")
+
+	// A January 5th event must surface with the NEXT year's date when the
+	// window crosses the year boundary (Dec 25 → Jan 10).
+	_, err := eventRepo.Create(context.Background(), contactID, "anniversary",
+		time.Date(2010, 1, 5, 0, 0, 0, 0, time.UTC), "Jan Anniversary")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	from := time.Date(2026, 12, 25, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2027, 1, 10, 0, 0, 0, 0, time.UTC)
+
+	occs, err := eventRepo.ListUpcomingOccurrences(context.Background(), from, to)
+	if err != nil {
+		t.Fatalf("ListUpcomingOccurrences: %v", err)
+	}
+	if len(occs) != 1 {
+		t.Fatalf("expected 1 occurrence, got %d", len(occs))
+	}
+	want := time.Date(2027, 1, 5, 0, 0, 0, 0, time.UTC)
+	if !occs[0].Date.Equal(want) {
+		t.Errorf("expected occurrence %v, got %v", want, occs[0].Date)
+	}
+}

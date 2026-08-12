@@ -2,14 +2,17 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/internal/config"
+	"github.com/datey/datey/internal/vcard"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -17,6 +20,14 @@ import (
 // migrationContactsToPeople is the name recorded in the migration_log table
 // when the contacts→people data migration has been applied.
 const migrationContactsToPeople = "contacts_to_people"
+
+// migrationBirthdayBackfill is the name recorded in the migration_log table
+// when the birthday-event backfill migration has been applied.
+const migrationBirthdayBackfill = "birthday_events_backfill"
+
+// migrationDropOneTimeNotifications is the name recorded in the migration_log
+// table when the one-time notification tables have been dropped.
+const migrationDropOneTimeNotifications = "drop_one_time_notifications"
 
 // MigrateContactsToPeople copies data from the contacts table to the people table
 // and updates event foreign keys to point to the new person records.
@@ -112,6 +123,160 @@ func MigrateContactsToPeople(ctx context.Context, client *ent.Client) error {
 	}
 
 	slog.Info("migration: completed", "source", "db", "contacts_migrated", count, "contacts_deleted", deleted)
+	return nil
+}
+
+// MigrateBirthdayEvents backfills a birthday event for every person that has a
+// parseable BDAY in their stored vCard data but no birthday event yet.
+//
+// This lets people imported via vCard (whose birth date was only stored as raw
+// vcard_data) participate in annual birthday notifications after the upgrade.
+// The migration is gated by the migration_log table: it runs exactly once.
+func MigrateBirthdayEvents(ctx context.Context, client *ent.Client) error {
+	// Primary gate: if the migration is already recorded, never run again.
+	applied, err := client.MigrationLog.Query().
+		Where(migrationlog.NameEQ(migrationBirthdayBackfill)).
+		Exist(ctx)
+	if err != nil {
+		return fmt.Errorf("check migration log: %w", err)
+	}
+	if applied {
+		slog.Info("migration: birthday backfill already applied, skipping", "source", "db")
+		return nil
+	}
+
+	// recordMigrationLog writes the migration_log entry so we never re-run.
+	recordMigrationLog := func() error {
+		if _, err := client.MigrationLog.Create().
+			SetName(migrationBirthdayBackfill).
+			SetAppliedAt(time.Now()).
+			Save(ctx); err != nil {
+			return fmt.Errorf("record migration log: %w", err)
+		}
+		return nil
+	}
+
+	persons, err := client.Person.Query().WithEvents().All(ctx)
+	if err != nil {
+		return fmt.Errorf("load persons: %w", err)
+	}
+
+	// If there is nothing to process, still record the log so we never scan again.
+	if len(persons) == 0 {
+		slog.Info("migration: no persons to backfill, recording", "source", "db")
+		return recordMigrationLog()
+	}
+
+	slog.Info("migration: starting birthday event backfill", "source", "db", "persons", len(persons))
+
+	var created, skipped int
+	for _, p := range persons {
+		// Skip persons that already have a birthday event so we never
+		// double-notify.
+		hasBirthday := false
+		for _, e := range p.Edges.Events {
+			if e.Type == "birthday" {
+				hasBirthday = true
+				break
+			}
+		}
+		if hasBirthday {
+			skipped++
+			continue
+		}
+
+		if p.VcardData == "" {
+			skipped++
+			continue
+		}
+
+		contacts, err := vcard.Parse(strings.NewReader(p.VcardData))
+		if err != nil || len(contacts) == 0 || contacts[0].Birthday == nil {
+			skipped++
+			continue
+		}
+
+		if _, err := client.Event.Create().
+			SetType("birthday").
+			SetDate(*contacts[0].Birthday).
+			SetDescription("Imported from vCard").
+			SetCreatedAt(time.Now()).
+			SetPersonID(p.ID).
+			Save(ctx); err != nil {
+			slog.Error("migration: create birthday event", "source", "db", "person_id", p.ID, "error", err)
+			return err
+		}
+		created++
+	}
+
+	if err := recordMigrationLog(); err != nil {
+		return err
+	}
+
+	slog.Info("migration: birthday backfill completed", "source", "db", "processed", len(persons), "created", created, "skipped", skipped)
+	return nil
+}
+
+// DropOneTimeNotificationTables removes the tables that belonged to the removed
+// one-time notification feature: onetimenotifications and notification_deliveries.
+//
+// ent schema migration never drops unused tables, so this runs explicit DROP
+// statements on a dedicated connection. The migration is gated by the
+// migration_log table: it runs exactly once. Any pending one-time notifications
+// are intentionally lost.
+func DropOneTimeNotificationTables(ctx context.Context, client *ent.Client, dbPath string) error {
+	// Primary gate: if the migration is already recorded, never run again.
+	applied, err := client.MigrationLog.Query().
+		Where(migrationlog.NameEQ(migrationDropOneTimeNotifications)).
+		Exist(ctx)
+	if err != nil {
+		return fmt.Errorf("check migration log: %w", err)
+	}
+	if applied {
+		slog.Info("migration: one-time notification tables already dropped, skipping", "source", "db")
+		return nil
+	}
+
+	// recordMigrationLog writes the migration_log entry so we never re-run.
+	recordMigrationLog := func() error {
+		if _, err := client.MigrationLog.Create().
+			SetName(migrationDropOneTimeNotifications).
+			SetAppliedAt(time.Now()).
+			Save(ctx); err != nil {
+			return fmt.Errorf("record migration log: %w", err)
+		}
+		return nil
+	}
+
+	// Open a dedicated connection so we can execute DDL that ent does not expose.
+	// The path may already carry query parameters (e.g. in tests), so append
+	// pragmas with the correct separator.
+	separator := "?"
+	if strings.Contains(dbPath, "?") {
+		separator = "&"
+	}
+	conn, err := sql.Open("sqlite3", dbPath+separator+"_journal_mode=WAL&_timeout=5000")
+	if err != nil {
+		return fmt.Errorf("open database for migration: %w", err)
+	}
+	defer func() {
+		if cerr := conn.Close(); cerr != nil {
+			slog.Warn("migration: close database connection", "source", "db", "error", cerr)
+		}
+	}()
+
+	tables := []string{"onetimenotifications", "notification_deliveries"}
+	for _, table := range tables {
+		if _, err := conn.ExecContext(ctx, "DROP TABLE IF EXISTS "+table); err != nil {
+			return fmt.Errorf("drop table %s: %w", table, err)
+		}
+	}
+
+	if err := recordMigrationLog(); err != nil {
+		return err
+	}
+
+	slog.Info("migration: dropped one-time notification tables", "source", "db", "tables", tables)
 	return nil
 }
 

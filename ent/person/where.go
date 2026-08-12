@@ -70,6 +70,16 @@ func VcardData(v string) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldVcardData, v))
 }
 
+// NotifyBirthdays applies equality check predicate on the "notify_birthdays" field. It's identical to NotifyBirthdaysEQ.
+func NotifyBirthdays(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldNotifyBirthdays, v))
+}
+
+// Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
+func Timezone(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldTimezone, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCreatedAt, v))
@@ -295,6 +305,101 @@ func VcardDataContainsFold(v string) predicate.Person {
 	return predicate.Person(sql.FieldContainsFold(FieldVcardData, v))
 }
 
+// NotifyBirthdaysEQ applies the EQ predicate on the "notify_birthdays" field.
+func NotifyBirthdaysEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldNotifyBirthdays, v))
+}
+
+// NotifyBirthdaysNEQ applies the NEQ predicate on the "notify_birthdays" field.
+func NotifyBirthdaysNEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldNotifyBirthdays, v))
+}
+
+// TimezoneEQ applies the EQ predicate on the "timezone" field.
+func TimezoneEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TimezoneNEQ applies the NEQ predicate on the "timezone" field.
+func TimezoneNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldTimezone, v))
+}
+
+// TimezoneIn applies the In predicate on the "timezone" field.
+func TimezoneIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldTimezone, vs...))
+}
+
+// TimezoneNotIn applies the NotIn predicate on the "timezone" field.
+func TimezoneNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldTimezone, vs...))
+}
+
+// TimezoneGT applies the GT predicate on the "timezone" field.
+func TimezoneGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldTimezone, v))
+}
+
+// TimezoneGTE applies the GTE predicate on the "timezone" field.
+func TimezoneGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldTimezone, v))
+}
+
+// TimezoneLT applies the LT predicate on the "timezone" field.
+func TimezoneLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldTimezone, v))
+}
+
+// TimezoneLTE applies the LTE predicate on the "timezone" field.
+func TimezoneLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldTimezone, v))
+}
+
+// TimezoneContains applies the Contains predicate on the "timezone" field.
+func TimezoneContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldTimezone, v))
+}
+
+// TimezoneHasPrefix applies the HasPrefix predicate on the "timezone" field.
+func TimezoneHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldTimezone, v))
+}
+
+// TimezoneHasSuffix applies the HasSuffix predicate on the "timezone" field.
+func TimezoneHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldTimezone, v))
+}
+
+// TimezoneIsNil applies the IsNil predicate on the "timezone" field.
+func TimezoneIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldTimezone))
+}
+
+// TimezoneNotNil applies the NotNil predicate on the "timezone" field.
+func TimezoneNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldTimezone))
+}
+
+// TimezoneEqualFold applies the EqualFold predicate on the "timezone" field.
+func TimezoneEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldTimezone, v))
+}
+
+// TimezoneContainsFold applies the ContainsFold predicate on the "timezone" field.
+func TimezoneContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldTimezone, v))
+}
+
+// ReminderDaysIsNil applies the IsNil predicate on the "reminder_days" field.
+func ReminderDaysIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldReminderDays))
+}
+
+// ReminderDaysNotNil applies the NotNil predicate on the "reminder_days" field.
+func ReminderDaysNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldReminderDays))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCreatedAt, v))
@@ -413,6 +518,29 @@ func HasGroups() predicate.Person {
 func HasGroupsWith(preds ...predicate.Group) predicate.Person {
 	return predicate.Person(func(s *sql.Selector) {
 		step := newGroupsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTimeline applies the HasEdge predicate on the "timeline" edge.
+func HasTimeline() predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TimelineTable, TimelineColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTimelineWith applies the HasEdge predicate on the "timeline" edge with a given conditions (other predicates).
+func HasTimelineWith(preds ...predicate.PersonNote) predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := newTimelineStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

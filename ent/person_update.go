@@ -10,10 +10,12 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/predicate"
 )
 
@@ -84,6 +86,58 @@ func (_u *PersonUpdate) ClearVcardData() *PersonUpdate {
 	return _u
 }
 
+// SetNotifyBirthdays sets the "notify_birthdays" field.
+func (_u *PersonUpdate) SetNotifyBirthdays(v bool) *PersonUpdate {
+	_u.mutation.SetNotifyBirthdays(v)
+	return _u
+}
+
+// SetNillableNotifyBirthdays sets the "notify_birthdays" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillableNotifyBirthdays(v *bool) *PersonUpdate {
+	if v != nil {
+		_u.SetNotifyBirthdays(*v)
+	}
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *PersonUpdate) SetTimezone(v string) *PersonUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillableTimezone(v *string) *PersonUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *PersonUpdate) ClearTimezone() *PersonUpdate {
+	_u.mutation.ClearTimezone()
+	return _u
+}
+
+// SetReminderDays sets the "reminder_days" field.
+func (_u *PersonUpdate) SetReminderDays(v []int) *PersonUpdate {
+	_u.mutation.SetReminderDays(v)
+	return _u
+}
+
+// AppendReminderDays appends value to the "reminder_days" field.
+func (_u *PersonUpdate) AppendReminderDays(v []int) *PersonUpdate {
+	_u.mutation.AppendReminderDays(v)
+	return _u
+}
+
+// ClearReminderDays clears the value of the "reminder_days" field.
+func (_u *PersonUpdate) ClearReminderDays() *PersonUpdate {
+	_u.mutation.ClearReminderDays()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *PersonUpdate) SetCreatedAt(v time.Time) *PersonUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -142,6 +196,21 @@ func (_u *PersonUpdate) AddGroups(v ...*Group) *PersonUpdate {
 	return _u.AddGroupIDs(ids...)
 }
 
+// AddTimelineIDs adds the "timeline" edge to the PersonNote entity by IDs.
+func (_u *PersonUpdate) AddTimelineIDs(ids ...int) *PersonUpdate {
+	_u.mutation.AddTimelineIDs(ids...)
+	return _u
+}
+
+// AddTimeline adds the "timeline" edges to the PersonNote entity.
+func (_u *PersonUpdate) AddTimeline(v ...*PersonNote) *PersonUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTimelineIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (_u *PersonUpdate) Mutation() *PersonMutation {
 	return _u.mutation
@@ -187,6 +256,27 @@ func (_u *PersonUpdate) RemoveGroups(v ...*Group) *PersonUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveGroupIDs(ids...)
+}
+
+// ClearTimeline clears all "timeline" edges to the PersonNote entity.
+func (_u *PersonUpdate) ClearTimeline() *PersonUpdate {
+	_u.mutation.ClearTimeline()
+	return _u
+}
+
+// RemoveTimelineIDs removes the "timeline" edge to PersonNote entities by IDs.
+func (_u *PersonUpdate) RemoveTimelineIDs(ids ...int) *PersonUpdate {
+	_u.mutation.RemoveTimelineIDs(ids...)
+	return _u
+}
+
+// RemoveTimeline removes "timeline" edges to PersonNote entities.
+func (_u *PersonUpdate) RemoveTimeline(v ...*PersonNote) *PersonUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTimelineIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -252,6 +342,26 @@ func (_u *PersonUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.VcardDataCleared() {
 		_spec.ClearField(person.FieldVcardData, field.TypeString)
+	}
+	if value, ok := _u.mutation.NotifyBirthdays(); ok {
+		_spec.SetField(person.FieldNotifyBirthdays, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(person.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(person.FieldTimezone, field.TypeString)
+	}
+	if value, ok := _u.mutation.ReminderDays(); ok {
+		_spec.SetField(person.FieldReminderDays, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedReminderDays(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, person.FieldReminderDays, value)
+		})
+	}
+	if _u.mutation.ReminderDaysCleared() {
+		_spec.ClearField(person.FieldReminderDays, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)
@@ -349,6 +459,51 @@ func (_u *PersonUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.TimelineCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.TimelineTable,
+			Columns: []string{person.TimelineColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTimelineIDs(); len(nodes) > 0 && !_u.mutation.TimelineCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.TimelineTable,
+			Columns: []string{person.TimelineColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TimelineIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.TimelineTable,
+			Columns: []string{person.TimelineColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{person.Label}
@@ -423,6 +578,58 @@ func (_u *PersonUpdateOne) ClearVcardData() *PersonUpdateOne {
 	return _u
 }
 
+// SetNotifyBirthdays sets the "notify_birthdays" field.
+func (_u *PersonUpdateOne) SetNotifyBirthdays(v bool) *PersonUpdateOne {
+	_u.mutation.SetNotifyBirthdays(v)
+	return _u
+}
+
+// SetNillableNotifyBirthdays sets the "notify_birthdays" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillableNotifyBirthdays(v *bool) *PersonUpdateOne {
+	if v != nil {
+		_u.SetNotifyBirthdays(*v)
+	}
+	return _u
+}
+
+// SetTimezone sets the "timezone" field.
+func (_u *PersonUpdateOne) SetTimezone(v string) *PersonUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillableTimezone(v *string) *PersonUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// ClearTimezone clears the value of the "timezone" field.
+func (_u *PersonUpdateOne) ClearTimezone() *PersonUpdateOne {
+	_u.mutation.ClearTimezone()
+	return _u
+}
+
+// SetReminderDays sets the "reminder_days" field.
+func (_u *PersonUpdateOne) SetReminderDays(v []int) *PersonUpdateOne {
+	_u.mutation.SetReminderDays(v)
+	return _u
+}
+
+// AppendReminderDays appends value to the "reminder_days" field.
+func (_u *PersonUpdateOne) AppendReminderDays(v []int) *PersonUpdateOne {
+	_u.mutation.AppendReminderDays(v)
+	return _u
+}
+
+// ClearReminderDays clears the value of the "reminder_days" field.
+func (_u *PersonUpdateOne) ClearReminderDays() *PersonUpdateOne {
+	_u.mutation.ClearReminderDays()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *PersonUpdateOne) SetCreatedAt(v time.Time) *PersonUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -481,6 +688,21 @@ func (_u *PersonUpdateOne) AddGroups(v ...*Group) *PersonUpdateOne {
 	return _u.AddGroupIDs(ids...)
 }
 
+// AddTimelineIDs adds the "timeline" edge to the PersonNote entity by IDs.
+func (_u *PersonUpdateOne) AddTimelineIDs(ids ...int) *PersonUpdateOne {
+	_u.mutation.AddTimelineIDs(ids...)
+	return _u
+}
+
+// AddTimeline adds the "timeline" edges to the PersonNote entity.
+func (_u *PersonUpdateOne) AddTimeline(v ...*PersonNote) *PersonUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTimelineIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (_u *PersonUpdateOne) Mutation() *PersonMutation {
 	return _u.mutation
@@ -526,6 +748,27 @@ func (_u *PersonUpdateOne) RemoveGroups(v ...*Group) *PersonUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveGroupIDs(ids...)
+}
+
+// ClearTimeline clears all "timeline" edges to the PersonNote entity.
+func (_u *PersonUpdateOne) ClearTimeline() *PersonUpdateOne {
+	_u.mutation.ClearTimeline()
+	return _u
+}
+
+// RemoveTimelineIDs removes the "timeline" edge to PersonNote entities by IDs.
+func (_u *PersonUpdateOne) RemoveTimelineIDs(ids ...int) *PersonUpdateOne {
+	_u.mutation.RemoveTimelineIDs(ids...)
+	return _u
+}
+
+// RemoveTimeline removes "timeline" edges to PersonNote entities.
+func (_u *PersonUpdateOne) RemoveTimeline(v ...*PersonNote) *PersonUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTimelineIDs(ids...)
 }
 
 // Where appends a list predicates to the PersonUpdate builder.
@@ -622,6 +865,26 @@ func (_u *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err erro
 	if _u.mutation.VcardDataCleared() {
 		_spec.ClearField(person.FieldVcardData, field.TypeString)
 	}
+	if value, ok := _u.mutation.NotifyBirthdays(); ok {
+		_spec.SetField(person.FieldNotifyBirthdays, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(person.FieldTimezone, field.TypeString, value)
+	}
+	if _u.mutation.TimezoneCleared() {
+		_spec.ClearField(person.FieldTimezone, field.TypeString)
+	}
+	if value, ok := _u.mutation.ReminderDays(); ok {
+		_spec.SetField(person.FieldReminderDays, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedReminderDays(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, person.FieldReminderDays, value)
+		})
+	}
+	if _u.mutation.ReminderDaysCleared() {
+		_spec.ClearField(person.FieldReminderDays, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -711,6 +974,51 @@ func (_u *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TimelineCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.TimelineTable,
+			Columns: []string{person.TimelineColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTimelineIDs(); len(nodes) > 0 && !_u.mutation.TimelineCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.TimelineTable,
+			Columns: []string{person.TimelineColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TimelineIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.TimelineTable,
+			Columns: []string{person.TimelineColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -7,10 +7,9 @@ import (
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/migrationlog"
-	"github.com/datey/datey/ent/notificationdelivery"
 	"github.com/datey/datey/ent/notificationlog"
-	"github.com/datey/datey/ent/onetimenotification"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/schema"
@@ -42,6 +41,10 @@ func init() {
 	eventDescDescription := eventFields[2].Descriptor()
 	// event.DefaultDescription holds the default value on creation for the description field.
 	event.DefaultDescription = eventDescDescription.Default.(string)
+	// eventDescNotes is the schema descriptor for notes field.
+	eventDescNotes := eventFields[3].Descriptor()
+	// event.DefaultNotes holds the default value on creation for the notes field.
+	event.DefaultNotes = eventDescNotes.Default.(string)
 	groupFields := schema.Group{}.Fields()
 	_ = groupFields
 	// groupDescName is the schema descriptor for name field.
@@ -58,20 +61,6 @@ func init() {
 	migrationlogDescName := migrationlogFields[0].Descriptor()
 	// migrationlog.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	migrationlog.NameValidator = migrationlogDescName.Validators[0].(func(string) error)
-	notificationdeliveryFields := schema.NotificationDelivery{}.Fields()
-	_ = notificationdeliveryFields
-	// notificationdeliveryDescChannel is the schema descriptor for channel field.
-	notificationdeliveryDescChannel := notificationdeliveryFields[0].Descriptor()
-	// notificationdelivery.ChannelValidator is a validator for the "channel" field. It is called by the builders before save.
-	notificationdelivery.ChannelValidator = notificationdeliveryDescChannel.Validators[0].(func(string) error)
-	// notificationdeliveryDescStatus is the schema descriptor for status field.
-	notificationdeliveryDescStatus := notificationdeliveryFields[1].Descriptor()
-	// notificationdelivery.DefaultStatus holds the default value on creation for the status field.
-	notificationdelivery.DefaultStatus = notificationdeliveryDescStatus.Default.(string)
-	// notificationdeliveryDescErrorMessage is the schema descriptor for error_message field.
-	notificationdeliveryDescErrorMessage := notificationdeliveryFields[3].Descriptor()
-	// notificationdelivery.DefaultErrorMessage holds the default value on creation for the error_message field.
-	notificationdelivery.DefaultErrorMessage = notificationdeliveryDescErrorMessage.Default.(string)
 	notificationlogFields := schema.NotificationLog{}.Fields()
 	_ = notificationlogFields
 	// notificationlogDescChannel is the schema descriptor for channel field.
@@ -82,24 +71,6 @@ func init() {
 	notificationlogDescDateKey := notificationlogFields[2].Descriptor()
 	// notificationlog.DateKeyValidator is a validator for the "date_key" field. It is called by the builders before save.
 	notificationlog.DateKeyValidator = notificationlogDescDateKey.Validators[0].(func(string) error)
-	onetimenotificationFields := schema.OneTimeNotification{}.Fields()
-	_ = onetimenotificationFields
-	// onetimenotificationDescMessage is the schema descriptor for message field.
-	onetimenotificationDescMessage := onetimenotificationFields[0].Descriptor()
-	// onetimenotification.MessageValidator is a validator for the "message" field. It is called by the builders before save.
-	onetimenotification.MessageValidator = onetimenotificationDescMessage.Validators[0].(func(string) error)
-	// onetimenotificationDescStatus is the schema descriptor for status field.
-	onetimenotificationDescStatus := onetimenotificationFields[2].Descriptor()
-	// onetimenotification.DefaultStatus holds the default value on creation for the status field.
-	onetimenotification.DefaultStatus = onetimenotificationDescStatus.Default.(string)
-	// onetimenotificationDescChannelTargets is the schema descriptor for channel_targets field.
-	onetimenotificationDescChannelTargets := onetimenotificationFields[5].Descriptor()
-	// onetimenotification.DefaultChannelTargets holds the default value on creation for the channel_targets field.
-	onetimenotification.DefaultChannelTargets = onetimenotificationDescChannelTargets.Default.(string)
-	// onetimenotificationDescEventType is the schema descriptor for event_type field.
-	onetimenotificationDescEventType := onetimenotificationFields[7].Descriptor()
-	// onetimenotification.DefaultEventType holds the default value on creation for the event_type field.
-	onetimenotification.DefaultEventType = onetimenotificationDescEventType.Default.(string)
 	personFields := schema.Person{}.Fields()
 	_ = personFields
 	// personDescName is the schema descriptor for name field.
@@ -110,6 +81,20 @@ func init() {
 	personDescNotes := personFields[1].Descriptor()
 	// person.DefaultNotes holds the default value on creation for the notes field.
 	person.DefaultNotes = personDescNotes.Default.(string)
+	// personDescNotifyBirthdays is the schema descriptor for notify_birthdays field.
+	personDescNotifyBirthdays := personFields[3].Descriptor()
+	// person.DefaultNotifyBirthdays holds the default value on creation for the notify_birthdays field.
+	person.DefaultNotifyBirthdays = personDescNotifyBirthdays.Default.(bool)
+	// personDescTimezone is the schema descriptor for timezone field.
+	personDescTimezone := personFields[4].Descriptor()
+	// person.DefaultTimezone holds the default value on creation for the timezone field.
+	person.DefaultTimezone = personDescTimezone.Default.(string)
+	personnoteFields := schema.PersonNote{}.Fields()
+	_ = personnoteFields
+	// personnoteDescNote is the schema descriptor for note field.
+	personnoteDescNote := personnoteFields[0].Descriptor()
+	// personnote.NoteValidator is a validator for the "note" field. It is called by the builders before save.
+	personnote.NoteValidator = personnoteDescNote.Validators[0].(func(string) error)
 	pushsubscriptionFields := schema.PushSubscription{}.Fields()
 	_ = pushsubscriptionFields
 	// pushsubscriptionDescEndpoint is the schema descriptor for endpoint field.
