@@ -45,7 +45,7 @@ func (h *Handler) personPhoto(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 	if contentType != "" {
 		w.Header().Set("Content-Type", contentType)
 	}

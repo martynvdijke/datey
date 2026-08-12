@@ -46,7 +46,7 @@ func (c *Client) Thumbnail(ctx context.Context, id string) (io.ReadCloser, strin
 		return nil, "", err
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		return nil, "", fmt.Errorf("immich thumbnail returned %s", resp.Status)
 	}
 	return resp.Body, resp.Header.Get("Content-Type"), nil
@@ -61,7 +61,7 @@ func (c *Client) getJSON(ctx context.Context, path string, dst any) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("immich returned %s", resp.Status)
 	}
