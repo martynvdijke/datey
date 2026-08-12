@@ -30,6 +30,10 @@ type Person struct {
 	Timezone string `json:"timezone,omitempty"`
 	// ReminderDays holds the value of the "reminder_days" field.
 	ReminderDays []int `json:"reminder_days,omitempty"`
+	// ImmichPersonID holds the value of the "immich_person_id" field.
+	ImmichPersonID *string `json:"immich_person_id,omitempty"`
+	// ImmichPhotoDisabled holds the value of the "immich_photo_disabled" field.
+	ImmichPhotoDisabled bool `json:"immich_photo_disabled,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -87,11 +91,11 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case person.FieldReminderDays:
 			values[i] = new([]byte)
-		case person.FieldNotifyBirthdays:
+		case person.FieldNotifyBirthdays, person.FieldImmichPhotoDisabled:
 			values[i] = new(sql.NullBool)
 		case person.FieldID:
 			values[i] = new(sql.NullInt64)
-		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone:
+		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID:
 			values[i] = new(sql.NullString)
 		case person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -153,6 +157,19 @@ func (_m *Person) assignValues(columns []string, values []any) error {
 				if err := json.Unmarshal(*value, &_m.ReminderDays); err != nil {
 					return fmt.Errorf("unmarshal field reminder_days: %w", err)
 				}
+			}
+		case person.FieldImmichPersonID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field immich_person_id", values[i])
+			} else if value.Valid {
+				_m.ImmichPersonID = new(string)
+				*_m.ImmichPersonID = value.String
+			}
+		case person.FieldImmichPhotoDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field immich_photo_disabled", values[i])
+			} else if value.Valid {
+				_m.ImmichPhotoDisabled = value.Bool
 			}
 		case person.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -234,6 +251,14 @@ func (_m *Person) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("reminder_days=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ReminderDays))
+	builder.WriteString(", ")
+	if v := _m.ImmichPersonID; v != nil {
+		builder.WriteString("immich_person_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("immich_photo_disabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ImmichPhotoDisabled))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

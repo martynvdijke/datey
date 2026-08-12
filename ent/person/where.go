@@ -80,6 +80,16 @@ func Timezone(v string) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldTimezone, v))
 }
 
+// ImmichPersonID applies equality check predicate on the "immich_person_id" field. It's identical to ImmichPersonIDEQ.
+func ImmichPersonID(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldImmichPersonID, v))
+}
+
+// ImmichPhotoDisabled applies equality check predicate on the "immich_photo_disabled" field. It's identical to ImmichPhotoDisabledEQ.
+func ImmichPhotoDisabled(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldImmichPhotoDisabled, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCreatedAt, v))
@@ -398,6 +408,91 @@ func ReminderDaysIsNil() predicate.Person {
 // ReminderDaysNotNil applies the NotNil predicate on the "reminder_days" field.
 func ReminderDaysNotNil() predicate.Person {
 	return predicate.Person(sql.FieldNotNull(FieldReminderDays))
+}
+
+// ImmichPersonIDEQ applies the EQ predicate on the "immich_person_id" field.
+func ImmichPersonIDEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDNEQ applies the NEQ predicate on the "immich_person_id" field.
+func ImmichPersonIDNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDIn applies the In predicate on the "immich_person_id" field.
+func ImmichPersonIDIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldImmichPersonID, vs...))
+}
+
+// ImmichPersonIDNotIn applies the NotIn predicate on the "immich_person_id" field.
+func ImmichPersonIDNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldImmichPersonID, vs...))
+}
+
+// ImmichPersonIDGT applies the GT predicate on the "immich_person_id" field.
+func ImmichPersonIDGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDGTE applies the GTE predicate on the "immich_person_id" field.
+func ImmichPersonIDGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDLT applies the LT predicate on the "immich_person_id" field.
+func ImmichPersonIDLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDLTE applies the LTE predicate on the "immich_person_id" field.
+func ImmichPersonIDLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDContains applies the Contains predicate on the "immich_person_id" field.
+func ImmichPersonIDContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDHasPrefix applies the HasPrefix predicate on the "immich_person_id" field.
+func ImmichPersonIDHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDHasSuffix applies the HasSuffix predicate on the "immich_person_id" field.
+func ImmichPersonIDHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDIsNil applies the IsNil predicate on the "immich_person_id" field.
+func ImmichPersonIDIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldImmichPersonID))
+}
+
+// ImmichPersonIDNotNil applies the NotNil predicate on the "immich_person_id" field.
+func ImmichPersonIDNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldImmichPersonID))
+}
+
+// ImmichPersonIDEqualFold applies the EqualFold predicate on the "immich_person_id" field.
+func ImmichPersonIDEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldImmichPersonID, v))
+}
+
+// ImmichPersonIDContainsFold applies the ContainsFold predicate on the "immich_person_id" field.
+func ImmichPersonIDContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldImmichPersonID, v))
+}
+
+// ImmichPhotoDisabledEQ applies the EQ predicate on the "immich_photo_disabled" field.
+func ImmichPhotoDisabledEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldImmichPhotoDisabled, v))
+}
+
+// ImmichPhotoDisabledNEQ applies the NEQ predicate on the "immich_photo_disabled" field.
+func ImmichPhotoDisabledNEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldImmichPhotoDisabled, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

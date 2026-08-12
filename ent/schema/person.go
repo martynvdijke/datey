@@ -18,6 +18,8 @@ func (Person) Fields() []ent.Field {
 		field.Bool("notify_birthdays").Default(true),
 		field.String("timezone").Optional().Default(""),
 		field.Ints("reminder_days").Optional(),
+		field.String("immich_person_id").Optional().Nillable(),
+		field.Bool("immich_photo_disabled").Default(false),
 		field.Time("created_at"),
 		field.Time("updated_at"),
 	}

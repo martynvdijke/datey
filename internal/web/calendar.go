@@ -34,7 +34,7 @@ func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
 		}
 		upcoming = append(upcoming, upcomingEvent{
 			Name: name,
-			Date: occ.Date.Format("Jan 2, 2006"),
+			Date: longDate(h.cfg.DateVariant, occ.Date),
 			Type: e.Type,
 		})
 	}

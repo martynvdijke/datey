@@ -263,6 +263,31 @@ func TestOverlay_DataDirNeverOverlaid(t *testing.T) {
 	}
 }
 
+func TestOverlay_DateVariant(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	if err := s.EnsureSeeded(ctx); err != nil {
+		t.Fatalf("ensure seeded: %v", err)
+	}
+	row, err := s.Current(ctx)
+	if err != nil {
+		t.Fatalf("current: %v", err)
+	}
+	us := "us"
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
+		SetNillableDateVariant(&us).
+		Save(ctx); err != nil {
+		t.Fatalf("set date_variant: %v", err)
+	}
+	cfg := baseCfg()
+	if err := s.Overlay(ctx, cfg); err != nil {
+		t.Fatalf("overlay: %v", err)
+	}
+	if cfg.DateVariant != "us" {
+		t.Errorf("DateVariant: got %q want us", cfg.DateVariant)
+	}
+}
+
 func TestApplyForm_Success_PersistsAndHotReloads(t *testing.T) {
 	s := newTestStore(t)
 	ctx := context.Background()
@@ -275,6 +300,7 @@ func TestApplyForm_Success_PersistsAndHotReloads(t *testing.T) {
 	form.Set("PORT", "9200")
 	form.Set("SCHEDULER_HOUR", "5")
 	form.Set("REMINDER_DAYS", "14")
+	form.Set("DATE_VARIANT", "us")
 	form.Set("LOG_LEVEL", "debug")
 	form.Set("LOG_BUFFER_SIZE", "500")
 	form.Set("SMTP_HOST", "mail.test")
@@ -304,6 +330,9 @@ func TestApplyForm_Success_PersistsAndHotReloads(t *testing.T) {
 	}
 	if cfg.LogLevel != "debug" {
 		t.Errorf("LogLevel hot-reload: got %q want debug", cfg.LogLevel)
+	}
+	if cfg.DateVariant != "us" {
+		t.Errorf("DateVariant hot-reload: got %q want us", cfg.DateVariant)
 	}
 	if cfg.SMTPHost != "mail.test" {
 		t.Errorf("SMTPHost hot-reload: got %q want mail.test", cfg.SMTPHost)
@@ -342,6 +371,9 @@ func TestApplyForm_Success_PersistsAndHotReloads(t *testing.T) {
 	}
 	if row.LogBufferSize == nil || *row.LogBufferSize != 500 {
 		t.Errorf("DB LogBufferSize not persisted, got %+v", row.LogBufferSize)
+	}
+	if row.DateVariant == nil || *row.DateVariant != "us" {
+		t.Errorf("DB DateVariant not persisted, got %+v", row.DateVariant)
 	}
 }
 
@@ -386,6 +418,7 @@ func TestApplyForm_ValidationErrors(t *testing.T) {
 		{"bad SCHEDULER_HOUR", url.Values{"SCHEDULER_HOUR": {"25"}}, []string{"SCHEDULER_HOUR"}},
 		{"bad REMINDER_DAYS", url.Values{"REMINDER_DAYS": {"0"}}, []string{"REMINDER_DAYS"}},
 		{"bad LOG_LEVEL", url.Values{"LOG_LEVEL": {"trace"}}, []string{"LOG_LEVEL"}},
+		{"bad DATE_VARIANT", url.Values{"DATE_VARIANT": {"french"}}, []string{"DATE_VARIANT"}},
 		{"bad LOG_BUFFER_SIZE", url.Values{"LOG_BUFFER_SIZE": {"0"}}, []string{"LOG_BUFFER_SIZE"}},
 		{"bad SMTP_PORT", url.Values{"SMTP_PORT": {"99999"}}, []string{"SMTP_PORT"}},
 		{"bad timeout", url.Values{"SMTP_TIMEOUT": {"-1"}}, []string{"SMTP_TIMEOUT"}},

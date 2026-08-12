@@ -19,6 +19,8 @@ const (
 	FieldSchedulerHour = "scheduler_hour"
 	// FieldReminderDays holds the string denoting the reminder_days field in the database.
 	FieldReminderDays = "reminder_days"
+	// FieldDateVariant holds the string denoting the date_variant field in the database.
+	FieldDateVariant = "date_variant"
 	// FieldReminderDigest holds the string denoting the reminder_digest field in the database.
 	FieldReminderDigest = "reminder_digest"
 	// FieldReminderStages holds the string denoting the reminder_stages field in the database.
@@ -101,6 +103,10 @@ const (
 	FieldPushVapidPublicKey = "push_vapid_public_key"
 	// FieldPushVapidPrivateKey holds the string denoting the push_vapid_private_key field in the database.
 	FieldPushVapidPrivateKey = "push_vapid_private_key"
+	// FieldImmichURL holds the string denoting the immich_url field in the database.
+	FieldImmichURL = "immich_url"
+	// FieldImmichAPIKey holds the string denoting the immich_api_key field in the database.
+	FieldImmichAPIKey = "immich_api_key"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the appconfig in the database.
@@ -114,6 +120,7 @@ var Columns = []string{
 	FieldDataDir,
 	FieldSchedulerHour,
 	FieldReminderDays,
+	FieldDateVariant,
 	FieldReminderDigest,
 	FieldReminderStages,
 	FieldTimezone,
@@ -155,6 +162,8 @@ var Columns = []string{
 	FieldPushEnabled,
 	FieldPushVapidPublicKey,
 	FieldPushVapidPrivateKey,
+	FieldImmichURL,
+	FieldImmichAPIKey,
 	FieldUpdatedAt,
 }
 
@@ -194,6 +203,11 @@ func BySchedulerHour(opts ...sql.OrderTermOption) OrderOption {
 // ByReminderDays orders the results by the reminder_days field.
 func ByReminderDays(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReminderDays, opts...).ToFunc()
+}
+
+// ByDateVariant orders the results by the date_variant field.
+func ByDateVariant(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDateVariant, opts...).ToFunc()
 }
 
 // ByReminderDigest orders the results by the reminder_digest field.
@@ -399,6 +413,16 @@ func ByPushVapidPublicKey(opts ...sql.OrderTermOption) OrderOption {
 // ByPushVapidPrivateKey orders the results by the push_vapid_private_key field.
 func ByPushVapidPrivateKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPushVapidPrivateKey, opts...).ToFunc()
+}
+
+// ByImmichURL orders the results by the immich_url field.
+func ByImmichURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImmichURL, opts...).ToFunc()
+}
+
+// ByImmichAPIKey orders the results by the immich_api_key field.
+func ByImmichAPIKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImmichAPIKey, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

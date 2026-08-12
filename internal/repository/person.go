@@ -70,6 +70,13 @@ func (r *PersonRepository) SetNotifyBirthdays(ctx context.Context, id int, enabl
 		Save(ctx)
 }
 
+func (r *PersonRepository) SetImmichPhoto(ctx context.Context, id int, immichID *string, disabled bool) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).
+		SetNillableImmichPersonID(immichID).
+		SetImmichPhotoDisabled(disabled).
+		SetUpdatedAt(time.Now()).Save(ctx)
+}
+
 func (r *PersonRepository) Delete(ctx context.Context, id int) error {
 	return r.client.Person.DeleteOneID(id).Exec(ctx)
 }

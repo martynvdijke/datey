@@ -29,6 +29,8 @@ const migrationBirthdayBackfill = "birthday_events_backfill"
 // table when the one-time notification tables have been dropped.
 const migrationDropOneTimeNotifications = "drop_one_time_notifications"
 
+const migrationCleanVCardNotes = "clean_vcard_notes"
+
 // MigrateContactsToPeople copies data from the contacts table to the people table
 // and updates event foreign keys to point to the new person records.
 //
@@ -214,6 +216,43 @@ func MigrateBirthdayEvents(ctx context.Context, client *ent.Client) error {
 	}
 
 	slog.Info("migration: birthday backfill completed", "source", "db", "processed", len(persons), "created", created, "skipped", skipped)
+	return nil
+}
+
+// CleanVCardNotes removes provider bookkeeping that older imports appended to
+// the visible notes field. The original card remains in vcard_data for export.
+func CleanVCardNotes(ctx context.Context, client *ent.Client) error {
+	applied, err := client.MigrationLog.Query().Where(migrationlog.NameEQ(migrationCleanVCardNotes)).Exist(ctx)
+	if err != nil {
+		return fmt.Errorf("check migration log: %w", err)
+	}
+	if applied {
+		return nil
+	}
+	people, err := client.Person.Query().All(ctx)
+	if err != nil {
+		return fmt.Errorf("load people for note cleanup: %w", err)
+	}
+	cleaned := 0
+	for _, p := range people {
+		if p.VcardData == "" {
+			continue
+		}
+		contacts, parseErr := vcard.Parse(strings.NewReader(p.VcardData))
+		if parseErr != nil || len(contacts) == 0 {
+			continue
+		}
+		if strings.Contains(p.Notes, "UID:") || strings.Contains(p.Notes, "SOURCE:") || strings.Contains(p.Notes, "PRODID:") || strings.Contains(p.Notes, "REV:") {
+			if _, err := client.Person.UpdateOneID(p.ID).SetNotes(contacts[0].Notes).SetUpdatedAt(time.Now()).Save(ctx); err != nil {
+				return err
+			}
+			cleaned++
+		}
+	}
+	if _, err := client.MigrationLog.Create().SetName(migrationCleanVCardNotes).SetAppliedAt(time.Now()).Save(ctx); err != nil {
+		return err
+	}
+	slog.Info("migration: cleaned vCard notes", "source", "db", "cleaned", cleaned)
 	return nil
 }
 

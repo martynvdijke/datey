@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 )
@@ -11,20 +12,21 @@ type Config struct {
 	DataDir       string
 	SchedulerHour int
 	ReminderDays  int
+	DateVariant   string
 	LogLevel      string
 	LogBufferSize int
 	OTLPEndpoint  string
 
-	BackupDir          string
+	BackupDir           string
 	BackupRetentionDays int
 
-	SMTPHost     string
-	SMTPPort     int
-	SMTPUser     string
-	SMTPPass     string
-	SMTPTLS      bool
-	SMTPTimeout  int
-	NotifyEmail  string
+	SMTPHost    string
+	SMTPPort    int
+	SMTPUser    string
+	SMTPPass    string
+	SMTPTLS     bool
+	SMTPTimeout int
+	NotifyEmail string
 
 	GotifyURL   string
 	GotifyToken string
@@ -59,29 +61,33 @@ type Config struct {
 	HomeAssistantEnabled bool
 	HomeAssistantKey     string
 
-	PushEnabled            bool
-	PushVAPIDPublicKey     string
-	PushVAPIDPrivateKey    string
+	PushEnabled         bool
+	PushVAPIDPublicKey  string
+	PushVAPIDPrivateKey string
+
+	ImmichURL    string
+	ImmichAPIKey string
 }
 
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:          getEnvInt("PORT", 6270),
-		DataDir:       getEnvExplicit("DATA_DIR", "/db"),
-		SchedulerHour: getEnvInt("SCHEDULER_HOUR", 8),
+		Port:             getEnvInt("PORT", 6270),
+		DataDir:          getEnvExplicit("DATA_DIR", "/db"),
+		SchedulerHour:    getEnvInt("SCHEDULER_HOUR", 8),
 		ReminderDays:  getEnvInt("REMINDER_DAYS", 7),
+		DateVariant:   getEnvExplicit("DATE_VARIANT", "european"),
 		LogLevel:      getEnvExplicit("LOG_LEVEL", "info"),
-		LogBufferSize: getEnvInt("LOG_BUFFER_SIZE", 10000),
-		OTLPEndpoint:  getEnv("OTEL_ENDPOINT", ""),
-		SMTPHost:      getEnv("SMTP_HOST", ""),
-		SMTPPort:      getEnvInt("SMTP_PORT", 587),
-		SMTPUser:      getEnv("SMTP_USER", ""),
-		SMTPPass:      getEnv("SMTP_PASS", ""),
-		SMTPTLS:       getEnv("SMTP_TLS", "true") == "true",
-		SMTPTimeout:   getEnvInt("SMTP_TIMEOUT", 10),
-		NotifyEmail:   getEnv("NOTIFICATION_EMAIL", ""),
-		GotifyURL:     getEnv("GOTIFY_URL", ""),
-		GotifyToken:   getEnv("GOTIFY_TOKEN", ""),
+		LogBufferSize:    getEnvInt("LOG_BUFFER_SIZE", 10000),
+		OTLPEndpoint:     getEnv("OTEL_ENDPOINT", ""),
+		SMTPHost:         getEnv("SMTP_HOST", ""),
+		SMTPPort:         getEnvInt("SMTP_PORT", 587),
+		SMTPUser:         getEnv("SMTP_USER", ""),
+		SMTPPass:         getEnv("SMTP_PASS", ""),
+		SMTPTLS:          getEnv("SMTP_TLS", "true") == "true",
+		SMTPTimeout:      getEnvInt("SMTP_TIMEOUT", 10),
+		NotifyEmail:      getEnv("NOTIFICATION_EMAIL", ""),
+		GotifyURL:        getEnv("GOTIFY_URL", ""),
+		GotifyToken:      getEnv("GOTIFY_TOKEN", ""),
 		TelegramBotToken: getEnv("TELEGRAM_BOT_TOKEN", ""),
 		TelegramChatID:   getEnv("TELEGRAM_CHAT_ID", ""),
 		NtfyURL:          getEnv("NTFY_URL", "https://ntfy.sh"),
@@ -116,6 +122,8 @@ func Load() (*Config, error) {
 		PushEnabled:         getEnv("PUSH_ENABLED", "") == "true",
 		PushVAPIDPublicKey:  getEnv("PUSH_VAPID_PUBLIC_KEY", ""),
 		PushVAPIDPrivateKey: getEnv("PUSH_VAPID_PRIVATE_KEY", ""),
+		ImmichURL:           getEnv("IMMICH_URL", ""),
+		ImmichAPIKey:        getEnv("IMMICH_API_KEY", ""),
 	}
 
 	if cfg.DataDir == "" {
@@ -143,6 +151,13 @@ var validLogLevels = map[string]bool{
 	"error": true,
 }
 
+// validDateVariants lists the allowed date display variants. european renders
+// day-first ("25 Dec"), us renders month-first ("Dec 25").
+var validDateVariants = map[string]bool{
+	"european": true,
+	"us":       true,
+}
+
 // Validate checks that configuration values are within allowed ranges.
 func (c *Config) Validate() error {
 	if c.SchedulerHour < 0 || c.SchedulerHour > 23 {
@@ -150,6 +165,9 @@ func (c *Config) Validate() error {
 	}
 	if c.ReminderDays < 1 || c.ReminderDays > 365 {
 		return fmt.Errorf("REMINDER_DAYS must be between 1 and 365, got %d", c.ReminderDays)
+	}
+	if !validDateVariants[c.DateVariant] {
+		return fmt.Errorf("DATE_VARIANT must be one of european, us; got %q", c.DateVariant)
 	}
 	if c.SMTPPort < 1 || c.SMTPPort > 65535 {
 		return fmt.Errorf("SMTP_PORT must be between 1 and 65535, got %d", c.SMTPPort)
@@ -190,6 +208,15 @@ func (c *Config) Validate() error {
 	}
 	if c.PushEnabled && (c.PushVAPIDPublicKey == "" || c.PushVAPIDPrivateKey == "") {
 		return fmt.Errorf("PUSH_VAPID_PUBLIC_KEY and PUSH_VAPID_PRIVATE_KEY must be set when PUSH_ENABLED is true")
+	}
+	if c.ImmichURL != "" {
+		u, err := url.ParseRequestURI(c.ImmichURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("IMMICH_URL must be an absolute URL, got %q", c.ImmichURL)
+		}
+		if c.ImmichAPIKey == "" {
+			return fmt.Errorf("IMMICH_API_KEY must be set when IMMICH_URL is configured")
+		}
 	}
 	return nil
 }

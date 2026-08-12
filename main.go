@@ -67,6 +67,10 @@ func main() {
 		slog.Error("failed to backfill birthday events", "error", err)
 		os.Exit(1)
 	}
+	if err := db.CleanVCardNotes(context.Background(), client); err != nil {
+		slog.Error("failed to clean vCard notes", "error", err)
+		os.Exit(1)
+	}
 
 	// Drop the one-time notification tables now that the feature is removed
 	// (runs once, gated by migration_log; pending one-time notifications are lost).

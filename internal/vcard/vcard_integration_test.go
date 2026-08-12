@@ -76,10 +76,10 @@ END:VCARD`
 	if !strings.Contains(output, "FN:Bob Smith") {
 		t.Error("export missing FN:Bob Smith")
 	}
-	if !strings.Contains(output, "NOTE:Met at conference") {
+	if !strings.Contains(output, "NOTE:Note: Met at conference") {
 		t.Error("export missing Alice's NOTE")
 	}
-	if !strings.Contains(output, "NOTE:Colleague from work") {
+	if !strings.Contains(output, "NOTE:Note: Colleague from work") {
 		t.Error("export missing Bob's NOTE")
 	}
 	if !strings.Contains(output, "PRODID") {

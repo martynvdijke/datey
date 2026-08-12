@@ -2,11 +2,10 @@
 <!-- Hero Header -->
 <div class="person-hero mb-4">
   <div class="person-hero-avatar">
-    <span class="person-avatar person-avatar-hero avatar-color-{{.AvatarColor}}">{{.Initial}}</span>
+    {{if .PhotoURL}}<img class="person-avatar person-avatar-hero" src="{{.PhotoURL}}" alt="{{.Person.Name}}">{{else}}<span class="person-avatar person-avatar-hero avatar-color-{{.AvatarColor}}">{{.Initial}}</span>{{end}}
   </div>
   <div class="person-hero-info">
     <h1 class="person-hero-name mb-1">{{.Person.Name}}</h1>
-    {{if .Person.Notes}}<p class="person-hero-notes mb-1">{{.Person.Notes}}</p>{{end}}
     <div class="person-hero-meta">
       {{if .Groups}}
         {{range .Groups}}
@@ -20,6 +19,15 @@
     <a href="/people/{{.Person.ID}}/vcard" class="btn btn-outline-secondary">Export vCard</a>
   </div>
 </div>
+
+{{if .Person.Notes}}
+<section class="card mb-4" aria-labelledby="contact-information-heading">
+  <div class="card-body">
+    <h2 id="contact-information-heading" class="h5">Contact information</h2>
+    <p class="mb-0 person-contact-notes">{{.Person.Notes}}</p>
+  </div>
+</section>
+{{end}}
 
 <!-- Birthday notification opt-out -->
 <div class="mb-3">
@@ -84,14 +92,18 @@
   </div>
 {{end}}
 
-{{if .VCardData}}
-<div class="mt-4 mb-4">
-  <details>
-    <summary class="fw-medium">Raw vCard Data</summary>
-    <pre class="vcard-raw">{{.VCardData}}</pre>
-  </details>
+<div class="card mt-4 mb-4">
+  <div class="card-body">
+    <h2 class="h5">Profile photo</h2>
+    <form action="/people/{{.Person.ID}}/immich" method="POST" class="row g-2 align-items-end">
+      {{template "csrfField" .}}
+      <div class="col-md-7"><label class="form-label" for="immich-person-id">Immich person ID <span class="text-muted fw-normal">(optional manual override)</span></label><input id="immich-person-id" name="immich_person_id" class="form-control" value="{{if .Person.ImmichPersonID}}{{.Person.ImmichPersonID}}{{end}}"></div>
+      <div class="col-md-auto"><div class="form-check"><input class="form-check-input" type="checkbox" name="disable_photo" id="disable-photo"{{if .Person.ImmichPhotoDisabled}} checked{{end}}><label class="form-check-label" for="disable-photo">Disable photo</label></div></div>
+      <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Save photo settings</button></div>
+    </form>
+    <p class="small text-muted mb-0 mt-2">When enabled, Datey matches one Immich person by normalized name. Your API key stays on the server.</p>
+  </div>
 </div>
-{{end}}
 
 <!-- Delete -->
 <div class="mt-4 pt-3 border-top">

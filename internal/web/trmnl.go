@@ -59,7 +59,7 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 	var events7, events30 int
 	for _, occ := range occurrences {
 		e := occ.Event
-		ev := trmnlEventFromEvent(e, occ.Date, now)
+		ev := trmnlEventFromEvent(e, occ.Date, now, h.cfg.DateVariant)
 		if ev.DaysRemaining <= 7 {
 			events7++
 		}
@@ -106,7 +106,7 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 // trmnlEventFromEvent converts an ent event into the TRMNL feed shape,
 // mirroring the dashboard's label and relative-day logic against the
 // occurrence date.
-func trmnlEventFromEvent(e *ent.Event, date, now time.Time) trmnlEvent {
+func trmnlEventFromEvent(e *ent.Event, date, now time.Time, variant string) trmnlEvent {
 	personName := ""
 	if p := e.Edges.Person; p != nil {
 		personName = p.Name
@@ -129,7 +129,7 @@ func trmnlEventFromEvent(e *ent.Event, date, now time.Time) trmnlEvent {
 	return trmnlEvent{
 		Name:          personName,
 		Type:          e.Type,
-		Date:          date.Format("Jan 2"),
+		Date:          shortDate(variant, date),
 		DaysRemaining: days,
 		Relative:      relative,
 	}

@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SherClockHolmes/webpush-go"
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/internal/config"
-	"github.com/SherClockHolmes/webpush-go"
 )
 
 // Store reads and writes the singleton app_config row that backs the
@@ -78,6 +78,9 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	}
 	if v := row.ReminderDays; v != nil {
 		cfg.ReminderDays = *v
+	}
+	if v := row.DateVariant; v != nil {
+		cfg.DateVariant = *v
 	}
 	if v := row.LogLevel; v != nil {
 		cfg.LogLevel = *v
@@ -193,6 +196,12 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.PushVapidPrivateKey; v != nil {
 		cfg.PushVAPIDPrivateKey = *v
 	}
+	if v := row.ImmichURL; v != nil {
+		cfg.ImmichURL = *v
+	}
+	if v := row.ImmichAPIKey; v != nil {
+		cfg.ImmichAPIKey = *v
+	}
 	return nil
 }
 
@@ -203,6 +212,10 @@ var ErrInvalid = errors.New("invalid settings form")
 var errInvalid = ErrInvalid
 
 var validLogLevels = map[string]bool{"debug": true, "info": true, "warn": true, "error": true}
+
+// validDateVariants lists the allowed date display variants; empty means
+// "fall back to the environment/default" (mirrors validLogLevels semantics).
+var validDateVariants = map[string]bool{"european": true, "us": true}
 
 // ApplyForm persists posted form values to the singleton row and mutates the
 // hot-reloadable fields of cfg in place. Restart-required fields (Port,
@@ -222,6 +235,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	port := parseIntPtr(form, "PORT", errs)
 	schedulerHour := parseIntPtr(form, "SCHEDULER_HOUR", errs)
 	reminderDays := parseIntPtr(form, "REMINDER_DAYS", errs)
+	dateVariant := form.Get("DATE_VARIANT")
 	logLevel := form.Get("LOG_LEVEL")
 	logBufferSize := parseIntPtr(form, "LOG_BUFFER_SIZE", errs)
 	otelEndpoint := form.Get("OTEL_ENDPOINT")
@@ -260,6 +274,11 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	pushEnabled := form.Get("PUSH_ENABLED") == "on"
 	pushVAPIDPublicKey := form.Get("PUSH_VAPID_PUBLIC_KEY")
 	pushVAPIDPrivateKey := form.Get("PUSH_VAPID_PRIVATE_KEY")
+	immichURL := form.Get("IMMICH_URL")
+	immichAPIKey := form.Get("IMMICH_API_KEY")
+	if immichAPIKey == "" {
+		immichAPIKey = cfg.ImmichAPIKey
+	}
 
 	if port != nil && (*port < 1 || *port > 65535) {
 		errs["PORT"] = "Port must be between 1 and 65535"
@@ -269,6 +288,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	}
 	if reminderDays != nil && (*reminderDays < 1 || *reminderDays > 365) {
 		errs["REMINDER_DAYS"] = "Reminder days must be between 1 and 365"
+	}
+	if dateVariant != "" && !validDateVariants[dateVariant] {
+		errs["DATE_VARIANT"] = "Date variant must be one of: european, us"
 	}
 	if logLevel != "" && !validLogLevels[logLevel] {
 		errs["LOG_LEVEL"] = "Log level must be one of: debug, info, warn, error"
@@ -301,6 +323,15 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	}
 	if ntfyPriority != nil && (*ntfyPriority < 1 || *ntfyPriority > 5) {
 		errs["NTFY_PRIORITY"] = "Priority must be between 1 and 5"
+	}
+	if immichURL != "" {
+		u, err := url.ParseRequestURI(immichURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			errs["IMMICH_URL"] = "Immich URL must be an absolute URL"
+		}
+		if immichAPIKey == "" && cfg.ImmichAPIKey == "" {
+			errs["IMMICH_API_KEY"] = "API key is required when Immich is configured"
+		}
 	}
 
 	if len(errs) > 0 {
@@ -383,6 +414,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillablePort(port).
 		SetNillableSchedulerHour(schedulerHour).
 		SetNillableReminderDays(reminderDays).
+		SetNillableDateVariant(nillableStr(dateVariant)).
 		SetNillableLogLevel(nillableStr(logLevel)).
 		SetNillableLogBufferSize(logBufferSize).
 		SetNillableOtelEndpoint(nillableStr(otelEndpoint)).
@@ -421,6 +453,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillablePushEnabled(&pushEnabled).
 		SetNillablePushVapidPublicKey(nillableStr(effectivePushPublicKey)).
 		SetNillablePushVapidPrivateKey(nillableStr(effectivePushPrivateKey)).
+		SetNillableImmichURL(nillableStr(immichURL)).
+		SetNillableImmichAPIKey(nillableStr(immichAPIKey)).
 		SetUpdatedAt(time.Now())
 
 	if _, err := upd.Save(ctx); err != nil {
@@ -430,6 +464,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	// Hot-reload: mutate cfg in place so notifiers/scheduler/dashboard pick up
 	// changes immediately. Restart-required fields are left untouched.
 	cfg.ReminderDays = deref(reminderDays, cfg.ReminderDays)
+	if dateVariant != "" {
+		cfg.DateVariant = dateVariant
+	}
 	if logLevel != "" {
 		cfg.LogLevel = logLevel
 	}
@@ -469,6 +506,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.PushEnabled = pushEnabled
 	cfg.PushVAPIDPublicKey = effectivePushPublicKey
 	cfg.PushVAPIDPrivateKey = effectivePushPrivateKey
+	cfg.ImmichURL = immichURL
+	if immichAPIKey != "" {
+		cfg.ImmichAPIKey = immichAPIKey
+	}
 
 	return nil, nil
 }

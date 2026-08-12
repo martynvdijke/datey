@@ -23,6 +23,7 @@ type personCard struct {
 	AvatarColor   int
 	Age           int // current age, shown when HasAge
 	HasAge        bool
+	PhotoURL      string
 }
 
 func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			// Find the next upcoming event
 			var nearest *ent.Event
 			for _, e := range events {
-				if e.Date.After(now) || e.Date.Equal(now) {
+				if !calendarDayBefore(e.Date, now, now.Location()) {
 					if nearest == nil || e.Date.Before(nearest.Date) {
 						nearest = e
 					}
@@ -73,7 +74,7 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			}
 			if nearest != nil {
 				nextEventType = nearest.Type
-				nextEventDate = nearest.Date.Format("Jan 2")
+				nextEventDate = shortDate(h.cfg.DateVariant, nearest.Date)
 			}
 		}
 		cards = append(cards, personCard{
@@ -87,6 +88,7 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			AvatarColor:   avatarColorIndex(p.Name),
 			Age:           cardAge,
 			HasAge:        hasAge,
+			PhotoURL:      h.photoURL(r, p),
 		})
 	}
 
@@ -188,8 +190,10 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		groups = nil
 	}
 
-	// Split events into upcoming and past
+	// Split events into upcoming and past using calendar days, not elapsed
+	// 24-hour periods. This avoids midnight/timezone boundary errors.
 	now := time.Now()
+	today := dateOnly(now, now.Location())
 	type eventRow struct {
 		ID            int
 		Type          string
@@ -201,10 +205,10 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	}
 	eventRows := make([]eventRow, 0, len(events))
 	for _, e := range events {
-		days := int(e.Date.Sub(now).Hours() / 24)
+		days := calendarDayDelta(today, dateOnly(e.Date, now.Location()))
 		var rel string
 		switch {
-		case days <= 0:
+		case days == 0:
 			rel = "Today"
 		case days == 1:
 			rel = "Tomorrow"
@@ -214,7 +218,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		eventRows = append(eventRows, eventRow{
 			ID:            e.ID,
 			Type:          e.Type,
-			Date:          formatEventDate(e.Date),
+			Date:          formatEventDate(h.cfg.DateVariant, e.Date),
 			EventDate:     e.Date,
 			RelativeLabel: rel,
 			Description:   e.Description,
@@ -227,11 +231,26 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		"Person":      person,
 		"Initial":     personInitial(person.Name),
 		"AvatarColor": avatarColorIndex(person.Name),
+		"PhotoURL":    h.photoURL(r, person),
 		"EventRows":   eventRows,
 		"Groups":      groups,
-		"VCardData":   person.VcardData,
 		"Now":         now,
 	})
+}
+
+func dateOnly(t time.Time, loc *time.Location) time.Time {
+	local := t.In(loc)
+	// Use UTC for date arithmetic so daylight-saving transitions do not turn a
+	// calendar day into a 23- or 25-hour duration.
+	return time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func calendarDayDelta(from, to time.Time) int {
+	return int(to.Sub(from).Hours() / 24)
+}
+
+func calendarDayBefore(event, reference time.Time, loc *time.Location) bool {
+	return dateOnly(event, loc).Before(dateOnly(reference, loc))
 }
 
 // toggleNotifyBirthdays updates the per-person birthday notification
@@ -308,12 +327,13 @@ func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, o
 	return age.AgeAt(latest.Date, now)
 }
 
-// formatEventDate renders an event date for display. Dates without a usable
-// year (year <= 1, e.g. year-less vCard birthdays parsed to year 0) show as
-// month/day only ("Jun 8") instead of the misleading "Jun 8, 1".
-func formatEventDate(t time.Time) string {
+// formatEventDate renders an event date for display in the configured date
+// variant. Dates without a usable year (year <= 1, e.g. year-less vCard
+// birthdays parsed to year 0) show as month/day only ("Jun 8") instead of the
+// misleading "Jun 8, 1".
+func formatEventDate(variant string, t time.Time) string {
 	if t.Year() <= 1 {
-		return t.Format("Jan 2")
+		return shortDate(variant, t)
 	}
-	return t.Format("Jan 2, 2006")
+	return longDate(variant, t)
 }

@@ -22,6 +22,7 @@ type importResult struct {
 	Created         bool
 	Updated         bool   // true when an existing person was overwritten
 	SkipReason      string // empty if created
+	BirthdayWarning string // non-empty when a BDAY value could not be parsed
 }
 
 func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
@@ -213,10 +214,13 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 // it has a BDAY and the person does not already have a birthday event. It fills
 // ir.HasBirthdayBday and reports whether a new event was created.
 func (h *Handler) maybeCreateBirthdayEvent(ctx context.Context, personID int, pc vcard.ParsedContact, ir *importResult) bool {
+	if pc.BirthdayParseFailed {
+		ir.BirthdayWarning = "Could not parse birthday"
+	}
 	if pc.Birthday == nil {
 		return false
 	}
-	ir.HasBirthdayBday = formatEventDate(*pc.Birthday)
+	ir.HasBirthdayBday = formatEventDate(h.cfg.DateVariant, *pc.Birthday)
 
 	// Dedup: never create a second birthday event for the same person.
 	existingEvents, err := h.events.ListByPerson(ctx, personID)

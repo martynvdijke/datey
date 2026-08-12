@@ -24,6 +24,10 @@ const (
 	FieldTimezone = "timezone"
 	// FieldReminderDays holds the string denoting the reminder_days field in the database.
 	FieldReminderDays = "reminder_days"
+	// FieldImmichPersonID holds the string denoting the immich_person_id field in the database.
+	FieldImmichPersonID = "immich_person_id"
+	// FieldImmichPhotoDisabled holds the string denoting the immich_photo_disabled field in the database.
+	FieldImmichPhotoDisabled = "immich_photo_disabled"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -66,6 +70,8 @@ var Columns = []string{
 	FieldNotifyBirthdays,
 	FieldTimezone,
 	FieldReminderDays,
+	FieldImmichPersonID,
+	FieldImmichPhotoDisabled,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -95,6 +101,8 @@ var (
 	DefaultNotifyBirthdays bool
 	// DefaultTimezone holds the default value on creation for the "timezone" field.
 	DefaultTimezone string
+	// DefaultImmichPhotoDisabled holds the default value on creation for the "immich_photo_disabled" field.
+	DefaultImmichPhotoDisabled bool
 )
 
 // OrderOption defines the ordering options for the Person queries.
@@ -128,6 +136,16 @@ func ByNotifyBirthdays(opts ...sql.OrderTermOption) OrderOption {
 // ByTimezone orders the results by the timezone field.
 func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
+}
+
+// ByImmichPersonID orders the results by the immich_person_id field.
+func ByImmichPersonID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImmichPersonID, opts...).ToFunc()
+}
+
+// ByImmichPhotoDisabled orders the results by the immich_photo_disabled field.
+func ByImmichPhotoDisabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImmichPhotoDisabled, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

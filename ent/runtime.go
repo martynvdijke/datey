@@ -89,6 +89,10 @@ func init() {
 	personDescTimezone := personFields[4].Descriptor()
 	// person.DefaultTimezone holds the default value on creation for the timezone field.
 	person.DefaultTimezone = personDescTimezone.Default.(string)
+	// personDescImmichPhotoDisabled is the schema descriptor for immich_photo_disabled field.
+	personDescImmichPhotoDisabled := personFields[7].Descriptor()
+	// person.DefaultImmichPhotoDisabled holds the default value on creation for the immich_photo_disabled field.
+	person.DefaultImmichPhotoDisabled = personDescImmichPhotoDisabled.Default.(bool)
 	personnoteFields := schema.PersonNote{}.Fields()
 	_ = personnoteFields
 	// personnoteDescNote is the schema descriptor for note field.

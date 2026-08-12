@@ -17,6 +17,7 @@ import (
 	"github.com/datey/datey/handlers"
 	"github.com/datey/datey/internal/age"
 	"github.com/datey/datey/internal/config"
+	"github.com/datey/datey/internal/immich"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
@@ -26,20 +27,21 @@ import (
 )
 
 type Handler struct {
-	cfg         *config.Config
-	client      *ent.Client
-	templates   map[string]*template.Template
-	users       *repository.UserRepository
-	sessions    *session.Store
-	people      *repository.PersonRepository
-	groups      *repository.GroupRepository
-	events      *repository.EventRepository
-	notifReg    *notifier.Registry
+	cfg            *config.Config
+	client         *ent.Client
+	templates      map[string]*template.Template
+	users          *repository.UserRepository
+	sessions       *session.Store
+	people         *repository.PersonRepository
+	groups         *repository.GroupRepository
+	events         *repository.EventRepository
+	notifReg       *notifier.Registry
 	recurringRules *repository.RecurringRuleRepository
 	pushSubs       *repository.PushSubscriptionRepository
 	logStore       *logstore.Store
 	settingsStore  *settings.Store
 	loginLimiter   *rateLimiter
+	immich         *immich.Client
 }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry, logStore *logstore.Store) *Handler {
@@ -48,20 +50,21 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		panic(err)
 	}
 	return &Handler{
-		cfg:          cfg,
-		client:       client,
-		templates:    templates,
-		users:        repository.NewUserRepository(client),
-		sessions:     session.NewStore(client),
-		people:       repository.NewPersonRepository(client),
-		groups:       repository.NewGroupRepository(client),
-		events:       repository.NewEventRepository(client),
-		notifReg:     notifReg,
+		cfg:            cfg,
+		client:         client,
+		templates:      templates,
+		users:          repository.NewUserRepository(client),
+		sessions:       session.NewStore(client),
+		people:         repository.NewPersonRepository(client),
+		groups:         repository.NewGroupRepository(client),
+		events:         repository.NewEventRepository(client),
+		notifReg:       notifReg,
 		recurringRules: repository.NewRecurringRuleRepository(client),
 		pushSubs:       repository.NewPushSubscriptionRepository(client),
 		logStore:       logStore,
 		settingsStore:  settings.New(client),
 		loginLimiter:   newRateLimiter(5, 60*time.Second),
+		immich:         immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
 	}
 }
 
@@ -124,6 +127,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/people/{id}", h.viewPerson)
 			r.Post("/people/{id}/delete", h.deletePerson)
 			r.Post("/people/{id}/notify-birthdays", h.toggleNotifyBirthdays)
+			r.Get("/people/{id}/photo", h.personPhoto)
+			r.Post("/people/{id}/immich", h.setImmichPhoto)
 			r.Post("/people/import", h.handleImportVCard)
 			r.Get("/people/{id}/vcard", h.handleExportSingleVCard)
 			r.Get("/people/export", h.handleExportAllVCard)
@@ -163,7 +168,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 				r.Get("/settings", h.settings)
 				r.Get("/settings/config", h.settingsConfig)
-			r.Post("/settings/config", h.settingsConfigSave)
+				r.Post("/settings/config", h.settingsConfigSave)
 				r.Get("/settings/logs", h.settingsLogs)
 				r.Get("/settings/backup", h.settingsBackup)
 				r.Post("/settings/backup", h.settingsBackupRun)
@@ -250,7 +255,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		ev := eventView{
 			Name:          personName,
 			Type:          e.Type,
-			Date:          occ.Date.Format("Jan 2"),
+			Date:          shortDate(h.cfg.DateVariant, occ.Date),
 			DaysRemaining: days,
 			RelativeLabel: relativeLabel,
 			PersonInitial: personInitial(personName),
@@ -292,7 +297,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	h.render(w, r, "dashboard.html", map[string]any{
 		"Title":              "Datey - Dashboard",
 		"Greeting":           greeting,
-		"CurrentDate":        now.Format("Monday, January 2"),
+		"CurrentDate":        weekdayDate(h.cfg.DateVariant, now),
 		"TodayEvents":        todayEvents,
 		"ThisWeekEvents":     thisWeekEvents,
 		"ThisMonthEvents":    thisMonthEvents,
@@ -391,8 +396,8 @@ func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		h.render(w, r, "users.html", map[string]any{
-			"Title": "Datey - Users",
-			"Users": users,
+			"Title":  "Datey - Users",
+			"Users":  users,
 			"Errors": errors,
 			"FormData": map[string]string{
 				"Username": username,
@@ -423,8 +428,8 @@ func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		h.render(w, r, "users.html", map[string]any{
-			"Title": "Datey - Users",
-			"Users": users,
+			"Title":  "Datey - Users",
+			"Users":  users,
 			"Errors": map[string]string{"username": "Failed to create user"},
 			"FormData": map[string]string{
 				"Username": username,

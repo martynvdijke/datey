@@ -129,6 +129,26 @@ func (_u *AppConfigUpdate) ClearReminderDays() *AppConfigUpdate {
 	return _u
 }
 
+// SetDateVariant sets the "date_variant" field.
+func (_u *AppConfigUpdate) SetDateVariant(v string) *AppConfigUpdate {
+	_u.mutation.SetDateVariant(v)
+	return _u
+}
+
+// SetNillableDateVariant sets the "date_variant" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableDateVariant(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetDateVariant(*v)
+	}
+	return _u
+}
+
+// ClearDateVariant clears the value of the "date_variant" field.
+func (_u *AppConfigUpdate) ClearDateVariant() *AppConfigUpdate {
+	_u.mutation.ClearDateVariant()
+	return _u
+}
+
 // SetReminderDigest sets the "reminder_digest" field.
 func (_u *AppConfigUpdate) SetReminderDigest(v bool) *AppConfigUpdate {
 	_u.mutation.SetReminderDigest(v)
@@ -991,6 +1011,46 @@ func (_u *AppConfigUpdate) ClearPushVapidPrivateKey() *AppConfigUpdate {
 	return _u
 }
 
+// SetImmichURL sets the "immich_url" field.
+func (_u *AppConfigUpdate) SetImmichURL(v string) *AppConfigUpdate {
+	_u.mutation.SetImmichURL(v)
+	return _u
+}
+
+// SetNillableImmichURL sets the "immich_url" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableImmichURL(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetImmichURL(*v)
+	}
+	return _u
+}
+
+// ClearImmichURL clears the value of the "immich_url" field.
+func (_u *AppConfigUpdate) ClearImmichURL() *AppConfigUpdate {
+	_u.mutation.ClearImmichURL()
+	return _u
+}
+
+// SetImmichAPIKey sets the "immich_api_key" field.
+func (_u *AppConfigUpdate) SetImmichAPIKey(v string) *AppConfigUpdate {
+	_u.mutation.SetImmichAPIKey(v)
+	return _u
+}
+
+// SetNillableImmichAPIKey sets the "immich_api_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableImmichAPIKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetImmichAPIKey(*v)
+	}
+	return _u
+}
+
+// ClearImmichAPIKey clears the value of the "immich_api_key" field.
+func (_u *AppConfigUpdate) ClearImmichAPIKey() *AppConfigUpdate {
+	_u.mutation.ClearImmichAPIKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdate) SetUpdatedAt(v time.Time) *AppConfigUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -1084,6 +1144,12 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ReminderDaysCleared() {
 		_spec.ClearField(appconfig.FieldReminderDays, field.TypeInt)
+	}
+	if value, ok := _u.mutation.DateVariant(); ok {
+		_spec.SetField(appconfig.FieldDateVariant, field.TypeString, value)
+	}
+	if _u.mutation.DateVariantCleared() {
+		_spec.ClearField(appconfig.FieldDateVariant, field.TypeString)
 	}
 	if value, ok := _u.mutation.ReminderDigest(); ok {
 		_spec.SetField(appconfig.FieldReminderDigest, field.TypeBool, value)
@@ -1349,6 +1415,18 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.PushVapidPrivateKeyCleared() {
 		_spec.ClearField(appconfig.FieldPushVapidPrivateKey, field.TypeString)
 	}
+	if value, ok := _u.mutation.ImmichURL(); ok {
+		_spec.SetField(appconfig.FieldImmichURL, field.TypeString, value)
+	}
+	if _u.mutation.ImmichURLCleared() {
+		_spec.ClearField(appconfig.FieldImmichURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImmichAPIKey(); ok {
+		_spec.SetField(appconfig.FieldImmichAPIKey, field.TypeString, value)
+	}
+	if _u.mutation.ImmichAPIKeyCleared() {
+		_spec.ClearField(appconfig.FieldImmichAPIKey, field.TypeString)
+	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
 	}
@@ -1473,6 +1551,26 @@ func (_u *AppConfigUpdateOne) AddReminderDays(v int) *AppConfigUpdateOne {
 // ClearReminderDays clears the value of the "reminder_days" field.
 func (_u *AppConfigUpdateOne) ClearReminderDays() *AppConfigUpdateOne {
 	_u.mutation.ClearReminderDays()
+	return _u
+}
+
+// SetDateVariant sets the "date_variant" field.
+func (_u *AppConfigUpdateOne) SetDateVariant(v string) *AppConfigUpdateOne {
+	_u.mutation.SetDateVariant(v)
+	return _u
+}
+
+// SetNillableDateVariant sets the "date_variant" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableDateVariant(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetDateVariant(*v)
+	}
+	return _u
+}
+
+// ClearDateVariant clears the value of the "date_variant" field.
+func (_u *AppConfigUpdateOne) ClearDateVariant() *AppConfigUpdateOne {
+	_u.mutation.ClearDateVariant()
 	return _u
 }
 
@@ -2338,6 +2436,46 @@ func (_u *AppConfigUpdateOne) ClearPushVapidPrivateKey() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetImmichURL sets the "immich_url" field.
+func (_u *AppConfigUpdateOne) SetImmichURL(v string) *AppConfigUpdateOne {
+	_u.mutation.SetImmichURL(v)
+	return _u
+}
+
+// SetNillableImmichURL sets the "immich_url" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableImmichURL(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetImmichURL(*v)
+	}
+	return _u
+}
+
+// ClearImmichURL clears the value of the "immich_url" field.
+func (_u *AppConfigUpdateOne) ClearImmichURL() *AppConfigUpdateOne {
+	_u.mutation.ClearImmichURL()
+	return _u
+}
+
+// SetImmichAPIKey sets the "immich_api_key" field.
+func (_u *AppConfigUpdateOne) SetImmichAPIKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetImmichAPIKey(v)
+	return _u
+}
+
+// SetNillableImmichAPIKey sets the "immich_api_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableImmichAPIKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetImmichAPIKey(*v)
+	}
+	return _u
+}
+
+// ClearImmichAPIKey clears the value of the "immich_api_key" field.
+func (_u *AppConfigUpdateOne) ClearImmichAPIKey() *AppConfigUpdateOne {
+	_u.mutation.ClearImmichAPIKey()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdateOne) SetUpdatedAt(v time.Time) *AppConfigUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2461,6 +2599,12 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.ReminderDaysCleared() {
 		_spec.ClearField(appconfig.FieldReminderDays, field.TypeInt)
+	}
+	if value, ok := _u.mutation.DateVariant(); ok {
+		_spec.SetField(appconfig.FieldDateVariant, field.TypeString, value)
+	}
+	if _u.mutation.DateVariantCleared() {
+		_spec.ClearField(appconfig.FieldDateVariant, field.TypeString)
 	}
 	if value, ok := _u.mutation.ReminderDigest(); ok {
 		_spec.SetField(appconfig.FieldReminderDigest, field.TypeBool, value)
@@ -2725,6 +2869,18 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.PushVapidPrivateKeyCleared() {
 		_spec.ClearField(appconfig.FieldPushVapidPrivateKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImmichURL(); ok {
+		_spec.SetField(appconfig.FieldImmichURL, field.TypeString, value)
+	}
+	if _u.mutation.ImmichURLCleared() {
+		_spec.ClearField(appconfig.FieldImmichURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImmichAPIKey(); ok {
+		_spec.SetField(appconfig.FieldImmichAPIKey, field.TypeString, value)
+	}
+	if _u.mutation.ImmichAPIKeyCleared() {
+		_spec.ClearField(appconfig.FieldImmichAPIKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

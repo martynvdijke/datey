@@ -374,6 +374,14 @@ h1, h2, h3, h4, h5, h6 {
   user-select: none;
 }
 
+.person-avatar[src] {
+  object-fit: cover;
+}
+
+.person-contact-notes {
+  white-space: pre-line;
+}
+
 .person-avatar-sm {
   width: 1.75rem;
   height: 1.75rem;

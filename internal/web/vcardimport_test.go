@@ -154,7 +154,7 @@ func TestImportVCard_OverwriteUpdatesExisting(t *testing.T) {
 	if len(people) != 1 {
 		t.Fatalf("people = %d, want 1 (overwrite must not create duplicates)", len(people))
 	}
-	if people[0].Notes != "Refreshed notes" {
+	if people[0].Notes != "Note: Refreshed notes" {
 		t.Errorf("notes = %q, want updated notes", people[0].Notes)
 	}
 	if people[0].VcardData == "" {
@@ -278,11 +278,11 @@ func TestImportVCard_YearlessBirthdayCreatesEvent(t *testing.T) {
 		t.Fatalf("status = %d, want 200; body: %s", rr.Code, rr.Body.String())
 	}
 	body := rr.Body.String()
-	if !strings.Contains(body, "Jun 8") {
-		t.Errorf("import result should show month/day 'Jun 8', got: %s", body)
+	if !strings.Contains(body, "8 Jun") {
+		t.Errorf("import result should show day-first '8 Jun' (european default), got: %s", body)
 	}
-	if strings.Contains(body, "Jun 8, 1") {
-		t.Errorf("import result must not show 'Jun 8, 1': %s", body)
+	if strings.Contains(body, "8 Jun 1") {
+		t.Errorf("import result must not show '8 Jun 1': %s", body)
 	}
 
 	people, err := h.people.List(t.Context())

@@ -75,6 +75,20 @@ func (_c *AppConfigCreate) SetNillableReminderDays(v *int) *AppConfigCreate {
 	return _c
 }
 
+// SetDateVariant sets the "date_variant" field.
+func (_c *AppConfigCreate) SetDateVariant(v string) *AppConfigCreate {
+	_c.mutation.SetDateVariant(v)
+	return _c
+}
+
+// SetNillableDateVariant sets the "date_variant" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableDateVariant(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetDateVariant(*v)
+	}
+	return _c
+}
+
 // SetReminderDigest sets the "reminder_digest" field.
 func (_c *AppConfigCreate) SetReminderDigest(v bool) *AppConfigCreate {
 	_c.mutation.SetReminderDigest(v)
@@ -649,6 +663,34 @@ func (_c *AppConfigCreate) SetNillablePushVapidPrivateKey(v *string) *AppConfigC
 	return _c
 }
 
+// SetImmichURL sets the "immich_url" field.
+func (_c *AppConfigCreate) SetImmichURL(v string) *AppConfigCreate {
+	_c.mutation.SetImmichURL(v)
+	return _c
+}
+
+// SetNillableImmichURL sets the "immich_url" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableImmichURL(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetImmichURL(*v)
+	}
+	return _c
+}
+
+// SetImmichAPIKey sets the "immich_api_key" field.
+func (_c *AppConfigCreate) SetImmichAPIKey(v string) *AppConfigCreate {
+	_c.mutation.SetImmichAPIKey(v)
+	return _c
+}
+
+// SetNillableImmichAPIKey sets the "immich_api_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableImmichAPIKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetImmichAPIKey(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -738,6 +780,10 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ReminderDays(); ok {
 		_spec.SetField(appconfig.FieldReminderDays, field.TypeInt, value)
 		_node.ReminderDays = &value
+	}
+	if value, ok := _c.mutation.DateVariant(); ok {
+		_spec.SetField(appconfig.FieldDateVariant, field.TypeString, value)
+		_node.DateVariant = &value
 	}
 	if value, ok := _c.mutation.ReminderDigest(); ok {
 		_spec.SetField(appconfig.FieldReminderDigest, field.TypeBool, value)
@@ -902,6 +948,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.PushVapidPrivateKey(); ok {
 		_spec.SetField(appconfig.FieldPushVapidPrivateKey, field.TypeString, value)
 		_node.PushVapidPrivateKey = &value
+	}
+	if value, ok := _c.mutation.ImmichURL(); ok {
+		_spec.SetField(appconfig.FieldImmichURL, field.TypeString, value)
+		_node.ImmichURL = &value
+	}
+	if value, ok := _c.mutation.ImmichAPIKey(); ok {
+		_spec.SetField(appconfig.FieldImmichAPIKey, field.TypeString, value)
+		_node.ImmichAPIKey = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

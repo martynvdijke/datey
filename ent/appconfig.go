@@ -25,6 +25,8 @@ type AppConfig struct {
 	SchedulerHour *int `json:"scheduler_hour,omitempty"`
 	// ReminderDays holds the value of the "reminder_days" field.
 	ReminderDays *int `json:"reminder_days,omitempty"`
+	// DateVariant holds the value of the "date_variant" field.
+	DateVariant *string `json:"date_variant,omitempty"`
 	// ReminderDigest holds the value of the "reminder_digest" field.
 	ReminderDigest *bool `json:"reminder_digest,omitempty"`
 	// ReminderStages holds the value of the "reminder_stages" field.
@@ -107,6 +109,10 @@ type AppConfig struct {
 	PushVapidPublicKey *string `json:"push_vapid_public_key,omitempty"`
 	// PushVapidPrivateKey holds the value of the "push_vapid_private_key" field.
 	PushVapidPrivateKey *string `json:"push_vapid_private_key,omitempty"`
+	// ImmichURL holds the value of the "immich_url" field.
+	ImmichURL *string `json:"immich_url,omitempty"`
+	// ImmichAPIKey holds the value of the "immich_api_key" field.
+	ImmichAPIKey *string `json:"immich_api_key,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -121,7 +127,7 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -173,6 +179,13 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ReminderDays = new(int)
 				*_m.ReminderDays = int(value.Int64)
+			}
+		case appconfig.FieldDateVariant:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field date_variant", values[i])
+			} else if value.Valid {
+				_m.DateVariant = new(string)
+				*_m.DateVariant = value.String
 			}
 		case appconfig.FieldReminderDigest:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -461,6 +474,20 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 				_m.PushVapidPrivateKey = new(string)
 				*_m.PushVapidPrivateKey = value.String
 			}
+		case appconfig.FieldImmichURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field immich_url", values[i])
+			} else if value.Valid {
+				_m.ImmichURL = new(string)
+				*_m.ImmichURL = value.String
+			}
+		case appconfig.FieldImmichAPIKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field immich_api_key", values[i])
+			} else if value.Valid {
+				_m.ImmichAPIKey = new(string)
+				*_m.ImmichAPIKey = value.String
+			}
 		case appconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -522,6 +549,11 @@ func (_m *AppConfig) String() string {
 	if v := _m.ReminderDays; v != nil {
 		builder.WriteString("reminder_days=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.DateVariant; v != nil {
+		builder.WriteString("date_variant=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	if v := _m.ReminderDigest; v != nil {
@@ -726,6 +758,16 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.PushVapidPrivateKey; v != nil {
 		builder.WriteString("push_vapid_private_key=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ImmichURL; v != nil {
+		builder.WriteString("immich_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ImmichAPIKey; v != nil {
+		builder.WriteString("immich_api_key=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

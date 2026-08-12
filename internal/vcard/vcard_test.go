@@ -416,9 +416,9 @@ END:VCARD`
 	}
 }
 
-func TestParse_UnknownFieldsPreservedInNotes(t *testing.T) {
-	// Real-world vCards often have UID, SOURCE, PRODID, REV which are not
-	// structured fields — they must be preserved in Notes to avoid data loss.
+func TestParse_UnknownFieldsExcludedFromNotes(t *testing.T) {
+	// Provider bookkeeping remains available in RawData, but is not useful
+	// contact information and must not be shown as notes.
 	input := `BEGIN:VCARD
 VERSION:4.0
 FN:Test User
@@ -435,17 +435,10 @@ END:VCARD`
 	if len(contacts) != 1 {
 		t.Fatalf("expected 1 contact, got %d", len(contacts))
 	}
-	if !strings.Contains(contacts[0].Notes, "UID: abc123") {
-		t.Errorf("expected Notes to contain 'UID: abc123', got %q", contacts[0].Notes)
-	}
-	if !strings.Contains(contacts[0].Notes, "SOURCE: https://example.com/contact") {
-		t.Errorf("expected Notes to contain SOURCE, got %q", contacts[0].Notes)
-	}
-	if !strings.Contains(contacts[0].Notes, "PRODID: -//Test//EN") {
-		t.Errorf("expected Notes to contain PRODID, got %q", contacts[0].Notes)
-	}
-	if !strings.Contains(contacts[0].Notes, "REV: 20250131T084701Z") {
-		t.Errorf("expected Notes to contain REV, got %q", contacts[0].Notes)
+	for _, raw := range []string{"UID:", "SOURCE:", "PRODID:", "REV:"} {
+		if strings.Contains(contacts[0].Notes, raw) {
+			t.Errorf("Notes should not contain %q, got %q", raw, contacts[0].Notes)
+		}
 	}
 }
 
@@ -572,7 +565,7 @@ END:VCARD`
 	if !strings.Contains(output, "FN:Round Trip") {
 		t.Errorf("round trip failed: FN not preserved")
 	}
-	if !strings.Contains(output, "NOTE:Testing") {
+	if !strings.Contains(output, "NOTE:Note: Testing") {
 		t.Errorf("round trip failed: NOTE not preserved")
 	}
 }
@@ -610,17 +603,8 @@ func TestParse_DanaVCF(t *testing.T) {
 	if !strings.Contains(c.Notes, "Gender: Female") {
 		t.Errorf("expected 'Gender: Female' in Notes, got %q", c.Notes)
 	}
-	if !strings.Contains(c.Notes, "UID:") {
-		t.Error("expected UID preserved in Notes")
-	}
-	if !strings.Contains(c.Notes, "SOURCE:") {
-		t.Error("expected SOURCE preserved in Notes")
-	}
-	if !strings.Contains(c.Notes, "PRODID:") {
-		t.Error("expected PRODID preserved in Notes")
-	}
-	if !strings.Contains(c.Notes, "REV:") {
-		t.Error("expected REV preserved in Notes")
+	if strings.Contains(c.Notes, "UID:") || strings.Contains(c.Notes, "SOURCE:") || strings.Contains(c.Notes, "PRODID:") || strings.Contains(c.Notes, "REV:") {
+		t.Errorf("provider bookkeeping should not be in Notes: %q", c.Notes)
 	}
 }
 
@@ -654,16 +638,7 @@ func TestParse_DavidVCF(t *testing.T) {
 	if c.GivenName != "David" {
 		t.Errorf("expected GivenName 'David', got %q", c.GivenName)
 	}
-	if !strings.Contains(c.Notes, "UID:") {
-		t.Error("expected UID preserved in Notes")
-	}
-	if !strings.Contains(c.Notes, "SOURCE:") {
-		t.Error("expected SOURCE preserved in Notes")
-	}
-	if !strings.Contains(c.Notes, "PRODID:") {
-		t.Error("expected PRODID preserved in Notes")
-	}
-	if !strings.Contains(c.Notes, "REV:") {
-		t.Error("expected REV preserved in Notes")
+	if strings.Contains(c.Notes, "UID:") || strings.Contains(c.Notes, "SOURCE:") || strings.Contains(c.Notes, "PRODID:") || strings.Contains(c.Notes, "REV:") {
+		t.Errorf("provider bookkeeping should not be in Notes: %q", c.Notes)
 	}
 }

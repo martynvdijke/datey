@@ -12,13 +12,14 @@ import (
 
 // ParsedContact holds the fields extracted from a single vCard entry.
 type ParsedContact struct {
-	Name       string
-	Notes      string
-	Birthday   *time.Time
-	Gender     string
-	FamilyName string
-	GivenName  string
-	RawData    string
+	Name                string
+	Notes               string
+	Birthday            *time.Time
+	BirthdayParseFailed bool
+	Gender              string
+	FamilyName          string
+	GivenName           string
+	RawData             string
 }
 
 // Parse reads a .vcf file and returns all parsed contacts.
@@ -102,6 +103,8 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 	if bday := card.Value(govcard.FieldBirthday); bday != "" {
 		if t, ok := ParseBDAY(bday); ok {
 			pc.Birthday = &t
+		} else {
+			pc.BirthdayParseFailed = true
 		}
 	}
 
@@ -121,11 +124,12 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 		pc.GivenName = name.GivenName
 	}
 
-	// Build human-readable notes from NOTE, TEL, EMAIL, ADR, GENDER,
-	// plus any unknown properties as "KEY: value" fallback.
+	// Build human-readable notes from structured contact fields. Provider
+	// bookkeeping (UID, REV, SOURCE, etc.) remains available in RawData but is
+	// never shown as contact notes.
 	var noteParts []string
 	if note := card.Value(govcard.FieldNote); note != "" {
-		noteParts = append(noteParts, note)
+		noteParts = append(noteParts, "Note: "+note)
 	}
 	if pc.Gender != "" {
 		noteParts = append(noteParts, "Gender: "+pc.Gender)
@@ -140,31 +144,6 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 		addrParts := buildAddressParts(adr)
 		if len(addrParts) > 0 {
 			noteParts = append(noteParts, "Address: "+strings.Join(addrParts, ", "))
-		}
-	}
-
-	// Preserve any remaining (unknown) properties as "KEY: value" fallback.
-	// This ensures fields like UID, SOURCE, PRODID, REV from real-world
-	// vCards aren't lost.
-	structured := map[string]bool{
-		govcard.FieldFormattedName: true,
-		govcard.FieldVersion:       true,
-		govcard.FieldBirthday:      true,
-		govcard.FieldGender:        true,
-		govcard.FieldName:          true,
-		govcard.FieldNote:          true,
-		govcard.FieldTelephone:     true,
-		govcard.FieldEmail:         true,
-		govcard.FieldAddress:       true,
-	}
-	for k, fields := range card {
-		if structured[k] {
-			continue
-		}
-		for _, f := range fields {
-			if f.Value != "" {
-				noteParts = append(noteParts, k+": "+f.Value)
-			}
 		}
 	}
 

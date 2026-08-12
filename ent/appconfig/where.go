@@ -74,6 +74,11 @@ func ReminderDays(v int) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldReminderDays, v))
 }
 
+// DateVariant applies equality check predicate on the "date_variant" field. It's identical to DateVariantEQ.
+func DateVariant(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldDateVariant, v))
+}
+
 // ReminderDigest applies equality check predicate on the "reminder_digest" field. It's identical to ReminderDigestEQ.
 func ReminderDigest(v bool) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldReminderDigest, v))
@@ -277,6 +282,16 @@ func PushVapidPublicKey(v string) predicate.AppConfig {
 // PushVapidPrivateKey applies equality check predicate on the "push_vapid_private_key" field. It's identical to PushVapidPrivateKeyEQ.
 func PushVapidPrivateKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldPushVapidPrivateKey, v))
+}
+
+// ImmichURL applies equality check predicate on the "immich_url" field. It's identical to ImmichURLEQ.
+func ImmichURL(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldImmichURL, v))
+}
+
+// ImmichAPIKey applies equality check predicate on the "immich_api_key" field. It's identical to ImmichAPIKeyEQ.
+func ImmichAPIKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldImmichAPIKey, v))
 }
 
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
@@ -507,6 +522,81 @@ func ReminderDaysIsNil() predicate.AppConfig {
 // ReminderDaysNotNil applies the NotNil predicate on the "reminder_days" field.
 func ReminderDaysNotNil() predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotNull(FieldReminderDays))
+}
+
+// DateVariantEQ applies the EQ predicate on the "date_variant" field.
+func DateVariantEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldDateVariant, v))
+}
+
+// DateVariantNEQ applies the NEQ predicate on the "date_variant" field.
+func DateVariantNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldDateVariant, v))
+}
+
+// DateVariantIn applies the In predicate on the "date_variant" field.
+func DateVariantIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldDateVariant, vs...))
+}
+
+// DateVariantNotIn applies the NotIn predicate on the "date_variant" field.
+func DateVariantNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldDateVariant, vs...))
+}
+
+// DateVariantGT applies the GT predicate on the "date_variant" field.
+func DateVariantGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldDateVariant, v))
+}
+
+// DateVariantGTE applies the GTE predicate on the "date_variant" field.
+func DateVariantGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldDateVariant, v))
+}
+
+// DateVariantLT applies the LT predicate on the "date_variant" field.
+func DateVariantLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldDateVariant, v))
+}
+
+// DateVariantLTE applies the LTE predicate on the "date_variant" field.
+func DateVariantLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldDateVariant, v))
+}
+
+// DateVariantContains applies the Contains predicate on the "date_variant" field.
+func DateVariantContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldDateVariant, v))
+}
+
+// DateVariantHasPrefix applies the HasPrefix predicate on the "date_variant" field.
+func DateVariantHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldDateVariant, v))
+}
+
+// DateVariantHasSuffix applies the HasSuffix predicate on the "date_variant" field.
+func DateVariantHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldDateVariant, v))
+}
+
+// DateVariantIsNil applies the IsNil predicate on the "date_variant" field.
+func DateVariantIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldDateVariant))
+}
+
+// DateVariantNotNil applies the NotNil predicate on the "date_variant" field.
+func DateVariantNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldDateVariant))
+}
+
+// DateVariantEqualFold applies the EqualFold predicate on the "date_variant" field.
+func DateVariantEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldDateVariant, v))
+}
+
+// DateVariantContainsFold applies the ContainsFold predicate on the "date_variant" field.
+func DateVariantContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldDateVariant, v))
 }
 
 // ReminderDigestEQ applies the EQ predicate on the "reminder_digest" field.
@@ -2992,6 +3082,156 @@ func PushVapidPrivateKeyEqualFold(v string) predicate.AppConfig {
 // PushVapidPrivateKeyContainsFold applies the ContainsFold predicate on the "push_vapid_private_key" field.
 func PushVapidPrivateKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldPushVapidPrivateKey, v))
+}
+
+// ImmichURLEQ applies the EQ predicate on the "immich_url" field.
+func ImmichURLEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldImmichURL, v))
+}
+
+// ImmichURLNEQ applies the NEQ predicate on the "immich_url" field.
+func ImmichURLNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldImmichURL, v))
+}
+
+// ImmichURLIn applies the In predicate on the "immich_url" field.
+func ImmichURLIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldImmichURL, vs...))
+}
+
+// ImmichURLNotIn applies the NotIn predicate on the "immich_url" field.
+func ImmichURLNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldImmichURL, vs...))
+}
+
+// ImmichURLGT applies the GT predicate on the "immich_url" field.
+func ImmichURLGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldImmichURL, v))
+}
+
+// ImmichURLGTE applies the GTE predicate on the "immich_url" field.
+func ImmichURLGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldImmichURL, v))
+}
+
+// ImmichURLLT applies the LT predicate on the "immich_url" field.
+func ImmichURLLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldImmichURL, v))
+}
+
+// ImmichURLLTE applies the LTE predicate on the "immich_url" field.
+func ImmichURLLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldImmichURL, v))
+}
+
+// ImmichURLContains applies the Contains predicate on the "immich_url" field.
+func ImmichURLContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldImmichURL, v))
+}
+
+// ImmichURLHasPrefix applies the HasPrefix predicate on the "immich_url" field.
+func ImmichURLHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldImmichURL, v))
+}
+
+// ImmichURLHasSuffix applies the HasSuffix predicate on the "immich_url" field.
+func ImmichURLHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldImmichURL, v))
+}
+
+// ImmichURLIsNil applies the IsNil predicate on the "immich_url" field.
+func ImmichURLIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldImmichURL))
+}
+
+// ImmichURLNotNil applies the NotNil predicate on the "immich_url" field.
+func ImmichURLNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldImmichURL))
+}
+
+// ImmichURLEqualFold applies the EqualFold predicate on the "immich_url" field.
+func ImmichURLEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldImmichURL, v))
+}
+
+// ImmichURLContainsFold applies the ContainsFold predicate on the "immich_url" field.
+func ImmichURLContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldImmichURL, v))
+}
+
+// ImmichAPIKeyEQ applies the EQ predicate on the "immich_api_key" field.
+func ImmichAPIKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyNEQ applies the NEQ predicate on the "immich_api_key" field.
+func ImmichAPIKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyIn applies the In predicate on the "immich_api_key" field.
+func ImmichAPIKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldImmichAPIKey, vs...))
+}
+
+// ImmichAPIKeyNotIn applies the NotIn predicate on the "immich_api_key" field.
+func ImmichAPIKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldImmichAPIKey, vs...))
+}
+
+// ImmichAPIKeyGT applies the GT predicate on the "immich_api_key" field.
+func ImmichAPIKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyGTE applies the GTE predicate on the "immich_api_key" field.
+func ImmichAPIKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyLT applies the LT predicate on the "immich_api_key" field.
+func ImmichAPIKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyLTE applies the LTE predicate on the "immich_api_key" field.
+func ImmichAPIKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyContains applies the Contains predicate on the "immich_api_key" field.
+func ImmichAPIKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyHasPrefix applies the HasPrefix predicate on the "immich_api_key" field.
+func ImmichAPIKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyHasSuffix applies the HasSuffix predicate on the "immich_api_key" field.
+func ImmichAPIKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyIsNil applies the IsNil predicate on the "immich_api_key" field.
+func ImmichAPIKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldImmichAPIKey))
+}
+
+// ImmichAPIKeyNotNil applies the NotNil predicate on the "immich_api_key" field.
+func ImmichAPIKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldImmichAPIKey))
+}
+
+// ImmichAPIKeyEqualFold applies the EqualFold predicate on the "immich_api_key" field.
+func ImmichAPIKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldImmichAPIKey, v))
+}
+
+// ImmichAPIKeyContainsFold applies the ContainsFold predicate on the "immich_api_key" field.
+func ImmichAPIKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldImmichAPIKey, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

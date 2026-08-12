@@ -138,6 +138,40 @@ func (_u *PersonUpdate) ClearReminderDays() *PersonUpdate {
 	return _u
 }
 
+// SetImmichPersonID sets the "immich_person_id" field.
+func (_u *PersonUpdate) SetImmichPersonID(v string) *PersonUpdate {
+	_u.mutation.SetImmichPersonID(v)
+	return _u
+}
+
+// SetNillableImmichPersonID sets the "immich_person_id" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillableImmichPersonID(v *string) *PersonUpdate {
+	if v != nil {
+		_u.SetImmichPersonID(*v)
+	}
+	return _u
+}
+
+// ClearImmichPersonID clears the value of the "immich_person_id" field.
+func (_u *PersonUpdate) ClearImmichPersonID() *PersonUpdate {
+	_u.mutation.ClearImmichPersonID()
+	return _u
+}
+
+// SetImmichPhotoDisabled sets the "immich_photo_disabled" field.
+func (_u *PersonUpdate) SetImmichPhotoDisabled(v bool) *PersonUpdate {
+	_u.mutation.SetImmichPhotoDisabled(v)
+	return _u
+}
+
+// SetNillableImmichPhotoDisabled sets the "immich_photo_disabled" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillableImmichPhotoDisabled(v *bool) *PersonUpdate {
+	if v != nil {
+		_u.SetImmichPhotoDisabled(*v)
+	}
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *PersonUpdate) SetCreatedAt(v time.Time) *PersonUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -362,6 +396,15 @@ func (_u *PersonUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ReminderDaysCleared() {
 		_spec.ClearField(person.FieldReminderDays, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.ImmichPersonID(); ok {
+		_spec.SetField(person.FieldImmichPersonID, field.TypeString, value)
+	}
+	if _u.mutation.ImmichPersonIDCleared() {
+		_spec.ClearField(person.FieldImmichPersonID, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImmichPhotoDisabled(); ok {
+		_spec.SetField(person.FieldImmichPhotoDisabled, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)
@@ -630,6 +673,40 @@ func (_u *PersonUpdateOne) ClearReminderDays() *PersonUpdateOne {
 	return _u
 }
 
+// SetImmichPersonID sets the "immich_person_id" field.
+func (_u *PersonUpdateOne) SetImmichPersonID(v string) *PersonUpdateOne {
+	_u.mutation.SetImmichPersonID(v)
+	return _u
+}
+
+// SetNillableImmichPersonID sets the "immich_person_id" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillableImmichPersonID(v *string) *PersonUpdateOne {
+	if v != nil {
+		_u.SetImmichPersonID(*v)
+	}
+	return _u
+}
+
+// ClearImmichPersonID clears the value of the "immich_person_id" field.
+func (_u *PersonUpdateOne) ClearImmichPersonID() *PersonUpdateOne {
+	_u.mutation.ClearImmichPersonID()
+	return _u
+}
+
+// SetImmichPhotoDisabled sets the "immich_photo_disabled" field.
+func (_u *PersonUpdateOne) SetImmichPhotoDisabled(v bool) *PersonUpdateOne {
+	_u.mutation.SetImmichPhotoDisabled(v)
+	return _u
+}
+
+// SetNillableImmichPhotoDisabled sets the "immich_photo_disabled" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillableImmichPhotoDisabled(v *bool) *PersonUpdateOne {
+	if v != nil {
+		_u.SetImmichPhotoDisabled(*v)
+	}
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *PersonUpdateOne) SetCreatedAt(v time.Time) *PersonUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -884,6 +961,15 @@ func (_u *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err erro
 	}
 	if _u.mutation.ReminderDaysCleared() {
 		_spec.ClearField(person.FieldReminderDays, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.ImmichPersonID(); ok {
+		_spec.SetField(person.FieldImmichPersonID, field.TypeString, value)
+	}
+	if _u.mutation.ImmichPersonIDCleared() {
+		_spec.ClearField(person.FieldImmichPersonID, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImmichPhotoDisabled(); ok {
+		_spec.SetField(person.FieldImmichPhotoDisabled, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)

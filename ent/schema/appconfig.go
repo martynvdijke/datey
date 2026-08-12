@@ -24,6 +24,7 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("data_dir").Optional().Nillable(),
 		field.Int("scheduler_hour").Optional().Nillable(),
 		field.Int("reminder_days").Optional().Nillable(),
+		field.String("date_variant").Optional().Nillable(),
 		field.Bool("reminder_digest").Optional().Nillable(),
 		field.String("reminder_stages").Optional().Nillable(),
 		field.String("timezone").Optional().Nillable(),
@@ -78,6 +79,9 @@ func (AppConfig) Fields() []ent.Field {
 		field.Bool("push_enabled").Optional().Nillable(),
 		field.String("push_vapid_public_key").Optional().Nillable(),
 		field.String("push_vapid_private_key").Optional().Nillable(),
+
+		field.String("immich_url").Optional().Nillable(),
+		field.String("immich_api_key").Optional().Nillable(),
 
 		field.Time("updated_at").Optional().Nillable(),
 	}

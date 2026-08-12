@@ -124,11 +124,11 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 	}
 
 	dataDir := configField{
-		Name:    "DATA_DIR",
-		Label:   "Data Directory",
-		Value:   cfg.DataDir,
-		Type:    "readonly",
-		Help:    "Set via the DATA_DIR environment variable. Determines where the SQLite database lives and cannot be changed at runtime.",
+		Name:     "DATA_DIR",
+		Label:    "Data Directory",
+		Value:    cfg.DataDir,
+		Type:     "readonly",
+		Help:     "Set via the DATA_DIR environment variable. Determines where the SQLite database lives and cannot be changed at runtime.",
 		ReadOnly: true,
 	}
 
@@ -137,6 +137,7 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		dataDir,
 		{Name: "SCHEDULER_HOUR", Label: "Scheduler Hour (0-23)", Value: val("SCHEDULER_HOUR", strconv.Itoa(cfg.SchedulerHour)), Type: "number", RestartRequired: true, Help: "Daily reminder run hour. Requires restart to apply.", Error: errFor("SCHEDULER_HOUR")},
 		{Name: "REMINDER_DAYS", Label: "Reminder Window (1-365 days)", Value: val("REMINDER_DAYS", strconv.Itoa(cfg.ReminderDays)), Type: "number", Error: errFor("REMINDER_DAYS")},
+		{Name: "DATE_VARIANT", Label: "Date Variant", Value: val("DATE_VARIANT", cfg.DateVariant), Type: "select", Options: []string{"european", "us"}, Selected: val("DATE_VARIANT", cfg.DateVariant), Help: "How dates are displayed: european is day-first (\"25 Dec\"), us is month-first (\"Dec 25\").", Error: errFor("DATE_VARIANT")},
 		{Name: "LOG_LEVEL", Label: "Log Level", Value: val("LOG_LEVEL", cfg.LogLevel), Type: "select", Options: []string{"debug", "info", "warn", "error"}, Selected: val("LOG_LEVEL", cfg.LogLevel), Error: errFor("LOG_LEVEL")},
 		{Name: "LOG_BUFFER_SIZE", Label: "Log Buffer Size", Value: val("LOG_BUFFER_SIZE", strconv.Itoa(cfg.LogBufferSize)), Type: "number", RestartRequired: true, Help: "In-memory ring buffer entries. Requires restart to apply.", Error: errFor("LOG_BUFFER_SIZE")},
 		{Name: "EINK_MODE", Label: "Force E-Ink Mode", Type: "checkbox", Checked: checked("EINK_MODE", cfg.EinkMode), Help: "Enables high-contrast E-Ink theme for all users."},
@@ -248,6 +249,14 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "PUSH_VAPID_PUBLIC_KEY", Label: "VAPID Public Key", Value: val("PUSH_VAPID_PUBLIC_KEY", cfg.PushVAPIDPublicKey), Type: "readonly", ReadOnly: true, Help: "Public part of the VAPID key pair; served to browsers to establish subscriptions."},
 		{Name: "PUSH_VAPID_PRIVATE_KEY", Label: "VAPID Private Key", Value: val("PUSH_VAPID_PRIVATE_KEY", cfg.PushVAPIDPrivateKey), Type: "text", Secret: true, Help: "Secret signing key. Never share it; rotate by entering a new key or clearing this field and saving while enabled."},
 	}}
+	immichKeyValue := ""
+	if submitted != nil {
+		immichKeyValue = val("IMMICH_API_KEY", "")
+	}
+	immichGroup := configGroup{Title: "Immich", Fields: []configField{
+		{Name: "IMMICH_URL", Label: "Immich URL", Value: val("IMMICH_URL", cfg.ImmichURL), Type: "text", Help: "Optional Immich server URL, for example https://photos.example.com.", Error: errFor("IMMICH_URL")},
+		{Name: "IMMICH_API_KEY", Label: "Immich API Key", Value: immichKeyValue, Type: "text", Secret: true, Help: "Leave blank to keep the saved key. Used only by the server.", Error: errFor("IMMICH_API_KEY")},
+	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, pushGroup}
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, pushGroup, immichGroup}
 }

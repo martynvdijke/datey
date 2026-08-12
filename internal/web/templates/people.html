@@ -47,7 +47,7 @@
         <a href="/people/{{.ID}}" class="card card-hover person-card text-decoration-none">
           <div class="card-body">
             <div class="d-flex align-items-center gap-3 mb-3">
-              <span class="person-avatar person-avatar-lg avatar-color-{{.AvatarColor}}">{{.Initial}}</span>
+              {{if .PhotoURL}}<img class="person-avatar person-avatar-lg" src="{{.PhotoURL}}" alt="" loading="lazy">{{else}}<span class="person-avatar person-avatar-lg avatar-color-{{.AvatarColor}}">{{.Initial}}</span>{{end}}
               <div class="min-width-0">
                 <h5 class="card-title mb-0">{{.Name}}{{if .HasAge}}, <span class="fw-normal text-muted">{{.Age}}</span>{{end}}</h5>
                 {{if .NextEventDate}}
@@ -108,7 +108,9 @@
           {{end}}
         </td>
         <td>
-          {{if .HasBirthdayBday}}
+          {{if .BirthdayWarning}}
+            <span class="text-warning">{{.BirthdayWarning}}</span>
+          {{else if .HasBirthdayBday}}
             {{if .BirthdayCreated}}
               <span class="text-success">{{.HasBirthdayBday}} ✓</span>
             {{else}}

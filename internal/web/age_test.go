@@ -105,10 +105,10 @@ func TestPersonDetail_YearlessBirthdayShowsMonthDayOnly(t *testing.T) {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
 	body := w.Body.String()
-	if !strings.Contains(body, "Aug 12") {
-		t.Errorf("expected month/day 'Aug 12' in person detail, got:\n%s", body)
+	if !strings.Contains(body, "12 Aug") {
+		t.Errorf("expected day-first '12 Aug' in person detail (european default), got:\n%s", body)
 	}
-	if strings.Contains(body, "Aug 12, 1") {
+	if strings.Contains(body, "12 Aug 1") {
 		t.Errorf("expected no year in date for a yearless birthday, got:\n%s", body)
 	}
 	if strings.Contains(body, "Age ") {

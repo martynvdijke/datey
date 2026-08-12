@@ -15,6 +15,7 @@ var (
 		{Name: "data_dir", Type: field.TypeString, Nullable: true},
 		{Name: "scheduler_hour", Type: field.TypeInt, Nullable: true},
 		{Name: "reminder_days", Type: field.TypeInt, Nullable: true},
+		{Name: "date_variant", Type: field.TypeString, Nullable: true},
 		{Name: "reminder_digest", Type: field.TypeBool, Nullable: true},
 		{Name: "reminder_stages", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
@@ -56,6 +57,8 @@ var (
 		{Name: "push_enabled", Type: field.TypeBool, Nullable: true},
 		{Name: "push_vapid_public_key", Type: field.TypeString, Nullable: true},
 		{Name: "push_vapid_private_key", Type: field.TypeString, Nullable: true},
+		{Name: "immich_url", Type: field.TypeString, Nullable: true},
+		{Name: "immich_api_key", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
 	// AppConfigsTable holds the schema information for the "app_configs" table.
@@ -186,6 +189,8 @@ var (
 		{Name: "notify_birthdays", Type: field.TypeBool, Default: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "reminder_days", Type: field.TypeJSON, Nullable: true},
+		{Name: "immich_person_id", Type: field.TypeString, Nullable: true},
+		{Name: "immich_photo_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

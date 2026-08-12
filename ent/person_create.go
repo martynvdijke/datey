@@ -91,6 +91,34 @@ func (_c *PersonCreate) SetReminderDays(v []int) *PersonCreate {
 	return _c
 }
 
+// SetImmichPersonID sets the "immich_person_id" field.
+func (_c *PersonCreate) SetImmichPersonID(v string) *PersonCreate {
+	_c.mutation.SetImmichPersonID(v)
+	return _c
+}
+
+// SetNillableImmichPersonID sets the "immich_person_id" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableImmichPersonID(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetImmichPersonID(*v)
+	}
+	return _c
+}
+
+// SetImmichPhotoDisabled sets the "immich_photo_disabled" field.
+func (_c *PersonCreate) SetImmichPhotoDisabled(v bool) *PersonCreate {
+	_c.mutation.SetImmichPhotoDisabled(v)
+	return _c
+}
+
+// SetNillableImmichPhotoDisabled sets the "immich_photo_disabled" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableImmichPhotoDisabled(v *bool) *PersonCreate {
+	if v != nil {
+		_c.SetImmichPhotoDisabled(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *PersonCreate) SetCreatedAt(v time.Time) *PersonCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -195,6 +223,10 @@ func (_c *PersonCreate) defaults() {
 		v := person.DefaultTimezone
 		_c.mutation.SetTimezone(v)
 	}
+	if _, ok := _c.mutation.ImmichPhotoDisabled(); !ok {
+		v := person.DefaultImmichPhotoDisabled
+		_c.mutation.SetImmichPhotoDisabled(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -209,6 +241,9 @@ func (_c *PersonCreate) check() error {
 	}
 	if _, ok := _c.mutation.NotifyBirthdays(); !ok {
 		return &ValidationError{Name: "notify_birthdays", err: errors.New(`ent: missing required field "Person.notify_birthdays"`)}
+	}
+	if _, ok := _c.mutation.ImmichPhotoDisabled(); !ok {
+		return &ValidationError{Name: "immich_photo_disabled", err: errors.New(`ent: missing required field "Person.immich_photo_disabled"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Person.created_at"`)}
@@ -265,6 +300,14 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ReminderDays(); ok {
 		_spec.SetField(person.FieldReminderDays, field.TypeJSON, value)
 		_node.ReminderDays = value
+	}
+	if value, ok := _c.mutation.ImmichPersonID(); ok {
+		_spec.SetField(person.FieldImmichPersonID, field.TypeString, value)
+		_node.ImmichPersonID = &value
+	}
+	if value, ok := _c.mutation.ImmichPhotoDisabled(); ok {
+		_spec.SetField(person.FieldImmichPhotoDisabled, field.TypeBool, value)
+		_node.ImmichPhotoDisabled = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)
