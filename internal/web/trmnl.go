@@ -47,18 +47,19 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 	}
 	windowEnd := now.AddDate(0, 0, h.cfg.ReminderDays)
 
-	events, err := h.events.ListUpcoming(r.Context(), now, now.AddDate(0, 0, horizon))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, horizon))
 	if err != nil {
 		slog.Error("trmnl stats: list upcoming", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
-	upcoming := make([]trmnlEvent, 0, len(events))
+	upcoming := make([]trmnlEvent, 0, len(occurrences))
 	var next *trmnlEvent
 	var events7, events30 int
-	for _, e := range events {
-		ev := trmnlEventFromEvent(e, now)
+	for _, occ := range occurrences {
+		e := occ.Event
+		ev := trmnlEventFromEvent(e, occ.Date, now)
 		if ev.DaysRemaining <= 7 {
 			events7++
 		}
@@ -67,7 +68,7 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 		}
 		// Events beyond the reminder window still count toward summary stats
 		// but are excluded from the display list.
-		if e.Date.After(windowEnd) {
+		if occ.Date.After(windowEnd) {
 			continue
 		}
 		upcoming = append(upcoming, ev)
@@ -103,8 +104,9 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 }
 
 // trmnlEventFromEvent converts an ent event into the TRMNL feed shape,
-// mirroring the dashboard's label and relative-day logic.
-func trmnlEventFromEvent(e *ent.Event, now time.Time) trmnlEvent {
+// mirroring the dashboard's label and relative-day logic against the
+// occurrence date.
+func trmnlEventFromEvent(e *ent.Event, date, now time.Time) trmnlEvent {
 	personName := ""
 	if p := e.Edges.Person; p != nil {
 		personName = p.Name
@@ -112,7 +114,7 @@ func trmnlEventFromEvent(e *ent.Event, now time.Time) trmnlEvent {
 		personName = c.Name
 	}
 
-	days := int(e.Date.Sub(now).Hours() / 24)
+	days := int(date.Sub(now).Hours() / 24)
 
 	var relative string
 	switch {
@@ -127,7 +129,7 @@ func trmnlEventFromEvent(e *ent.Event, now time.Time) trmnlEvent {
 	return trmnlEvent{
 		Name:          personName,
 		Type:          e.Type,
-		Date:          e.Date.Format("Jan 2"),
+		Date:          date.Format("Jan 2"),
 		DaysRemaining: days,
 		Relative:      relative,
 	}

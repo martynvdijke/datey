@@ -33,16 +33,16 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	events, err := h.events.ListUpcoming(r.Context(), now, now.AddDate(0, 0, h.cfg.ReminderDays))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, h.cfg.ReminderDays))
 	if err != nil {
 		slog.Error("rss: list upcoming events", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
-	items := make([]rss.Item, 0, len(events))
-	for _, e := range events {
-		items = append(items, h.rssItem(e, r))
+	items := make([]rss.Item, 0, len(occurrences))
+	for _, occ := range occurrences {
+		items = append(items, h.rssItem(occ.Event, occ.Date, now, r))
 	}
 
 	origin := feedOrigin(r)
@@ -67,8 +67,9 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 // rssItem converts a stored event into an RSS item, mirroring the dashboard's
-// day-count logic. Title format: "Birthday — Dana in 3 days".
-func (h *Handler) rssItem(e *ent.Event, r *http.Request) rss.Item {
+// day-count logic against the occurrence date. Title format: "Birthday —
+// Dana in 3 days".
+func (h *Handler) rssItem(e *ent.Event, date, now time.Time, r *http.Request) rss.Item {
 	name := ""
 	if p := e.Edges.Person; p != nil {
 		name = p.Name
@@ -76,7 +77,7 @@ func (h *Handler) rssItem(e *ent.Event, r *http.Request) rss.Item {
 		name = c.Name
 	}
 
-	days := int(time.Until(e.Date).Hours() / 24)
+	days := int(date.Sub(now).Hours() / 24)
 	var relative string
 	switch {
 	case days <= 0:

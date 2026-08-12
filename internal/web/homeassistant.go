@@ -61,20 +61,21 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 	}
 	windowEnd := now.AddDate(0, 0, h.cfg.ReminderDays)
 
-	events, err := h.events.ListUpcoming(r.Context(), now, now.AddDate(0, 0, horizon))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, horizon))
 	if err != nil {
 		slog.Error("home assistant stats: list upcoming", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
-	upcoming := make([]homeAssistantEvent, 0, len(events))
+	upcoming := make([]homeAssistantEvent, 0, len(occurrences))
 	var next *homeAssistantEvent
 	nextDate := ""
 	nextDays := 0
 	var events7, events30 int
-	for _, e := range events {
-		ev := homeAssistantEventFromEvent(e, now)
+	for _, occ := range occurrences {
+		e := occ.Event
+		ev := homeAssistantEventFromEvent(e, occ.Date, now)
 		if ev.Days <= 7 {
 			events7++
 		}
@@ -83,14 +84,14 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 		}
 		// Events beyond the reminder window still count toward the summary
 		// counts but are excluded from the display list.
-		if e.Date.After(windowEnd) {
+		if occ.Date.After(windowEnd) {
 			continue
 		}
 		upcoming = append(upcoming, ev)
 		if next == nil {
 			copy := ev
 			next = &copy
-			nextDate = e.Date.Format("2006-01-02")
+			nextDate = occ.Date.Format("2006-01-02")
 			nextDays = ev.Days
 		}
 	}
@@ -123,8 +124,8 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 }
 
 // homeAssistantEventFromEvent converts an ent event into the Home Assistant
-// feed shape.
-func homeAssistantEventFromEvent(e *ent.Event, now time.Time) homeAssistantEvent {
+// feed shape against the occurrence date.
+func homeAssistantEventFromEvent(e *ent.Event, date, now time.Time) homeAssistantEvent {
 	personName := ""
 	if p := e.Edges.Person; p != nil {
 		personName = p.Name
@@ -135,7 +136,7 @@ func homeAssistantEventFromEvent(e *ent.Event, now time.Time) homeAssistantEvent
 	return homeAssistantEvent{
 		Name: personName,
 		Type: e.Type,
-		Date: e.Date.Format("2006-01-02"),
-		Days: int(time.Until(e.Date).Hours() / 24),
+		Date: date.Format("2006-01-02"),
+		Days: int(date.Sub(now).Hours() / 24),
 	}
 }

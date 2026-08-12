@@ -51,14 +51,15 @@ func (h *Handler) upcomingAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	events, err := h.events.ListUpcoming(r.Context(), now, now.AddDate(0, 0, days))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, days))
 	if err != nil {
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
 
-	out := make([]upcomingEvent, 0, len(events))
-	for _, e := range events {
+	out := make([]upcomingEvent, 0, len(occurrences))
+	for _, occ := range occurrences {
+		e := occ.Event
 		person := ""
 		if p := e.Edges.Person; p != nil {
 			person = p.Name
@@ -69,8 +70,8 @@ func (h *Handler) upcomingAPI(w http.ResponseWriter, r *http.Request) {
 			ID:            e.ID,
 			Person:        person,
 			Type:          e.Type,
-			Date:          e.Date.Format("2006-01-02"),
-			DaysRemaining: int(time.Until(e.Date).Hours() / 24),
+			Date:          occ.Date.Format("2006-01-02"),
+			DaysRemaining: int(occ.Date.Sub(now).Hours() / 24),
 		})
 	}
 

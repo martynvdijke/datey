@@ -63,10 +63,15 @@ func TestTRMNLStatsNextEventIsEarliest(t *testing.T) {
 	h := newTestWebHandler(t)
 	personID := newTestPerson(t, h, "Anna")
 	now := time.Now()
-	// Add a margin beyond whole days so day counts are deterministic
-	// (int(Hours()/24) truncates toward zero).
-	newTestEvent(t, h, personID, "birthday", now.AddDate(0, 0, 3).Add(2*time.Hour))
-	newTestEvent(t, h, personID, "anniversary", now.AddDate(0, 0, 1).Add(2*time.Hour))
+	// Annual events are reported on their occurrence date (midnight of the
+	// month/day), so day counts are anchored to midnight-based dates:
+	// midnight 2 days out is deterministically 1 whole day away, midnight
+	// 4 days out is 3 whole days away.
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	newTestEvent(t, h, personID, "birthday", midnight(4))
+	newTestEvent(t, h, personID, "anniversary", midnight(2))
 
 	_, _, stats := getTRMNLStats(t, h)
 

@@ -63,16 +63,28 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 	now := time.Now()
 	end := now.AddDate(0, 0, s.cfg.ReminderDays)
 
-	upcomingEvents, err := s.events.ListUpcoming(ctx, now, end)
+	occurrences, err := s.events.ListUpcomingOccurrences(ctx, now, end)
 	if err != nil {
 		slog.Error("scheduler: list upcoming events", "source", "scheduler", "error", err)
 		return
 	}
 
-	slog.Info("processing reminders", "source", "scheduler", "event_count", len(upcomingEvents))
+	slog.Info("processing reminders", "source", "scheduler", "event_count", len(occurrences))
 
-	for _, event := range upcomingEvents {
-		eventKey := fmt.Sprintf("%d-%s", event.ID, event.Date.Format("2006-01-02"))
+	for _, occ := range occurrences {
+		event := occ.Event
+
+		// Per-person opt-out: birthday-type occurrences are skipped for
+		// persons who disabled birthday notifications. Other event types
+		// are unaffected.
+		if event.Type == "birthday" {
+			if p := event.Edges.Person; p != nil && !p.NotifyBirthdays {
+				slog.Debug("scheduler: birthday notifications disabled", "source", "scheduler", "person", p.ID, "event", event.ID)
+				continue
+			}
+		}
+
+		eventKey := fmt.Sprintf("%d-%s", event.ID, occ.Date.Format("2006-01-02"))
 
 		for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush"} {
 			if !s.registry.IsConfigured(name) {
@@ -100,7 +112,7 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 			title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
 			message := fmt.Sprintf(
 				"Upcoming %s for %s on %s (%d days away)",
-				event.Type, contactName, event.Date.Format("January 2"), int(event.Date.Sub(now).Hours()/24),
+				event.Type, contactName, occ.Date.Format("January 2"), int(occ.Date.Sub(now).Hours()/24),
 			)
 
 			s.registry.SendAll(ctx, title, message)

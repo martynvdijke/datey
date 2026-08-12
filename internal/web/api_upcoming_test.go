@@ -158,7 +158,10 @@ func TestUpcomingAPIDaysCappedAt365(t *testing.T) {
 
 	personID := newTestPerson(t, h, "Dana")
 	newTestEvent(t, h, personID, "birthday", time.Now().AddDate(0, 0, 10))
-	newTestEvent(t, h, personID, "anniversary", time.Now().AddDate(0, 0, 400))
+	// A non-annual type is used for the far event: annual types would be
+	// expanded to their same-year occurrence, which legitimately falls
+	// inside the capped horizon.
+	newTestEvent(t, h, personID, "meeting", time.Now().AddDate(0, 0, 400))
 
 	router := setupUpcomingAPIRouter(h)
 	// days=1000 requests a year+; cap at 365 excludes the 400-day event.

@@ -12,16 +12,8 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/ical"
+	"github.com/datey/datey/internal/recurring"
 )
-
-// annualEventTypes recur every year and are rendered with RRULE:FREQ=YEARLY
-// in the feed; all other types are one-off events.
-var annualEventTypes = map[string]bool{
-	"birthday":    true,
-	"anniversary": true,
-	"wedding":     true,
-	"holiday":     true,
-}
 
 // recurringFeedHorizonYears is how many years of global recurring rules
 // (Mother's Day, ...) are materialized into the global feed.
@@ -126,7 +118,7 @@ func (h *Handler) feedEvent(e *ent.Event, host string) ical.Event {
 		Description: e.Description,
 		Date:        e.Date,
 		AllDay:      true,
-		RecurYearly: annualEventTypes[e.Type],
+		RecurYearly: recurring.IsAnnualType(e.Type),
 	}
 
 	if h.cfg.ICalEventStart != "" {

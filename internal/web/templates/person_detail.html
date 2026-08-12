@@ -21,6 +21,17 @@
   </div>
 </div>
 
+<!-- Birthday notification opt-out -->
+<div class="mb-3">
+  <form action="/people/{{.Person.ID}}/notify-birthdays" method="POST" class="d-flex align-items-center gap-2">
+    {{template "csrfField" .}}
+    <div class="form-check form-switch mb-0">
+      <input class="form-check-input" type="checkbox" name="notify_birthdays" value="on" role="switch" id="notify-birthdays-toggle"{{if .Person.NotifyBirthdays}} checked{{end}} onchange="this.form.submit()">
+      <label class="form-check-label small text-muted" for="notify-birthdays-toggle">Birthday notifications</label>
+    </div>
+  </form>
+</div>
+
 <!-- Event Timeline -->
 <h2 class="mb-3">Events</h2>
 {{if .EventRows}}

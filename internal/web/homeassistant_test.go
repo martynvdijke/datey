@@ -67,10 +67,15 @@ func TestHAFeedStatsShape(t *testing.T) {
 	enableHAFeed(h)
 
 	personID := newTestPerson(t, h, "Dana")
-	// 73h = 3 full days + 1h margin so int(time.Until(...).Hours()/24) is
-	// deterministically 3 regardless of the current time of day.
-	newTestEvent(t, h, personID, "birthday", time.Now().Add(73*time.Hour))
-	newTestEvent(t, h, personID, "anniversary", time.Now().AddDate(0, 0, 20))
+	// Annual events are reported on their occurrence date (midnight of the
+	// month/day), so day counts are anchored to midnight-based dates:
+	// midnight 4 days out is deterministically 3 whole days away.
+	now := time.Now()
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	newTestEvent(t, h, personID, "birthday", midnight(4))
+	newTestEvent(t, h, personID, "anniversary", midnight(20))
 
 	router := setupHARouter(h)
 	req := httptest.NewRequest("GET", "/api/homeassistant/stats?key=testhakey", nil)

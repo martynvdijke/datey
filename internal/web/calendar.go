@@ -12,10 +12,10 @@ func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
 	// Fetch upcoming events for the <noscript> fallback (next 30 days).
 	now := time.Now()
 	end := now.AddDate(0, 0, 30)
-	events, err := h.events.ListUpcoming(r.Context(), now, end)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, end)
 	if err != nil {
 		slog.Error("calendar page: list upcoming", "error", err)
-		events = nil // degrade gracefully — noscript list will be empty
+		occurrences = nil // degrade gracefully — noscript list will be empty
 	}
 
 	type upcomingEvent struct {
@@ -24,7 +24,8 @@ func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
 		Type string
 	}
 	var upcoming []upcomingEvent
-	for _, e := range events {
+	for _, occ := range occurrences {
+		e := occ.Event
 		name := ""
 		if p := e.Edges.Person; p != nil {
 			name = p.Name
@@ -33,7 +34,7 @@ func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
 		}
 		upcoming = append(upcoming, upcomingEvent{
 			Name: name,
-			Date: e.Date.Format("Jan 2, 2006"),
+			Date: occ.Date.Format("Jan 2, 2006"),
 			Type: e.Type,
 		})
 	}
