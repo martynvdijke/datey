@@ -106,7 +106,7 @@ func TestLoad_BackupRetentionFromEnv(t *testing.T) {
 // --- Validation tests (task 2.7) ---
 
 func TestValidate_SchedulerHourTooLow(t *testing.T) {
-	cfg := &Config{SchedulerHour: -1, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: -1, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for SCHEDULER_HOUR=-1, got nil")
@@ -114,7 +114,7 @@ func TestValidate_SchedulerHourTooLow(t *testing.T) {
 }
 
 func TestValidate_SchedulerHourTooHigh(t *testing.T) {
-	cfg := &Config{SchedulerHour: 24, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 24, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for SCHEDULER_HOUR=24, got nil")
@@ -123,7 +123,7 @@ func TestValidate_SchedulerHourTooHigh(t *testing.T) {
 
 func TestValidate_SchedulerHourBoundary(t *testing.T) {
 	for _, h := range []int{0, 12, 23} {
-		cfg := &Config{SchedulerHour: h, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+		cfg := &Config{SchedulerHour: h, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("SCHEDULER_HOUR=%d should be valid, got error: %v", h, err)
 		}
@@ -131,7 +131,7 @@ func TestValidate_SchedulerHourBoundary(t *testing.T) {
 }
 
 func TestValidate_ReminderDaysTooLow(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 0, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 0, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for REMINDER_DAYS=0, got nil")
@@ -139,7 +139,7 @@ func TestValidate_ReminderDaysTooLow(t *testing.T) {
 }
 
 func TestValidate_ReminderDaysTooHigh(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 366, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 366, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for REMINDER_DAYS=366, got nil")
@@ -148,7 +148,7 @@ func TestValidate_ReminderDaysTooHigh(t *testing.T) {
 
 func TestValidate_ReminderDaysBoundary(t *testing.T) {
 	for _, d := range []int{1, 180, 365} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: d, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: d, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("REMINDER_DAYS=%d should be valid, got error: %v", d, err)
 		}
@@ -156,7 +156,7 @@ func TestValidate_ReminderDaysBoundary(t *testing.T) {
 }
 
 func TestValidate_SMTPPortTooLow(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 0, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 0, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for SMTP_PORT=0, got nil")
@@ -164,7 +164,7 @@ func TestValidate_SMTPPortTooLow(t *testing.T) {
 }
 
 func TestValidate_SMTPPortTooHigh(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 65536, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 65536, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for SMTP_PORT=65536, got nil")
@@ -173,7 +173,7 @@ func TestValidate_SMTPPortTooHigh(t *testing.T) {
 
 func TestValidate_SMTPPortBoundary(t *testing.T) {
 	for _, p := range []int{1, 587, 65535} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: p, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: p, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("SMTP_PORT=%d should be valid, got error: %v", p, err)
 		}
@@ -181,7 +181,7 @@ func TestValidate_SMTPPortBoundary(t *testing.T) {
 }
 
 func TestValidate_InvalidLogLevel(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "verbose", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "verbose", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for LOG_LEVEL=verbose, got nil")
@@ -189,7 +189,7 @@ func TestValidate_InvalidLogLevel(t *testing.T) {
 }
 
 func TestValidate_EmptyLogLevel(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	err := cfg.Validate()
 	if err == nil {
 		t.Fatal("expected error for empty LOG_LEVEL, got nil")
@@ -198,7 +198,7 @@ func TestValidate_EmptyLogLevel(t *testing.T) {
 
 func TestValidate_ValidLogLevels(t *testing.T) {
 	for _, level := range []string{"debug", "info", "warn", "error"} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: level, DataDir: "/db", ICalDurationMinutes: 60}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: level, DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("LOG_LEVEL=%q should be valid, got error: %v", level, err)
 		}
@@ -206,7 +206,7 @@ func TestValidate_ValidLogLevels(t *testing.T) {
 }
 
 func TestValidate_AllValid(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	if err := cfg.Validate(); err != nil {
 		t.Errorf("expected no error for valid config, got: %v", err)
 	}
@@ -214,7 +214,7 @@ func TestValidate_AllValid(t *testing.T) {
 
 func TestValidate_ICalEventStartInvalid(t *testing.T) {
 	for _, start := range []string{"9:00", "09:0", "0900", "aa:bb", "24:00", "09:60", "09 :00"} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, ICalEventStart: start}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, ICalEventStart: start}
 		if err := cfg.Validate(); err == nil {
 			t.Errorf("ICAL_EVENT_START=%q should be invalid, got nil", start)
 		}
@@ -223,7 +223,7 @@ func TestValidate_ICalEventStartInvalid(t *testing.T) {
 
 func TestValidate_ICalEventStartValid(t *testing.T) {
 	for _, start := range []string{"", "00:00", "09:00", "23:59"} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, ICalEventStart: start}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, ICalEventStart: start}
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("ICAL_EVENT_START=%q should be valid, got error: %v", start, err)
 		}
@@ -232,13 +232,13 @@ func TestValidate_ICalEventStartValid(t *testing.T) {
 
 func TestValidate_ICalDurationBoundary(t *testing.T) {
 	for _, d := range []int{1, 60, 1440} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: d}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: d}
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("ICAL_EVENT_DURATION=%d should be valid, got error: %v", d, err)
 		}
 	}
 	for _, d := range []int{0, -1, 1441} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: d}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: d}
 		if err := cfg.Validate(); err == nil {
 			t.Errorf("ICAL_EVENT_DURATION=%d should be invalid, got nil", d)
 		}
@@ -247,18 +247,18 @@ func TestValidate_ICalDurationBoundary(t *testing.T) {
 
 func TestValidate_NtfyPriorityBoundary(t *testing.T) {
 	for _, p := range []int{1, 3, 5} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, NtfyPriority: p}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, NtfyPriority: p}
 		if err := cfg.Validate(); err != nil {
 			t.Errorf("NTFY_PRIORITY=%d should be valid, got error: %v", p, err)
 		}
 	}
 	// 0 = unset (default 3) must be valid too.
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60}
 	if err := cfg.Validate(); err != nil {
 		t.Errorf("NTFY_PRIORITY unset (0) should be valid, got error: %v", err)
 	}
 	for _, p := range []int{-1, 6, 99} {
-		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, NtfyPriority: p}
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, NtfyPriority: p}
 		if err := cfg.Validate(); err == nil {
 			t.Errorf("NTFY_PRIORITY=%d should be invalid, got nil", p)
 		}
@@ -266,24 +266,24 @@ func TestValidate_NtfyPriorityBoundary(t *testing.T) {
 }
 
 func TestValidate_PushEnabledRequiresKeys(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, PushEnabled: true}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, PushEnabled: true}
 	if err := cfg.Validate(); err == nil {
 		t.Fatal("expected error for PUSH_ENABLED=true without VAPID keys, got nil")
 	}
 
-	cfg = &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, PushEnabled: true, PushVAPIDPublicKey: "pub", PushVAPIDPrivateKey: "priv"}
+	cfg = &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, PushEnabled: true, PushVAPIDPublicKey: "pub", PushVAPIDPrivateKey: "priv"}
 	if err := cfg.Validate(); err != nil {
 		t.Errorf("expected valid config when both keys are set, got error: %v", err)
 	}
 }
 
 func TestValidate_ICalEnabledRequiresKey(t *testing.T) {
-	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, ICalEnabled: true}
+	cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, ICalEnabled: true}
 	if err := cfg.Validate(); err == nil {
 		t.Fatal("expected error for ICAL_FEED_ENABLED=true without ICAL_FEED_KEY, got nil")
 	}
 
-	cfg = &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DataDir: "/db", ICalDurationMinutes: 60, ICalEnabled: true, ICalFeedKey: "secret"}
+	cfg = &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, ICalEnabled: true, ICalFeedKey: "secret"}
 	if err := cfg.Validate(); err != nil {
 		t.Errorf("expected valid config when key is set, got error: %v", err)
 	}

@@ -24,6 +24,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **✅ Test Notifications** — Send test messages per channel from the settings page.
 - **📊 Dashboard** — At-a-glance view of upcoming events with days remaining.
 - **🗓️ Calendar View** — Full month calendar with upcoming events, theme-aware, with `<noscript>` fallback.
+- **📅 Date Variant** — User-facing dates render day-first by default (`25 Dec`); switch to month-first (`Dec 25`) from Settings → Configuration (`DATE_VARIANT`). Existing installs render day-first after upgrade — change it back in Settings if you prefer US style. Machine feeds (iCal, RSS, APIs) always stay ISO 8601.
 - **👥 Groups** — Organize people into groups and filter by group.
 - **👤 User Management** — Multi-user support with admin and user roles.
 - **📝 In-App Logging** — Ring-buffer log viewer filterable by level and source, with live log level changes.
@@ -85,6 +86,7 @@ See `.env.example` for a template.
 | `DATA_DIR` | `/data` | Data directory for SQLite database *(env-only, not DB-overridable)* |
 | `SCHEDULER_HOUR` | `8` | Hour of day to run reminder check (**enforced**: 0–23) *(restart required)* |
 | `REMINDER_DAYS` | `7` | Days ahead to look for upcoming events (**enforced**: 1–365) |
+| `DATE_VARIANT` | `european` | Date display variant for user-facing pages (**enforced**: `european` = day-first "25 Dec", `us` = month-first "Dec 25") |
 | `LOG_LEVEL` | `warn` | Log level (**enforced**: must be one of `debug`, `info`, `warn`, `error`) |
 | `LOG_BUFFER_SIZE` | `10000` | In-memory ring buffer size for log viewer *(restart required)* |
 | `BACKUP_DIR` | — | Directory for database backups |
