@@ -75,6 +75,34 @@ func (_c *AppConfigCreate) SetNillableReminderDays(v *int) *AppConfigCreate {
 	return _c
 }
 
+// SetLastSchedulerRun sets the "last_scheduler_run" field.
+func (_c *AppConfigCreate) SetLastSchedulerRun(v time.Time) *AppConfigCreate {
+	_c.mutation.SetLastSchedulerRun(v)
+	return _c
+}
+
+// SetNillableLastSchedulerRun sets the "last_scheduler_run" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableLastSchedulerRun(v *time.Time) *AppConfigCreate {
+	if v != nil {
+		_c.SetLastSchedulerRun(*v)
+	}
+	return _c
+}
+
+// SetSchedulerCatchup sets the "scheduler_catchup" field.
+func (_c *AppConfigCreate) SetSchedulerCatchup(v bool) *AppConfigCreate {
+	_c.mutation.SetSchedulerCatchup(v)
+	return _c
+}
+
+// SetNillableSchedulerCatchup sets the "scheduler_catchup" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableSchedulerCatchup(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetSchedulerCatchup(*v)
+	}
+	return _c
+}
+
 // SetDateVariant sets the "date_variant" field.
 func (_c *AppConfigCreate) SetDateVariant(v string) *AppConfigCreate {
 	_c.mutation.SetDateVariant(v)
@@ -691,6 +719,104 @@ func (_c *AppConfigCreate) SetNillableImmichAPIKey(v *string) *AppConfigCreate {
 	return _c
 }
 
+// SetCarddavEnabled sets the "carddav_enabled" field.
+func (_c *AppConfigCreate) SetCarddavEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetCarddavEnabled(v)
+	return _c
+}
+
+// SetNillableCarddavEnabled sets the "carddav_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableCarddavEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetCarddavEnabled(*v)
+	}
+	return _c
+}
+
+// SetCarddavURL sets the "carddav_url" field.
+func (_c *AppConfigCreate) SetCarddavURL(v string) *AppConfigCreate {
+	_c.mutation.SetCarddavURL(v)
+	return _c
+}
+
+// SetNillableCarddavURL sets the "carddav_url" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableCarddavURL(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetCarddavURL(*v)
+	}
+	return _c
+}
+
+// SetCarddavUsername sets the "carddav_username" field.
+func (_c *AppConfigCreate) SetCarddavUsername(v string) *AppConfigCreate {
+	_c.mutation.SetCarddavUsername(v)
+	return _c
+}
+
+// SetNillableCarddavUsername sets the "carddav_username" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableCarddavUsername(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetCarddavUsername(*v)
+	}
+	return _c
+}
+
+// SetCarddavPassword sets the "carddav_password" field.
+func (_c *AppConfigCreate) SetCarddavPassword(v string) *AppConfigCreate {
+	_c.mutation.SetCarddavPassword(v)
+	return _c
+}
+
+// SetNillableCarddavPassword sets the "carddav_password" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableCarddavPassword(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetCarddavPassword(*v)
+	}
+	return _c
+}
+
+// SetCarddavSyncToken sets the "carddav_sync_token" field.
+func (_c *AppConfigCreate) SetCarddavSyncToken(v string) *AppConfigCreate {
+	_c.mutation.SetCarddavSyncToken(v)
+	return _c
+}
+
+// SetNillableCarddavSyncToken sets the "carddav_sync_token" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableCarddavSyncToken(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetCarddavSyncToken(*v)
+	}
+	return _c
+}
+
+// SetCarddavLastSync sets the "carddav_last_sync" field.
+func (_c *AppConfigCreate) SetCarddavLastSync(v time.Time) *AppConfigCreate {
+	_c.mutation.SetCarddavLastSync(v)
+	return _c
+}
+
+// SetNillableCarddavLastSync sets the "carddav_last_sync" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableCarddavLastSync(v *time.Time) *AppConfigCreate {
+	if v != nil {
+		_c.SetCarddavLastSync(*v)
+	}
+	return _c
+}
+
+// SetCarddavDeletePolicy sets the "carddav_delete_policy" field.
+func (_c *AppConfigCreate) SetCarddavDeletePolicy(v string) *AppConfigCreate {
+	_c.mutation.SetCarddavDeletePolicy(v)
+	return _c
+}
+
+// SetNillableCarddavDeletePolicy sets the "carddav_delete_policy" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableCarddavDeletePolicy(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetCarddavDeletePolicy(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -780,6 +906,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ReminderDays(); ok {
 		_spec.SetField(appconfig.FieldReminderDays, field.TypeInt, value)
 		_node.ReminderDays = &value
+	}
+	if value, ok := _c.mutation.LastSchedulerRun(); ok {
+		_spec.SetField(appconfig.FieldLastSchedulerRun, field.TypeTime, value)
+		_node.LastSchedulerRun = &value
+	}
+	if value, ok := _c.mutation.SchedulerCatchup(); ok {
+		_spec.SetField(appconfig.FieldSchedulerCatchup, field.TypeBool, value)
+		_node.SchedulerCatchup = &value
 	}
 	if value, ok := _c.mutation.DateVariant(); ok {
 		_spec.SetField(appconfig.FieldDateVariant, field.TypeString, value)
@@ -956,6 +1090,34 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ImmichAPIKey(); ok {
 		_spec.SetField(appconfig.FieldImmichAPIKey, field.TypeString, value)
 		_node.ImmichAPIKey = &value
+	}
+	if value, ok := _c.mutation.CarddavEnabled(); ok {
+		_spec.SetField(appconfig.FieldCarddavEnabled, field.TypeBool, value)
+		_node.CarddavEnabled = &value
+	}
+	if value, ok := _c.mutation.CarddavURL(); ok {
+		_spec.SetField(appconfig.FieldCarddavURL, field.TypeString, value)
+		_node.CarddavURL = &value
+	}
+	if value, ok := _c.mutation.CarddavUsername(); ok {
+		_spec.SetField(appconfig.FieldCarddavUsername, field.TypeString, value)
+		_node.CarddavUsername = &value
+	}
+	if value, ok := _c.mutation.CarddavPassword(); ok {
+		_spec.SetField(appconfig.FieldCarddavPassword, field.TypeString, value)
+		_node.CarddavPassword = &value
+	}
+	if value, ok := _c.mutation.CarddavSyncToken(); ok {
+		_spec.SetField(appconfig.FieldCarddavSyncToken, field.TypeString, value)
+		_node.CarddavSyncToken = &value
+	}
+	if value, ok := _c.mutation.CarddavLastSync(); ok {
+		_spec.SetField(appconfig.FieldCarddavLastSync, field.TypeTime, value)
+		_node.CarddavLastSync = &value
+	}
+	if value, ok := _c.mutation.CarddavDeletePolicy(); ok {
+		_spec.SetField(appconfig.FieldCarddavDeletePolicy, field.TypeString, value)
+		_node.CarddavDeletePolicy = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

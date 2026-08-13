@@ -24,6 +24,8 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("data_dir").Optional().Nillable(),
 		field.Int("scheduler_hour").Optional().Nillable(),
 		field.Int("reminder_days").Optional().Nillable(),
+		field.Time("last_scheduler_run").Optional().Nillable(),
+		field.Bool("scheduler_catchup").Optional().Nillable(),
 		field.String("date_variant").Optional().Nillable(),
 		field.Bool("reminder_digest").Optional().Nillable(),
 		field.String("reminder_stages").Optional().Nillable(),
@@ -82,6 +84,14 @@ func (AppConfig) Fields() []ent.Field {
 
 		field.String("immich_url").Optional().Nillable(),
 		field.String("immich_api_key").Optional().Nillable(),
+
+		field.Bool("carddav_enabled").Optional().Nillable(),
+		field.String("carddav_url").Optional().Nillable(),
+		field.String("carddav_username").Optional().Nillable(),
+		field.String("carddav_password").Optional().Nillable(),
+		field.String("carddav_sync_token").Optional().Nillable(),
+		field.Time("carddav_last_sync").Optional().Nillable(),
+		field.String("carddav_delete_policy").Optional().Nillable(),
 
 		field.Time("updated_at").Optional().Nillable(),
 	}

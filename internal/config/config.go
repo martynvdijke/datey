@@ -8,14 +8,15 @@ import (
 )
 
 type Config struct {
-	Port          int
-	DataDir       string
-	SchedulerHour int
-	ReminderDays  int
-	DateVariant   string
-	LogLevel      string
-	LogBufferSize int
-	OTLPEndpoint  string
+	Port              int
+	DataDir           string
+	SchedulerHour     int
+	ReminderDays      int
+	SchedulerCatchup  bool
+	DateVariant       string
+	LogLevel          string
+	LogBufferSize     int
+	OTLPEndpoint      string
 
 	BackupDir           string
 	BackupRetentionDays int
@@ -67,6 +68,12 @@ type Config struct {
 
 	ImmichURL    string
 	ImmichAPIKey string
+
+	CarddavEnabled    bool
+	CarddavURL        string
+	CarddavUsername   string
+	CarddavPassword   string
+	CarddavDeletePolicy string
 }
 
 func Load() (*Config, error) {
@@ -75,6 +82,7 @@ func Load() (*Config, error) {
 		DataDir:          getEnvExplicit("DATA_DIR", "/db"),
 		SchedulerHour:    getEnvInt("SCHEDULER_HOUR", 8),
 		ReminderDays:  getEnvInt("REMINDER_DAYS", 7),
+		SchedulerCatchup: getEnvBool("SCHEDULER_CATCHUP", true),
 		DateVariant:   getEnvExplicit("DATE_VARIANT", "european"),
 		LogLevel:      getEnvExplicit("LOG_LEVEL", "info"),
 		LogBufferSize:    getEnvInt("LOG_BUFFER_SIZE", 10000),
@@ -124,6 +132,12 @@ func Load() (*Config, error) {
 		PushVAPIDPrivateKey: getEnv("PUSH_VAPID_PRIVATE_KEY", ""),
 		ImmichURL:           getEnv("IMMICH_URL", ""),
 		ImmichAPIKey:        getEnv("IMMICH_API_KEY", ""),
+
+		CarddavEnabled:      getEnv("CARDDAV_ENABLED", "") == "true",
+		CarddavURL:          getEnv("CARDDAV_URL", ""),
+		CarddavUsername:     getEnv("CARDDAV_USERNAME", ""),
+		CarddavPassword:     getEnv("CARDDAV_PASSWORD", ""),
+		CarddavDeletePolicy: getEnv("CARDDAV_DELETE_POLICY", "keep"),
 	}
 
 	if cfg.DataDir == "" {
@@ -218,6 +232,15 @@ func (c *Config) Validate() error {
 			return fmt.Errorf("IMMICH_API_KEY must be set when IMMICH_URL is configured")
 		}
 	}
+	if c.CarddavURL != "" {
+		u, err := url.ParseRequestURI(c.CarddavURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("CARDDAV_URL must be an absolute URL, got %q", c.CarddavURL)
+		}
+	}
+	if c.CarddavDeletePolicy != "" && c.CarddavDeletePolicy != "keep" && c.CarddavDeletePolicy != "delete" {
+		return fmt.Errorf("CARDDAV_DELETE_POLICY must be one of keep, delete; got %q", c.CarddavDeletePolicy)
+	}
 	return nil
 }
 
@@ -261,4 +284,18 @@ func getEnvInt(key string, fallback int) int {
 		}
 	}
 	return fallback
+}
+
+// getEnvBool parses the env var as a bool (true/false/1/0/on/off), falling
+// back to the default on unset or unparseable values.
+func getEnvBool(key string, fallback bool) bool {
+	v, ok := os.LookupEnv(key)
+	if !ok || v == "" {
+		return fallback
+	}
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		return fallback
+	}
+	return b
 }

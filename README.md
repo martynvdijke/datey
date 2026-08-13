@@ -14,7 +14,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📅 Event Tracking** — Manage people and their important events (birthdays, anniversaries, weddings, holidays, meetings, custom) with dates and descriptions.
 - **📥 ICS Import** — Preview and import events from `.ics` calendar files (all-day and timed events, yearly recurrences; duplicates skipped).
 - **🔄 Recurring Rules** — Built-in recurring events (Mother's Day, Father's Day, New Year's Day, Easter-based holidays) that auto-generate each year.
-- **⏰ Daily Scheduler** — Checks for upcoming events daily at a configurable hour and sends reminders.
+- **⏰ Daily Scheduler** — Checks for upcoming events daily at a configurable hour and sends reminders. If the server was offline when a reminder was due, it catches up on the next startup: dates that fell inside the reminder window during the downtime are re-checked and sent with "was N days ago" phrasing (no duplicate sends).
 - **📧 Email Notifications** — SMTP-based email reminders for upcoming events.
 - **🔔 Gotify Notifications** — Push notifications via Gotify self-hosted server.
 - **🤖 Telegram Notifications** — Reminders sent via Telegram bot.
@@ -30,6 +30,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📝 In-App Logging** — Ring-buffer log viewer filterable by level and source, with live log level changes.
 - **🔍 People Search** — Quick search through people by name.
 - **📇 vCard Import/Export** — Import one or more vCard files (with optional overwrite of existing people) and export contacts as vCard. `BDAY` supports full dates (`19951120`, `1995-11-20`) and year-less formats (`--0608`, `--06-08`, `-0608`, `0608`); year-less birthdays import as regular birthday events and are shown without an age.
+- **🔁 CardDAV Sync** — Two-way, authenticated sync of people and birthdays with a CardDAV address book (Nextcloud, Baikal, iCloud, ...). Remote changes are pulled once a day (plus a manual "Sync Now" from Settings → Notifications); local edits are tracked and pushed back. `BDAY` becomes a birthday event and `NOTE` maps to notes. Conflicts resolve last-write-wins by `REV`/modification time; a server-side deletion either unlinks the local person (default, `keep`) or removes them (`delete`). Disabled until you enable it.
 - **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
 - **🎈 Annual Notifications** — Birthdays, anniversaries, weddings and holidays fire every year on their occurrence date, even when the stored date is historical (leap-day aware). Birthday reminders are on by default per person and can be turned off with the toggle on a person's detail page. On upgrade, existing people with a parseable `BDAY` in their stored vCard data get a birthday event backfilled once.
 - **💾 Database Backup** — On-demand SQLite backup with configurable retention.
@@ -86,6 +87,7 @@ See `.env.example` for a template.
 | `DATA_DIR` | `/data` | Data directory for SQLite database *(env-only, not DB-overridable)* |
 | `SCHEDULER_HOUR` | `8` | Hour of day to run reminder check (**enforced**: 0–23) *(restart required)* |
 | `REMINDER_DAYS` | `7` | Days ahead to look for upcoming events (**enforced**: 1–365) |
+| `SCHEDULER_CATCHUP` | `true` | On startup, catch up reminders missed while the server was offline (**enforced**: boolean) |
 | `DATE_VARIANT` | `european` | Date display variant for user-facing pages (**enforced**: `european` = day-first "25 Dec", `us` = month-first "Dec 25") |
 | `LOG_LEVEL` | `warn` | Log level (**enforced**: must be one of `debug`, `info`, `warn`, `error`) |
 | `LOG_BUFFER_SIZE` | `10000` | In-memory ring buffer size for log viewer *(restart required)* |
@@ -121,10 +123,25 @@ See `.env.example` for a template.
 | `PUSH_ENABLED` | `false` | Enable Web Push browser notifications (requires HTTPS or localhost) |
 | `PUSH_VAPID_PUBLIC_KEY` | — | Public VAPID key; auto-generated on first enable via the UI (optional env override) |
 | `PUSH_VAPID_PRIVATE_KEY` | — | Private VAPID signing key (masked in the admin UI; optional env override) |
+| `CARDDAV_ENABLED` | `false` | Enable two-way CardDAV contact sync (requires a configured server URL) |
+| `CARDDAV_URL` | — | CardDAV server origin or address book URL, e.g. `https://cloud.example.com` or `.../remote.php/dav/addressbooks/user/contacts/` (**enforced**: absolute URL) |
+| `CARDDAV_USERNAME` | — | CardDAV username (Basic auth) |
+| `CARDDAV_PASSWORD` | — | CardDAV password / app password (never logged; masked in the admin UI) |
+| `CARDDAV_DELETE_POLICY` | `keep` | What happens when a contact is deleted on the server: `keep` = unlink and keep locally, `delete` = remove locally (**enforced**: `keep` or `delete`) |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
 > **Webhook receivers:** each reminder is POSTed as JSON `{"title": "...", "message": "...", "channel": "webhook", "sent_at": "<RFC3339>"}` to every configured URL. When `WEBHOOK_SECRET` is set, requests carry an `X-Datey-Signature: sha256=<hex>` header — recompute the HMAC-SHA256 of the raw body with your shared secret to verify the request came from datey. Use the "Webhook" test button in Settings → Notifications to confirm delivery before wiring up automation.
+
+### CardDAV Sync Setup
+
+CardDAV sync keeps your Datey people and birthday events in two-way sync with an external address book. Enable it in **Settings → Notifications** (or via the env vars above) and press **Sync Now** to run the first sync immediately; afterwards it runs automatically once a day.
+
+- **Nextcloud / Baikal / iCloud** — use Basic auth: set `CARDDAV_USERNAME` and `CARDDAV_PASSWORD` (for Nextcloud and iCloud, generate an app password in the account settings). Set `CARDDAV_URL` to your server origin (e.g. `https://cloud.example.com`); the address book is auto-discovered via `/.well-known/carddav`.
+- **Google Contacts** — currently behind the OAuth2 seam in the client (`OAuth2Transport` stub); not yet wired up in v1.
+- **Deletion policy** — with the default `keep`, deleting a contact on the server only unlinks the local person (they stay in Datey); with `delete`, the local person and their events are removed too. Deleting a person in Datey removes the remote vCard when the policy is `delete`.
+- **Credentials** are stored like other secrets (e.g. `SMTP_PASS`) and never rendered in the admin UI — the password field shows a masked placeholder and is left blank to keep the stored value.
+- **Notes** map to the vCard `NOTE` field and a vCard `BDAY` becomes a birthday event (including year-less dates such as `--03-15`). Provider properties (`UID`, `REV`, `ETag`) are kept as sync state and never appear in notes.
 
 ## Project Structure
 
@@ -228,6 +245,8 @@ datey/
 | `POST` | `/setup` | Create admin user |
 | `GET` | `/ical.ics` | Public iCal feed — all dates (`?key=...` required; 404 when disabled) |
 | `GET` | `/ical/{personID}.ics` | Public iCal feed — single person's dates (`?key=...` required; 404 when disabled) |
+
+> **iCal feed setup:** how to enable the feed, understand the secret key, subscribe from Google Calendar, and bypass an Authelia/SSO reverse proxy — see [docs/ical-feed.md](docs/ical-feed.md).
 | `GET` | `/api/trmnl/stats` | Public JSON stats feed for the TRMNL e-ink plugin |
 | `GET` | `/rss.xml` | Public RSS 2.0 feed of upcoming events (`?key=...` required; 404 when disabled) |
 | `GET` | `/api/upcoming` | Public JSON API of upcoming events (`?key=...` required; `days` optional, max 365; 404 when disabled) |

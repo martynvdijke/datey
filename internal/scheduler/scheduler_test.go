@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
+	"github.com/datey/datey/internal/settings"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -48,13 +49,13 @@ func newTestScheduler(t *testing.T, reminderDays int) (*Scheduler, *ent.Client, 
 	client := enttest.Open(t, dialect.SQLite, "file:test_scheduler?mode=memory&cache=shared&_fk=1")
 	t.Cleanup(func() { client.Close() })
 
-	cfg := &config.Config{ReminderDays: reminderDays}
+	cfg := &config.Config{ReminderDays: reminderDays, SchedulerCatchup: true}
 
 	reg := notifier.NewRegistry()
 	fn := &fakeNotifier{name: "email"}
 	reg.Register(fn)
 
-	return New(cfg, client, reg), client, fn, repository.NewPersonRepository(client), repository.NewEventRepository(client)
+	return New(cfg, client, reg, settings.New(client)), client, fn, repository.NewPersonRepository(client), repository.NewEventRepository(client)
 }
 
 func TestReminderMessage(t *testing.T) {
@@ -95,7 +96,7 @@ func TestProcessReminders_AnnualBirthdayFires(t *testing.T) {
 		t.Fatalf("create event: %v", err)
 	}
 
-	s.processReminders(ctx)
+	s.processReminders(ctx, false)
 
 	if n := fn.count(); n != 1 {
 		t.Errorf("expected 1 notification, got %d (messages: %v)", n, fn.messages)
@@ -117,7 +118,7 @@ func TestProcessReminders_NoOccurrenceInWindowNoReminder(t *testing.T) {
 		t.Fatalf("create event: %v", err)
 	}
 
-	s.processReminders(ctx)
+	s.processReminders(ctx, false)
 
 	if n := fn.count(); n != 0 {
 		t.Errorf("expected 0 notifications, got %d (messages: %v)", n, fn.messages)
@@ -143,7 +144,7 @@ func TestProcessReminders_YearBoundaryUsesNextYearOccurrence(t *testing.T) {
 		t.Fatalf("create event: %v", err)
 	}
 
-	s.processReminders(ctx)
+	s.processReminders(ctx, false)
 
 	nextYearKey := "email-" + fmt.Sprintf("%d-%s", ev.ID, time.Date(yesterday.Year()+1, yesterday.Month(), yesterday.Day(), 0, 0, 0, 0, time.UTC).Format("2006-01-02"))
 	thisYearKey := "email-" + fmt.Sprintf("%d-%s", ev.ID, time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 0, 0, 0, 0, time.UTC).Format("2006-01-02"))
@@ -183,7 +184,7 @@ func TestProcessReminders_OptOutSkipsBirthdayOnly(t *testing.T) {
 		t.Fatalf("create anniversary: %v", err)
 	}
 
-	s.processReminders(ctx)
+	s.processReminders(ctx, false)
 
 	if n := fn.count(); n != 1 {
 		t.Fatalf("expected 1 notification (anniversary only), got %d (messages: %v)", n, fn.messages)
@@ -208,10 +209,192 @@ func TestProcessReminders_DedupedWithinSameOccurrence(t *testing.T) {
 		t.Fatalf("create event: %v", err)
 	}
 
-	s.processReminders(ctx)
-	s.processReminders(ctx)
+	s.processReminders(ctx, false)
+	s.processReminders(ctx, false)
 
 	if n := fn.count(); n != 1 {
 		t.Errorf("expected 1 notification after two runs (deduped), got %d (messages: %v)", n, fn.messages)
+	}
+}
+
+// newTestCatchupScheduler returns a scheduler plus a helper to seed a person
+// whose birthday falls `daysAgo` days before now (a date inside the reminder
+// window when a catch-up pass runs).
+func newTestCatchupScheduler(t *testing.T, reminderDays int) (*Scheduler, *fakeNotifier, *repository.PersonRepository, *repository.EventRepository, *settings.Store) {
+	t.Helper()
+	s, _, fn, people, events := newTestScheduler(t, reminderDays)
+	return s, fn, people, events, settings.New(s.client)
+}
+
+func TestCatchUp_NoCatchUpWhenLastRunRecent(t *testing.T) {
+	s, fn, people, events, store := newTestCatchupScheduler(t, 7)
+	ctx := context.Background()
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	// A birthday 5 days ago: inside the reminder window, but the last run was
+	// only an hour ago (within the grace period), so no catch-up must fire.
+	target := midnightDaysFromNow(-5)
+	birth := time.Date(1990, target.Month(), target.Day(), 0, 0, 0, 0, time.UTC)
+	if _, err := events.CreateForPerson(ctx, person.ID, "birthday", birth, "Birthday of Dana"); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-1*time.Hour)); err != nil {
+		t.Fatalf("set last run: %v", err)
+	}
+
+	s.catchUpMissed(ctx)
+
+	if n := fn.count(); n != 0 {
+		t.Errorf("expected no catch-up within grace period, got %d notifications (messages: %v)", n, fn.messages)
+	}
+}
+
+func TestCatchUp_FiresMissedOccurrencesInWindow(t *testing.T) {
+	s, fn, people, events, store := newTestCatchupScheduler(t, 7)
+	ctx := context.Background()
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	// Birthday 5 days ago: inside [lastRun - ReminderDays, now].
+	target := midnightDaysFromNow(-5)
+	birth := time.Date(1990, target.Month(), target.Day(), 0, 0, 0, 0, time.UTC)
+	if _, err := events.CreateForPerson(ctx, person.ID, "birthday", birth, "Birthday of Dana"); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+	// Last run was 3 days ago: gap > 24h + 30m grace.
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+		t.Fatalf("set last run: %v", err)
+	}
+
+	s.catchUpMissed(ctx)
+
+	if n := fn.count(); n != 1 {
+		t.Fatalf("expected 1 catch-up notification, got %d (messages: %v)", n, fn.messages)
+	}
+	if !strings.Contains(fn.messages[0], "Missed reminder") || !strings.Contains(fn.messages[0], "days ago") {
+		t.Errorf("expected missed phrasing in catch-up message, got %q", fn.messages[0])
+	}
+}
+
+func TestCatchUp_SkipsOccurrencesOlderThanWindow(t *testing.T) {
+	s, fn, people, events, store := newTestCatchupScheduler(t, 7)
+	ctx := context.Background()
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	// Birthday 10 days ago, with a 7-day reminder window and last run 3 days
+	// ago: the catch-up window is [lastRun-7d, now], so a date 10 days back is
+	// outside it and must not fire.
+	target := midnightDaysFromNow(-10)
+	birth := time.Date(1990, target.Month(), target.Day(), 0, 0, 0, 0, time.UTC)
+	if _, err := events.CreateForPerson(ctx, person.ID, "birthday", birth, "Birthday of Dana"); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+		t.Fatalf("set last run: %v", err)
+	}
+
+	s.catchUpMissed(ctx)
+
+	if n := fn.count(); n != 0 {
+		t.Errorf("expected 0 notifications for occurrence outside window, got %d (messages: %v)", n, fn.messages)
+	}
+}
+
+func TestCatchUp_DedupPreventsDoubleSend(t *testing.T) {
+	s, fn, people, events, store := newTestCatchupScheduler(t, 7)
+	ctx := context.Background()
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	target := midnightDaysFromNow(-5)
+	birth := time.Date(1990, target.Month(), target.Day(), 0, 0, 0, 0, time.UTC)
+	ev, err := events.CreateForPerson(ctx, person.ID, "birthday", birth, "Birthday of Dana")
+	if err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+		t.Fatalf("set last run: %v", err)
+	}
+
+	// First catch-up pass sends the reminder...
+	s.catchUpMissed(ctx)
+	if n := fn.count(); n != 1 {
+		t.Fatalf("expected 1 notification on first catch-up, got %d", n)
+	}
+
+	// ...and the persisted last_scheduler_run is refreshed, so a restart right
+	// after must NOT catch up again.
+	last, err := store.LastSchedulerRun(ctx)
+	if err != nil || last == nil {
+		t.Fatalf("expected last run persisted after catch-up, got %v (err %v)", last, err)
+	}
+	if time.Since(*last) > 5*time.Minute {
+		t.Errorf("last run not refreshed by catch-up: %s", last.Format(time.RFC3339))
+	}
+
+	// Force a second catch-up regardless (simulating a large gap) and verify
+	// the notification_log dedup prevents a duplicate send.
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+		t.Fatalf("set last run: %v", err)
+	}
+	s.catchUpMissed(ctx)
+
+	if n := fn.count(); n != 1 {
+		t.Errorf("expected still 1 notification after second catch-up (deduped), got %d", n)
+	}
+
+	// Sanity: the event is unrelated to dedup correctness.
+	_ = ev
+}
+
+func TestCatchUp_DisabledWhenSchedulerCatchupFalse(t *testing.T) {
+	s, fn, people, events, _ := newTestCatchupScheduler(t, 7)
+	ctx := context.Background()
+
+	// Simulate the toggle being off via the in-memory cfg (as ApplyForm would).
+	s.cfg.SchedulerCatchup = false
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	target := midnightDaysFromNow(-5)
+	birth := time.Date(1990, target.Month(), target.Day(), 0, 0, 0, 0, time.UTC)
+	if _, err := events.CreateForPerson(ctx, person.ID, "birthday", birth, "Birthday of Dana"); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	s.catchUpMissed(ctx)
+
+	if n := fn.count(); n != 0 {
+		t.Errorf("expected 0 notifications when catch-up disabled, got %d", n)
+	}
+}
+
+func TestCatchUp_PersistsLastRunAfterPass(t *testing.T) {
+	s, _, _, _, store := newTestCatchupScheduler(t, 7)
+	ctx := context.Background()
+
+	s.persistRun(ctx)
+
+	last, err := store.LastSchedulerRun(ctx)
+	if err != nil {
+		t.Fatalf("read last run: %v", err)
+	}
+	if last == nil {
+		t.Fatal("expected last_scheduler_run to be persisted after a pass")
+	}
+	if time.Since(*last) > 5*time.Minute {
+		t.Errorf("persisted last run too old: %s", last.Format(time.RFC3339))
 	}
 }

@@ -19,6 +19,10 @@ const (
 	FieldSchedulerHour = "scheduler_hour"
 	// FieldReminderDays holds the string denoting the reminder_days field in the database.
 	FieldReminderDays = "reminder_days"
+	// FieldLastSchedulerRun holds the string denoting the last_scheduler_run field in the database.
+	FieldLastSchedulerRun = "last_scheduler_run"
+	// FieldSchedulerCatchup holds the string denoting the scheduler_catchup field in the database.
+	FieldSchedulerCatchup = "scheduler_catchup"
 	// FieldDateVariant holds the string denoting the date_variant field in the database.
 	FieldDateVariant = "date_variant"
 	// FieldReminderDigest holds the string denoting the reminder_digest field in the database.
@@ -107,6 +111,20 @@ const (
 	FieldImmichURL = "immich_url"
 	// FieldImmichAPIKey holds the string denoting the immich_api_key field in the database.
 	FieldImmichAPIKey = "immich_api_key"
+	// FieldCarddavEnabled holds the string denoting the carddav_enabled field in the database.
+	FieldCarddavEnabled = "carddav_enabled"
+	// FieldCarddavURL holds the string denoting the carddav_url field in the database.
+	FieldCarddavURL = "carddav_url"
+	// FieldCarddavUsername holds the string denoting the carddav_username field in the database.
+	FieldCarddavUsername = "carddav_username"
+	// FieldCarddavPassword holds the string denoting the carddav_password field in the database.
+	FieldCarddavPassword = "carddav_password"
+	// FieldCarddavSyncToken holds the string denoting the carddav_sync_token field in the database.
+	FieldCarddavSyncToken = "carddav_sync_token"
+	// FieldCarddavLastSync holds the string denoting the carddav_last_sync field in the database.
+	FieldCarddavLastSync = "carddav_last_sync"
+	// FieldCarddavDeletePolicy holds the string denoting the carddav_delete_policy field in the database.
+	FieldCarddavDeletePolicy = "carddav_delete_policy"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the appconfig in the database.
@@ -120,6 +138,8 @@ var Columns = []string{
 	FieldDataDir,
 	FieldSchedulerHour,
 	FieldReminderDays,
+	FieldLastSchedulerRun,
+	FieldSchedulerCatchup,
 	FieldDateVariant,
 	FieldReminderDigest,
 	FieldReminderStages,
@@ -164,6 +184,13 @@ var Columns = []string{
 	FieldPushVapidPrivateKey,
 	FieldImmichURL,
 	FieldImmichAPIKey,
+	FieldCarddavEnabled,
+	FieldCarddavURL,
+	FieldCarddavUsername,
+	FieldCarddavPassword,
+	FieldCarddavSyncToken,
+	FieldCarddavLastSync,
+	FieldCarddavDeletePolicy,
 	FieldUpdatedAt,
 }
 
@@ -203,6 +230,16 @@ func BySchedulerHour(opts ...sql.OrderTermOption) OrderOption {
 // ByReminderDays orders the results by the reminder_days field.
 func ByReminderDays(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReminderDays, opts...).ToFunc()
+}
+
+// ByLastSchedulerRun orders the results by the last_scheduler_run field.
+func ByLastSchedulerRun(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastSchedulerRun, opts...).ToFunc()
+}
+
+// BySchedulerCatchup orders the results by the scheduler_catchup field.
+func BySchedulerCatchup(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSchedulerCatchup, opts...).ToFunc()
 }
 
 // ByDateVariant orders the results by the date_variant field.
@@ -423,6 +460,41 @@ func ByImmichURL(opts ...sql.OrderTermOption) OrderOption {
 // ByImmichAPIKey orders the results by the immich_api_key field.
 func ByImmichAPIKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldImmichAPIKey, opts...).ToFunc()
+}
+
+// ByCarddavEnabled orders the results by the carddav_enabled field.
+func ByCarddavEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavEnabled, opts...).ToFunc()
+}
+
+// ByCarddavURL orders the results by the carddav_url field.
+func ByCarddavURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavURL, opts...).ToFunc()
+}
+
+// ByCarddavUsername orders the results by the carddav_username field.
+func ByCarddavUsername(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavUsername, opts...).ToFunc()
+}
+
+// ByCarddavPassword orders the results by the carddav_password field.
+func ByCarddavPassword(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavPassword, opts...).ToFunc()
+}
+
+// ByCarddavSyncToken orders the results by the carddav_sync_token field.
+func ByCarddavSyncToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavSyncToken, opts...).ToFunc()
+}
+
+// ByCarddavLastSync orders the results by the carddav_last_sync field.
+func ByCarddavLastSync(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavLastSync, opts...).ToFunc()
+}
+
+// ByCarddavDeletePolicy orders the results by the carddav_delete_policy field.
+func ByCarddavDeletePolicy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavDeletePolicy, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

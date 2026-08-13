@@ -172,6 +172,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Get("/settings/logs", h.settingsLogs)
 				r.Get("/settings/backup", h.settingsBackup)
 				r.Post("/settings/backup", h.settingsBackupRun)
+				r.Post("/settings/carddav", h.settingsCarddavSave)
+				r.Post("/settings/carddav/sync", h.settingsCarddavSync)
 				r.Post("/settings/test/{channel}", h.testNotification)
 				r.Post("/settings/logs/level", h.setLogLevel)
 				// Legacy redirects

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -29,10 +30,43 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 		{Name: "webpush", Configured: h.notifReg.IsConfigured("webpush")},
 	}
 
+	// CardDAV section: on a failed POST, re-render with the submitted values
+	// (except the password, which is never rendered) and per-field errors.
+	errs, _ := r.Context().Value(configFormErrorsKey{}).(map[string]string)
+	submitted := url.Values{}
+	if r.Method == http.MethodPost {
+		_ = r.ParseForm()
+		submitted = r.PostForm
+	}
+
+	carddav := carddavView{
+		Enabled:      h.cfg.CarddavEnabled,
+		URL:          h.cfg.CarddavURL,
+		Username:     h.cfg.CarddavUsername,
+		HasPassword:  h.cfg.CarddavPassword != "",
+		DeletePolicy: h.cfg.CarddavDeletePolicy,
+		Errors:       errs,
+	}
+	if submitted != nil {
+		if v, ok := submitted["CARDDAV_ENABLED"]; ok && len(v) > 0 {
+			carddav.Enabled = v[0] == "on"
+		}
+		if v := submitted.Get("CARDDAV_URL"); v != "" {
+			carddav.URL = v
+		}
+		if v := submitted.Get("CARDDAV_USERNAME"); v != "" {
+			carddav.Username = v
+		}
+		if v := submitted.Get("CARDDAV_DELETE_POLICY"); v != "" {
+			carddav.DeletePolicy = v
+		}
+	}
+
 	h.render(w, r, "settings.html", map[string]any{
 		"Title":       "Datey - Settings",
 		"SettingsTab": "notifications",
 		"Channels":    channels,
+		"Carddav":     carddav,
 	})
 }
 

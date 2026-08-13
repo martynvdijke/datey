@@ -62,6 +62,8 @@ type AppConfigMutation struct {
 	addscheduler_hour        *int
 	reminder_days            *int
 	addreminder_days         *int
+	last_scheduler_run       *time.Time
+	scheduler_catchup        *bool
 	date_variant             *string
 	reminder_digest          *bool
 	reminder_stages          *string
@@ -112,6 +114,13 @@ type AppConfigMutation struct {
 	push_vapid_private_key   *string
 	immich_url               *string
 	immich_api_key           *string
+	carddav_enabled          *bool
+	carddav_url              *string
+	carddav_username         *string
+	carddav_password         *string
+	carddav_sync_token       *string
+	carddav_last_sync        *time.Time
+	carddav_delete_policy    *string
 	updated_at               *time.Time
 	clearedFields            map[string]struct{}
 	done                     bool
@@ -474,6 +483,104 @@ func (m *AppConfigMutation) ResetReminderDays() {
 	m.reminder_days = nil
 	m.addreminder_days = nil
 	delete(m.clearedFields, appconfig.FieldReminderDays)
+}
+
+// SetLastSchedulerRun sets the "last_scheduler_run" field.
+func (m *AppConfigMutation) SetLastSchedulerRun(t time.Time) {
+	m.last_scheduler_run = &t
+}
+
+// LastSchedulerRun returns the value of the "last_scheduler_run" field in the mutation.
+func (m *AppConfigMutation) LastSchedulerRun() (r time.Time, exists bool) {
+	v := m.last_scheduler_run
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSchedulerRun returns the old "last_scheduler_run" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldLastSchedulerRun(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSchedulerRun is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSchedulerRun requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSchedulerRun: %w", err)
+	}
+	return oldValue.LastSchedulerRun, nil
+}
+
+// ClearLastSchedulerRun clears the value of the "last_scheduler_run" field.
+func (m *AppConfigMutation) ClearLastSchedulerRun() {
+	m.last_scheduler_run = nil
+	m.clearedFields[appconfig.FieldLastSchedulerRun] = struct{}{}
+}
+
+// LastSchedulerRunCleared returns if the "last_scheduler_run" field was cleared in this mutation.
+func (m *AppConfigMutation) LastSchedulerRunCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldLastSchedulerRun]
+	return ok
+}
+
+// ResetLastSchedulerRun resets all changes to the "last_scheduler_run" field.
+func (m *AppConfigMutation) ResetLastSchedulerRun() {
+	m.last_scheduler_run = nil
+	delete(m.clearedFields, appconfig.FieldLastSchedulerRun)
+}
+
+// SetSchedulerCatchup sets the "scheduler_catchup" field.
+func (m *AppConfigMutation) SetSchedulerCatchup(b bool) {
+	m.scheduler_catchup = &b
+}
+
+// SchedulerCatchup returns the value of the "scheduler_catchup" field in the mutation.
+func (m *AppConfigMutation) SchedulerCatchup() (r bool, exists bool) {
+	v := m.scheduler_catchup
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSchedulerCatchup returns the old "scheduler_catchup" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSchedulerCatchup(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSchedulerCatchup is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSchedulerCatchup requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSchedulerCatchup: %w", err)
+	}
+	return oldValue.SchedulerCatchup, nil
+}
+
+// ClearSchedulerCatchup clears the value of the "scheduler_catchup" field.
+func (m *AppConfigMutation) ClearSchedulerCatchup() {
+	m.scheduler_catchup = nil
+	m.clearedFields[appconfig.FieldSchedulerCatchup] = struct{}{}
+}
+
+// SchedulerCatchupCleared returns if the "scheduler_catchup" field was cleared in this mutation.
+func (m *AppConfigMutation) SchedulerCatchupCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSchedulerCatchup]
+	return ok
+}
+
+// ResetSchedulerCatchup resets all changes to the "scheduler_catchup" field.
+func (m *AppConfigMutation) ResetSchedulerCatchup() {
+	m.scheduler_catchup = nil
+	delete(m.clearedFields, appconfig.FieldSchedulerCatchup)
 }
 
 // SetDateVariant sets the "date_variant" field.
@@ -2758,6 +2865,349 @@ func (m *AppConfigMutation) ResetImmichAPIKey() {
 	delete(m.clearedFields, appconfig.FieldImmichAPIKey)
 }
 
+// SetCarddavEnabled sets the "carddav_enabled" field.
+func (m *AppConfigMutation) SetCarddavEnabled(b bool) {
+	m.carddav_enabled = &b
+}
+
+// CarddavEnabled returns the value of the "carddav_enabled" field in the mutation.
+func (m *AppConfigMutation) CarddavEnabled() (r bool, exists bool) {
+	v := m.carddav_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavEnabled returns the old "carddav_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldCarddavEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavEnabled: %w", err)
+	}
+	return oldValue.CarddavEnabled, nil
+}
+
+// ClearCarddavEnabled clears the value of the "carddav_enabled" field.
+func (m *AppConfigMutation) ClearCarddavEnabled() {
+	m.carddav_enabled = nil
+	m.clearedFields[appconfig.FieldCarddavEnabled] = struct{}{}
+}
+
+// CarddavEnabledCleared returns if the "carddav_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) CarddavEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldCarddavEnabled]
+	return ok
+}
+
+// ResetCarddavEnabled resets all changes to the "carddav_enabled" field.
+func (m *AppConfigMutation) ResetCarddavEnabled() {
+	m.carddav_enabled = nil
+	delete(m.clearedFields, appconfig.FieldCarddavEnabled)
+}
+
+// SetCarddavURL sets the "carddav_url" field.
+func (m *AppConfigMutation) SetCarddavURL(s string) {
+	m.carddav_url = &s
+}
+
+// CarddavURL returns the value of the "carddav_url" field in the mutation.
+func (m *AppConfigMutation) CarddavURL() (r string, exists bool) {
+	v := m.carddav_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavURL returns the old "carddav_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldCarddavURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavURL: %w", err)
+	}
+	return oldValue.CarddavURL, nil
+}
+
+// ClearCarddavURL clears the value of the "carddav_url" field.
+func (m *AppConfigMutation) ClearCarddavURL() {
+	m.carddav_url = nil
+	m.clearedFields[appconfig.FieldCarddavURL] = struct{}{}
+}
+
+// CarddavURLCleared returns if the "carddav_url" field was cleared in this mutation.
+func (m *AppConfigMutation) CarddavURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldCarddavURL]
+	return ok
+}
+
+// ResetCarddavURL resets all changes to the "carddav_url" field.
+func (m *AppConfigMutation) ResetCarddavURL() {
+	m.carddav_url = nil
+	delete(m.clearedFields, appconfig.FieldCarddavURL)
+}
+
+// SetCarddavUsername sets the "carddav_username" field.
+func (m *AppConfigMutation) SetCarddavUsername(s string) {
+	m.carddav_username = &s
+}
+
+// CarddavUsername returns the value of the "carddav_username" field in the mutation.
+func (m *AppConfigMutation) CarddavUsername() (r string, exists bool) {
+	v := m.carddav_username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavUsername returns the old "carddav_username" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldCarddavUsername(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavUsername: %w", err)
+	}
+	return oldValue.CarddavUsername, nil
+}
+
+// ClearCarddavUsername clears the value of the "carddav_username" field.
+func (m *AppConfigMutation) ClearCarddavUsername() {
+	m.carddav_username = nil
+	m.clearedFields[appconfig.FieldCarddavUsername] = struct{}{}
+}
+
+// CarddavUsernameCleared returns if the "carddav_username" field was cleared in this mutation.
+func (m *AppConfigMutation) CarddavUsernameCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldCarddavUsername]
+	return ok
+}
+
+// ResetCarddavUsername resets all changes to the "carddav_username" field.
+func (m *AppConfigMutation) ResetCarddavUsername() {
+	m.carddav_username = nil
+	delete(m.clearedFields, appconfig.FieldCarddavUsername)
+}
+
+// SetCarddavPassword sets the "carddav_password" field.
+func (m *AppConfigMutation) SetCarddavPassword(s string) {
+	m.carddav_password = &s
+}
+
+// CarddavPassword returns the value of the "carddav_password" field in the mutation.
+func (m *AppConfigMutation) CarddavPassword() (r string, exists bool) {
+	v := m.carddav_password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavPassword returns the old "carddav_password" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldCarddavPassword(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavPassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavPassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavPassword: %w", err)
+	}
+	return oldValue.CarddavPassword, nil
+}
+
+// ClearCarddavPassword clears the value of the "carddav_password" field.
+func (m *AppConfigMutation) ClearCarddavPassword() {
+	m.carddav_password = nil
+	m.clearedFields[appconfig.FieldCarddavPassword] = struct{}{}
+}
+
+// CarddavPasswordCleared returns if the "carddav_password" field was cleared in this mutation.
+func (m *AppConfigMutation) CarddavPasswordCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldCarddavPassword]
+	return ok
+}
+
+// ResetCarddavPassword resets all changes to the "carddav_password" field.
+func (m *AppConfigMutation) ResetCarddavPassword() {
+	m.carddav_password = nil
+	delete(m.clearedFields, appconfig.FieldCarddavPassword)
+}
+
+// SetCarddavSyncToken sets the "carddav_sync_token" field.
+func (m *AppConfigMutation) SetCarddavSyncToken(s string) {
+	m.carddav_sync_token = &s
+}
+
+// CarddavSyncToken returns the value of the "carddav_sync_token" field in the mutation.
+func (m *AppConfigMutation) CarddavSyncToken() (r string, exists bool) {
+	v := m.carddav_sync_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavSyncToken returns the old "carddav_sync_token" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldCarddavSyncToken(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavSyncToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavSyncToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavSyncToken: %w", err)
+	}
+	return oldValue.CarddavSyncToken, nil
+}
+
+// ClearCarddavSyncToken clears the value of the "carddav_sync_token" field.
+func (m *AppConfigMutation) ClearCarddavSyncToken() {
+	m.carddav_sync_token = nil
+	m.clearedFields[appconfig.FieldCarddavSyncToken] = struct{}{}
+}
+
+// CarddavSyncTokenCleared returns if the "carddav_sync_token" field was cleared in this mutation.
+func (m *AppConfigMutation) CarddavSyncTokenCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldCarddavSyncToken]
+	return ok
+}
+
+// ResetCarddavSyncToken resets all changes to the "carddav_sync_token" field.
+func (m *AppConfigMutation) ResetCarddavSyncToken() {
+	m.carddav_sync_token = nil
+	delete(m.clearedFields, appconfig.FieldCarddavSyncToken)
+}
+
+// SetCarddavLastSync sets the "carddav_last_sync" field.
+func (m *AppConfigMutation) SetCarddavLastSync(t time.Time) {
+	m.carddav_last_sync = &t
+}
+
+// CarddavLastSync returns the value of the "carddav_last_sync" field in the mutation.
+func (m *AppConfigMutation) CarddavLastSync() (r time.Time, exists bool) {
+	v := m.carddav_last_sync
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavLastSync returns the old "carddav_last_sync" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldCarddavLastSync(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavLastSync is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavLastSync requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavLastSync: %w", err)
+	}
+	return oldValue.CarddavLastSync, nil
+}
+
+// ClearCarddavLastSync clears the value of the "carddav_last_sync" field.
+func (m *AppConfigMutation) ClearCarddavLastSync() {
+	m.carddav_last_sync = nil
+	m.clearedFields[appconfig.FieldCarddavLastSync] = struct{}{}
+}
+
+// CarddavLastSyncCleared returns if the "carddav_last_sync" field was cleared in this mutation.
+func (m *AppConfigMutation) CarddavLastSyncCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldCarddavLastSync]
+	return ok
+}
+
+// ResetCarddavLastSync resets all changes to the "carddav_last_sync" field.
+func (m *AppConfigMutation) ResetCarddavLastSync() {
+	m.carddav_last_sync = nil
+	delete(m.clearedFields, appconfig.FieldCarddavLastSync)
+}
+
+// SetCarddavDeletePolicy sets the "carddav_delete_policy" field.
+func (m *AppConfigMutation) SetCarddavDeletePolicy(s string) {
+	m.carddav_delete_policy = &s
+}
+
+// CarddavDeletePolicy returns the value of the "carddav_delete_policy" field in the mutation.
+func (m *AppConfigMutation) CarddavDeletePolicy() (r string, exists bool) {
+	v := m.carddav_delete_policy
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavDeletePolicy returns the old "carddav_delete_policy" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldCarddavDeletePolicy(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavDeletePolicy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavDeletePolicy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavDeletePolicy: %w", err)
+	}
+	return oldValue.CarddavDeletePolicy, nil
+}
+
+// ClearCarddavDeletePolicy clears the value of the "carddav_delete_policy" field.
+func (m *AppConfigMutation) ClearCarddavDeletePolicy() {
+	m.carddav_delete_policy = nil
+	m.clearedFields[appconfig.FieldCarddavDeletePolicy] = struct{}{}
+}
+
+// CarddavDeletePolicyCleared returns if the "carddav_delete_policy" field was cleared in this mutation.
+func (m *AppConfigMutation) CarddavDeletePolicyCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldCarddavDeletePolicy]
+	return ok
+}
+
+// ResetCarddavDeletePolicy resets all changes to the "carddav_delete_policy" field.
+func (m *AppConfigMutation) ResetCarddavDeletePolicy() {
+	m.carddav_delete_policy = nil
+	delete(m.clearedFields, appconfig.FieldCarddavDeletePolicy)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *AppConfigMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -2841,7 +3291,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 49)
+	fields := make([]string, 0, 58)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -2853,6 +3303,12 @@ func (m *AppConfigMutation) Fields() []string {
 	}
 	if m.reminder_days != nil {
 		fields = append(fields, appconfig.FieldReminderDays)
+	}
+	if m.last_scheduler_run != nil {
+		fields = append(fields, appconfig.FieldLastSchedulerRun)
+	}
+	if m.scheduler_catchup != nil {
+		fields = append(fields, appconfig.FieldSchedulerCatchup)
 	}
 	if m.date_variant != nil {
 		fields = append(fields, appconfig.FieldDateVariant)
@@ -2986,6 +3442,27 @@ func (m *AppConfigMutation) Fields() []string {
 	if m.immich_api_key != nil {
 		fields = append(fields, appconfig.FieldImmichAPIKey)
 	}
+	if m.carddav_enabled != nil {
+		fields = append(fields, appconfig.FieldCarddavEnabled)
+	}
+	if m.carddav_url != nil {
+		fields = append(fields, appconfig.FieldCarddavURL)
+	}
+	if m.carddav_username != nil {
+		fields = append(fields, appconfig.FieldCarddavUsername)
+	}
+	if m.carddav_password != nil {
+		fields = append(fields, appconfig.FieldCarddavPassword)
+	}
+	if m.carddav_sync_token != nil {
+		fields = append(fields, appconfig.FieldCarddavSyncToken)
+	}
+	if m.carddav_last_sync != nil {
+		fields = append(fields, appconfig.FieldCarddavLastSync)
+	}
+	if m.carddav_delete_policy != nil {
+		fields = append(fields, appconfig.FieldCarddavDeletePolicy)
+	}
 	if m.updated_at != nil {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -3005,6 +3482,10 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.SchedulerHour()
 	case appconfig.FieldReminderDays:
 		return m.ReminderDays()
+	case appconfig.FieldLastSchedulerRun:
+		return m.LastSchedulerRun()
+	case appconfig.FieldSchedulerCatchup:
+		return m.SchedulerCatchup()
 	case appconfig.FieldDateVariant:
 		return m.DateVariant()
 	case appconfig.FieldReminderDigest:
@@ -3093,6 +3574,20 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.ImmichURL()
 	case appconfig.FieldImmichAPIKey:
 		return m.ImmichAPIKey()
+	case appconfig.FieldCarddavEnabled:
+		return m.CarddavEnabled()
+	case appconfig.FieldCarddavURL:
+		return m.CarddavURL()
+	case appconfig.FieldCarddavUsername:
+		return m.CarddavUsername()
+	case appconfig.FieldCarddavPassword:
+		return m.CarddavPassword()
+	case appconfig.FieldCarddavSyncToken:
+		return m.CarddavSyncToken()
+	case appconfig.FieldCarddavLastSync:
+		return m.CarddavLastSync()
+	case appconfig.FieldCarddavDeletePolicy:
+		return m.CarddavDeletePolicy()
 	case appconfig.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -3112,6 +3607,10 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldSchedulerHour(ctx)
 	case appconfig.FieldReminderDays:
 		return m.OldReminderDays(ctx)
+	case appconfig.FieldLastSchedulerRun:
+		return m.OldLastSchedulerRun(ctx)
+	case appconfig.FieldSchedulerCatchup:
+		return m.OldSchedulerCatchup(ctx)
 	case appconfig.FieldDateVariant:
 		return m.OldDateVariant(ctx)
 	case appconfig.FieldReminderDigest:
@@ -3200,6 +3699,20 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldImmichURL(ctx)
 	case appconfig.FieldImmichAPIKey:
 		return m.OldImmichAPIKey(ctx)
+	case appconfig.FieldCarddavEnabled:
+		return m.OldCarddavEnabled(ctx)
+	case appconfig.FieldCarddavURL:
+		return m.OldCarddavURL(ctx)
+	case appconfig.FieldCarddavUsername:
+		return m.OldCarddavUsername(ctx)
+	case appconfig.FieldCarddavPassword:
+		return m.OldCarddavPassword(ctx)
+	case appconfig.FieldCarddavSyncToken:
+		return m.OldCarddavSyncToken(ctx)
+	case appconfig.FieldCarddavLastSync:
+		return m.OldCarddavLastSync(ctx)
+	case appconfig.FieldCarddavDeletePolicy:
+		return m.OldCarddavDeletePolicy(ctx)
 	case appconfig.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -3238,6 +3751,20 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReminderDays(v)
+		return nil
+	case appconfig.FieldLastSchedulerRun:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSchedulerRun(v)
+		return nil
+	case appconfig.FieldSchedulerCatchup:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSchedulerCatchup(v)
 		return nil
 	case appconfig.FieldDateVariant:
 		v, ok := value.(string)
@@ -3547,6 +4074,55 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetImmichAPIKey(v)
 		return nil
+	case appconfig.FieldCarddavEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavEnabled(v)
+		return nil
+	case appconfig.FieldCarddavURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavURL(v)
+		return nil
+	case appconfig.FieldCarddavUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavUsername(v)
+		return nil
+	case appconfig.FieldCarddavPassword:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavPassword(v)
+		return nil
+	case appconfig.FieldCarddavSyncToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavSyncToken(v)
+		return nil
+	case appconfig.FieldCarddavLastSync:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavLastSync(v)
+		return nil
+	case appconfig.FieldCarddavDeletePolicy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavDeletePolicy(v)
+		return nil
 	case appconfig.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -3707,6 +4283,12 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldReminderDays) {
 		fields = append(fields, appconfig.FieldReminderDays)
 	}
+	if m.FieldCleared(appconfig.FieldLastSchedulerRun) {
+		fields = append(fields, appconfig.FieldLastSchedulerRun)
+	}
+	if m.FieldCleared(appconfig.FieldSchedulerCatchup) {
+		fields = append(fields, appconfig.FieldSchedulerCatchup)
+	}
 	if m.FieldCleared(appconfig.FieldDateVariant) {
 		fields = append(fields, appconfig.FieldDateVariant)
 	}
@@ -3839,6 +4421,27 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldImmichAPIKey) {
 		fields = append(fields, appconfig.FieldImmichAPIKey)
 	}
+	if m.FieldCleared(appconfig.FieldCarddavEnabled) {
+		fields = append(fields, appconfig.FieldCarddavEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldCarddavURL) {
+		fields = append(fields, appconfig.FieldCarddavURL)
+	}
+	if m.FieldCleared(appconfig.FieldCarddavUsername) {
+		fields = append(fields, appconfig.FieldCarddavUsername)
+	}
+	if m.FieldCleared(appconfig.FieldCarddavPassword) {
+		fields = append(fields, appconfig.FieldCarddavPassword)
+	}
+	if m.FieldCleared(appconfig.FieldCarddavSyncToken) {
+		fields = append(fields, appconfig.FieldCarddavSyncToken)
+	}
+	if m.FieldCleared(appconfig.FieldCarddavLastSync) {
+		fields = append(fields, appconfig.FieldCarddavLastSync)
+	}
+	if m.FieldCleared(appconfig.FieldCarddavDeletePolicy) {
+		fields = append(fields, appconfig.FieldCarddavDeletePolicy)
+	}
 	if m.FieldCleared(appconfig.FieldUpdatedAt) {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -3867,6 +4470,12 @@ func (m *AppConfigMutation) ClearField(name string) error {
 		return nil
 	case appconfig.FieldReminderDays:
 		m.ClearReminderDays()
+		return nil
+	case appconfig.FieldLastSchedulerRun:
+		m.ClearLastSchedulerRun()
+		return nil
+	case appconfig.FieldSchedulerCatchup:
+		m.ClearSchedulerCatchup()
 		return nil
 	case appconfig.FieldDateVariant:
 		m.ClearDateVariant()
@@ -4000,6 +4609,27 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldImmichAPIKey:
 		m.ClearImmichAPIKey()
 		return nil
+	case appconfig.FieldCarddavEnabled:
+		m.ClearCarddavEnabled()
+		return nil
+	case appconfig.FieldCarddavURL:
+		m.ClearCarddavURL()
+		return nil
+	case appconfig.FieldCarddavUsername:
+		m.ClearCarddavUsername()
+		return nil
+	case appconfig.FieldCarddavPassword:
+		m.ClearCarddavPassword()
+		return nil
+	case appconfig.FieldCarddavSyncToken:
+		m.ClearCarddavSyncToken()
+		return nil
+	case appconfig.FieldCarddavLastSync:
+		m.ClearCarddavLastSync()
+		return nil
+	case appconfig.FieldCarddavDeletePolicy:
+		m.ClearCarddavDeletePolicy()
+		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ClearUpdatedAt()
 		return nil
@@ -4022,6 +4652,12 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldReminderDays:
 		m.ResetReminderDays()
+		return nil
+	case appconfig.FieldLastSchedulerRun:
+		m.ResetLastSchedulerRun()
+		return nil
+	case appconfig.FieldSchedulerCatchup:
+		m.ResetSchedulerCatchup()
 		return nil
 	case appconfig.FieldDateVariant:
 		m.ResetDateVariant()
@@ -4154,6 +4790,27 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldImmichAPIKey:
 		m.ResetImmichAPIKey()
+		return nil
+	case appconfig.FieldCarddavEnabled:
+		m.ResetCarddavEnabled()
+		return nil
+	case appconfig.FieldCarddavURL:
+		m.ResetCarddavURL()
+		return nil
+	case appconfig.FieldCarddavUsername:
+		m.ResetCarddavUsername()
+		return nil
+	case appconfig.FieldCarddavPassword:
+		m.ResetCarddavPassword()
+		return nil
+	case appconfig.FieldCarddavSyncToken:
+		m.ResetCarddavSyncToken()
+		return nil
+	case appconfig.FieldCarddavLastSync:
+		m.ResetCarddavLastSync()
+		return nil
+	case appconfig.FieldCarddavDeletePolicy:
+		m.ResetCarddavDeletePolicy()
 		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ResetUpdatedAt()
@@ -7196,6 +7853,12 @@ type PersonMutation struct {
 	appendreminder_days   []int
 	immich_person_id      *string
 	immich_photo_disabled *bool
+	carddav_uid           *string
+	carddav_href          *string
+	carddav_etag          *string
+	carddav_rev           *string
+	carddav_last_modified *time.Time
+	carddav_pending_sync  *bool
 	created_at            *time.Time
 	updated_at            *time.Time
 	clearedFields         map[string]struct{}
@@ -7680,6 +8343,287 @@ func (m *PersonMutation) ResetImmichPhotoDisabled() {
 	m.immich_photo_disabled = nil
 }
 
+// SetCarddavUID sets the "carddav_uid" field.
+func (m *PersonMutation) SetCarddavUID(s string) {
+	m.carddav_uid = &s
+}
+
+// CarddavUID returns the value of the "carddav_uid" field in the mutation.
+func (m *PersonMutation) CarddavUID() (r string, exists bool) {
+	v := m.carddav_uid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavUID returns the old "carddav_uid" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldCarddavUID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavUID: %w", err)
+	}
+	return oldValue.CarddavUID, nil
+}
+
+// ClearCarddavUID clears the value of the "carddav_uid" field.
+func (m *PersonMutation) ClearCarddavUID() {
+	m.carddav_uid = nil
+	m.clearedFields[person.FieldCarddavUID] = struct{}{}
+}
+
+// CarddavUIDCleared returns if the "carddav_uid" field was cleared in this mutation.
+func (m *PersonMutation) CarddavUIDCleared() bool {
+	_, ok := m.clearedFields[person.FieldCarddavUID]
+	return ok
+}
+
+// ResetCarddavUID resets all changes to the "carddav_uid" field.
+func (m *PersonMutation) ResetCarddavUID() {
+	m.carddav_uid = nil
+	delete(m.clearedFields, person.FieldCarddavUID)
+}
+
+// SetCarddavHref sets the "carddav_href" field.
+func (m *PersonMutation) SetCarddavHref(s string) {
+	m.carddav_href = &s
+}
+
+// CarddavHref returns the value of the "carddav_href" field in the mutation.
+func (m *PersonMutation) CarddavHref() (r string, exists bool) {
+	v := m.carddav_href
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavHref returns the old "carddav_href" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldCarddavHref(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavHref is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavHref requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavHref: %w", err)
+	}
+	return oldValue.CarddavHref, nil
+}
+
+// ClearCarddavHref clears the value of the "carddav_href" field.
+func (m *PersonMutation) ClearCarddavHref() {
+	m.carddav_href = nil
+	m.clearedFields[person.FieldCarddavHref] = struct{}{}
+}
+
+// CarddavHrefCleared returns if the "carddav_href" field was cleared in this mutation.
+func (m *PersonMutation) CarddavHrefCleared() bool {
+	_, ok := m.clearedFields[person.FieldCarddavHref]
+	return ok
+}
+
+// ResetCarddavHref resets all changes to the "carddav_href" field.
+func (m *PersonMutation) ResetCarddavHref() {
+	m.carddav_href = nil
+	delete(m.clearedFields, person.FieldCarddavHref)
+}
+
+// SetCarddavEtag sets the "carddav_etag" field.
+func (m *PersonMutation) SetCarddavEtag(s string) {
+	m.carddav_etag = &s
+}
+
+// CarddavEtag returns the value of the "carddav_etag" field in the mutation.
+func (m *PersonMutation) CarddavEtag() (r string, exists bool) {
+	v := m.carddav_etag
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavEtag returns the old "carddav_etag" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldCarddavEtag(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavEtag is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavEtag requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavEtag: %w", err)
+	}
+	return oldValue.CarddavEtag, nil
+}
+
+// ClearCarddavEtag clears the value of the "carddav_etag" field.
+func (m *PersonMutation) ClearCarddavEtag() {
+	m.carddav_etag = nil
+	m.clearedFields[person.FieldCarddavEtag] = struct{}{}
+}
+
+// CarddavEtagCleared returns if the "carddav_etag" field was cleared in this mutation.
+func (m *PersonMutation) CarddavEtagCleared() bool {
+	_, ok := m.clearedFields[person.FieldCarddavEtag]
+	return ok
+}
+
+// ResetCarddavEtag resets all changes to the "carddav_etag" field.
+func (m *PersonMutation) ResetCarddavEtag() {
+	m.carddav_etag = nil
+	delete(m.clearedFields, person.FieldCarddavEtag)
+}
+
+// SetCarddavRev sets the "carddav_rev" field.
+func (m *PersonMutation) SetCarddavRev(s string) {
+	m.carddav_rev = &s
+}
+
+// CarddavRev returns the value of the "carddav_rev" field in the mutation.
+func (m *PersonMutation) CarddavRev() (r string, exists bool) {
+	v := m.carddav_rev
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavRev returns the old "carddav_rev" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldCarddavRev(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavRev is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavRev requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavRev: %w", err)
+	}
+	return oldValue.CarddavRev, nil
+}
+
+// ClearCarddavRev clears the value of the "carddav_rev" field.
+func (m *PersonMutation) ClearCarddavRev() {
+	m.carddav_rev = nil
+	m.clearedFields[person.FieldCarddavRev] = struct{}{}
+}
+
+// CarddavRevCleared returns if the "carddav_rev" field was cleared in this mutation.
+func (m *PersonMutation) CarddavRevCleared() bool {
+	_, ok := m.clearedFields[person.FieldCarddavRev]
+	return ok
+}
+
+// ResetCarddavRev resets all changes to the "carddav_rev" field.
+func (m *PersonMutation) ResetCarddavRev() {
+	m.carddav_rev = nil
+	delete(m.clearedFields, person.FieldCarddavRev)
+}
+
+// SetCarddavLastModified sets the "carddav_last_modified" field.
+func (m *PersonMutation) SetCarddavLastModified(t time.Time) {
+	m.carddav_last_modified = &t
+}
+
+// CarddavLastModified returns the value of the "carddav_last_modified" field in the mutation.
+func (m *PersonMutation) CarddavLastModified() (r time.Time, exists bool) {
+	v := m.carddav_last_modified
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavLastModified returns the old "carddav_last_modified" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldCarddavLastModified(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavLastModified is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavLastModified requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavLastModified: %w", err)
+	}
+	return oldValue.CarddavLastModified, nil
+}
+
+// ClearCarddavLastModified clears the value of the "carddav_last_modified" field.
+func (m *PersonMutation) ClearCarddavLastModified() {
+	m.carddav_last_modified = nil
+	m.clearedFields[person.FieldCarddavLastModified] = struct{}{}
+}
+
+// CarddavLastModifiedCleared returns if the "carddav_last_modified" field was cleared in this mutation.
+func (m *PersonMutation) CarddavLastModifiedCleared() bool {
+	_, ok := m.clearedFields[person.FieldCarddavLastModified]
+	return ok
+}
+
+// ResetCarddavLastModified resets all changes to the "carddav_last_modified" field.
+func (m *PersonMutation) ResetCarddavLastModified() {
+	m.carddav_last_modified = nil
+	delete(m.clearedFields, person.FieldCarddavLastModified)
+}
+
+// SetCarddavPendingSync sets the "carddav_pending_sync" field.
+func (m *PersonMutation) SetCarddavPendingSync(b bool) {
+	m.carddav_pending_sync = &b
+}
+
+// CarddavPendingSync returns the value of the "carddav_pending_sync" field in the mutation.
+func (m *PersonMutation) CarddavPendingSync() (r bool, exists bool) {
+	v := m.carddav_pending_sync
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarddavPendingSync returns the old "carddav_pending_sync" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldCarddavPendingSync(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarddavPendingSync is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarddavPendingSync requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarddavPendingSync: %w", err)
+	}
+	return oldValue.CarddavPendingSync, nil
+}
+
+// ResetCarddavPendingSync resets all changes to the "carddav_pending_sync" field.
+func (m *PersonMutation) ResetCarddavPendingSync() {
+	m.carddav_pending_sync = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *PersonMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -7948,7 +8892,7 @@ func (m *PersonMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PersonMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 16)
 	if m.name != nil {
 		fields = append(fields, person.FieldName)
 	}
@@ -7972,6 +8916,24 @@ func (m *PersonMutation) Fields() []string {
 	}
 	if m.immich_photo_disabled != nil {
 		fields = append(fields, person.FieldImmichPhotoDisabled)
+	}
+	if m.carddav_uid != nil {
+		fields = append(fields, person.FieldCarddavUID)
+	}
+	if m.carddav_href != nil {
+		fields = append(fields, person.FieldCarddavHref)
+	}
+	if m.carddav_etag != nil {
+		fields = append(fields, person.FieldCarddavEtag)
+	}
+	if m.carddav_rev != nil {
+		fields = append(fields, person.FieldCarddavRev)
+	}
+	if m.carddav_last_modified != nil {
+		fields = append(fields, person.FieldCarddavLastModified)
+	}
+	if m.carddav_pending_sync != nil {
+		fields = append(fields, person.FieldCarddavPendingSync)
 	}
 	if m.created_at != nil {
 		fields = append(fields, person.FieldCreatedAt)
@@ -8003,6 +8965,18 @@ func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 		return m.ImmichPersonID()
 	case person.FieldImmichPhotoDisabled:
 		return m.ImmichPhotoDisabled()
+	case person.FieldCarddavUID:
+		return m.CarddavUID()
+	case person.FieldCarddavHref:
+		return m.CarddavHref()
+	case person.FieldCarddavEtag:
+		return m.CarddavEtag()
+	case person.FieldCarddavRev:
+		return m.CarddavRev()
+	case person.FieldCarddavLastModified:
+		return m.CarddavLastModified()
+	case person.FieldCarddavPendingSync:
+		return m.CarddavPendingSync()
 	case person.FieldCreatedAt:
 		return m.CreatedAt()
 	case person.FieldUpdatedAt:
@@ -8032,6 +9006,18 @@ func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldImmichPersonID(ctx)
 	case person.FieldImmichPhotoDisabled:
 		return m.OldImmichPhotoDisabled(ctx)
+	case person.FieldCarddavUID:
+		return m.OldCarddavUID(ctx)
+	case person.FieldCarddavHref:
+		return m.OldCarddavHref(ctx)
+	case person.FieldCarddavEtag:
+		return m.OldCarddavEtag(ctx)
+	case person.FieldCarddavRev:
+		return m.OldCarddavRev(ctx)
+	case person.FieldCarddavLastModified:
+		return m.OldCarddavLastModified(ctx)
+	case person.FieldCarddavPendingSync:
+		return m.OldCarddavPendingSync(ctx)
 	case person.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case person.FieldUpdatedAt:
@@ -8101,6 +9087,48 @@ func (m *PersonMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetImmichPhotoDisabled(v)
 		return nil
+	case person.FieldCarddavUID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavUID(v)
+		return nil
+	case person.FieldCarddavHref:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavHref(v)
+		return nil
+	case person.FieldCarddavEtag:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavEtag(v)
+		return nil
+	case person.FieldCarddavRev:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavRev(v)
+		return nil
+	case person.FieldCarddavLastModified:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavLastModified(v)
+		return nil
+	case person.FieldCarddavPendingSync:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarddavPendingSync(v)
+		return nil
 	case person.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -8160,6 +9188,21 @@ func (m *PersonMutation) ClearedFields() []string {
 	if m.FieldCleared(person.FieldImmichPersonID) {
 		fields = append(fields, person.FieldImmichPersonID)
 	}
+	if m.FieldCleared(person.FieldCarddavUID) {
+		fields = append(fields, person.FieldCarddavUID)
+	}
+	if m.FieldCleared(person.FieldCarddavHref) {
+		fields = append(fields, person.FieldCarddavHref)
+	}
+	if m.FieldCleared(person.FieldCarddavEtag) {
+		fields = append(fields, person.FieldCarddavEtag)
+	}
+	if m.FieldCleared(person.FieldCarddavRev) {
+		fields = append(fields, person.FieldCarddavRev)
+	}
+	if m.FieldCleared(person.FieldCarddavLastModified) {
+		fields = append(fields, person.FieldCarddavLastModified)
+	}
 	return fields
 }
 
@@ -8188,6 +9231,21 @@ func (m *PersonMutation) ClearField(name string) error {
 		return nil
 	case person.FieldImmichPersonID:
 		m.ClearImmichPersonID()
+		return nil
+	case person.FieldCarddavUID:
+		m.ClearCarddavUID()
+		return nil
+	case person.FieldCarddavHref:
+		m.ClearCarddavHref()
+		return nil
+	case person.FieldCarddavEtag:
+		m.ClearCarddavEtag()
+		return nil
+	case person.FieldCarddavRev:
+		m.ClearCarddavRev()
+		return nil
+	case person.FieldCarddavLastModified:
+		m.ClearCarddavLastModified()
 		return nil
 	}
 	return fmt.Errorf("unknown Person nullable field %s", name)
@@ -8220,6 +9278,24 @@ func (m *PersonMutation) ResetField(name string) error {
 		return nil
 	case person.FieldImmichPhotoDisabled:
 		m.ResetImmichPhotoDisabled()
+		return nil
+	case person.FieldCarddavUID:
+		m.ResetCarddavUID()
+		return nil
+	case person.FieldCarddavHref:
+		m.ResetCarddavHref()
+		return nil
+	case person.FieldCarddavEtag:
+		m.ResetCarddavEtag()
+		return nil
+	case person.FieldCarddavRev:
+		m.ResetCarddavRev()
+		return nil
+	case person.FieldCarddavLastModified:
+		m.ResetCarddavLastModified()
+		return nil
+	case person.FieldCarddavPendingSync:
+		m.ResetCarddavPendingSync()
 		return nil
 	case person.FieldCreatedAt:
 		m.ResetCreatedAt()

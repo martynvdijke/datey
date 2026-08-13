@@ -74,6 +74,16 @@ func ReminderDays(v int) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldReminderDays, v))
 }
 
+// LastSchedulerRun applies equality check predicate on the "last_scheduler_run" field. It's identical to LastSchedulerRunEQ.
+func LastSchedulerRun(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldLastSchedulerRun, v))
+}
+
+// SchedulerCatchup applies equality check predicate on the "scheduler_catchup" field. It's identical to SchedulerCatchupEQ.
+func SchedulerCatchup(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldSchedulerCatchup, v))
+}
+
 // DateVariant applies equality check predicate on the "date_variant" field. It's identical to DateVariantEQ.
 func DateVariant(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldDateVariant, v))
@@ -292,6 +302,41 @@ func ImmichURL(v string) predicate.AppConfig {
 // ImmichAPIKey applies equality check predicate on the "immich_api_key" field. It's identical to ImmichAPIKeyEQ.
 func ImmichAPIKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldImmichAPIKey, v))
+}
+
+// CarddavEnabled applies equality check predicate on the "carddav_enabled" field. It's identical to CarddavEnabledEQ.
+func CarddavEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavEnabled, v))
+}
+
+// CarddavURL applies equality check predicate on the "carddav_url" field. It's identical to CarddavURLEQ.
+func CarddavURL(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavURL, v))
+}
+
+// CarddavUsername applies equality check predicate on the "carddav_username" field. It's identical to CarddavUsernameEQ.
+func CarddavUsername(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavUsername, v))
+}
+
+// CarddavPassword applies equality check predicate on the "carddav_password" field. It's identical to CarddavPasswordEQ.
+func CarddavPassword(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavPassword, v))
+}
+
+// CarddavSyncToken applies equality check predicate on the "carddav_sync_token" field. It's identical to CarddavSyncTokenEQ.
+func CarddavSyncToken(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavSyncToken, v))
+}
+
+// CarddavLastSync applies equality check predicate on the "carddav_last_sync" field. It's identical to CarddavLastSyncEQ.
+func CarddavLastSync(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavLastSync, v))
+}
+
+// CarddavDeletePolicy applies equality check predicate on the "carddav_delete_policy" field. It's identical to CarddavDeletePolicyEQ.
+func CarddavDeletePolicy(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavDeletePolicy, v))
 }
 
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
@@ -522,6 +567,76 @@ func ReminderDaysIsNil() predicate.AppConfig {
 // ReminderDaysNotNil applies the NotNil predicate on the "reminder_days" field.
 func ReminderDaysNotNil() predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotNull(FieldReminderDays))
+}
+
+// LastSchedulerRunEQ applies the EQ predicate on the "last_scheduler_run" field.
+func LastSchedulerRunEQ(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldLastSchedulerRun, v))
+}
+
+// LastSchedulerRunNEQ applies the NEQ predicate on the "last_scheduler_run" field.
+func LastSchedulerRunNEQ(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldLastSchedulerRun, v))
+}
+
+// LastSchedulerRunIn applies the In predicate on the "last_scheduler_run" field.
+func LastSchedulerRunIn(vs ...time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldLastSchedulerRun, vs...))
+}
+
+// LastSchedulerRunNotIn applies the NotIn predicate on the "last_scheduler_run" field.
+func LastSchedulerRunNotIn(vs ...time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldLastSchedulerRun, vs...))
+}
+
+// LastSchedulerRunGT applies the GT predicate on the "last_scheduler_run" field.
+func LastSchedulerRunGT(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldLastSchedulerRun, v))
+}
+
+// LastSchedulerRunGTE applies the GTE predicate on the "last_scheduler_run" field.
+func LastSchedulerRunGTE(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldLastSchedulerRun, v))
+}
+
+// LastSchedulerRunLT applies the LT predicate on the "last_scheduler_run" field.
+func LastSchedulerRunLT(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldLastSchedulerRun, v))
+}
+
+// LastSchedulerRunLTE applies the LTE predicate on the "last_scheduler_run" field.
+func LastSchedulerRunLTE(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldLastSchedulerRun, v))
+}
+
+// LastSchedulerRunIsNil applies the IsNil predicate on the "last_scheduler_run" field.
+func LastSchedulerRunIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldLastSchedulerRun))
+}
+
+// LastSchedulerRunNotNil applies the NotNil predicate on the "last_scheduler_run" field.
+func LastSchedulerRunNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldLastSchedulerRun))
+}
+
+// SchedulerCatchupEQ applies the EQ predicate on the "scheduler_catchup" field.
+func SchedulerCatchupEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldSchedulerCatchup, v))
+}
+
+// SchedulerCatchupNEQ applies the NEQ predicate on the "scheduler_catchup" field.
+func SchedulerCatchupNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldSchedulerCatchup, v))
+}
+
+// SchedulerCatchupIsNil applies the IsNil predicate on the "scheduler_catchup" field.
+func SchedulerCatchupIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldSchedulerCatchup))
+}
+
+// SchedulerCatchupNotNil applies the NotNil predicate on the "scheduler_catchup" field.
+func SchedulerCatchupNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldSchedulerCatchup))
 }
 
 // DateVariantEQ applies the EQ predicate on the "date_variant" field.
@@ -3232,6 +3347,451 @@ func ImmichAPIKeyEqualFold(v string) predicate.AppConfig {
 // ImmichAPIKeyContainsFold applies the ContainsFold predicate on the "immich_api_key" field.
 func ImmichAPIKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldImmichAPIKey, v))
+}
+
+// CarddavEnabledEQ applies the EQ predicate on the "carddav_enabled" field.
+func CarddavEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavEnabled, v))
+}
+
+// CarddavEnabledNEQ applies the NEQ predicate on the "carddav_enabled" field.
+func CarddavEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldCarddavEnabled, v))
+}
+
+// CarddavEnabledIsNil applies the IsNil predicate on the "carddav_enabled" field.
+func CarddavEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldCarddavEnabled))
+}
+
+// CarddavEnabledNotNil applies the NotNil predicate on the "carddav_enabled" field.
+func CarddavEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldCarddavEnabled))
+}
+
+// CarddavURLEQ applies the EQ predicate on the "carddav_url" field.
+func CarddavURLEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavURL, v))
+}
+
+// CarddavURLNEQ applies the NEQ predicate on the "carddav_url" field.
+func CarddavURLNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldCarddavURL, v))
+}
+
+// CarddavURLIn applies the In predicate on the "carddav_url" field.
+func CarddavURLIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldCarddavURL, vs...))
+}
+
+// CarddavURLNotIn applies the NotIn predicate on the "carddav_url" field.
+func CarddavURLNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldCarddavURL, vs...))
+}
+
+// CarddavURLGT applies the GT predicate on the "carddav_url" field.
+func CarddavURLGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldCarddavURL, v))
+}
+
+// CarddavURLGTE applies the GTE predicate on the "carddav_url" field.
+func CarddavURLGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldCarddavURL, v))
+}
+
+// CarddavURLLT applies the LT predicate on the "carddav_url" field.
+func CarddavURLLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldCarddavURL, v))
+}
+
+// CarddavURLLTE applies the LTE predicate on the "carddav_url" field.
+func CarddavURLLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldCarddavURL, v))
+}
+
+// CarddavURLContains applies the Contains predicate on the "carddav_url" field.
+func CarddavURLContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldCarddavURL, v))
+}
+
+// CarddavURLHasPrefix applies the HasPrefix predicate on the "carddav_url" field.
+func CarddavURLHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldCarddavURL, v))
+}
+
+// CarddavURLHasSuffix applies the HasSuffix predicate on the "carddav_url" field.
+func CarddavURLHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldCarddavURL, v))
+}
+
+// CarddavURLIsNil applies the IsNil predicate on the "carddav_url" field.
+func CarddavURLIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldCarddavURL))
+}
+
+// CarddavURLNotNil applies the NotNil predicate on the "carddav_url" field.
+func CarddavURLNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldCarddavURL))
+}
+
+// CarddavURLEqualFold applies the EqualFold predicate on the "carddav_url" field.
+func CarddavURLEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldCarddavURL, v))
+}
+
+// CarddavURLContainsFold applies the ContainsFold predicate on the "carddav_url" field.
+func CarddavURLContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldCarddavURL, v))
+}
+
+// CarddavUsernameEQ applies the EQ predicate on the "carddav_username" field.
+func CarddavUsernameEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameNEQ applies the NEQ predicate on the "carddav_username" field.
+func CarddavUsernameNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameIn applies the In predicate on the "carddav_username" field.
+func CarddavUsernameIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldCarddavUsername, vs...))
+}
+
+// CarddavUsernameNotIn applies the NotIn predicate on the "carddav_username" field.
+func CarddavUsernameNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldCarddavUsername, vs...))
+}
+
+// CarddavUsernameGT applies the GT predicate on the "carddav_username" field.
+func CarddavUsernameGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameGTE applies the GTE predicate on the "carddav_username" field.
+func CarddavUsernameGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameLT applies the LT predicate on the "carddav_username" field.
+func CarddavUsernameLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameLTE applies the LTE predicate on the "carddav_username" field.
+func CarddavUsernameLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameContains applies the Contains predicate on the "carddav_username" field.
+func CarddavUsernameContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameHasPrefix applies the HasPrefix predicate on the "carddav_username" field.
+func CarddavUsernameHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameHasSuffix applies the HasSuffix predicate on the "carddav_username" field.
+func CarddavUsernameHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameIsNil applies the IsNil predicate on the "carddav_username" field.
+func CarddavUsernameIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldCarddavUsername))
+}
+
+// CarddavUsernameNotNil applies the NotNil predicate on the "carddav_username" field.
+func CarddavUsernameNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldCarddavUsername))
+}
+
+// CarddavUsernameEqualFold applies the EqualFold predicate on the "carddav_username" field.
+func CarddavUsernameEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldCarddavUsername, v))
+}
+
+// CarddavUsernameContainsFold applies the ContainsFold predicate on the "carddav_username" field.
+func CarddavUsernameContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldCarddavUsername, v))
+}
+
+// CarddavPasswordEQ applies the EQ predicate on the "carddav_password" field.
+func CarddavPasswordEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordNEQ applies the NEQ predicate on the "carddav_password" field.
+func CarddavPasswordNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordIn applies the In predicate on the "carddav_password" field.
+func CarddavPasswordIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldCarddavPassword, vs...))
+}
+
+// CarddavPasswordNotIn applies the NotIn predicate on the "carddav_password" field.
+func CarddavPasswordNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldCarddavPassword, vs...))
+}
+
+// CarddavPasswordGT applies the GT predicate on the "carddav_password" field.
+func CarddavPasswordGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordGTE applies the GTE predicate on the "carddav_password" field.
+func CarddavPasswordGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordLT applies the LT predicate on the "carddav_password" field.
+func CarddavPasswordLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordLTE applies the LTE predicate on the "carddav_password" field.
+func CarddavPasswordLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordContains applies the Contains predicate on the "carddav_password" field.
+func CarddavPasswordContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordHasPrefix applies the HasPrefix predicate on the "carddav_password" field.
+func CarddavPasswordHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordHasSuffix applies the HasSuffix predicate on the "carddav_password" field.
+func CarddavPasswordHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordIsNil applies the IsNil predicate on the "carddav_password" field.
+func CarddavPasswordIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldCarddavPassword))
+}
+
+// CarddavPasswordNotNil applies the NotNil predicate on the "carddav_password" field.
+func CarddavPasswordNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldCarddavPassword))
+}
+
+// CarddavPasswordEqualFold applies the EqualFold predicate on the "carddav_password" field.
+func CarddavPasswordEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldCarddavPassword, v))
+}
+
+// CarddavPasswordContainsFold applies the ContainsFold predicate on the "carddav_password" field.
+func CarddavPasswordContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldCarddavPassword, v))
+}
+
+// CarddavSyncTokenEQ applies the EQ predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenNEQ applies the NEQ predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenIn applies the In predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldCarddavSyncToken, vs...))
+}
+
+// CarddavSyncTokenNotIn applies the NotIn predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldCarddavSyncToken, vs...))
+}
+
+// CarddavSyncTokenGT applies the GT predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenGTE applies the GTE predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenLT applies the LT predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenLTE applies the LTE predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenContains applies the Contains predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenHasPrefix applies the HasPrefix predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenHasSuffix applies the HasSuffix predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenIsNil applies the IsNil predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldCarddavSyncToken))
+}
+
+// CarddavSyncTokenNotNil applies the NotNil predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldCarddavSyncToken))
+}
+
+// CarddavSyncTokenEqualFold applies the EqualFold predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldCarddavSyncToken, v))
+}
+
+// CarddavSyncTokenContainsFold applies the ContainsFold predicate on the "carddav_sync_token" field.
+func CarddavSyncTokenContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldCarddavSyncToken, v))
+}
+
+// CarddavLastSyncEQ applies the EQ predicate on the "carddav_last_sync" field.
+func CarddavLastSyncEQ(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavLastSync, v))
+}
+
+// CarddavLastSyncNEQ applies the NEQ predicate on the "carddav_last_sync" field.
+func CarddavLastSyncNEQ(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldCarddavLastSync, v))
+}
+
+// CarddavLastSyncIn applies the In predicate on the "carddav_last_sync" field.
+func CarddavLastSyncIn(vs ...time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldCarddavLastSync, vs...))
+}
+
+// CarddavLastSyncNotIn applies the NotIn predicate on the "carddav_last_sync" field.
+func CarddavLastSyncNotIn(vs ...time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldCarddavLastSync, vs...))
+}
+
+// CarddavLastSyncGT applies the GT predicate on the "carddav_last_sync" field.
+func CarddavLastSyncGT(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldCarddavLastSync, v))
+}
+
+// CarddavLastSyncGTE applies the GTE predicate on the "carddav_last_sync" field.
+func CarddavLastSyncGTE(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldCarddavLastSync, v))
+}
+
+// CarddavLastSyncLT applies the LT predicate on the "carddav_last_sync" field.
+func CarddavLastSyncLT(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldCarddavLastSync, v))
+}
+
+// CarddavLastSyncLTE applies the LTE predicate on the "carddav_last_sync" field.
+func CarddavLastSyncLTE(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldCarddavLastSync, v))
+}
+
+// CarddavLastSyncIsNil applies the IsNil predicate on the "carddav_last_sync" field.
+func CarddavLastSyncIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldCarddavLastSync))
+}
+
+// CarddavLastSyncNotNil applies the NotNil predicate on the "carddav_last_sync" field.
+func CarddavLastSyncNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldCarddavLastSync))
+}
+
+// CarddavDeletePolicyEQ applies the EQ predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyNEQ applies the NEQ predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyIn applies the In predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldCarddavDeletePolicy, vs...))
+}
+
+// CarddavDeletePolicyNotIn applies the NotIn predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldCarddavDeletePolicy, vs...))
+}
+
+// CarddavDeletePolicyGT applies the GT predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyGTE applies the GTE predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyLT applies the LT predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyLTE applies the LTE predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyContains applies the Contains predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyHasPrefix applies the HasPrefix predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyHasSuffix applies the HasSuffix predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyIsNil applies the IsNil predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldCarddavDeletePolicy))
+}
+
+// CarddavDeletePolicyNotNil applies the NotNil predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldCarddavDeletePolicy))
+}
+
+// CarddavDeletePolicyEqualFold applies the EqualFold predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldCarddavDeletePolicy, v))
+}
+
+// CarddavDeletePolicyContainsFold applies the ContainsFold predicate on the "carddav_delete_policy" field.
+func CarddavDeletePolicyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldCarddavDeletePolicy, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

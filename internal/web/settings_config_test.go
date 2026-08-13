@@ -113,6 +113,74 @@ func TestSettingsConfigSave_Success(t *testing.T) {
 	}
 }
 
+func TestSettingsConfigSave_SchedulerCatchupToggle(t *testing.T) {
+	h := newTestWebHandler(t)
+	router := setupConfigRouter(h)
+
+	// Default: enabled.
+	if !h.cfg.SchedulerCatchup {
+		t.Fatal("expected SchedulerCatchup to default to true")
+	}
+
+	// Unchecking the toggle persists false and hot-reloads cfg.
+	form := url.Values{}
+	form.Set("REMINDER_DAYS", "7")
+	req := httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if h.cfg.SchedulerCatchup {
+		t.Error("expected SchedulerCatchup hot-reload to false when checkbox absent")
+	}
+
+	// Checking the toggle persists true.
+	form = url.Values{}
+	form.Set("REMINDER_DAYS", "7")
+	form.Set("SCHEDULER_CATCHUP", "on")
+	req = httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if !h.cfg.SchedulerCatchup {
+		t.Error("expected SchedulerCatchup hot-reload to true when checkbox set")
+	}
+}
+
+func TestSettingsConfigSave_SchedulerCatchupInvalidValueReRenders(t *testing.T) {
+	h := newTestWebHandler(t)
+	router := setupConfigRouter(h)
+
+	// A non-boolean value for the checkbox must fail validation and re-render
+	// with an inline error instead of silently persisting.
+	form := url.Values{}
+	form.Set("SCHEDULER_CATCHUP", "banana")
+
+	req := httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req = req.WithContext(withUserContext(req.Context()))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 (re-render), got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "Catch up missed reminders must be a boolean") {
+		t.Errorf("expected inline error for SCHEDULER_CATCHUP, got: %s", body[:400])
+	}
+}
+
 func TestSettingsConfigSave_ValidationErrors(t *testing.T) {
 	h := newTestWebHandler(t)
 	router := setupConfigRouter(h)

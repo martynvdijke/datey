@@ -19,6 +19,8 @@ type ParsedContact struct {
 	Gender              string
 	FamilyName          string
 	GivenName           string
+	UID                 string
+	Rev                 string
 	RawData             string
 }
 
@@ -123,6 +125,11 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 		pc.FamilyName = name.FamilyName
 		pc.GivenName = name.GivenName
 	}
+
+	// Extract provider bookkeeping for sync purposes. These are never shown
+	// as contact notes; they are persisted as sync state instead.
+	pc.UID = card.Value(govcard.FieldUID)
+	pc.Rev = card.Value(govcard.FieldRevision)
 
 	// Build human-readable notes from structured contact fields. Provider
 	// bookkeeping (UID, REV, SOURCE, etc.) remains available in RawData but is
@@ -257,6 +264,56 @@ func Encode(items []NameNotes) ([]byte, error) {
 // EncodeSingle serialises a single name/notes pair to vCard 3.0 format.
 func EncodeSingle(name, notes string) ([]byte, error) {
 	return Encode([]NameNotes{{Name: name, Notes: notes}})
+}
+
+// SyncContact describes a contact to be written to a remote CardDAV address
+// book during a sync push.
+type SyncContact struct {
+	Name     string
+	Notes    string
+	Birthday *time.Time
+	UID      string
+	Rev      string
+}
+
+// EncodeContact serialises a single contact to vCard 3.0 format including the
+// BDAY (full or year-less) and, when present, the provider UID and REV. The
+// REV is only written when it already exists on the remote so the server keeps
+// authoritative revision values; a zero value omits it.
+func EncodeContact(c SyncContact) ([]byte, error) {
+	card := make(govcard.Card)
+	card.SetValue(govcard.FieldVersion, "3.0")
+	card.SetValue(govcard.FieldFormattedName, c.Name)
+	card.SetValue(govcard.FieldProductID, "-//Datey//EN")
+	if c.UID != "" {
+		card.SetValue(govcard.FieldUID, c.UID)
+	}
+	if c.Rev != "" {
+		card.SetValue(govcard.FieldRevision, c.Rev)
+	}
+	if c.Birthday != nil {
+		card.SetValue(govcard.FieldBirthday, FormatBDAY(*c.Birthday))
+	}
+	if c.Notes != "" {
+		card.SetValue(govcard.FieldNote, c.Notes)
+	}
+
+	var buf bytes.Buffer
+	enc := govcard.NewEncoder(&buf)
+	if err := enc.Encode(card); err != nil {
+		return nil, fmt.Errorf("encode vCard for %q: %w", c.Name, err)
+	}
+	return buf.Bytes(), nil
+}
+
+// FormatBDAY renders a parsed birthday back to vCard BDAY syntax. Year-less
+// dates (year 0) are emitted as --MM-DD so the month/day round-trips without
+// inventing a year.
+func FormatBDAY(t time.Time) string {
+	if t.Year() == 0 {
+		return fmt.Sprintf("--%02d-%02d", int(t.Month()), t.Day())
+	}
+	return t.Format("2006-01-02")
 }
 
 // SanitizeFilename converts a contact name to a safe filename.

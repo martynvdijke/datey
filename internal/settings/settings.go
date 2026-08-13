@@ -79,6 +79,9 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.ReminderDays; v != nil {
 		cfg.ReminderDays = *v
 	}
+	if v := row.SchedulerCatchup; v != nil {
+		cfg.SchedulerCatchup = *v
+	}
 	if v := row.DateVariant; v != nil {
 		cfg.DateVariant = *v
 	}
@@ -202,11 +205,167 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.ImmichAPIKey; v != nil {
 		cfg.ImmichAPIKey = *v
 	}
+	if v := row.CarddavEnabled; v != nil {
+		cfg.CarddavEnabled = *v
+	}
+	if v := row.CarddavURL; v != nil {
+		cfg.CarddavURL = *v
+	}
+	if v := row.CarddavUsername; v != nil {
+		cfg.CarddavUsername = *v
+	}
+	if v := row.CarddavPassword; v != nil {
+		cfg.CarddavPassword = *v
+	}
+	if v := row.CarddavDeletePolicy; v != nil {
+		cfg.CarddavDeletePolicy = *v
+	}
 	return nil
 }
 
 // ErrInvalid signals validation failures distinguishable from persistence errors.
 var ErrInvalid = errors.New("invalid settings form")
+
+// LastSchedulerRun returns the timestamp of the last completed reminder pass,
+// or nil if no pass has been recorded yet.
+func (s *Store) LastSchedulerRun(ctx context.Context) (*time.Time, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return row.LastSchedulerRun, nil
+}
+
+// SetLastSchedulerRun records the timestamp of a completed reminder pass.
+func (s *Store) SetLastSchedulerRun(ctx context.Context, t time.Time) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
+		SetLastSchedulerRun(t).
+		Save(ctx); err != nil {
+		return fmt.Errorf("persist last_scheduler_run: %w", err)
+	}
+	return nil
+}
+
+// CarddavSyncToken returns the stored CardDAV sync-collection sync-token, or
+// an empty string if a sync has never succeeded (first pull must be full).
+func (s *Store) CarddavSyncToken(ctx context.Context) (string, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return "", err
+	}
+	if row.CarddavSyncToken == nil {
+		return "", nil
+	}
+	return *row.CarddavSyncToken, nil
+}
+
+// SetCarddavSyncToken records the sync-token returned by the last successful
+// sync-collection REPORT so the next pull can be incremental.
+func (s *Store) SetCarddavSyncToken(ctx context.Context, token string) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
+		SetCarddavSyncToken(token).
+		Save(ctx); err != nil {
+		return fmt.Errorf("persist carddav_sync_token: %w", err)
+	}
+	return nil
+}
+
+// CarddavLastSync returns the timestamp of the last completed CardDAV sync,
+// or nil if no sync has been run yet.
+func (s *Store) CarddavLastSync(ctx context.Context) (*time.Time, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return row.CarddavLastSync, nil
+}
+
+// SetCarddavLastSync records the timestamp of a completed CardDAV sync. It is
+// used to rate-limit the daily scheduler hook.
+func (s *Store) SetCarddavLastSync(ctx context.Context, t time.Time) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).
+		SetCarddavLastSync(t).
+		Save(ctx); err != nil {
+		return fmt.Errorf("persist carddav_last_sync: %w", err)
+	}
+	return nil
+}
+
+var validDeletePolicies = map[string]bool{"keep": true, "delete": true}
+
+// ApplyCarddavForm persists the CardDAV section of the Notifications settings
+// tab. An empty password submission keeps the existing stored password (the
+// password field is masked in the UI, mirroring the IMMICH_API_KEY pattern).
+// The sync_token and last_sync fields are intentionally not form-editable;
+// they are maintained by the sync engine.
+func (s *Store) ApplyCarddavForm(ctx context.Context, cfg *config.Config, form url.Values) (map[string]string, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return nil, err
+	}
+	errs := map[string]string{}
+
+	enabled := form.Get("CARDDAV_ENABLED") == "on"
+	carddavURL := form.Get("CARDDAV_URL")
+	username := form.Get("CARDDAV_USERNAME")
+	password := form.Get("CARDDAV_PASSWORD")
+	deletePolicy := form.Get("CARDDAV_DELETE_POLICY")
+	if deletePolicy == "" {
+		deletePolicy = "keep"
+	}
+
+	if carddavURL != "" {
+		u, err := url.ParseRequestURI(carddavURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			errs["CARDDAV_URL"] = "CardDAV URL must be an absolute URL (e.g. https://cloud.example.com/remote.php/dav/addressbooks/user/book)"
+		}
+	}
+	if deletePolicy != "keep" && deletePolicy != "delete" {
+		errs["CARDDAV_DELETE_POLICY"] = "Delete policy must be one of: keep, delete"
+	}
+
+	if len(errs) > 0 {
+		return errs, errInvalid
+	}
+
+	// An empty password submission means "keep the current one".
+	effectivePassword := password
+	if effectivePassword == "" {
+		effectivePassword = cfg.CarddavPassword
+	}
+
+	upd := s.client.AppConfig.UpdateOneID(row.ID).
+		SetNillableCarddavEnabled(&enabled).
+		SetNillableCarddavURL(nillableStr(carddavURL)).
+		SetNillableCarddavUsername(nillableStr(username)).
+		SetNillableCarddavPassword(nillableStr(effectivePassword)).
+		SetNillableCarddavDeletePolicy(nillableStr(deletePolicy)).
+		SetUpdatedAt(time.Now())
+
+	if _, err := upd.Save(ctx); err != nil {
+		return nil, fmt.Errorf("persist carddav settings: %w", err)
+	}
+
+	cfg.CarddavEnabled = enabled
+	cfg.CarddavURL = carddavURL
+	cfg.CarddavUsername = username
+	cfg.CarddavPassword = effectivePassword
+	cfg.CarddavDeletePolicy = deletePolicy
+
+	return nil, nil
+}
 
 // errInvalid signals validation failures distinguishable from persistence errors.
 var errInvalid = ErrInvalid
@@ -235,6 +394,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	port := parseIntPtr(form, "PORT", errs)
 	schedulerHour := parseIntPtr(form, "SCHEDULER_HOUR", errs)
 	reminderDays := parseIntPtr(form, "REMINDER_DAYS", errs)
+	schedulerCatchupRaw := form.Get("SCHEDULER_CATCHUP")
+	schedulerCatchup := schedulerCatchupRaw == "on"
 	dateVariant := form.Get("DATE_VARIANT")
 	logLevel := form.Get("LOG_LEVEL")
 	logBufferSize := parseIntPtr(form, "LOG_BUFFER_SIZE", errs)
@@ -288,6 +449,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	}
 	if reminderDays != nil && (*reminderDays < 1 || *reminderDays > 365) {
 		errs["REMINDER_DAYS"] = "Reminder days must be between 1 and 365"
+	}
+	if schedulerCatchupRaw != "" && schedulerCatchupRaw != "on" {
+		errs["SCHEDULER_CATCHUP"] = "Catch up missed reminders must be a boolean"
 	}
 	if dateVariant != "" && !validDateVariants[dateVariant] {
 		errs["DATE_VARIANT"] = "Date variant must be one of: european, us"
@@ -414,6 +578,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillablePort(port).
 		SetNillableSchedulerHour(schedulerHour).
 		SetNillableReminderDays(reminderDays).
+		SetNillableSchedulerCatchup(&schedulerCatchup).
 		SetNillableDateVariant(nillableStr(dateVariant)).
 		SetNillableLogLevel(nillableStr(logLevel)).
 		SetNillableLogBufferSize(logBufferSize).
@@ -464,6 +629,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	// Hot-reload: mutate cfg in place so notifiers/scheduler/dashboard pick up
 	// changes immediately. Restart-required fields are left untouched.
 	cfg.ReminderDays = deref(reminderDays, cfg.ReminderDays)
+	cfg.SchedulerCatchup = schedulerCatchup
 	if dateVariant != "" {
 		cfg.DateVariant = dateVariant
 	}

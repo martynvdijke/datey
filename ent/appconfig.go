@@ -25,6 +25,10 @@ type AppConfig struct {
 	SchedulerHour *int `json:"scheduler_hour,omitempty"`
 	// ReminderDays holds the value of the "reminder_days" field.
 	ReminderDays *int `json:"reminder_days,omitempty"`
+	// LastSchedulerRun holds the value of the "last_scheduler_run" field.
+	LastSchedulerRun *time.Time `json:"last_scheduler_run,omitempty"`
+	// SchedulerCatchup holds the value of the "scheduler_catchup" field.
+	SchedulerCatchup *bool `json:"scheduler_catchup,omitempty"`
 	// DateVariant holds the value of the "date_variant" field.
 	DateVariant *string `json:"date_variant,omitempty"`
 	// ReminderDigest holds the value of the "reminder_digest" field.
@@ -113,6 +117,20 @@ type AppConfig struct {
 	ImmichURL *string `json:"immich_url,omitempty"`
 	// ImmichAPIKey holds the value of the "immich_api_key" field.
 	ImmichAPIKey *string `json:"immich_api_key,omitempty"`
+	// CarddavEnabled holds the value of the "carddav_enabled" field.
+	CarddavEnabled *bool `json:"carddav_enabled,omitempty"`
+	// CarddavURL holds the value of the "carddav_url" field.
+	CarddavURL *string `json:"carddav_url,omitempty"`
+	// CarddavUsername holds the value of the "carddav_username" field.
+	CarddavUsername *string `json:"carddav_username,omitempty"`
+	// CarddavPassword holds the value of the "carddav_password" field.
+	CarddavPassword *string `json:"carddav_password,omitempty"`
+	// CarddavSyncToken holds the value of the "carddav_sync_token" field.
+	CarddavSyncToken *string `json:"carddav_sync_token,omitempty"`
+	// CarddavLastSync holds the value of the "carddav_last_sync" field.
+	CarddavLastSync *time.Time `json:"carddav_last_sync,omitempty"`
+	// CarddavDeletePolicy holds the value of the "carddav_delete_policy" field.
+	CarddavDeletePolicy *string `json:"carddav_delete_policy,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -123,13 +141,13 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldPushEnabled:
+		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled:
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy:
 			values[i] = new(sql.NullString)
-		case appconfig.FieldUpdatedAt:
+		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -179,6 +197,20 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ReminderDays = new(int)
 				*_m.ReminderDays = int(value.Int64)
+			}
+		case appconfig.FieldLastSchedulerRun:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_scheduler_run", values[i])
+			} else if value.Valid {
+				_m.LastSchedulerRun = new(time.Time)
+				*_m.LastSchedulerRun = value.Time
+			}
+		case appconfig.FieldSchedulerCatchup:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field scheduler_catchup", values[i])
+			} else if value.Valid {
+				_m.SchedulerCatchup = new(bool)
+				*_m.SchedulerCatchup = value.Bool
 			}
 		case appconfig.FieldDateVariant:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -488,6 +520,55 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 				_m.ImmichAPIKey = new(string)
 				*_m.ImmichAPIKey = value.String
 			}
+		case appconfig.FieldCarddavEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_enabled", values[i])
+			} else if value.Valid {
+				_m.CarddavEnabled = new(bool)
+				*_m.CarddavEnabled = value.Bool
+			}
+		case appconfig.FieldCarddavURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_url", values[i])
+			} else if value.Valid {
+				_m.CarddavURL = new(string)
+				*_m.CarddavURL = value.String
+			}
+		case appconfig.FieldCarddavUsername:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_username", values[i])
+			} else if value.Valid {
+				_m.CarddavUsername = new(string)
+				*_m.CarddavUsername = value.String
+			}
+		case appconfig.FieldCarddavPassword:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_password", values[i])
+			} else if value.Valid {
+				_m.CarddavPassword = new(string)
+				*_m.CarddavPassword = value.String
+			}
+		case appconfig.FieldCarddavSyncToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_sync_token", values[i])
+			} else if value.Valid {
+				_m.CarddavSyncToken = new(string)
+				*_m.CarddavSyncToken = value.String
+			}
+		case appconfig.FieldCarddavLastSync:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_last_sync", values[i])
+			} else if value.Valid {
+				_m.CarddavLastSync = new(time.Time)
+				*_m.CarddavLastSync = value.Time
+			}
+		case appconfig.FieldCarddavDeletePolicy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_delete_policy", values[i])
+			} else if value.Valid {
+				_m.CarddavDeletePolicy = new(string)
+				*_m.CarddavDeletePolicy = value.String
+			}
 		case appconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -548,6 +629,16 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.ReminderDays; v != nil {
 		builder.WriteString("reminder_days=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.LastSchedulerRun; v != nil {
+		builder.WriteString("last_scheduler_run=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.SchedulerCatchup; v != nil {
+		builder.WriteString("scheduler_catchup=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
@@ -768,6 +859,41 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.ImmichAPIKey; v != nil {
 		builder.WriteString("immich_api_key=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavEnabled; v != nil {
+		builder.WriteString("carddav_enabled=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavURL; v != nil {
+		builder.WriteString("carddav_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavUsername; v != nil {
+		builder.WriteString("carddav_username=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavPassword; v != nil {
+		builder.WriteString("carddav_password=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavSyncToken; v != nil {
+		builder.WriteString("carddav_sync_token=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavLastSync; v != nil {
+		builder.WriteString("carddav_last_sync=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavDeletePolicy; v != nil {
+		builder.WriteString("carddav_delete_policy=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

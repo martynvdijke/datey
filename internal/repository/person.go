@@ -53,6 +53,12 @@ func (r *PersonRepository) Update(ctx context.Context, id int, name, notes, vcar
 	if vcardData != "" {
 		mutation = mutation.SetVcardData(vcardData)
 	}
+	// Local edits to a synced person must be pushed back to the remote
+	// address book on the next sync; mark it dirty when it has a UID.
+	existing, err := r.client.Person.Get(ctx, id)
+	if err == nil && existing.CarddavUID != nil {
+		mutation = mutation.SetCarddavPendingSync(true)
+	}
 	return mutation.Save(ctx)
 }
 
@@ -60,6 +66,94 @@ func (r *PersonRepository) FindByName(ctx context.Context, name string) (*ent.Pe
 	return r.client.Person.Query().
 		Where(person.Name(name)).
 		Only(ctx)
+}
+
+// FindByCarddavUID looks up a person by the UID assigned by the remote
+// CardDAV address book. Returns ent.NotFoundError when no match exists.
+func (r *PersonRepository) FindByCarddavUID(ctx context.Context, uid string) (*ent.Person, error) {
+	return r.client.Person.Query().
+		Where(person.CarddavUID(uid)).
+		Only(ctx)
+}
+
+// FindByCarddavHref looks up a person by the remote resource URL. Used when a
+// sync report reports a deletion by href. Returns ent.NotFoundError when no
+// match exists.
+func (r *PersonRepository) FindByCarddavHref(ctx context.Context, href string) (*ent.Person, error) {
+	return r.client.Person.Query().
+		Where(person.CarddavHref(href)).
+		Only(ctx)
+}
+
+// ListForCarddavPush returns the people that need to be pushed to the remote
+// address book: locally created contacts without a UID yet (pending) and
+// synced contacts with local changes (pending flag set).
+func (r *PersonRepository) ListForCarddavPush(ctx context.Context) ([]*ent.Person, error) {
+	return r.client.Person.Query().
+		Where(person.CarddavPendingSync(true)).
+		Order(ent.Asc(person.FieldName)).
+		All(ctx)
+}
+
+// ListCarddavSynced returns all people that have been synced at least once
+// (have a remote UID), used for remote-deletion reconciliation.
+func (r *PersonRepository) ListCarddavSynced(ctx context.Context) ([]*ent.Person, error) {
+	return r.client.Person.Query().
+		Where(person.CarddavUIDNotNil()).
+		Order(ent.Asc(person.FieldName)).
+		All(ctx)
+}
+
+// SetCarddavState records the sync bookkeeping returned by the remote server
+// after a successful push or pull. pendingSync marks whether a local change
+// still needs to be pushed.
+func (r *PersonRepository) SetCarddavState(ctx context.Context, id int, uid, href, etag, rev string, lastModified *time.Time, pendingSync bool) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).
+		SetNillableCarddavUID(nillableStrOrNil(uid)).
+		SetNillableCarddavHref(nillableStrOrNil(href)).
+		SetNillableCarddavEtag(nillableStrOrNil(etag)).
+		SetNillableCarddavRev(nillableStrOrNil(rev)).
+		SetNillableCarddavLastModified(lastModified).
+		SetCarddavPendingSync(pendingSync).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+}
+
+// SetCarddavPendingSync marks whether a person has unsynced local changes.
+func (r *PersonRepository) SetCarddavPendingSync(ctx context.Context, id int, pending bool) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).
+		SetCarddavPendingSync(pending).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+}
+
+// ClearCarddavState removes the CardDAV linkage from a person while keeping
+// the person itself. Used when the remote resource is deleted and the
+// configured policy is "keep": the contact stays local but is no longer synced.
+func (r *PersonRepository) ClearCarddavState(ctx context.Context, id int) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).
+		ClearCarddavUID().
+		ClearCarddavHref().
+		ClearCarddavEtag().
+		ClearCarddavRev().
+		ClearCarddavLastModified().
+		SetCarddavPendingSync(false).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+}
+
+// UpdateCarddavFields applies remote-sourced field changes (name/notes/vCard
+// payload) without marking the person as pending — the remote is authoritative
+// during a pull, so the change must not be echoed back.
+func (r *PersonRepository) UpdateCarddavFields(ctx context.Context, id int, name, notes, vcardData string) (*ent.Person, error) {
+	mutation := r.client.Person.UpdateOneID(id).
+		SetName(name).
+		SetNotes(notes).
+		SetUpdatedAt(time.Now())
+	if vcardData != "" {
+		mutation = mutation.SetVcardData(vcardData)
+	}
+	return mutation.Save(ctx)
 }
 
 // SetNotifyBirthdays updates the per-person birthday notification opt-out.
@@ -79,4 +173,13 @@ func (r *PersonRepository) SetImmichPhoto(ctx context.Context, id int, immichID 
 
 func (r *PersonRepository) Delete(ctx context.Context, id int) error {
 	return r.client.Person.DeleteOneID(id).Exec(ctx)
+}
+
+// nillableStrOrNil converts an empty string to nil so ent can clear a
+// nullable column when the value is intentionally absent.
+func nillableStrOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }

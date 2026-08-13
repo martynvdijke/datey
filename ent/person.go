@@ -34,6 +34,18 @@ type Person struct {
 	ImmichPersonID *string `json:"immich_person_id,omitempty"`
 	// ImmichPhotoDisabled holds the value of the "immich_photo_disabled" field.
 	ImmichPhotoDisabled bool `json:"immich_photo_disabled,omitempty"`
+	// CarddavUID holds the value of the "carddav_uid" field.
+	CarddavUID *string `json:"carddav_uid,omitempty"`
+	// CarddavHref holds the value of the "carddav_href" field.
+	CarddavHref *string `json:"carddav_href,omitempty"`
+	// CarddavEtag holds the value of the "carddav_etag" field.
+	CarddavEtag *string `json:"carddav_etag,omitempty"`
+	// CarddavRev holds the value of the "carddav_rev" field.
+	CarddavRev *string `json:"carddav_rev,omitempty"`
+	// CarddavLastModified holds the value of the "carddav_last_modified" field.
+	CarddavLastModified *time.Time `json:"carddav_last_modified,omitempty"`
+	// CarddavPendingSync holds the value of the "carddav_pending_sync" field.
+	CarddavPendingSync bool `json:"carddav_pending_sync,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -91,13 +103,13 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case person.FieldReminderDays:
 			values[i] = new([]byte)
-		case person.FieldNotifyBirthdays, person.FieldImmichPhotoDisabled:
+		case person.FieldNotifyBirthdays, person.FieldImmichPhotoDisabled, person.FieldCarddavPendingSync:
 			values[i] = new(sql.NullBool)
 		case person.FieldID:
 			values[i] = new(sql.NullInt64)
-		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID:
+		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID, person.FieldCarddavUID, person.FieldCarddavHref, person.FieldCarddavEtag, person.FieldCarddavRev:
 			values[i] = new(sql.NullString)
-		case person.FieldCreatedAt, person.FieldUpdatedAt:
+		case person.FieldCarddavLastModified, person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -170,6 +182,47 @@ func (_m *Person) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field immich_photo_disabled", values[i])
 			} else if value.Valid {
 				_m.ImmichPhotoDisabled = value.Bool
+			}
+		case person.FieldCarddavUID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_uid", values[i])
+			} else if value.Valid {
+				_m.CarddavUID = new(string)
+				*_m.CarddavUID = value.String
+			}
+		case person.FieldCarddavHref:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_href", values[i])
+			} else if value.Valid {
+				_m.CarddavHref = new(string)
+				*_m.CarddavHref = value.String
+			}
+		case person.FieldCarddavEtag:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_etag", values[i])
+			} else if value.Valid {
+				_m.CarddavEtag = new(string)
+				*_m.CarddavEtag = value.String
+			}
+		case person.FieldCarddavRev:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_rev", values[i])
+			} else if value.Valid {
+				_m.CarddavRev = new(string)
+				*_m.CarddavRev = value.String
+			}
+		case person.FieldCarddavLastModified:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_last_modified", values[i])
+			} else if value.Valid {
+				_m.CarddavLastModified = new(time.Time)
+				*_m.CarddavLastModified = value.Time
+			}
+		case person.FieldCarddavPendingSync:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field carddav_pending_sync", values[i])
+			} else if value.Valid {
+				_m.CarddavPendingSync = value.Bool
 			}
 		case person.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -259,6 +312,34 @@ func (_m *Person) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("immich_photo_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ImmichPhotoDisabled))
+	builder.WriteString(", ")
+	if v := _m.CarddavUID; v != nil {
+		builder.WriteString("carddav_uid=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavHref; v != nil {
+		builder.WriteString("carddav_href=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavEtag; v != nil {
+		builder.WriteString("carddav_etag=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavRev; v != nil {
+		builder.WriteString("carddav_rev=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CarddavLastModified; v != nil {
+		builder.WriteString("carddav_last_modified=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("carddav_pending_sync=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CarddavPendingSync))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

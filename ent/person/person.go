@@ -28,6 +28,18 @@ const (
 	FieldImmichPersonID = "immich_person_id"
 	// FieldImmichPhotoDisabled holds the string denoting the immich_photo_disabled field in the database.
 	FieldImmichPhotoDisabled = "immich_photo_disabled"
+	// FieldCarddavUID holds the string denoting the carddav_uid field in the database.
+	FieldCarddavUID = "carddav_uid"
+	// FieldCarddavHref holds the string denoting the carddav_href field in the database.
+	FieldCarddavHref = "carddav_href"
+	// FieldCarddavEtag holds the string denoting the carddav_etag field in the database.
+	FieldCarddavEtag = "carddav_etag"
+	// FieldCarddavRev holds the string denoting the carddav_rev field in the database.
+	FieldCarddavRev = "carddav_rev"
+	// FieldCarddavLastModified holds the string denoting the carddav_last_modified field in the database.
+	FieldCarddavLastModified = "carddav_last_modified"
+	// FieldCarddavPendingSync holds the string denoting the carddav_pending_sync field in the database.
+	FieldCarddavPendingSync = "carddav_pending_sync"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -72,6 +84,12 @@ var Columns = []string{
 	FieldReminderDays,
 	FieldImmichPersonID,
 	FieldImmichPhotoDisabled,
+	FieldCarddavUID,
+	FieldCarddavHref,
+	FieldCarddavEtag,
+	FieldCarddavRev,
+	FieldCarddavLastModified,
+	FieldCarddavPendingSync,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -103,6 +121,8 @@ var (
 	DefaultTimezone string
 	// DefaultImmichPhotoDisabled holds the default value on creation for the "immich_photo_disabled" field.
 	DefaultImmichPhotoDisabled bool
+	// DefaultCarddavPendingSync holds the default value on creation for the "carddav_pending_sync" field.
+	DefaultCarddavPendingSync bool
 )
 
 // OrderOption defines the ordering options for the Person queries.
@@ -146,6 +166,36 @@ func ByImmichPersonID(opts ...sql.OrderTermOption) OrderOption {
 // ByImmichPhotoDisabled orders the results by the immich_photo_disabled field.
 func ByImmichPhotoDisabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldImmichPhotoDisabled, opts...).ToFunc()
+}
+
+// ByCarddavUID orders the results by the carddav_uid field.
+func ByCarddavUID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavUID, opts...).ToFunc()
+}
+
+// ByCarddavHref orders the results by the carddav_href field.
+func ByCarddavHref(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavHref, opts...).ToFunc()
+}
+
+// ByCarddavEtag orders the results by the carddav_etag field.
+func ByCarddavEtag(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavEtag, opts...).ToFunc()
+}
+
+// ByCarddavRev orders the results by the carddav_rev field.
+func ByCarddavRev(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavRev, opts...).ToFunc()
+}
+
+// ByCarddavLastModified orders the results by the carddav_last_modified field.
+func ByCarddavLastModified(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavLastModified, opts...).ToFunc()
+}
+
+// ByCarddavPendingSync orders the results by the carddav_pending_sync field.
+func ByCarddavPendingSync(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarddavPendingSync, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

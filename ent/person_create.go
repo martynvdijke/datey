@@ -119,6 +119,90 @@ func (_c *PersonCreate) SetNillableImmichPhotoDisabled(v *bool) *PersonCreate {
 	return _c
 }
 
+// SetCarddavUID sets the "carddav_uid" field.
+func (_c *PersonCreate) SetCarddavUID(v string) *PersonCreate {
+	_c.mutation.SetCarddavUID(v)
+	return _c
+}
+
+// SetNillableCarddavUID sets the "carddav_uid" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableCarddavUID(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetCarddavUID(*v)
+	}
+	return _c
+}
+
+// SetCarddavHref sets the "carddav_href" field.
+func (_c *PersonCreate) SetCarddavHref(v string) *PersonCreate {
+	_c.mutation.SetCarddavHref(v)
+	return _c
+}
+
+// SetNillableCarddavHref sets the "carddav_href" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableCarddavHref(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetCarddavHref(*v)
+	}
+	return _c
+}
+
+// SetCarddavEtag sets the "carddav_etag" field.
+func (_c *PersonCreate) SetCarddavEtag(v string) *PersonCreate {
+	_c.mutation.SetCarddavEtag(v)
+	return _c
+}
+
+// SetNillableCarddavEtag sets the "carddav_etag" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableCarddavEtag(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetCarddavEtag(*v)
+	}
+	return _c
+}
+
+// SetCarddavRev sets the "carddav_rev" field.
+func (_c *PersonCreate) SetCarddavRev(v string) *PersonCreate {
+	_c.mutation.SetCarddavRev(v)
+	return _c
+}
+
+// SetNillableCarddavRev sets the "carddav_rev" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableCarddavRev(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetCarddavRev(*v)
+	}
+	return _c
+}
+
+// SetCarddavLastModified sets the "carddav_last_modified" field.
+func (_c *PersonCreate) SetCarddavLastModified(v time.Time) *PersonCreate {
+	_c.mutation.SetCarddavLastModified(v)
+	return _c
+}
+
+// SetNillableCarddavLastModified sets the "carddav_last_modified" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableCarddavLastModified(v *time.Time) *PersonCreate {
+	if v != nil {
+		_c.SetCarddavLastModified(*v)
+	}
+	return _c
+}
+
+// SetCarddavPendingSync sets the "carddav_pending_sync" field.
+func (_c *PersonCreate) SetCarddavPendingSync(v bool) *PersonCreate {
+	_c.mutation.SetCarddavPendingSync(v)
+	return _c
+}
+
+// SetNillableCarddavPendingSync sets the "carddav_pending_sync" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableCarddavPendingSync(v *bool) *PersonCreate {
+	if v != nil {
+		_c.SetCarddavPendingSync(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *PersonCreate) SetCreatedAt(v time.Time) *PersonCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -227,6 +311,10 @@ func (_c *PersonCreate) defaults() {
 		v := person.DefaultImmichPhotoDisabled
 		_c.mutation.SetImmichPhotoDisabled(v)
 	}
+	if _, ok := _c.mutation.CarddavPendingSync(); !ok {
+		v := person.DefaultCarddavPendingSync
+		_c.mutation.SetCarddavPendingSync(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -244,6 +332,9 @@ func (_c *PersonCreate) check() error {
 	}
 	if _, ok := _c.mutation.ImmichPhotoDisabled(); !ok {
 		return &ValidationError{Name: "immich_photo_disabled", err: errors.New(`ent: missing required field "Person.immich_photo_disabled"`)}
+	}
+	if _, ok := _c.mutation.CarddavPendingSync(); !ok {
+		return &ValidationError{Name: "carddav_pending_sync", err: errors.New(`ent: missing required field "Person.carddav_pending_sync"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Person.created_at"`)}
@@ -308,6 +399,30 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ImmichPhotoDisabled(); ok {
 		_spec.SetField(person.FieldImmichPhotoDisabled, field.TypeBool, value)
 		_node.ImmichPhotoDisabled = value
+	}
+	if value, ok := _c.mutation.CarddavUID(); ok {
+		_spec.SetField(person.FieldCarddavUID, field.TypeString, value)
+		_node.CarddavUID = &value
+	}
+	if value, ok := _c.mutation.CarddavHref(); ok {
+		_spec.SetField(person.FieldCarddavHref, field.TypeString, value)
+		_node.CarddavHref = &value
+	}
+	if value, ok := _c.mutation.CarddavEtag(); ok {
+		_spec.SetField(person.FieldCarddavEtag, field.TypeString, value)
+		_node.CarddavEtag = &value
+	}
+	if value, ok := _c.mutation.CarddavRev(); ok {
+		_spec.SetField(person.FieldCarddavRev, field.TypeString, value)
+		_node.CarddavRev = &value
+	}
+	if value, ok := _c.mutation.CarddavLastModified(); ok {
+		_spec.SetField(person.FieldCarddavLastModified, field.TypeTime, value)
+		_node.CarddavLastModified = &value
+	}
+	if value, ok := _c.mutation.CarddavPendingSync(); ok {
+		_spec.SetField(person.FieldCarddavPendingSync, field.TypeBool, value)
+		_node.CarddavPendingSync = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)

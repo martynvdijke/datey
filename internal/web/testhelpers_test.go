@@ -18,7 +18,7 @@ func newTestWebHandler(t *testing.T) *Handler {
 	t.Helper()
 	client := enttest.Open(t, dialect.SQLite, "file:test_web_handler?mode=memory&cache=shared&_fk=1")
 	t.Cleanup(func() { client.Close() })
-	cfg := &config.Config{ReminderDays: 7}
+	cfg := &config.Config{ReminderDays: 7, SchedulerCatchup: true}
 	reg := notifier.NewRegistry()
 	store := logstore.NewStore(100)
 	return NewHandler(cfg, client, reg, store)

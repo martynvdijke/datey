@@ -7,11 +7,23 @@ import (
 	"time"
 
 	"github.com/datey/datey/ent"
+	"github.com/datey/datey/internal/carddav"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/db"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
+	"github.com/datey/datey/internal/settings"
 )
+
+// catchUpGrace is the epsilon that separates a normal restart (shortly after
+// the scheduled hour, no catch-up needed) from genuine downtime (catch-up
+// runs). It prevents a restart a few minutes past the scheduled hour from
+// double-firing the same day's pass.
+const catchUpGrace = 30 * time.Minute
+
+// catchUpMinGap is the minimum gap between the last recorded run and now that
+// triggers a catch-up pass: one day plus the grace period.
+const catchUpMinGap = 24*time.Hour + catchUpGrace
 
 type Scheduler struct {
 	cfg      *config.Config
@@ -19,20 +31,24 @@ type Scheduler struct {
 	registry *notifier.Registry
 	events   *repository.EventRepository
 	notifLog *repository.NotificationLogRepository
+	settings *settings.Store
 }
 
-func New(cfg *config.Config, client *ent.Client, registry *notifier.Registry) *Scheduler {
+func New(cfg *config.Config, client *ent.Client, registry *notifier.Registry, settingsStore *settings.Store) *Scheduler {
 	return &Scheduler{
 		cfg:      cfg,
 		client:   client,
 		registry: registry,
 		events:   repository.NewEventRepository(client),
 		notifLog: repository.NewNotificationLogRepository(client),
+		settings: settingsStore,
 	}
 }
 
 func (s *Scheduler) Start(ctx context.Context) {
 	slog.Info("scheduler started", "source", "scheduler", "hour", s.cfg.SchedulerHour)
+
+	s.catchUpMissed(ctx)
 
 	now := time.Now()
 	next := time.Date(now.Year(), now.Month(), now.Day(), s.cfg.SchedulerHour, 0, 0, 0, now.Location())
@@ -52,24 +68,106 @@ func (s *Scheduler) Start(ctx context.Context) {
 			slog.Info("scheduler stopped", "source", "scheduler")
 			return
 		case <-timer.C:
-			s.processReminders(ctx)
+			s.processReminders(ctx, false)
+			s.persistRun(ctx)
 			s.runBackup(ctx)
+			s.runCarddavSync(ctx)
 			timer.Reset(24 * time.Hour)
 		}
 	}
 }
 
-func (s *Scheduler) processReminders(ctx context.Context) {
+// runCarddavSync triggers a daily CardDAV sync when enabled and the last sync
+// is older than 24 hours. The rate limit (tracked via carddav_last_sync) keeps
+// an address book from being hammered on every scheduler tick; the manual
+// "Sync now" button in Settings bypasses it.
+func (s *Scheduler) runCarddavSync(ctx context.Context) {
+	if !s.cfg.CarddavEnabled || s.cfg.CarddavURL == "" {
+		return
+	}
+
+	lastSync, err := s.settings.CarddavLastSync(ctx)
+	if err != nil {
+		slog.Error("scheduler: read carddav last sync", "source", "scheduler", "error", err)
+		return
+	}
+	if lastSync != nil && time.Since(*lastSync) < 24*time.Hour {
+		slog.Debug("scheduler: carddav sync not due", "source", "scheduler", "last_sync", lastSync.Format(time.RFC3339))
+		return
+	}
+
+	slog.Info("scheduler: running carddav sync", "source", "scheduler")
+	syncer := carddav.NewSyncer(s.cfg, s.client, s.settings)
+	if _, err := syncer.Sync(ctx, carddav.SyncFull, false); err != nil {
+		slog.Error("scheduler: carddav sync failed", "source", "scheduler", "error", err)
+	}
+}
+
+// catchUpMissed runs a startup catch-up pass when the gap since the last
+// successful reminder pass exceeds one day plus a grace period. It notifies
+// occurrences whose dates fell inside the reminder window during the downtime
+// and were never notified, using missed-date phrasing. Skipped entirely when
+// SCHEDULER_CATCHUP is false.
+func (s *Scheduler) catchUpMissed(ctx context.Context) {
+	if !s.cfg.SchedulerCatchup {
+		slog.Info("scheduler catch-up disabled", "source", "scheduler")
+		return
+	}
+
+	lastRun, err := s.settings.LastSchedulerRun(ctx)
+	if err != nil {
+		slog.Error("scheduler: read last run", "source", "scheduler", "error", err)
+		return
+	}
+
+	now := time.Now()
+	if lastRun != nil && now.Sub(*lastRun) <= catchUpMinGap {
+		slog.Debug("scheduler: no catch-up needed", "source", "scheduler", "last_run", lastRun.Format(time.RFC3339))
+		return
+	}
+
+	from := now.AddDate(0, 0, -s.cfg.ReminderDays)
+	if lastRun != nil {
+		from = lastRun.AddDate(0, 0, -s.cfg.ReminderDays)
+	}
+	slog.Info("scheduler: catching up missed reminders", "source", "scheduler", "from", from.Format(time.RFC3339))
+
+	s.processReminders(ctx, true)
+	s.persistRun(ctx)
+}
+
+// persistRun records the current time as the last successful reminder pass in
+// app_config, so a subsequent restart can compute the downtime gap.
+func (s *Scheduler) persistRun(ctx context.Context) {
+	if err := s.settings.SetLastSchedulerRun(ctx, time.Now()); err != nil {
+		slog.Error("scheduler: persist last run", "source", "scheduler", "error", err)
+	}
+}
+
+func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 	now := time.Now()
 	end := now.AddDate(0, 0, s.cfg.ReminderDays)
 
-	occurrences, err := s.events.ListUpcomingOccurrences(ctx, now, end)
+	from := now
+	if catchUp {
+		// The catch-up pass looks backwards: occurrences with dates inside
+		// [lastRun - ReminderDays, now] could have been reminded during the
+		// downtime window. Occurrences after now are covered by the next
+		// timed pass, so the catch-up window is capped at now.
+		end = now
+		from = now.AddDate(0, 0, -s.cfg.ReminderDays)
+		if lastRun, err := s.settings.LastSchedulerRun(ctx); err == nil && lastRun != nil {
+			from = lastRun.AddDate(0, 0, -s.cfg.ReminderDays)
+		}
+	}
+
+	occurrences, err := s.events.ListUpcomingOccurrences(ctx, from, end)
 	if err != nil {
 		slog.Error("scheduler: list upcoming events", "source", "scheduler", "error", err)
 		return
 	}
 
-	slog.Info("processing reminders", "source", "scheduler", "event_count", len(occurrences))
+	slog.Info("processing reminders", "source", "scheduler", "event_count", len(occurrences), "catch_up", catchUp)
 
 	for _, occ := range occurrences {
 		event := occ.Event
@@ -110,10 +208,20 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 			}
 
 			title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
-			message := fmt.Sprintf(
-				"Upcoming %s for %s on %s (%d days away)",
-				event.Type, contactName, occ.Date.Format("January 2"), int(occ.Date.Sub(now).Hours()/24),
-			)
+
+			days := int(occ.Date.Sub(now).Hours() / 24)
+			var message string
+			if catchUp && occ.Date.Before(now) {
+				message = fmt.Sprintf(
+					"Missed reminder: %s for %s was %s (%d days ago)",
+					event.Type, contactName, occ.Date.Format("January 2"), -days,
+				)
+			} else {
+				message = fmt.Sprintf(
+					"Upcoming %s for %s on %s (%d days away)",
+					event.Type, contactName, occ.Date.Format("January 2"), days,
+				)
+			}
 
 			s.registry.SendAll(ctx, title, message)
 

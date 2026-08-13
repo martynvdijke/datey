@@ -93,6 +93,10 @@ func init() {
 	personDescImmichPhotoDisabled := personFields[7].Descriptor()
 	// person.DefaultImmichPhotoDisabled holds the default value on creation for the immich_photo_disabled field.
 	person.DefaultImmichPhotoDisabled = personDescImmichPhotoDisabled.Default.(bool)
+	// personDescCarddavPendingSync is the schema descriptor for carddav_pending_sync field.
+	personDescCarddavPendingSync := personFields[13].Descriptor()
+	// person.DefaultCarddavPendingSync holds the default value on creation for the carddav_pending_sync field.
+	person.DefaultCarddavPendingSync = personDescCarddavPendingSync.Default.(bool)
 	personnoteFields := schema.PersonNote{}.Fields()
 	_ = personnoteFields
 	// personnoteDescNote is the schema descriptor for note field.

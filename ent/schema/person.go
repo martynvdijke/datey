@@ -20,6 +20,12 @@ func (Person) Fields() []ent.Field {
 		field.Ints("reminder_days").Optional(),
 		field.String("immich_person_id").Optional().Nillable(),
 		field.Bool("immich_photo_disabled").Default(false),
+		field.String("carddav_uid").Optional().Nillable(),
+		field.String("carddav_href").Optional().Nillable(),
+		field.String("carddav_etag").Optional().Nillable(),
+		field.String("carddav_rev").Optional().Nillable(),
+		field.Time("carddav_last_modified").Optional().Nillable(),
+		field.Bool("carddav_pending_sync").Default(false),
 		field.Time("created_at"),
 		field.Time("updated_at"),
 	}

@@ -138,7 +138,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	sched := scheduler.New(cfg, client, reg)
+	sched := scheduler.New(cfg, client, reg, settingsStore)
 	go sched.Start(ctx)
 
 	// Run an initial backup on startup (non-blocking).

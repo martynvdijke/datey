@@ -97,6 +97,51 @@
         </tbody>
       </table>
     </div>
+
+    <h2 class="mb-3 mt-4">CardDAV Sync</h2>
+    <div class="card mb-4">
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Two-way sync of people and their birthday events with a CardDAV address book
+          (Nextcloud, Baikal, iCloud, ...). Remote changes are pulled daily and local
+          changes are pushed; edits made while offline are tracked and pushed on the
+          next run.
+        </p>
+        <form hx-post="/settings/carddav" hx-swap="none">
+          {{template "csrfField" .}}
+          <div class="mb-3 form-check">
+            <input class="form-check-input" type="checkbox" id="CARDDAV_ENABLED" name="CARDDAV_ENABLED" {{if .Carddav.Enabled}}checked{{end}}>
+            <label class="form-check-label" for="CARDDAV_ENABLED">Enable CardDAV sync</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="CARDDAV_URL">Server URL</label>
+            <input class="form-control" type="text" id="CARDDAV_URL" name="CARDDAV_URL" value="{{.Carddav.URL}}" placeholder="https://cloud.example.com" autocomplete="off">
+            {{if index .Carddav.Errors "CARDDAV_URL"}}<div class="invalid-feedback d-block text-danger small">{{index .Carddav.Errors "CARDDAV_URL"}}</div>{{end}}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="CARDDAV_USERNAME">Username</label>
+            <input class="form-control" type="text" id="CARDDAV_USERNAME" name="CARDDAV_USERNAME" value="{{.Carddav.Username}}" autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="CARDDAV_PASSWORD">Password / App Password</label>
+            <input class="form-control" type="password" id="CARDDAV_PASSWORD" name="CARDDAV_PASSWORD" value="" {{if .Carddav.HasPassword}}placeholder="••••••••"{{end}} autocomplete="off">
+            {{if .Carddav.HasPassword}}<div class="form-text text-muted">Leave blank to keep the stored password.</div>{{end}}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="CARDDAV_DELETE_POLICY">Deletion Policy</label>
+            <select class="form-select" id="CARDDAV_DELETE_POLICY" name="CARDDAV_DELETE_POLICY">
+              <option value="keep" {{if eq .Carddav.DeletePolicy "keep"}}selected{{end}}>Keep locally (unlink)</option>
+              <option value="delete" {{if eq .Carddav.DeletePolicy "delete"}}selected{{end}}>Delete locally</option>
+            </select>
+            <div class="form-text text-muted">What happens to the local person when their card is deleted on the server.</div>
+            {{if index .Carddav.Errors "CARDDAV_DELETE_POLICY"}}<div class="invalid-feedback d-block text-danger small">{{index .Carddav.Errors "CARDDAV_DELETE_POLICY"}}</div>{{end}}
+          </div>
+          <button class="btn btn-primary" type="submit">Save CardDAV Settings</button>
+        </form>
+        <button class="btn btn-outline-secondary mt-3" hx-post="/settings/carddav/sync" hx-target="#carddav-result" hx-swap="innerHTML">Sync Now</button>
+        <div id="carddav-result" class="mt-3"></div>
+      </div>
+    </div>
   {{end}}
 
   {{if eq .SettingsTab "config"}}

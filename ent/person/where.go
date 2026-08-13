@@ -90,6 +90,36 @@ func ImmichPhotoDisabled(v bool) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldImmichPhotoDisabled, v))
 }
 
+// CarddavUID applies equality check predicate on the "carddav_uid" field. It's identical to CarddavUIDEQ.
+func CarddavUID(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavUID, v))
+}
+
+// CarddavHref applies equality check predicate on the "carddav_href" field. It's identical to CarddavHrefEQ.
+func CarddavHref(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavHref, v))
+}
+
+// CarddavEtag applies equality check predicate on the "carddav_etag" field. It's identical to CarddavEtagEQ.
+func CarddavEtag(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavEtag, v))
+}
+
+// CarddavRev applies equality check predicate on the "carddav_rev" field. It's identical to CarddavRevEQ.
+func CarddavRev(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavRev, v))
+}
+
+// CarddavLastModified applies equality check predicate on the "carddav_last_modified" field. It's identical to CarddavLastModifiedEQ.
+func CarddavLastModified(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavLastModified, v))
+}
+
+// CarddavPendingSync applies equality check predicate on the "carddav_pending_sync" field. It's identical to CarddavPendingSyncEQ.
+func CarddavPendingSync(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavPendingSync, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCreatedAt, v))
@@ -493,6 +523,366 @@ func ImmichPhotoDisabledEQ(v bool) predicate.Person {
 // ImmichPhotoDisabledNEQ applies the NEQ predicate on the "immich_photo_disabled" field.
 func ImmichPhotoDisabledNEQ(v bool) predicate.Person {
 	return predicate.Person(sql.FieldNEQ(FieldImmichPhotoDisabled, v))
+}
+
+// CarddavUIDEQ applies the EQ predicate on the "carddav_uid" field.
+func CarddavUIDEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavUID, v))
+}
+
+// CarddavUIDNEQ applies the NEQ predicate on the "carddav_uid" field.
+func CarddavUIDNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldCarddavUID, v))
+}
+
+// CarddavUIDIn applies the In predicate on the "carddav_uid" field.
+func CarddavUIDIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldCarddavUID, vs...))
+}
+
+// CarddavUIDNotIn applies the NotIn predicate on the "carddav_uid" field.
+func CarddavUIDNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldCarddavUID, vs...))
+}
+
+// CarddavUIDGT applies the GT predicate on the "carddav_uid" field.
+func CarddavUIDGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldCarddavUID, v))
+}
+
+// CarddavUIDGTE applies the GTE predicate on the "carddav_uid" field.
+func CarddavUIDGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldCarddavUID, v))
+}
+
+// CarddavUIDLT applies the LT predicate on the "carddav_uid" field.
+func CarddavUIDLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldCarddavUID, v))
+}
+
+// CarddavUIDLTE applies the LTE predicate on the "carddav_uid" field.
+func CarddavUIDLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldCarddavUID, v))
+}
+
+// CarddavUIDContains applies the Contains predicate on the "carddav_uid" field.
+func CarddavUIDContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldCarddavUID, v))
+}
+
+// CarddavUIDHasPrefix applies the HasPrefix predicate on the "carddav_uid" field.
+func CarddavUIDHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldCarddavUID, v))
+}
+
+// CarddavUIDHasSuffix applies the HasSuffix predicate on the "carddav_uid" field.
+func CarddavUIDHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldCarddavUID, v))
+}
+
+// CarddavUIDIsNil applies the IsNil predicate on the "carddav_uid" field.
+func CarddavUIDIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldCarddavUID))
+}
+
+// CarddavUIDNotNil applies the NotNil predicate on the "carddav_uid" field.
+func CarddavUIDNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldCarddavUID))
+}
+
+// CarddavUIDEqualFold applies the EqualFold predicate on the "carddav_uid" field.
+func CarddavUIDEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldCarddavUID, v))
+}
+
+// CarddavUIDContainsFold applies the ContainsFold predicate on the "carddav_uid" field.
+func CarddavUIDContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldCarddavUID, v))
+}
+
+// CarddavHrefEQ applies the EQ predicate on the "carddav_href" field.
+func CarddavHrefEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavHref, v))
+}
+
+// CarddavHrefNEQ applies the NEQ predicate on the "carddav_href" field.
+func CarddavHrefNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldCarddavHref, v))
+}
+
+// CarddavHrefIn applies the In predicate on the "carddav_href" field.
+func CarddavHrefIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldCarddavHref, vs...))
+}
+
+// CarddavHrefNotIn applies the NotIn predicate on the "carddav_href" field.
+func CarddavHrefNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldCarddavHref, vs...))
+}
+
+// CarddavHrefGT applies the GT predicate on the "carddav_href" field.
+func CarddavHrefGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldCarddavHref, v))
+}
+
+// CarddavHrefGTE applies the GTE predicate on the "carddav_href" field.
+func CarddavHrefGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldCarddavHref, v))
+}
+
+// CarddavHrefLT applies the LT predicate on the "carddav_href" field.
+func CarddavHrefLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldCarddavHref, v))
+}
+
+// CarddavHrefLTE applies the LTE predicate on the "carddav_href" field.
+func CarddavHrefLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldCarddavHref, v))
+}
+
+// CarddavHrefContains applies the Contains predicate on the "carddav_href" field.
+func CarddavHrefContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldCarddavHref, v))
+}
+
+// CarddavHrefHasPrefix applies the HasPrefix predicate on the "carddav_href" field.
+func CarddavHrefHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldCarddavHref, v))
+}
+
+// CarddavHrefHasSuffix applies the HasSuffix predicate on the "carddav_href" field.
+func CarddavHrefHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldCarddavHref, v))
+}
+
+// CarddavHrefIsNil applies the IsNil predicate on the "carddav_href" field.
+func CarddavHrefIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldCarddavHref))
+}
+
+// CarddavHrefNotNil applies the NotNil predicate on the "carddav_href" field.
+func CarddavHrefNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldCarddavHref))
+}
+
+// CarddavHrefEqualFold applies the EqualFold predicate on the "carddav_href" field.
+func CarddavHrefEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldCarddavHref, v))
+}
+
+// CarddavHrefContainsFold applies the ContainsFold predicate on the "carddav_href" field.
+func CarddavHrefContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldCarddavHref, v))
+}
+
+// CarddavEtagEQ applies the EQ predicate on the "carddav_etag" field.
+func CarddavEtagEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavEtag, v))
+}
+
+// CarddavEtagNEQ applies the NEQ predicate on the "carddav_etag" field.
+func CarddavEtagNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldCarddavEtag, v))
+}
+
+// CarddavEtagIn applies the In predicate on the "carddav_etag" field.
+func CarddavEtagIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldCarddavEtag, vs...))
+}
+
+// CarddavEtagNotIn applies the NotIn predicate on the "carddav_etag" field.
+func CarddavEtagNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldCarddavEtag, vs...))
+}
+
+// CarddavEtagGT applies the GT predicate on the "carddav_etag" field.
+func CarddavEtagGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldCarddavEtag, v))
+}
+
+// CarddavEtagGTE applies the GTE predicate on the "carddav_etag" field.
+func CarddavEtagGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldCarddavEtag, v))
+}
+
+// CarddavEtagLT applies the LT predicate on the "carddav_etag" field.
+func CarddavEtagLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldCarddavEtag, v))
+}
+
+// CarddavEtagLTE applies the LTE predicate on the "carddav_etag" field.
+func CarddavEtagLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldCarddavEtag, v))
+}
+
+// CarddavEtagContains applies the Contains predicate on the "carddav_etag" field.
+func CarddavEtagContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldCarddavEtag, v))
+}
+
+// CarddavEtagHasPrefix applies the HasPrefix predicate on the "carddav_etag" field.
+func CarddavEtagHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldCarddavEtag, v))
+}
+
+// CarddavEtagHasSuffix applies the HasSuffix predicate on the "carddav_etag" field.
+func CarddavEtagHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldCarddavEtag, v))
+}
+
+// CarddavEtagIsNil applies the IsNil predicate on the "carddav_etag" field.
+func CarddavEtagIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldCarddavEtag))
+}
+
+// CarddavEtagNotNil applies the NotNil predicate on the "carddav_etag" field.
+func CarddavEtagNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldCarddavEtag))
+}
+
+// CarddavEtagEqualFold applies the EqualFold predicate on the "carddav_etag" field.
+func CarddavEtagEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldCarddavEtag, v))
+}
+
+// CarddavEtagContainsFold applies the ContainsFold predicate on the "carddav_etag" field.
+func CarddavEtagContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldCarddavEtag, v))
+}
+
+// CarddavRevEQ applies the EQ predicate on the "carddav_rev" field.
+func CarddavRevEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavRev, v))
+}
+
+// CarddavRevNEQ applies the NEQ predicate on the "carddav_rev" field.
+func CarddavRevNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldCarddavRev, v))
+}
+
+// CarddavRevIn applies the In predicate on the "carddav_rev" field.
+func CarddavRevIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldCarddavRev, vs...))
+}
+
+// CarddavRevNotIn applies the NotIn predicate on the "carddav_rev" field.
+func CarddavRevNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldCarddavRev, vs...))
+}
+
+// CarddavRevGT applies the GT predicate on the "carddav_rev" field.
+func CarddavRevGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldCarddavRev, v))
+}
+
+// CarddavRevGTE applies the GTE predicate on the "carddav_rev" field.
+func CarddavRevGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldCarddavRev, v))
+}
+
+// CarddavRevLT applies the LT predicate on the "carddav_rev" field.
+func CarddavRevLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldCarddavRev, v))
+}
+
+// CarddavRevLTE applies the LTE predicate on the "carddav_rev" field.
+func CarddavRevLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldCarddavRev, v))
+}
+
+// CarddavRevContains applies the Contains predicate on the "carddav_rev" field.
+func CarddavRevContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldCarddavRev, v))
+}
+
+// CarddavRevHasPrefix applies the HasPrefix predicate on the "carddav_rev" field.
+func CarddavRevHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldCarddavRev, v))
+}
+
+// CarddavRevHasSuffix applies the HasSuffix predicate on the "carddav_rev" field.
+func CarddavRevHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldCarddavRev, v))
+}
+
+// CarddavRevIsNil applies the IsNil predicate on the "carddav_rev" field.
+func CarddavRevIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldCarddavRev))
+}
+
+// CarddavRevNotNil applies the NotNil predicate on the "carddav_rev" field.
+func CarddavRevNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldCarddavRev))
+}
+
+// CarddavRevEqualFold applies the EqualFold predicate on the "carddav_rev" field.
+func CarddavRevEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldCarddavRev, v))
+}
+
+// CarddavRevContainsFold applies the ContainsFold predicate on the "carddav_rev" field.
+func CarddavRevContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldCarddavRev, v))
+}
+
+// CarddavLastModifiedEQ applies the EQ predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedEQ(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavLastModified, v))
+}
+
+// CarddavLastModifiedNEQ applies the NEQ predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedNEQ(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldCarddavLastModified, v))
+}
+
+// CarddavLastModifiedIn applies the In predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedIn(vs ...time.Time) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldCarddavLastModified, vs...))
+}
+
+// CarddavLastModifiedNotIn applies the NotIn predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedNotIn(vs ...time.Time) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldCarddavLastModified, vs...))
+}
+
+// CarddavLastModifiedGT applies the GT predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedGT(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldCarddavLastModified, v))
+}
+
+// CarddavLastModifiedGTE applies the GTE predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedGTE(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldCarddavLastModified, v))
+}
+
+// CarddavLastModifiedLT applies the LT predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedLT(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldCarddavLastModified, v))
+}
+
+// CarddavLastModifiedLTE applies the LTE predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedLTE(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldCarddavLastModified, v))
+}
+
+// CarddavLastModifiedIsNil applies the IsNil predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldCarddavLastModified))
+}
+
+// CarddavLastModifiedNotNil applies the NotNil predicate on the "carddav_last_modified" field.
+func CarddavLastModifiedNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldCarddavLastModified))
+}
+
+// CarddavPendingSyncEQ applies the EQ predicate on the "carddav_pending_sync" field.
+func CarddavPendingSyncEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldCarddavPendingSync, v))
+}
+
+// CarddavPendingSyncNEQ applies the NEQ predicate on the "carddav_pending_sync" field.
+func CarddavPendingSyncNEQ(v bool) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldCarddavPendingSync, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
