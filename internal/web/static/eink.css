@@ -300,7 +300,7 @@
   border-color: #000 !important;
 }
 
-/* ── Calendar ── */
+/* ── Calendar (e-ink: monochrome, high contrast) ── */
 
 [data-bs-theme="eink"] .fc-toolbar-title {
   color: #000 !important;
@@ -312,10 +312,51 @@
   border-color: #000 !important;
 }
 
-[data-bs-theme="eink"] .fc-daygrid-event {
+[data-bs-theme="eink"] .fc-button-primary:not(:disabled).fc-button-active,
+[data-bs-theme="eink"] .fc-button-primary:not(:disabled):active {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #000 !important;
+}
+
+[data-bs-theme="eink"] .fc-daygrid-event,
+[data-bs-theme="eink"] .fc-event {
   border: 1px solid #000 !important;
   background: #fff !important;
   color: #000 !important;
+}
+
+[data-bs-theme="eink"] .fc-col-header-cell {
+  background: #000 !important;
+  color: #fff !important;
+}
+[data-bs-theme="eink"] .fc-col-header-cell a {
+  color: #fff !important;
+}
+
+[data-bs-theme="eink"] .fc-day-sat,
+[data-bs-theme="eink"] .fc-day-sun {
+  background: #fff !important;
+}
+
+[data-bs-theme="eink"] .fc-day-today {
+  background: #e8e8e8 !important;
+  outline: 1px solid #000 !important;
+}
+
+[data-bs-theme="eink"] .fc-scrollgrid,
+[data-bs-theme="eink"] .fc-scrollgrid td,
+[data-bs-theme="eink"] .fc-scrollgrid th {
+  border-color: #000 !important;
+}
+
+[data-bs-theme="eink"] .fc-popover {
+  background: #fff !important;
+  border-color: #000 !important;
+}
+[data-bs-theme="eink"] .fc-popover .fc-popover-header {
+  background: #000 !important;
+  color: #fff !important;
 }
 
 /* ── Event Card Accent Bar (e-ink: override coloured borders with solid black) ── */

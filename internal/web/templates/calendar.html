@@ -45,7 +45,7 @@
 <!-- Import calendar (.ics) -->
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <span>Import calendar (.ics)</span>
+    <h2 class="h6 mb-0">Import calendar (.ics)</h2>
     <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#ics-import-form" aria-expanded="false" aria-controls="ics-import-form">Toggle</button>
   </div>
   <div id="ics-import-form" class="collapse">
@@ -95,6 +95,7 @@
         <p><strong>Date:</strong> <span id="event-date"></span></p>
         <p><strong>Type:</strong> <span id="event-type"></span></p>
         <p><strong>Description:</strong> <span id="event-description"></span></p>
+        <p><strong>Notes:</strong> <span id="event-notes"></span></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -130,8 +131,12 @@
         document.getElementById('event-date').textContent = info.event.start.toLocaleDateString('en-US', {
           weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
-        document.getElementById('event-type').textContent = props.type || 'N/A';
+        var typeEl = document.getElementById('event-type');
+        var type = props.type || 'N/A';
+        typeEl.textContent = type;
+        typeEl.className = 'event-type-badge event-' + type;
         document.getElementById('event-description').textContent = props.description || 'No description';
+        document.getElementById('event-notes').textContent = props.notes || 'No notes';
         var modal = new bootstrap.Modal(document.getElementById('eventModal'));
         modal.show();
       },

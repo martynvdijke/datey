@@ -62,6 +62,16 @@
   --calendar-btn-active-border: var(--bs-emphasis-color);
   --calendar-loading-color: var(--bs-secondary-color);
   --calendar-error-color: var(--bs-danger);
+  --calendar-header-bg: var(--bs-secondary-bg);
+  --calendar-header-color: var(--bs-body-color);
+  --calendar-weekend-bg: var(--bs-secondary-bg);
+  --calendar-today-bg: var(--bs-primary-bg-subtle);
+  --calendar-today-color: var(--bs-body-color);
+  --calendar-grid-border: var(--bs-border-color);
+  --calendar-event-text: #fff;
+  --calendar-event-wedding-text: #000;
+  --calendar-popover-bg: var(--bs-body-bg);
+  --calendar-popover-border: var(--bs-border-color);
 }
 
 /* ── Focus Ring ── */
@@ -115,6 +125,24 @@
   padding: 1rem;
 }
 
+/* Map FullCalendar's own CSS variables onto the design-system tokens so
+   every surface (toolbar, grid, headers, today, events, popovers) follows
+   the app palette across Light/Dark/E-Ink. */
+
+#calendar {
+  --fc-page-bg-color: var(--calendar-bg);
+  --fc-border-color: var(--calendar-grid-border);
+  --fc-neutral-bg-color: var(--bs-secondary-bg);
+  --fc-neutral-text-color: var(--bs-secondary-color);
+  --fc-today-bg-color: var(--calendar-today-bg);
+  --fc-today-text-color: var(--calendar-today-color);
+  --fc-event-bg-color: var(--bs-primary);
+  --fc-event-border-color: var(--bs-primary);
+  --fc-event-text-color: var(--calendar-event-text);
+  --fc-more-link-bg-color: var(--bs-secondary-bg);
+  --fc-more-link-text-color: var(--bs-secondary-color);
+}
+
 .fc .fc-button-primary {
   background-color: var(--calendar-btn-bg);
   border-color: var(--calendar-btn-border);
@@ -129,6 +157,47 @@
   border-color: var(--calendar-btn-active-border);
 }
 .fc .fc-daygrid-event { white-space: normal; cursor: pointer; }
+
+/* Day headers */
+.fc .fc-col-header-cell {
+  background: var(--calendar-header-bg);
+  color: var(--calendar-header-color);
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+.fc .fc-col-header-cell a {
+  color: var(--calendar-header-color);
+}
+
+/* Weekend cells */
+.fc .fc-day-sat,
+.fc .fc-day-sun {
+  background: var(--calendar-weekend-bg);
+}
+
+/* Today highlight */
+.fc .fc-day-today {
+  color: var(--calendar-today-color);
+}
+
+/* Event chips by type — consistent with the dashboard/person-detail badges. */
+.fc .fc-event.event-birthday { background-color: var(--event-birthday); border-color: var(--event-birthday); color: var(--calendar-event-text); }
+.fc .fc-event.event-anniversary { background-color: var(--event-anniversary); border-color: var(--event-anniversary); color: var(--calendar-event-text); }
+.fc .fc-event.event-wedding { background-color: var(--event-wedding); border-color: var(--event-wedding); color: var(--calendar-event-wedding-text); }
+.fc .fc-event.event-holiday { background-color: var(--event-holiday); border-color: var(--event-holiday); color: var(--calendar-event-text); }
+.fc .fc-event.event-meeting { background-color: var(--event-meeting); border-color: var(--event-meeting); color: var(--calendar-event-text); }
+.fc .fc-event.event-custom { background-color: var(--event-custom); border-color: var(--event-custom); color: var(--calendar-event-text); }
+
+/* Popovers */
+.fc .fc-popover {
+  background: var(--calendar-popover-bg);
+  border-color: var(--calendar-popover-border);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.fc .fc-popover .fc-popover-header {
+  background: var(--calendar-header-bg);
+  color: var(--calendar-header-color);
+}
 
 .calendar-loading { text-align: center; padding: 3rem; color: var(--calendar-loading-color); }
 .calendar-error { display: none; text-align: center; padding: 2rem; color: var(--calendar-error-color); }
