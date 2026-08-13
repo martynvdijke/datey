@@ -1,3 +1,15 @@
+# [1.32.0](https://github.com/martynvdijke/datey/compare/v1.31.0...v1.32.0) (2026-08-13)
+
+
+### Bug Fixes
+
+* satisfy golangci-lint in carddav client and settings ([1c50e88](https://github.com/martynvdijke/datey/commit/1c50e882270e0696281073ab67f1dc5796940f04))
+
+
+### Features
+
+* catch up missed reminders and two-way CardDAV sync ([d9be804](https://github.com/martynvdijke/datey/commit/d9be804f52540722846636b605c9086e9f4e7089))
+
 # [1.31.0](https://github.com/martynvdijke/datey/compare/v1.30.1...v1.31.0) (2026-08-12)
 
 
