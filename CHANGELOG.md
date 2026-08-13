@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/martynvdijke/datey/compare/v1.32.0...v1.33.0) (2026-08-13)
+
+
+### Features
+
+* **calendar:** theme FullCalendar across all modes and expand annual events ([687ce5d](https://github.com/martynvdijke/datey/commit/687ce5dfbe25a0d99938e22e3a6e54c0cd554c3b)), closes [hi#contrast](https://github.com/hi/issues/contrast)
+
 # [1.32.0](https://github.com/martynvdijke/datey/compare/v1.31.0...v1.32.0) (2026-08-13)
 
 
