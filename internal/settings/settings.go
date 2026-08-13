@@ -332,7 +332,7 @@ func (s *Store) ApplyCarddavForm(ctx context.Context, cfg *config.Config, form u
 			errs["CARDDAV_URL"] = "CardDAV URL must be an absolute URL (e.g. https://cloud.example.com/remote.php/dav/addressbooks/user/book)"
 		}
 	}
-	if deletePolicy != "keep" && deletePolicy != "delete" {
+	if !validDeletePolicies[deletePolicy] {
 		errs["CARDDAV_DELETE_POLICY"] = "Delete policy must be one of: keep, delete"
 	}
 

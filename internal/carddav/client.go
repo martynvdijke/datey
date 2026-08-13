@@ -10,19 +10,6 @@ import (
 	"strings"
 )
 
-// davNS is the WebDAV namespace used for property names in PROPFIND bodies.
-const davNS = "DAV:"
-
-// carddavNS is the CardDAV namespace for addressbook props and REPORTs.
-const carddavNS = "urn:ietf:params:xml:ns:carddav"
-
-// propfind represents the <propfind> request element with a requested
-// property list. Namespace declarations are emitted literally.
-type propfind struct {
-	XMLName xml.Name `xml:"DAV: propfind"`
-	Prop    []string `xml:"DAV: prop"`
-}
-
 // multistatus is the parsed <multistatus> response of a PROPFIND or REPORT.
 type multistatus struct {
 	Responses []response `xml:"DAV: response"`
@@ -119,7 +106,7 @@ func (c *Client) probeWellKnown(ctx context.Context, url string) (string, error)
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	// A successful well-known probe typically returns 302 to the DAV root.
 	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
 		return resp.Request.URL.String(), nil
@@ -265,7 +252,7 @@ func (c *Client) propfind(ctx context.Context, url, body string) (*multistatus, 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusMultiStatus && resp.StatusCode != http.StatusOK {
 		_, _ = io.Copy(io.Discard, resp.Body)
@@ -344,7 +331,7 @@ func (c *Client) SyncCollection(ctx context.Context, token string) (*syncReport,
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusMultiStatus && resp.StatusCode != http.StatusOK {
 		_, _ = io.Copy(io.Discard, resp.Body)
@@ -393,7 +380,7 @@ func (c *Client) Get(ctx context.Context, href string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		_, _ = io.Copy(io.Discard, resp.Body)
 		return nil, fmt.Errorf("carddav: GET %s returned %s", href, resp.Status)
@@ -426,7 +413,7 @@ func (c *Client) Put(ctx context.Context, href string, data []byte, etag string)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	_, _ = io.Copy(io.Discard, resp.Body)
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
@@ -448,7 +435,7 @@ func (c *Client) Delete(ctx context.Context, href string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	_, _ = io.Copy(io.Discard, resp.Body)
 
 	switch resp.StatusCode {

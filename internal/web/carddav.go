@@ -77,9 +77,9 @@ func (h *Handler) settingsCarddavSync(w http.ResponseWriter, r *http.Request) {
 
 	var b strings.Builder
 	b.WriteString(`<div class="alert alert-success mb-0">`)
-	b.WriteString(fmt.Sprintf("CardDAV sync complete. Pulled: %d created, %d updated, %d deleted. Pushed: %d created, %d updated, %d deleted.",
+	fmt.Fprintf(&b, "CardDAV sync complete. Pulled: %d created, %d updated, %d deleted. Pushed: %d created, %d updated, %d deleted.",
 		res.PulledCreated, res.PulledUpdated, res.PulledDeleted,
-		res.PushedCreated, res.PushedUpdated, res.PushedDeleted))
+		res.PushedCreated, res.PushedUpdated, res.PushedDeleted)
 	if len(res.Errors) > 0 {
 		b.WriteString(`<ul class="mb-0 mt-1">`)
 		for _, e := range res.Errors {
