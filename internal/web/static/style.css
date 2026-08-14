@@ -169,9 +169,9 @@
   color: var(--calendar-header-color);
 }
 
-/* Weekend cells */
-.fc .fc-day-sat,
-.fc .fc-day-sun {
+/* Weekend cells (day cells only — header cells keep the header background) */
+.fc .fc-day-sat:not(.fc-col-header-cell),
+.fc .fc-day-sun:not(.fc-col-header-cell) {
   background: var(--calendar-weekend-bg);
 }
 

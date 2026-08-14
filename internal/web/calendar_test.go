@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -283,5 +284,65 @@ func TestCalendarEvents_NoOccurrenceInRange(t *testing.T) {
 	}
 	if len(events) != 0 {
 		t.Fatalf("expected no events in range, got %d", len(events))
+	}
+}
+
+func TestCalendarEvents_FullCalendarRFC3339Params(t *testing.T) {
+	// FullCalendar sends range params as RFC3339 with the browser's timezone
+	// offset (e.g. 2026-08-01T00:00:00+02:00). The handler must honour the
+	// requested range instead of silently falling back to the current month.
+	h := newTestWebHandler(t)
+	router := setupCalendarRouter(h)
+
+	ctx := context.Background()
+	person, err := h.client.Person.Create().
+		SetName("Range Test").
+		SetNotes("test").
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	_, err = h.client.Event.Create().
+		SetType("birthday").
+		SetDate(time.Date(1990, 8, 15, 0, 0, 0, 0, time.UTC)).
+		SetCreatedAt(time.Now()).
+		SetPersonID(person.ID).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	cases := []struct {
+		name    string
+		start   string
+		end     string
+		wantLen int
+	}{
+		{"august covers birthday", "2026-08-01T00:00:00+02:00", "2026-09-01T00:00:00+02:00", 1},
+		{"september empty", "2026-09-01T00:00:00+02:00", "2026-10-01T00:00:00+02:00", 0},
+		{"bare dates still work", "2026-08-01", "2026-09-01", 1},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			q := "start=" + url.QueryEscape(tc.start) + "&end=" + url.QueryEscape(tc.end)
+			req := httptest.NewRequest("GET", "/api/calendar-events?"+q, nil)
+			req = req.WithContext(withUserContext(req.Context()))
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if w.Code != http.StatusOK {
+				t.Fatalf("expected 200, got %d", w.Code)
+			}
+			var events []map[string]any
+			if err := json.NewDecoder(w.Body).Decode(&events); err != nil {
+				t.Fatalf("decode JSON: %v", err)
+			}
+			if len(events) != tc.wantLen {
+				t.Errorf("expected %d events, got %d", tc.wantLen, len(events))
+			}
+		})
 	}
 }

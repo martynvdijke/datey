@@ -334,8 +334,8 @@
   color: #fff !important;
 }
 
-[data-bs-theme="eink"] .fc-day-sat,
-[data-bs-theme="eink"] .fc-day-sun {
+[data-bs-theme="eink"] .fc-day-sat:not(.fc-col-header-cell),
+[data-bs-theme="eink"] .fc-day-sun:not(.fc-col-header-cell) {
   background: #fff !important;
 }
 

@@ -50,15 +50,19 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 	startStr := r.URL.Query().Get("start")
 	endStr := r.URL.Query().Get("end")
 
-	start, err := time.Parse("2006-01-02", startStr)
-	if err != nil {
+	// FullCalendar sends RFC3339 timestamps with the browser's timezone
+	// offset (e.g. 2026-07-26T00:00:00+02:00); bare dates are also accepted.
+	// The wall-clock date is used as midnight UTC so the day boundaries match
+	// how event occurrences are computed (midnight UTC).
+	start, ok := parseCalendarDate(startStr)
+	if !ok {
 		// Default to start of current month
 		now := time.Now()
 		start = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 	}
 
-	end, err := time.Parse("2006-01-02", endStr)
-	if err != nil {
+	end, ok := parseCalendarDate(endStr)
+	if !ok {
 		// Default to end of next month
 		now := time.Now()
 		end = time.Date(now.Year(), now.Month()+2, 0, 0, 0, 0, 0, time.UTC)
@@ -118,4 +122,20 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		slog.Error("calendar: encode events", "error", err)
 	}
+}
+
+// parseCalendarDate parses FullCalendar range parameters, which are sent as
+// RFC3339 timestamps with the browser's timezone offset (e.g.
+// 2026-07-26T00:00:00+02:00); bare YYYY-MM-DD dates are also accepted. The
+// wall-clock date is returned as midnight UTC so the day boundaries match how
+// event occurrences are computed (midnight UTC). The bool result is false
+// when the string cannot be parsed.
+func parseCalendarDate(s string) (time.Time, bool) {
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC), true
+	}
+	if t, err := time.Parse("2006-01-02", s); err == nil {
+		return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC), true
+	}
+	return time.Time{}, false
 }
