@@ -1,3 +1,10 @@
+## [1.33.1](https://github.com/martynvdijke/datey/compare/v1.33.0...v1.33.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **calendar:** honor FullCalendar RFC3339 range params; fix eink weekend headers ([64d0c91](https://github.com/martynvdijke/datey/commit/64d0c91b617ecaebe13b8f2fce7e1b1f890841de))
+
 # [1.33.0](https://github.com/martynvdijke/datey/compare/v1.32.0...v1.33.0) (2026-08-13)
 
 
