@@ -1,3 +1,10 @@
+## [1.33.2](https://github.com/martynvdijke/datey/compare/v1.33.1...v1.33.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/playwright-community/playwright-go to v0.6201.0 ([2aed585](https://github.com/martynvdijke/datey/commit/2aed585219e95bd6aa9caf49be57ea446647a0e5))
+
 ## [1.33.1](https://github.com/martynvdijke/datey/compare/v1.33.0...v1.33.1) (2026-08-14)
 
 
