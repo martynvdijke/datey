@@ -9,7 +9,7 @@ serverless_language:
 polling_url: "{{url}}/api/trmnl/birthdays"
 polling_headers: ''
 polling_body: ''
-id: 443626
+id:
 oauth_enabled: 'false'
 oauth_pkce_enabled: 'no'
 oauth_authorize_url: ''
