@@ -18,8 +18,10 @@ type Config struct {
 	LogBufferSize     int
 	OTLPEndpoint      string
 
-	BackupDir           string
-	BackupRetentionDays int
+	BackupDir                string
+	BackupRetentionDays      int
+	WeeklyBackupDay          int
+	WeeklyBackupRetentionWeeks int
 
 	SMTPHost    string
 	SMTPPort    int
@@ -105,8 +107,10 @@ func Load() (*Config, error) {
 		WebhookURL:       getEnv("WEBHOOK_URL", ""),
 		WebhookSecret:    getEnv("WEBHOOK_SECRET", ""),
 
-		BackupDir:           getEnv("BACKUP_DIR", ""),
-		BackupRetentionDays: getEnvInt("BACKUP_RETENTION_DAYS", 0),
+		BackupDir:                   getEnv("BACKUP_DIR", ""),
+		BackupRetentionDays:         getEnvInt("BACKUP_RETENTION_DAYS", 0),
+		WeeklyBackupDay:             getEnvInt("WEEKLY_BACKUP_DAY", 0),
+		WeeklyBackupRetentionWeeks:  getEnvInt("WEEKLY_BACKUP_RETENTION_WEEKS", 52),
 
 		UmamiURL:       getEnv("UMAMI_URL", ""),
 		UmamiWebsiteID: getEnv("UMAMI_WEBSITE_ID", ""),
@@ -176,6 +180,9 @@ var validDateVariants = map[string]bool{
 func (c *Config) Validate() error {
 	if c.SchedulerHour < 0 || c.SchedulerHour > 23 {
 		return fmt.Errorf("SCHEDULER_HOUR must be between 0 and 23, got %d", c.SchedulerHour)
+	}
+	if c.WeeklyBackupDay < 0 || c.WeeklyBackupDay > 6 {
+		return fmt.Errorf("WEEKLY_BACKUP_DAY must be between 0 (Sunday) and 6 (Saturday), got %d", c.WeeklyBackupDay)
 	}
 	if c.ReminderDays < 1 || c.ReminderDays > 365 {
 		return fmt.Errorf("REMINDER_DAYS must be between 1 and 365, got %d", c.ReminderDays)

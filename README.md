@@ -33,7 +33,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🔁 CardDAV Sync** — Two-way, authenticated sync of people and birthdays with a CardDAV address book (Nextcloud, Baikal, iCloud, ...). Remote changes are pulled once a day (plus a manual "Sync Now" from Settings → Notifications); local edits are tracked and pushed back. `BDAY` becomes a birthday event and `NOTE` maps to notes. Conflicts resolve last-write-wins by `REV`/modification time; a server-side deletion either unlinks the local person (default, `keep`) or removes them (`delete`). Disabled until you enable it.
 - **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
 - **🎈 Annual Notifications** — Birthdays, anniversaries, weddings and holidays fire every year on their occurrence date, even when the stored date is historical (leap-day aware). Birthday reminders are on by default per person and can be turned off with the toggle on a person's detail page. On upgrade, existing people with a parseable `BDAY` in their stored vCard data get a birthday event backfilled once.
-- **💾 Database Backup** — On-demand SQLite backup with configurable retention.
+- **💾 Database Backup** — Automatic nightly SQLite backups plus a weekly backup on a configurable weekday, with on-demand backup and configurable retention.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
  - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
  - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
@@ -92,7 +92,9 @@ See `.env.example` for a template.
 | `LOG_LEVEL` | `warn` | Log level (**enforced**: must be one of `debug`, `info`, `warn`, `error`) |
 | `LOG_BUFFER_SIZE` | `10000` | In-memory ring buffer size for log viewer *(restart required)* |
 | `BACKUP_DIR` | — | Directory for database backups |
-| `BACKUP_RETENTION_DAYS` | `30` | Days to retain backups before pruning |
+| `BACKUP_RETENTION_DAYS` | `30` | Days to retain daily backups before pruning |
+| `WEEKLY_BACKUP_DAY` | `0` | Weekday for weekly backup (0=Sunday, 6=Saturday) |
+| `WEEKLY_BACKUP_RETENTION_WEEKS` | `52` | Weeks to retain weekly backups |
 | `OTEL_ENDPOINT` | — | OpenTelemetry OTLP endpoint *(restart required)* |
 | `SMTP_HOST` | — | SMTP server hostname |
 | `SMTP_PORT` | `587` | SMTP server port (**enforced**: 1–65535) |

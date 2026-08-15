@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -102,6 +103,40 @@ func TestLoad_BackupRetentionFromEnv(t *testing.T) {
 		t.Errorf("BackupRetentionDays = %d, want %d", cfg.BackupRetentionDays, 90)
 	}
 }
+
+func TestLoad_WeeklyBackupDayDefault(t *testing.T) {
+	os.Unsetenv("WEEKLY_BACKUP_DAY")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() failed: %v", err)
+	}
+	if cfg.WeeklyBackupDay != 0 {
+		t.Errorf("WeeklyBackupDay = %d, want %d (Sunday)", cfg.WeeklyBackupDay, 0)
+	}
+}
+
+func TestLoad_WeeklyBackupRetentionWeeksDefault(t *testing.T) {
+	os.Unsetenv("WEEKLY_BACKUP_RETENTION_WEEKS")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() failed: %v", err)
+	}
+	if cfg.WeeklyBackupRetentionWeeks != 52 {
+		t.Errorf("WeeklyBackupRetentionWeeks = %d, want %d", cfg.WeeklyBackupRetentionWeeks, 52)
+	}
+}
+
+func TestValidate_WeeklyBackupDayOutOfRange(t *testing.T) {
+	cfg := &Config{WeeklyBackupDay: 7, SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european"}
+	err := cfg.Validate()
+	if err == nil {
+		t.Fatal("expected error for WEEKLY_BACKUP_DAY=7, got nil")
+	}
+	if !strings.Contains(err.Error(), "WEEKLY_BACKUP_DAY") {
+		t.Errorf("expected error mentioning WEEKLY_BACKUP_DAY, got %q", err)
+	}
+}
+
 
 // --- Validation tests (task 2.7) ---
 

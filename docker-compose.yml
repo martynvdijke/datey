@@ -39,6 +39,8 @@ services:
       # Database Backup
       - BACKUP_DIR=/db/backups
       - BACKUP_RETENTION_DAYS=30
+      - WEEKLY_BACKUP_DAY=0
+      - WEEKLY_BACKUP_RETENTION_WEEKS=52
 
 volumes:
   datey_data:

@@ -71,6 +71,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 			s.processReminders(ctx, false)
 			s.persistRun(ctx)
 			s.runBackup(ctx)
+			s.runWeeklyBackup(ctx)
 			s.runCarddavSync(ctx)
 			timer.Reset(24 * time.Hour)
 		}
@@ -245,4 +246,23 @@ func (s *Scheduler) runBackup(ctx context.Context) {
 	}
 
 	slog.Info("database backup completed", "source", "scheduler", "dir", s.cfg.BackupDir)
+}
+
+// runWeeklyBackup creates a weekly backup when today is the configured
+// WEEKLY_BACKUP_DAY (0=Sunday..6=Saturday). Weekly backups use their own
+// retention, so they survive the shorter daily retention window.
+func (s *Scheduler) runWeeklyBackup(ctx context.Context) {
+	if int(time.Now().Weekday()) != s.cfg.WeeklyBackupDay {
+		return
+	}
+
+	dbPath := s.cfg.DataDir + "/datey.db"
+	slog.Info("running weekly database backup", "source", "scheduler", "path", dbPath)
+
+	if err := db.BackupWeekly(dbPath, s.cfg.BackupDir, s.cfg.WeeklyBackupRetentionWeeks); err != nil {
+		slog.Error("scheduler: weekly backup failed", "source", "scheduler", "error", err)
+		return
+	}
+
+	slog.Info("weekly database backup completed", "source", "scheduler", "dir", s.cfg.BackupDir)
 }

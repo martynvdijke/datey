@@ -2,7 +2,9 @@ package scheduler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -396,5 +398,64 @@ func TestCatchUp_PersistsLastRunAfterPass(t *testing.T) {
 	}
 	if time.Since(*last) > 5*time.Minute {
 		t.Errorf("persisted last run too old: %s", last.Format(time.RFC3339))
+	}
+}
+
+// newWeeklyBackupScheduler returns a scheduler wired to temp data/backup dirs
+// with a real SQLite file so runWeeklyBackup can actually copy it.
+func newWeeklyBackupScheduler(t *testing.T) *Scheduler {
+	t.Helper()
+	s, _, _, _, _ := newTestScheduler(t, 7)
+	s.cfg.DataDir = t.TempDir()
+	s.cfg.BackupDir = t.TempDir()
+	s.cfg.WeeklyBackupRetentionWeeks = 52
+
+	dbPath := s.cfg.DataDir + "/datey.db"
+	dbFile, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		t.Fatalf("create test db: %v", err)
+	}
+	if err := dbFile.Close(); err != nil {
+		t.Fatalf("close test db: %v", err)
+	}
+	return s
+}
+
+func weeklyBackupCount(t *testing.T, dir string) int {
+	t.Helper()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("read backup dir: %v", err)
+	}
+	n := 0
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), "datey_weekly_") && strings.HasSuffix(e.Name(), ".db") {
+			n++
+		}
+	}
+	return n
+}
+
+func TestRunWeeklyBackup_FiresOnConfiguredDay(t *testing.T) {
+	s := newWeeklyBackupScheduler(t)
+	ctx := context.Background()
+
+	s.cfg.WeeklyBackupDay = int(time.Now().Weekday())
+	s.runWeeklyBackup(ctx)
+
+	if n := weeklyBackupCount(t, s.cfg.BackupDir); n != 1 {
+		t.Errorf("expected 1 weekly backup on the configured day, got %d", n)
+	}
+}
+
+func TestRunWeeklyBackup_SkipsOtherDays(t *testing.T) {
+	s := newWeeklyBackupScheduler(t)
+	ctx := context.Background()
+
+	s.cfg.WeeklyBackupDay = int((time.Now().Weekday() + 1) % 7)
+	s.runWeeklyBackup(ctx)
+
+	if n := weeklyBackupCount(t, s.cfg.BackupDir); n != 0 {
+		t.Errorf("expected no weekly backup on other days, got %d", n)
 	}
 }
