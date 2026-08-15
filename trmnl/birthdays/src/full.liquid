@@ -1,0 +1,50 @@
+<div class="layout layout--col gap">
+  <div class="grid grid--cols-1">
+    {% if IDX_0.next_birthday %}
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--large">{{ IDX_0.next_birthday.name }}{% if IDX_0.next_birthday.age %} — turns {{ IDX_0.next_birthday.age }}{% endif %}</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--medium">{{ IDX_0.next_birthday.date }} ({{ IDX_0.next_birthday.relative }})</span>
+        </div>
+      </div>
+    {% else %}
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="value value--medium">No upcoming birthdays</span>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  <div class="hr"></div>
+  <div class="grid grid--cols-2">
+    <div class="col col--start gap">
+      {% for birthday in IDX_0.birthdays %}
+        <div class="item">
+          <div class="meta">{{ birthday.relative }}</div>
+          <div class="content">
+            <span class="label">{{ birthday.name }} — {{ birthday.date }}{% if birthday.age %} (turns {{ birthday.age }}){% endif %}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="col col--start gap">
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label">{{ IDX_0.birthdays.size }} upcoming birthday(s)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="title_bar">
+  <span class="title">Datey Birthdays — {{ trml.plugin_settings.custom_fields_values.url }}</span>
+</div>

@@ -80,6 +80,30 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+  trml:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+
+      - name: Install trmnl_preview
+        run: gem install trmnl_preview
+
+      - name: Lint TRMNL plugins
+        run: |
+          for d in trmnl/*/; do
+            echo "Linting $d"
+            trmnlp lint --dir "$d"
+          done
   otel:
     permissions:
       contents: read # Required. To access the private repository
@@ -89,7 +113,7 @@ jobs:
     if: always()
     name: OpenTelemetry Export Trace
     runs-on: ubuntu-latest
-    needs: [ci]
+    needs: [ci, trml]
     steps:
       - name: Export workflow
         uses: corentinmusard/otel-cicd-action@v4

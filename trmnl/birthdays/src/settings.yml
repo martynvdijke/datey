@@ -6,7 +6,7 @@ static_data: ''
 polling_verb: get
 framework_version: 2.3.7
 serverless_language:
-polling_url: "https://datey.example.com/api/trmnl/stats"
+polling_url: "{{url}}/api/trmnl/birthdays"
 polling_headers: ''
 polling_body: ''
 id:
@@ -36,7 +36,7 @@ custom_fields:
   name: Address of Datey instance
   description: The base URL of your Datey instance
   placeholder: https://datey.example.com
-  help_text: Please include http:// or https:// — the plugin polls <url>/api/trmnl/stats
-name: Datey
-description: Your important dates at a glance — birthdays, anniversaries, and more.
+  help_text: Please include http:// or https:// — the plugin polls <url>/api/trmnl/birthdays
+name: Datey Birthdays
+description: Upcoming birthdays at a glance, with ages when known.
 refresh_interval: 1440

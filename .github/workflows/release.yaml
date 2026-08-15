@@ -91,6 +91,38 @@ jobs:
           docker push ghcr.io/martynvdijke/datey:latest
           docker push ghcr.io/martynvdijke/datey:$VERSION
 
+  trml:
+    needs: release
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    name: Push TRMNL plugins
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+
+      - name: Install trmnl_preview
+        run: gem install trmnl_preview
+
+      - name: Lint TRMNL plugins
+        run: |
+          for d in trmnl/*/; do
+            echo "Linting $d"
+            trmnlp lint --dir "$d"
+          done
+
+      - name: Push TRMNL plugins
+        run: |
+          trmnlp push --force --dir trmnl/stats
+          trmnlp push --force --dir trmnl/birthdays
+        env:
+          TRMNL_API_KEY: ${{ secrets.TRML_TOKEN }}
+
   notify:
     needs: [ci, release]
     if: ${{ always() }}
@@ -133,7 +165,7 @@ jobs:
     if: always()
     name: OpenTelemetry Export Trace
     runs-on: ubuntu-latest
-    needs: [ci, release, notify]
+    needs: [ci, release, notify, trml]
     steps:
       - name: Export workflow
         uses: corentinmusard/otel-cicd-action@v4

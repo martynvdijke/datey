@@ -8,3 +8,6 @@ playwright-report/
 villum-server
 openspec/
 .opencode/
+
+# trmnlp build output
+trmnl/*/_build/

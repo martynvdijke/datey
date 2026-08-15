@@ -13,6 +13,7 @@ import (
 func setupTRMNLRouter(h *Handler) chi.Router {
 	r := chi.NewRouter()
 	r.Get("/api/trmnl/stats", h.trmnlStats)
+	r.Get("/api/trmnl/birthdays", h.trmnlBirthdays)
 	return r
 }
 
@@ -30,6 +31,132 @@ func getTRMNLStats(t *testing.T, h *Handler) (int, http.Header, trmnlStats) {
 		}
 	}
 	return w.Code, w.Header(), stats
+}
+
+func getTRMNLBirthdays(t *testing.T, h *Handler) (int, http.Header, trmnlBirthdaysResponse) {
+	t.Helper()
+	router := setupTRMNLRouter(h)
+	req := httptest.NewRequest("GET", "/api/trmnl/birthdays", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	var resp trmnlBirthdaysResponse
+	if w.Code == http.StatusOK {
+		if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+			t.Fatalf("response is not valid JSON: %v (body: %s)", err, w.Body.String())
+		}
+	}
+	return w.Code, w.Header(), resp
+}
+
+func TestTRMNLBirthdaysUnauthenticated(t *testing.T) {
+	h := newTestWebHandler(t)
+	code, header, _ := getTRMNLBirthdays(t, h)
+
+	if code != http.StatusOK {
+		t.Fatalf("expected 200 without auth, got %d", code)
+	}
+	if ct := header.Get("Content-Type"); ct != "application/json" {
+		t.Errorf("expected application/json content type, got %q", ct)
+	}
+}
+
+func TestTRMNLBirthdaysEmptyDatabase(t *testing.T) {
+	h := newTestWebHandler(t)
+	_, _, resp := getTRMNLBirthdays(t, h)
+
+	if resp.NextBirthday != nil {
+		t.Errorf("expected next_birthday null with no events, got %+v", resp.NextBirthday)
+	}
+	if len(resp.Birthdays) != 0 {
+		t.Errorf("expected empty birthdays array, got %+v", resp.Birthdays)
+	}
+}
+
+func TestTRMNLBirthdaysFiltersNonBirthdays(t *testing.T) {
+	h := newTestWebHandler(t)
+	personID := newTestPerson(t, h, "Anna")
+	now := time.Now()
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	newTestEvent(t, h, personID, "birthday", midnight(2))
+	newTestEvent(t, h, personID, "anniversary", midnight(3))
+	newTestEvent(t, h, personID, "holiday", midnight(4))
+
+	_, _, resp := getTRMNLBirthdays(t, h)
+
+	if len(resp.Birthdays) != 1 {
+		t.Fatalf("expected only the birthday event, got %+v", resp.Birthdays)
+	}
+	if resp.Birthdays[0].Name != "Anna" {
+		t.Errorf("expected birthday for Anna, got %+v", resp.Birthdays[0])
+	}
+	if resp.NextBirthday == nil || resp.NextBirthday.Name != "Anna" {
+		t.Errorf("expected next_birthday to be the birthday, got %+v", resp.NextBirthday)
+	}
+}
+
+func TestTRMNLBirthdaysAgeWithAndWithoutYear(t *testing.T) {
+	h := newTestWebHandler(t)
+	personID := newTestPerson(t, h, "Anna")
+	now := time.Now()
+	occ := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, 3)
+	// Birthday with a real birth year (30 years ago): turns 30 on the
+	// upcoming occurrence (age is 29 until the birthday has occurred).
+	withYear := time.Date(now.Year()-30, occ.Month(), occ.Day(), 0, 0, 0, 0, now.Location())
+	newTestEvent(t, h, personID, "birthday", withYear)
+	// Year-less birthday (vCard import): no usable birth year → age null.
+	withoutYear := time.Date(0, occ.Month(), occ.Day(), 0, 0, 0, 0, now.Location())
+	newTestEvent(t, h, personID, "birthday", withoutYear)
+
+	_, _, resp := getTRMNLBirthdays(t, h)
+
+	if len(resp.Birthdays) != 2 {
+		t.Fatalf("expected 2 birthdays, got %+v", resp.Birthdays)
+	}
+	// Age present for the year-full birthday.
+	if resp.Birthdays[0].Age == nil {
+		t.Errorf("expected age for year-full birthday, got null")
+	} else if *resp.Birthdays[0].Age != 30 {
+		t.Errorf("expected age 30, got %d", *resp.Birthdays[0].Age)
+	}
+	// Age null for the year-less birthday.
+	if resp.Birthdays[1].Age != nil {
+		t.Errorf("expected null age for year-less birthday, got %d", *resp.Birthdays[1].Age)
+	}
+}
+
+func TestTRMNLBirthdaysRelativeAndReminderWindow(t *testing.T) {
+	h := newTestWebHandler(t)
+	h.cfg.ReminderDays = 14
+	personID := newTestPerson(t, h, "Anna")
+	now := time.Now()
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	newTestEvent(t, h, personID, "birthday", midnight(2))  // Tomorrow
+	newTestEvent(t, h, personID, "birthday", midnight(10)) // In 9 days (within 14)
+	newTestEvent(t, h, personID, "birthday", midnight(20)) // outside 14
+
+	_, _, resp := getTRMNLBirthdays(t, h)
+
+	if len(resp.Birthdays) != 2 {
+		t.Fatalf("expected 2 birthdays within ReminderDays=14, got %d", len(resp.Birthdays))
+	}
+	if resp.Birthdays[0].Relative != "Tomorrow" {
+		t.Errorf("expected relative Tomorrow for +2 days, got %q", resp.Birthdays[0].Relative)
+	}
+	// Beyond 7 days the relative label is empty (same as the stats feed).
+	if resp.Birthdays[1].DaysRemaining != 9 {
+		t.Errorf("expected days_remaining 9 for +10 days, got %d", resp.Birthdays[1].DaysRemaining)
+	}
+	if resp.Birthdays[1].Relative != "" {
+		t.Errorf("expected empty relative beyond 7 days, got %q", resp.Birthdays[1].Relative)
+	}
+	if resp.NextBirthday == nil || resp.NextBirthday.Relative != "Tomorrow" {
+		t.Errorf("expected next_birthday Tomorrow, got %+v", resp.NextBirthday)
+	}
 }
 
 func TestTRMNLStatsUnauthenticated(t *testing.T) {

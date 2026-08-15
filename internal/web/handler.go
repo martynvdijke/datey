@@ -112,6 +112,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		// Public TRMNL e-ink stats feed — unauthenticated (TRMNL devices cannot log in)
 		r.Get("/api/trmnl/stats", h.trmnlStats)
 
+		// Public TRMNL e-ink birthdays feed — unauthenticated (TRMNL devices cannot log in)
+		r.Get("/api/trmnl/birthdays", h.trmnlBirthdays)
+
 		// Service worker for web push — must live at the origin root for scope.
 		r.Get("/sw.js", h.pushServiceWorker)
 
