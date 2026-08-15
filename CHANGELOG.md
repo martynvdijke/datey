@@ -1,3 +1,10 @@
+## [1.35.4](https://github.com/martynvdijke/datey/compare/v1.35.3...v1.35.4) (2026-08-15)
+
+
+### Bug Fixes
+
+* **trmnl:** pin plugin id 443906 ([f8dffc9](https://github.com/martynvdijke/datey/commit/f8dffc9fea6232b4f05b408f7c33ac6a8ea48865))
+
 ## [1.35.3](https://github.com/martynvdijke/datey/compare/v1.35.2...v1.35.3) (2026-08-15)
 
 
