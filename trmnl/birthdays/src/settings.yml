@@ -38,5 +38,5 @@ custom_fields:
   placeholder: https://datey.example.com
   help_text: Please include http:// or https:// — the plugin polls <url>/api/trmnl/birthdays
 name: Datey Birthdays
-description: Upcoming birthdays at a glance, with ages when known.
+description: Upcoming birthdays with ages.
 refresh_interval: 1440

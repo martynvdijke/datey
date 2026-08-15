@@ -38,5 +38,5 @@ custom_fields:
   placeholder: https://datey.example.com
   help_text: Please include http:// or https:// — the plugin polls <url>/api/trmnl/stats
 name: Datey
-description: Your important dates at a glance — birthdays, anniversaries, and more.
+description: Your important dates at a glance.
 refresh_interval: 1440
