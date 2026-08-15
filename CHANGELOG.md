@@ -1,3 +1,15 @@
+# [1.35.0](https://github.com/martynvdijke/datey/compare/v1.34.0...v1.35.0) (2026-08-15)
+
+
+### Bug Fixes
+
+* **trmnl:** shorten plugin descriptions to satisfy trmnlp lint ([f99b55c](https://github.com/martynvdijke/datey/commit/f99b55ca01ec904cfff76509a471612880d2764a))
+
+
+### Features
+
+* **trmnl:** add birthdays plugin and restructure plugin layout ([9797624](https://github.com/martynvdijke/datey/commit/979762476b9f1426c6d16fddbe77994953a15ec3))
+
 # [1.34.0](https://github.com/martynvdijke/datey/compare/v1.33.3...v1.34.0) (2026-08-15)
 
 
