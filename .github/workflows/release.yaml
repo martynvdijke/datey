@@ -93,7 +93,10 @@ jobs:
 
   trml:
     needs: release
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    if: >-
+      needs.release.result == 'success' &&
+      needs.release.outputs.new_release_published == 'true' &&
+      !contains(github.event.head_commit.message, '[skip ci]')
     name: Push TRMNL plugins
     runs-on: ubuntu-latest
 
@@ -114,6 +117,17 @@ jobs:
           for d in trmnl/*/; do
             echo "Linting $d"
             trmnlp lint --dir "$d"
+          done
+
+      - name: Require existing TRMNL plugin IDs
+        run: |
+          for f in trmnl/stats/src/settings.yml trmnl/birthdays/src/settings.yml; do
+            plugin_id=$(ruby -e 'require "yaml"; puts YAML.load_file(ARGV[0])["id"].to_s.strip' "$f")
+            if [ -z "$plugin_id" ]; then
+              echo "::error::$f has no 'id' set. Set the plugin ID (see 'trmnlp list' or the TRMNL dashboard) so 'trmnlp push' updates the existing plugin instead of creating a new one."
+              exit 1
+            fi
+            echo "$f: TRMNL plugin ID: $plugin_id"
           done
 
       - name: Push TRMNL plugins
