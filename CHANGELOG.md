@@ -1,3 +1,10 @@
+## [1.35.1](https://github.com/martynvdijke/datey/compare/v1.35.0...v1.35.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **trmnl:** pin plugin IDs and gate trmnlp push on release ([85f3433](https://github.com/martynvdijke/datey/commit/85f3433eeca6417a1948def89c9c22326592b4e2))
+
 # [1.35.0](https://github.com/martynvdijke/datey/compare/v1.34.0...v1.35.0) (2026-08-15)
 
 
