@@ -1,3 +1,10 @@
+## [1.35.2](https://github.com/martynvdijke/datey/compare/v1.35.1...v1.35.2) (2026-08-15)
+
+
+### Bug Fixes
+
+* **trmnl:** recreate deleted plugins ([9ad640a](https://github.com/martynvdijke/datey/commit/9ad640abf555656c6590c91372942fc738780fa4))
+
 ## [1.35.1](https://github.com/martynvdijke/datey/compare/v1.35.0...v1.35.1) (2026-08-15)
 
 
