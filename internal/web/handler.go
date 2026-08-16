@@ -41,6 +41,8 @@ type Handler struct {
 	logStore       *logstore.Store
 	settingsStore  *settings.Store
 	loginLimiter   *rateLimiter
+	forgotLimiter  *rateLimiter
+	passwordResetTokens *repository.PasswordResetTokenRepository
 	immich         *immich.Client
 }
 
@@ -64,6 +66,8 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		logStore:       logStore,
 		settingsStore:  settings.New(client),
 		loginLimiter:   newRateLimiter(5, 60*time.Second),
+		forgotLimiter:  newRateLimiter(5, 15*time.Minute),
+		passwordResetTokens: repository.NewPasswordResetTokenRepository(client),
 		immich:         immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
 	}
 }
@@ -94,6 +98,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/login", h.loginPage)
 		r.Post("/login", h.loginPost)
 		r.Get("/logout", h.logout)
+		r.Get("/forgot-password", h.forgotPasswordPage)
+		r.Post("/forgot-password", h.forgotPasswordPost)
+		r.Get("/reset-password", h.resetPasswordPage)
+		r.Post("/reset-password", h.resetPasswordPost)
 
 		// Public iCal feed — unauthenticated, protected by a secret key
 		// (?key=...) checked inside the handlers. Feed disabled → 404.
@@ -504,6 +512,7 @@ func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 		"EinkForced":      h.cfg.EinkMode,
 		"CSRFToken":       csrfTokenFromContext(r.Context()),
 		"PushConfigured":  h.notifReg.IsConfigured("webpush"),
+		"EmailConfigured": h.notifReg.IsConfigured("email"),
 	}
 	u := UserFromContext(r.Context())
 	if u != nil {

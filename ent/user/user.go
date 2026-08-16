@@ -30,6 +30,8 @@ const (
 	EdgeSessions = "sessions"
 	// EdgePushSubscriptions holds the string denoting the push_subscriptions edge name in mutations.
 	EdgePushSubscriptions = "push_subscriptions"
+	// EdgePasswordResetTokens holds the string denoting the password_reset_tokens edge name in mutations.
+	EdgePasswordResetTokens = "password_reset_tokens"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SessionsTable is the table that holds the sessions relation/edge.
@@ -46,6 +48,13 @@ const (
 	PushSubscriptionsInverseTable = "push_subscriptions"
 	// PushSubscriptionsColumn is the table column denoting the push_subscriptions relation/edge.
 	PushSubscriptionsColumn = "user_push_subscriptions"
+	// PasswordResetTokensTable is the table that holds the password_reset_tokens relation/edge.
+	PasswordResetTokensTable = "password_reset_tokens"
+	// PasswordResetTokensInverseTable is the table name for the PasswordResetToken entity.
+	// It exists in this package in order to avoid circular dependency with the "passwordresettoken" package.
+	PasswordResetTokensInverseTable = "password_reset_tokens"
+	// PasswordResetTokensColumn is the table column denoting the password_reset_tokens relation/edge.
+	PasswordResetTokensColumn = "user_password_reset_tokens"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -169,6 +178,20 @@ func ByPushSubscriptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newPushSubscriptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByPasswordResetTokensCount orders the results by password_reset_tokens count.
+func ByPasswordResetTokensCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPasswordResetTokensStep(), opts...)
+	}
+}
+
+// ByPasswordResetTokens orders the results by password_reset_tokens terms.
+func ByPasswordResetTokens(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPasswordResetTokensStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSessionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -181,5 +204,12 @@ func newPushSubscriptionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PushSubscriptionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, PushSubscriptionsTable, PushSubscriptionsColumn),
+	)
+}
+func newPasswordResetTokensStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PasswordResetTokensInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PasswordResetTokensTable, PasswordResetTokensColumn),
 	)
 }

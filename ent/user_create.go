@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/passwordresettoken"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/user"
@@ -102,6 +103,21 @@ func (_c *UserCreate) AddPushSubscriptions(v ...*PushSubscription) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddPushSubscriptionIDs(ids...)
+}
+
+// AddPasswordResetTokenIDs adds the "password_reset_tokens" edge to the PasswordResetToken entity by IDs.
+func (_c *UserCreate) AddPasswordResetTokenIDs(ids ...int) *UserCreate {
+	_c.mutation.AddPasswordResetTokenIDs(ids...)
+	return _c
+}
+
+// AddPasswordResetTokens adds the "password_reset_tokens" edges to the PasswordResetToken entity.
+func (_c *UserCreate) AddPasswordResetTokens(v ...*PasswordResetToken) *UserCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPasswordResetTokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -259,6 +275,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(pushsubscription.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PasswordResetTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.PasswordResetTokensTable,
+			Columns: []string{user.PasswordResetTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(passwordresettoken.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

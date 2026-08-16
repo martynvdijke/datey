@@ -13,6 +13,8 @@ services:
       - SCHEDULER_HOUR=8
       - REMINDER_DAYS=7
       - LOG_LEVEL=info
+      # Public base URL (used to build password-reset links sent by email)
+      - APP_URL=
       - LOG_BUFFER_SIZE=10000
       - OTEL_EXPORTER_OTLP_ENDPOINT=
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc

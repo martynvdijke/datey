@@ -41,9 +41,11 @@ type UserEdges struct {
 	Sessions []*Session `json:"sessions,omitempty"`
 	// PushSubscriptions holds the value of the push_subscriptions edge.
 	PushSubscriptions []*PushSubscription `json:"push_subscriptions,omitempty"`
+	// PasswordResetTokens holds the value of the password_reset_tokens edge.
+	PasswordResetTokens []*PasswordResetToken `json:"password_reset_tokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
@@ -62,6 +64,15 @@ func (e UserEdges) PushSubscriptionsOrErr() ([]*PushSubscription, error) {
 		return e.PushSubscriptions, nil
 	}
 	return nil, &NotLoadedError{edge: "push_subscriptions"}
+}
+
+// PasswordResetTokensOrErr returns the PasswordResetTokens value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) PasswordResetTokensOrErr() ([]*PasswordResetToken, error) {
+	if e.loadedTypes[2] {
+		return e.PasswordResetTokens, nil
+	}
+	return nil, &NotLoadedError{edge: "password_reset_tokens"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -155,6 +166,11 @@ func (_m *User) QuerySessions() *SessionQuery {
 // QueryPushSubscriptions queries the "push_subscriptions" edge of the User entity.
 func (_m *User) QueryPushSubscriptions() *PushSubscriptionQuery {
 	return NewUserClient(_m.config).QueryPushSubscriptions(_m)
+}
+
+// QueryPasswordResetTokens queries the "password_reset_tokens" edge of the User entity.
+func (_m *User) QueryPasswordResetTokens() *PasswordResetTokenQuery {
+	return NewUserClient(_m.config).QueryPasswordResetTokens(_m)
 }
 
 // Update returns a builder for updating this User.

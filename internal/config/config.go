@@ -18,6 +18,11 @@ type Config struct {
 	LogBufferSize     int
 	OTLPEndpoint      string
 
+	// AppURL is the externally reachable base URL (e.g. "https://datey.example.com").
+	// Used to build links inside emailed content such as password reset links.
+	// When empty, links are derived from the incoming request instead.
+	AppURL string
+
 	BackupDir                string
 	BackupRetentionDays      int
 	WeeklyBackupDay          int
@@ -89,6 +94,7 @@ func Load() (*Config, error) {
 		LogLevel:      getEnvExplicit("LOG_LEVEL", "info"),
 		LogBufferSize:    getEnvInt("LOG_BUFFER_SIZE", 10000),
 		OTLPEndpoint:     getEnv("OTEL_ENDPOINT", ""),
+		AppURL:           getEnv("APP_URL", ""),
 		SMTPHost:         getEnv("SMTP_HOST", ""),
 		SMTPPort:         getEnvInt("SMTP_PORT", 587),
 		SMTPUser:         getEnv("SMTP_USER", ""),
@@ -247,6 +253,12 @@ func (c *Config) Validate() error {
 	}
 	if c.CarddavDeletePolicy != "" && c.CarddavDeletePolicy != "keep" && c.CarddavDeletePolicy != "delete" {
 		return fmt.Errorf("CARDDAV_DELETE_POLICY must be one of keep, delete; got %q", c.CarddavDeletePolicy)
+	}
+	if c.AppURL != "" {
+		u, err := url.ParseRequestURI(c.AppURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("APP_URL must be an absolute URL, got %q", c.AppURL)
+		}
 	}
 	return nil
 }

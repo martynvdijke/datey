@@ -46,6 +46,14 @@ func (r *UserRepository) Delete(ctx context.Context, id int) error {
 	return r.client.User.DeleteOneID(id).Exec(ctx)
 }
 
+// UpdatePassword replaces the stored bcrypt hash for the given user.
+func (r *UserRepository) UpdatePassword(ctx context.Context, id int, passwordHash string) error {
+	return r.client.User.UpdateOneID(id).
+		SetPasswordHash(passwordHash).
+		SetUpdatedAt(time.Now()).
+		Exec(ctx)
+}
+
 func (r *UserRepository) Exists(ctx context.Context) (bool, error) {
 	return r.client.User.Query().Exist(ctx)
 }

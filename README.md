@@ -41,7 +41,7 @@ A self-hosted web application for tracking important dates and receiving automat
  - **🏠 Home Assistant Plugin** — `homeassistant/` plugin folder with a key-protected `/api/homeassistant/stats` feed and a RESTful `sensor.yaml` snippet for Home Assistant dashboards.
 - **🔔 Web Push Notifications** — browser push notifications via VAPID + service worker (`/sw.js`); enabled from Settings → Configuration, requires HTTPS (or localhost).
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
-- **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets.
+- **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets. One-time password-reset links are emailed via the configured email channel (see `APP_URL`); reset requests are rate-limited per IP and responses never reveal whether a username exists.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
 - **🔭 OpenTelemetry Support** — Export logs to OTLP-compatible backends.
 - **🐳 Docker Ready** — Multi-stage Docker build with health check and docker-compose support.
@@ -96,6 +96,7 @@ See `.env.example` for a template.
 | `WEEKLY_BACKUP_DAY` | `0` | Weekday for weekly backup (0=Sunday, 6=Saturday) |
 | `WEEKLY_BACKUP_RETENTION_WEEKS` | `52` | Weeks to retain weekly backups |
 | `OTEL_ENDPOINT` | — | OpenTelemetry OTLP endpoint *(restart required)* |
+| `APP_URL` | — | Public base URL of this instance (e.g. `https://datey.example.com`); used to build password-reset links sent by email. When unset, reset links are derived from the incoming request instead (**enforced**: absolute URL) |
 | `SMTP_HOST` | — | SMTP server hostname |
 | `SMTP_PORT` | `587` | SMTP server port (**enforced**: 1–65535) |
 | `SMTP_USER` | — | SMTP authentication username |
@@ -242,6 +243,10 @@ datey/
 | `POST` | `/users/{id}/delete` | Delete a user (admin only) |
 | `GET` | `/login` | Login page |
 | `POST` | `/login` | Login |
+| `GET` | `/forgot-password` | Request a password reset link (emailed when the email channel is configured) |
+| `POST` | `/forgot-password` | Submit username to request a reset link |
+| `GET` | `/reset-password` | Reset-password page (`?token=...` from the emailed link) |
+| `POST` | `/reset-password` | Set a new password using a reset token |
 | `GET` | `/logout` | Logout |
 | `GET` | `/setup` | Initial setup (first run only) |
 | `POST` | `/setup` | Create admin user |

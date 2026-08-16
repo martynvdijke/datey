@@ -17,6 +17,11 @@
           </div>
           <button type="submit" class="btn btn-dark w-100">Log In</button>
         </form>
+        {{if .EmailConfigured}}
+          <div class="text-center mt-3">
+            <a href="/forgot-password" class="small">Forgot password?</a>
+          </div>
+        {{end}}
       </div>
     </div>
   </div>

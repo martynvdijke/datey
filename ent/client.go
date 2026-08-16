@@ -21,6 +21,7 @@ import (
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationlog"
+	"github.com/datey/datey/ent/passwordresettoken"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/pushsubscription"
@@ -46,6 +47,8 @@ type Client struct {
 	MigrationLog *MigrationLogClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
 	NotificationLog *NotificationLogClient
+	// PasswordResetToken is the client for interacting with the PasswordResetToken builders.
+	PasswordResetToken *PasswordResetTokenClient
 	// Person is the client for interacting with the Person builders.
 	Person *PersonClient
 	// PersonNote is the client for interacting with the PersonNote builders.
@@ -75,6 +78,7 @@ func (c *Client) init() {
 	c.Group = NewGroupClient(c.config)
 	c.MigrationLog = NewMigrationLogClient(c.config)
 	c.NotificationLog = NewNotificationLogClient(c.config)
+	c.PasswordResetToken = NewPasswordResetTokenClient(c.config)
 	c.Person = NewPersonClient(c.config)
 	c.PersonNote = NewPersonNoteClient(c.config)
 	c.PushSubscription = NewPushSubscriptionClient(c.config)
@@ -171,20 +175,21 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		AppConfig:        NewAppConfigClient(cfg),
-		Contact:          NewContactClient(cfg),
-		Event:            NewEventClient(cfg),
-		Group:            NewGroupClient(cfg),
-		MigrationLog:     NewMigrationLogClient(cfg),
-		NotificationLog:  NewNotificationLogClient(cfg),
-		Person:           NewPersonClient(cfg),
-		PersonNote:       NewPersonNoteClient(cfg),
-		PushSubscription: NewPushSubscriptionClient(cfg),
-		RecurringRule:    NewRecurringRuleClient(cfg),
-		Session:          NewSessionClient(cfg),
-		User:             NewUserClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		AppConfig:          NewAppConfigClient(cfg),
+		Contact:            NewContactClient(cfg),
+		Event:              NewEventClient(cfg),
+		Group:              NewGroupClient(cfg),
+		MigrationLog:       NewMigrationLogClient(cfg),
+		NotificationLog:    NewNotificationLogClient(cfg),
+		PasswordResetToken: NewPasswordResetTokenClient(cfg),
+		Person:             NewPersonClient(cfg),
+		PersonNote:         NewPersonNoteClient(cfg),
+		PushSubscription:   NewPushSubscriptionClient(cfg),
+		RecurringRule:      NewRecurringRuleClient(cfg),
+		Session:            NewSessionClient(cfg),
+		User:               NewUserClient(cfg),
 	}, nil
 }
 
@@ -202,20 +207,21 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		AppConfig:        NewAppConfigClient(cfg),
-		Contact:          NewContactClient(cfg),
-		Event:            NewEventClient(cfg),
-		Group:            NewGroupClient(cfg),
-		MigrationLog:     NewMigrationLogClient(cfg),
-		NotificationLog:  NewNotificationLogClient(cfg),
-		Person:           NewPersonClient(cfg),
-		PersonNote:       NewPersonNoteClient(cfg),
-		PushSubscription: NewPushSubscriptionClient(cfg),
-		RecurringRule:    NewRecurringRuleClient(cfg),
-		Session:          NewSessionClient(cfg),
-		User:             NewUserClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		AppConfig:          NewAppConfigClient(cfg),
+		Contact:            NewContactClient(cfg),
+		Event:              NewEventClient(cfg),
+		Group:              NewGroupClient(cfg),
+		MigrationLog:       NewMigrationLogClient(cfg),
+		NotificationLog:    NewNotificationLogClient(cfg),
+		PasswordResetToken: NewPasswordResetTokenClient(cfg),
+		Person:             NewPersonClient(cfg),
+		PersonNote:         NewPersonNoteClient(cfg),
+		PushSubscription:   NewPushSubscriptionClient(cfg),
+		RecurringRule:      NewRecurringRuleClient(cfg),
+		Session:            NewSessionClient(cfg),
+		User:               NewUserClient(cfg),
 	}, nil
 }
 
@@ -246,7 +252,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AppConfig, c.Contact, c.Event, c.Group, c.MigrationLog, c.NotificationLog,
-		c.Person, c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.User,
+		c.PasswordResetToken, c.Person, c.PersonNote, c.PushSubscription,
+		c.RecurringRule, c.Session, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -257,7 +264,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AppConfig, c.Contact, c.Event, c.Group, c.MigrationLog, c.NotificationLog,
-		c.Person, c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.User,
+		c.PasswordResetToken, c.Person, c.PersonNote, c.PushSubscription,
+		c.RecurringRule, c.Session, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -278,6 +286,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MigrationLog.mutate(ctx, m)
 	case *NotificationLogMutation:
 		return c.NotificationLog.mutate(ctx, m)
+	case *PasswordResetTokenMutation:
+		return c.PasswordResetToken.mutate(ctx, m)
 	case *PersonMutation:
 		return c.Person.mutate(ctx, m)
 	case *PersonNoteMutation:
@@ -1189,6 +1199,155 @@ func (c *NotificationLogClient) mutate(ctx context.Context, m *NotificationLogMu
 	}
 }
 
+// PasswordResetTokenClient is a client for the PasswordResetToken schema.
+type PasswordResetTokenClient struct {
+	config
+}
+
+// NewPasswordResetTokenClient returns a client for the PasswordResetToken from the given config.
+func NewPasswordResetTokenClient(c config) *PasswordResetTokenClient {
+	return &PasswordResetTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `passwordresettoken.Hooks(f(g(h())))`.
+func (c *PasswordResetTokenClient) Use(hooks ...Hook) {
+	c.hooks.PasswordResetToken = append(c.hooks.PasswordResetToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `passwordresettoken.Intercept(f(g(h())))`.
+func (c *PasswordResetTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PasswordResetToken = append(c.inters.PasswordResetToken, interceptors...)
+}
+
+// Create returns a builder for creating a PasswordResetToken entity.
+func (c *PasswordResetTokenClient) Create() *PasswordResetTokenCreate {
+	mutation := newPasswordResetTokenMutation(c.config, OpCreate)
+	return &PasswordResetTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PasswordResetToken entities.
+func (c *PasswordResetTokenClient) CreateBulk(builders ...*PasswordResetTokenCreate) *PasswordResetTokenCreateBulk {
+	return &PasswordResetTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PasswordResetTokenClient) MapCreateBulk(slice any, setFunc func(*PasswordResetTokenCreate, int)) *PasswordResetTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PasswordResetTokenCreateBulk{err: fmt.Errorf("calling to PasswordResetTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PasswordResetTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PasswordResetTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PasswordResetToken.
+func (c *PasswordResetTokenClient) Update() *PasswordResetTokenUpdate {
+	mutation := newPasswordResetTokenMutation(c.config, OpUpdate)
+	return &PasswordResetTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PasswordResetTokenClient) UpdateOne(_m *PasswordResetToken) *PasswordResetTokenUpdateOne {
+	mutation := newPasswordResetTokenMutation(c.config, OpUpdateOne, withPasswordResetToken(_m))
+	return &PasswordResetTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PasswordResetTokenClient) UpdateOneID(id int) *PasswordResetTokenUpdateOne {
+	mutation := newPasswordResetTokenMutation(c.config, OpUpdateOne, withPasswordResetTokenID(id))
+	return &PasswordResetTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PasswordResetToken.
+func (c *PasswordResetTokenClient) Delete() *PasswordResetTokenDelete {
+	mutation := newPasswordResetTokenMutation(c.config, OpDelete)
+	return &PasswordResetTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PasswordResetTokenClient) DeleteOne(_m *PasswordResetToken) *PasswordResetTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PasswordResetTokenClient) DeleteOneID(id int) *PasswordResetTokenDeleteOne {
+	builder := c.Delete().Where(passwordresettoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PasswordResetTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for PasswordResetToken.
+func (c *PasswordResetTokenClient) Query() *PasswordResetTokenQuery {
+	return &PasswordResetTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePasswordResetToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PasswordResetToken entity by its id.
+func (c *PasswordResetTokenClient) Get(ctx context.Context, id int) (*PasswordResetToken, error) {
+	return c.Query().Where(passwordresettoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PasswordResetTokenClient) GetX(ctx context.Context, id int) *PasswordResetToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a PasswordResetToken.
+func (c *PasswordResetTokenClient) QueryUser(_m *PasswordResetToken) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(passwordresettoken.Table, passwordresettoken.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, passwordresettoken.UserTable, passwordresettoken.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PasswordResetTokenClient) Hooks() []Hook {
+	return c.hooks.PasswordResetToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *PasswordResetTokenClient) Interceptors() []Interceptor {
+	return c.inters.PasswordResetToken
+}
+
+func (c *PasswordResetTokenClient) mutate(ctx context.Context, m *PasswordResetTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PasswordResetTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PasswordResetTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PasswordResetTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PasswordResetTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PasswordResetToken mutation op: %q", m.Op())
+	}
+}
+
 // PersonClient is a client for the Person schema.
 type PersonClient struct {
 	config
@@ -2090,6 +2249,22 @@ func (c *UserClient) QueryPushSubscriptions(_m *User) *PushSubscriptionQuery {
 	return query
 }
 
+// QueryPasswordResetTokens queries the password_reset_tokens edge of a User.
+func (c *UserClient) QueryPasswordResetTokens(_m *User) *PasswordResetTokenQuery {
+	query := (&PasswordResetTokenClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(passwordresettoken.Table, passwordresettoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.PasswordResetTokensTable, user.PasswordResetTokensColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2118,11 +2293,13 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AppConfig, Contact, Event, Group, MigrationLog, NotificationLog, Person,
-		PersonNote, PushSubscription, RecurringRule, Session, User []ent.Hook
+		AppConfig, Contact, Event, Group, MigrationLog, NotificationLog,
+		PasswordResetToken, Person, PersonNote, PushSubscription, RecurringRule,
+		Session, User []ent.Hook
 	}
 	inters struct {
-		AppConfig, Contact, Event, Group, MigrationLog, NotificationLog, Person,
-		PersonNote, PushSubscription, RecurringRule, Session, User []ent.Interceptor
+		AppConfig, Contact, Event, Group, MigrationLog, NotificationLog,
+		PasswordResetToken, Person, PersonNote, PushSubscription, RecurringRule,
+		Session, User []ent.Interceptor
 	}
 )

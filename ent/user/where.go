@@ -366,6 +366,29 @@ func HasPushSubscriptionsWith(preds ...predicate.PushSubscription) predicate.Use
 	})
 }
 
+// HasPasswordResetTokens applies the HasEdge predicate on the "password_reset_tokens" edge.
+func HasPasswordResetTokens() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PasswordResetTokensTable, PasswordResetTokensColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPasswordResetTokensWith applies the HasEdge predicate on the "password_reset_tokens" edge with a given conditions (other predicates).
+func HasPasswordResetTokensWith(preds ...predicate.PasswordResetToken) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newPasswordResetTokensStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

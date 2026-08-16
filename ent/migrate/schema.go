@@ -189,6 +189,29 @@ var (
 			},
 		},
 	}
+	// PasswordResetTokensColumns holds the columns for the "password_reset_tokens" table.
+	PasswordResetTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "used", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_password_reset_tokens", Type: field.TypeInt},
+	}
+	// PasswordResetTokensTable holds the schema information for the "password_reset_tokens" table.
+	PasswordResetTokensTable = &schema.Table{
+		Name:       "password_reset_tokens",
+		Columns:    PasswordResetTokensColumns,
+		PrimaryKey: []*schema.Column{PasswordResetTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "password_reset_tokens_users_password_reset_tokens",
+				Columns:    []*schema.Column{PasswordResetTokensColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// PersonsColumns holds the columns for the "persons" table.
 	PersonsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -350,6 +373,7 @@ var (
 		GroupsTable,
 		MigrationLogsTable,
 		NotificationLogsTable,
+		PasswordResetTokensTable,
 		PersonsTable,
 		PersonNotesTable,
 		PushSubscriptionsTable,
@@ -364,6 +388,7 @@ func init() {
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
 	EventsTable.ForeignKeys[1].RefTable = PersonsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable
+	PasswordResetTokensTable.ForeignKeys[0].RefTable = UsersTable
 	PersonNotesTable.ForeignKeys[0].RefTable = PersonsTable
 	PushSubscriptionsTable.ForeignKeys[0].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable

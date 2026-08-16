@@ -24,6 +24,8 @@ type Tx struct {
 	MigrationLog *MigrationLogClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
 	NotificationLog *NotificationLogClient
+	// PasswordResetToken is the client for interacting with the PasswordResetToken builders.
+	PasswordResetToken *PasswordResetTokenClient
 	// Person is the client for interacting with the Person builders.
 	Person *PersonClient
 	// PersonNote is the client for interacting with the PersonNote builders.
@@ -173,6 +175,7 @@ func (tx *Tx) init() {
 	tx.Group = NewGroupClient(tx.config)
 	tx.MigrationLog = NewMigrationLogClient(tx.config)
 	tx.NotificationLog = NewNotificationLogClient(tx.config)
+	tx.PasswordResetToken = NewPasswordResetTokenClient(tx.config)
 	tx.Person = NewPersonClient(tx.config)
 	tx.PersonNote = NewPersonNoteClient(tx.config)
 	tx.PushSubscription = NewPushSubscriptionClient(tx.config)

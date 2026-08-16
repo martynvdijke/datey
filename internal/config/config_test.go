@@ -323,3 +323,21 @@ func TestValidate_ICalEnabledRequiresKey(t *testing.T) {
 		t.Errorf("expected valid config when key is set, got error: %v", err)
 	}
 }
+
+func TestValidate_AppURLInvalid(t *testing.T) {
+	for _, u := range []string{"not-a-url", "datey.example.com", "//example.com"} {
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, AppURL: u}
+		if err := cfg.Validate(); err == nil {
+			t.Errorf("APP_URL=%q should be invalid, got nil", u)
+		}
+	}
+}
+
+func TestValidate_AppURLValid(t *testing.T) {
+	for _, u := range []string{"", "https://datey.example.com", "http://localhost:8080"} {
+		cfg := &Config{SchedulerHour: 8, ReminderDays: 7, SMTPPort: 587, LogLevel: "info", DateVariant: "european", DataDir: "/db", ICalDurationMinutes: 60, AppURL: u}
+		if err := cfg.Validate(); err != nil {
+			t.Errorf("APP_URL=%q should be valid, got error: %v", u, err)
+		}
+	}
+}

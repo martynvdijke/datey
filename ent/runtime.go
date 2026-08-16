@@ -8,6 +8,7 @@ import (
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationlog"
+	"github.com/datey/datey/ent/passwordresettoken"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/pushsubscription"
@@ -71,6 +72,16 @@ func init() {
 	notificationlogDescDateKey := notificationlogFields[2].Descriptor()
 	// notificationlog.DateKeyValidator is a validator for the "date_key" field. It is called by the builders before save.
 	notificationlog.DateKeyValidator = notificationlogDescDateKey.Validators[0].(func(string) error)
+	passwordresettokenFields := schema.PasswordResetToken{}.Fields()
+	_ = passwordresettokenFields
+	// passwordresettokenDescTokenHash is the schema descriptor for token_hash field.
+	passwordresettokenDescTokenHash := passwordresettokenFields[0].Descriptor()
+	// passwordresettoken.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
+	passwordresettoken.TokenHashValidator = passwordresettokenDescTokenHash.Validators[0].(func(string) error)
+	// passwordresettokenDescUsed is the schema descriptor for used field.
+	passwordresettokenDescUsed := passwordresettokenFields[2].Descriptor()
+	// passwordresettoken.DefaultUsed holds the default value on creation for the used field.
+	passwordresettoken.DefaultUsed = passwordresettokenDescUsed.Default.(bool)
 	personFields := schema.Person{}.Fields()
 	_ = personFields
 	// personDescName is the schema descriptor for name field.

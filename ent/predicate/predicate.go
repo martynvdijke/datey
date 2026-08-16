@@ -24,6 +24,9 @@ type MigrationLog func(*sql.Selector)
 // NotificationLog is the predicate function for notificationlog builders.
 type NotificationLog func(*sql.Selector)
 
+// PasswordResetToken is the predicate function for passwordresettoken builders.
+type PasswordResetToken func(*sql.Selector)
+
 // Person is the predicate function for person builders.
 type Person func(*sql.Selector)
 
