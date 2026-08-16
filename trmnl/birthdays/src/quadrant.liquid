@@ -1,16 +1,16 @@
-<div class="grid grid--cols-2">
+<div class="grid grid--cols-2 layout--stretch">
   <div class="col col--start gap">
-    {% if IDX_0.next_birthday %}
+    {% if next_birthday %}
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">{{ IDX_0.next_birthday.name }}</span>
+          <span class="value value--medium">{{ next_birthday.name }}</span>
         </div>
       </div>
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="label">{{ IDX_0.next_birthday.date }} ({{ IDX_0.next_birthday.relative }}){% if IDX_0.next_birthday.age %} — {{ IDX_0.next_birthday.age }}{% endif %}</span>
+          <span class="label">{{ next_birthday.date }} ({{ next_birthday.relative }}){% if next_birthday.age %} — {{ next_birthday.age }}{% endif %}</span>
         </div>
       </div>
     {% else %}
@@ -23,7 +23,7 @@
     {% endif %}
   </div>
   <div class="col col--start gap">
-    {% for birthday in IDX_0.birthdays %}
+    {% for birthday in birthdays %}
       <div class="item">
         <div class="meta"></div>
         <div class="content">

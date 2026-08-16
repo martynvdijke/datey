@@ -1,16 +1,16 @@
-<div class="columns">
+<div class="columns layout--stretch">
   <div class="column">
-    {% if IDX_0.next_birthday %}
+    {% if next_birthday %}
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">{{ IDX_0.next_birthday.name }}{% if IDX_0.next_birthday.age %} ({{ IDX_0.next_birthday.age }}){% endif %}</span>
+          <span class="value value--medium">{{ next_birthday.name }}{% if next_birthday.age %} ({{ next_birthday.age }}){% endif %}</span>
         </div>
       </div>
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--small">{{ IDX_0.next_birthday.date }} — {{ IDX_0.next_birthday.relative }}</span>
+          <span class="value value--small">{{ next_birthday.date }} — {{ next_birthday.relative }}</span>
         </div>
       </div>
     {% else %}
@@ -22,7 +22,7 @@
       </div>
     {% endif %}
     <div class="col col--start gap">
-      {% for birthday in IDX_0.birthdays limit:3 %}
+      {% for birthday in birthdays limit:3 %}
         <div class="item">
           <div class="meta"></div>
           <div class="content">
@@ -36,7 +36,7 @@
     <div class="item">
       <div class="meta"></div>
       <div class="content">
-        <span class="label">{{ IDX_0.birthdays.size }} upcoming</span>
+        <span class="label">{{ birthdays.size }} upcoming</span>
       </div>
     </div>
   </div>

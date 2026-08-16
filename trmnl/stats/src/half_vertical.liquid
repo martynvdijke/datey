@@ -1,16 +1,16 @@
-<div class="layout layout--col gap">
+<div class="layout layout--col layout--stretch gap">
   <div class="col col--start gap">
-    {% if IDX_0.next_event %}
+    {% if next_event %}
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">{{ IDX_0.next_event.name }} - {{ IDX_0.next_event.date }}</span>
+          <span class="value value--medium">{{ next_event.name }} - {{ next_event.date }}</span>
         </div>
       </div>
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--small">{{ IDX_0.next_event.relative }}</span>
+          <span class="value value--small">{{ next_event.relative }}</span>
         </div>
       </div>
     {% else %}
@@ -21,7 +21,7 @@
         </div>
       </div>
     {% endif %}
-    {% for event in IDX_0.upcoming limit:3 %}
+    {% for event in upcoming limit:3 %}
       <div class="item">
         <div class="meta"></div>
         <div class="content">
@@ -32,7 +32,7 @@
     <div class="item">
       <div class="meta"></div>
       <div class="content">
-        <span class="label">{{ IDX_0.stats.people_count }} people · {{ IDX_0.stats.events_next_7_days }} events/7d · {{ IDX_0.stats.events_next_30_days }} events/30d · {{ IDX_0.stats.configured_channels }} channels</span>
+        <span class="label">{{ stats.people_count }} people · {{ stats.events_next_7_days }} events/7d · {{ stats.events_next_30_days }} events/30d · {{ stats.configured_channels }} channels</span>
       </div>
     </div>
   </div>
