@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/martynvdijke/datey/compare/v1.35.5...v1.36.0) (2026-08-16)
+
+
+### Features
+
+* **auth:** add email password reset flow ([d87b48a](https://github.com/martynvdijke/datey/commit/d87b48ad4516dd924d1f6fa66d9d42059b794480))
+
 ## [1.35.5](https://github.com/martynvdijke/datey/compare/v1.35.4...v1.35.5) (2026-08-16)
 
 ## [1.35.4](https://github.com/martynvdijke/datey/compare/v1.35.3...v1.35.4) (2026-08-15)
