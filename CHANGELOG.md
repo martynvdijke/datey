@@ -1,3 +1,10 @@
+## [1.36.1](https://github.com/martynvdijke/datey/compare/v1.36.0...v1.36.1) (2026-08-16)
+
+
+### Bug Fixes
+
+* **trmnl:** fix dashboard data bindings and layout width ([a070b4f](https://github.com/martynvdijke/datey/commit/a070b4f552d70effd79b2eb31362761b54984ea1))
+
 # [1.36.0](https://github.com/martynvdijke/datey/compare/v1.35.5...v1.36.0) (2026-08-16)
 
 
