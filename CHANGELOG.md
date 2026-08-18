@@ -1,3 +1,15 @@
+# [1.37.0](https://github.com/martynvdijke/datey/compare/v1.36.1...v1.37.0) (2026-08-18)
+
+
+### Bug Fixes
+
+* **trmnl:** remove unused channelInfo code after dropping channels UI ([1798a97](https://github.com/martynvdijke/datey/commit/1798a973ac144a67af29a8d22c924a7a5052d16f))
+
+
+### Features
+
+* **trmnl:** always show next upcoming birthday, drop channels UI ([1d0e85b](https://github.com/martynvdijke/datey/commit/1d0e85bbe2ff5cf2bbb30e82237f6cdd698db792))
+
 ## [1.36.1](https://github.com/martynvdijke/datey/compare/v1.36.0...v1.36.1) (2026-08-16)
 
 
