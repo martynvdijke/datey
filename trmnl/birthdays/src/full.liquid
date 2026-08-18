@@ -10,7 +10,7 @@
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">{{ next_birthday.date }} ({{ next_birthday.relative }})</span>
+          <span class="value value--medium">{{ next_birthday.date }} ({% if next_birthday.relative %}{{ next_birthday.relative }}{% else %}in {{ next_birthday.days_remaining }} days{% endif %})</span>
         </div>
       </div>
     {% else %}
@@ -27,7 +27,7 @@
     <div class="col col--start gap">
       {% for birthday in birthdays %}
         <div class="item">
-          <div class="meta">{{ birthday.relative }}</div>
+          <div class="meta">{% if birthday.relative %}{{ birthday.relative }}{% else %}in {{ birthday.days_remaining }} days{% endif %}</div>
           <div class="content">
             <span class="label">{{ birthday.name }} — {{ birthday.date }}{% if birthday.age %} (turns {{ birthday.age }}){% endif %}</span>
           </div>

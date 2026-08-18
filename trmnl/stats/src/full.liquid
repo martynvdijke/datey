@@ -10,7 +10,7 @@
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">{{ next_event.relative }}</span>
+          <span class="value value--medium">{% if next_event.relative %}{{ next_event.relative }}{% else %}In {{ next_event.days_remaining }} days{% endif %}</span>
         </div>
       </div>
     {% else %}
@@ -29,7 +29,7 @@
         <div class="item">
           <div class="meta">{{ event.type }}</div>
           <div class="content">
-            <span class="label">{{ event.name }} - {{ event.date }} ({{ event.relative }})</span>
+            <span class="label">{{ event.name }} - {{ event.date }} ({% if event.relative %}{{ event.relative }}{% else %}in {{ event.days_remaining }} days{% endif %})</span>
           </div>
         </div>
       {% endfor %}
@@ -51,12 +51,6 @@
         <div class="meta"></div>
         <div class="content">
           <span class="label">{{ stats.events_next_30_days }} events in 30 days</span>
-        </div>
-      </div>
-      <div class="item">
-        <div class="meta"></div>
-        <div class="content">
-          <span class="label">{{ stats.configured_channels }} channels configured</span>
         </div>
       </div>
     </div>

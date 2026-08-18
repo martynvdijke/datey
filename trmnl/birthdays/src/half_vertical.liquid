@@ -10,7 +10,7 @@
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--small">{{ next_birthday.date }} — {{ next_birthday.relative }}</span>
+          <span class="value value--small">{{ next_birthday.date }} — {% if next_birthday.relative %}{{ next_birthday.relative }}{% else %}in {{ next_birthday.days_remaining }} days{% endif %}</span>
         </div>
       </div>
     {% else %}
@@ -25,7 +25,7 @@
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="label">{{ birthday.name }} — {{ birthday.date }} ({{ birthday.relative }})</span>
+          <span class="label">{{ birthday.name }} — {{ birthday.date }} ({% if birthday.relative %}{{ birthday.relative }}{% else %}in {{ birthday.days_remaining }} days{% endif %})</span>
         </div>
       </div>
     {% endfor %}

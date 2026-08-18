@@ -246,9 +246,43 @@ func TestTRMNLStatsSummaryCounts(t *testing.T) {
 	if stats.Stats.EventsNext30Days != 2 {
 		t.Errorf("expected events_next_30_days 2, got %d", stats.Stats.EventsNext30Days)
 	}
-	// No notification channels configured in the test registry.
-	if stats.Stats.ConfiguredChannels != 0 {
-		t.Errorf("expected configured_channels 0, got %d", stats.Stats.ConfiguredChannels)
+}
+
+func TestTRMNLStatsFallsBackToNextBirthday(t *testing.T) {
+	h := newTestWebHandler(t)
+	personID := newTestPerson(t, h, "Anna")
+	now := time.Now()
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	// Birthday far outside the reminder window (default 7): the regular
+	// upcoming list is empty, so the feed must fall back to the next
+	// birthday so it never reports "No upcoming events".
+	newTestEvent(t, h, personID, "birthday", midnight(40))
+
+	_, _, stats := getTRMNLStats(t, h)
+
+	if stats.NextEvent == nil {
+		t.Fatal("expected next_event to be set via birthday fallback")
+	}
+	if stats.NextEvent.Name != "Anna" {
+		t.Errorf("expected name Anna, got %q", stats.NextEvent.Name)
+	}
+	if stats.NextEvent.Type != "birthday" {
+		t.Errorf("expected type birthday, got %q", stats.NextEvent.Type)
+	}
+	if stats.NextEvent.DaysRemaining != 39 {
+		t.Errorf("expected days_remaining 39, got %d", stats.NextEvent.DaysRemaining)
+	}
+	if len(stats.Upcoming) != 1 {
+		t.Errorf("expected 1 upcoming event (the fallback), got %d", len(stats.Upcoming))
+	}
+	// The fallback is outside the 30-day horizon: summary counts stay 0.
+	if stats.Stats.EventsNext7Days != 0 {
+		t.Errorf("expected events_next_7_days 0, got %d", stats.Stats.EventsNext7Days)
+	}
+	if stats.Stats.EventsNext30Days != 0 {
+		t.Errorf("expected events_next_30_days 0, got %d", stats.Stats.EventsNext30Days)
 	}
 }
 
@@ -267,5 +301,33 @@ func TestTRMNLStatsRespectsReminderWindow(t *testing.T) {
 	}
 	if stats.NextEvent == nil || stats.NextEvent.Type != "birthday" {
 		t.Errorf("expected next_event birthday, got %+v", stats.NextEvent)
+	}
+}
+
+func TestTRMNLBirthdaysFallsBackBeyondWindow(t *testing.T) {
+	h := newTestWebHandler(t)
+	h.cfg.ReminderDays = 14
+	personID := newTestPerson(t, h, "Anna")
+	now := time.Now()
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	// Birthday far outside the reminder window: the feed must fall back to
+	// the next birthday so it never reports "No upcoming birthdays".
+	newTestEvent(t, h, personID, "birthday", midnight(60))
+
+	_, _, resp := getTRMNLBirthdays(t, h)
+
+	if resp.NextBirthday == nil {
+		t.Fatal("expected next_birthday to be set via birthday fallback")
+	}
+	if resp.NextBirthday.Name != "Anna" {
+		t.Errorf("expected name Anna, got %q", resp.NextBirthday.Name)
+	}
+	if resp.NextBirthday.DaysRemaining != 59 {
+		t.Errorf("expected days_remaining 59, got %d", resp.NextBirthday.DaysRemaining)
+	}
+	if len(resp.Birthdays) != 1 {
+		t.Errorf("expected 1 birthday (the fallback), got %d", len(resp.Birthdays))
 	}
 }

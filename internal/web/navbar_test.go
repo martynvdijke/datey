@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/user"
@@ -49,7 +50,6 @@ func TestNavbar_RendersForAuthenticatedUser(t *testing.T) {
 		"Dashboard",
 		"People",
 		"Calendar",
-		"Notifications",
 		"Settings",
 		"Search people",
 		"theme-select",
@@ -181,5 +181,41 @@ func TestDashboard_RendersEmptyState(t *testing.T) {
 	}
 	if !strings.Contains(body, "Add a person") {
 		t.Error("dashboard empty state missing add-person action")
+	}
+}
+
+func TestDashboard_ShowsNextBirthdayBeyondWindow(t *testing.T) {
+	h := newTestWebHandler(t)
+	router := setupNavbarRouter(h)
+	u := seedNavbarTestUser(t, h, "dashuser", user.RoleUser)
+	personID := newTestPerson(t, h, "Anna")
+	now := time.Now()
+	// Birthday far outside the reminder window (default 7): the dashboard
+	// must pin the next birthday to the "Later" section so the homepage
+	// never hides it behind the empty state.
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	newTestEvent(t, h, personID, "birthday", midnight(40))
+
+	req := httptest.NewRequest("GET", "/", nil)
+	req = req.WithContext(context.WithValue(req.Context(), userContextKey, u))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+
+	if !strings.Contains(body, "Anna") {
+		t.Error("dashboard missing the fallback birthday person")
+	}
+	if !strings.Contains(body, ">Later</h2>") {
+		t.Error("dashboard missing the Later section holding the fallback birthday")
+	}
+	if strings.Contains(body, "No upcoming events") {
+		t.Error("dashboard must not show the empty state when a fallback birthday exists")
 	}
 }

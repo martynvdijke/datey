@@ -329,3 +329,116 @@ func TestEventListUpcomingOccurrences_YearBoundary(t *testing.T) {
 		t.Errorf("expected occurrence %v, got %v", want, occs[0].Date)
 	}
 }
+
+func TestNextBirthdayOccurrence_NoEvents(t *testing.T) {
+	eventRepo, _ := newTestEventRepo(t)
+
+	got, err := eventRepo.NextBirthdayOccurrence(context.Background(), time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("NextBirthdayOccurrence: %v", err)
+	}
+	if got != nil {
+		t.Errorf("expected nil with no birthday events, got %+v", got)
+	}
+}
+
+func TestNextBirthdayOccurrence_EarliestWins(t *testing.T) {
+	eventRepo, contactRepo := newTestEventRepo(t)
+	contactID := seedContactForEvent(t, contactRepo, "Birthday Test")
+
+	// Two historical birthdays: May 12 and August 20. From March 1 the next
+	// occurrence is May 12.
+	_, err := eventRepo.Create(context.Background(), contactID, "birthday",
+		time.Date(1990, 8, 20, 0, 0, 0, 0, time.UTC), "Later")
+	if err != nil {
+		t.Fatalf("create later: %v", err)
+	}
+	_, err = eventRepo.Create(context.Background(), contactID, "birthday",
+		time.Date(1990, 5, 12, 0, 0, 0, 0, time.UTC), "Soon")
+	if err != nil {
+		t.Fatalf("create soon: %v", err)
+	}
+
+	got, err := eventRepo.NextBirthdayOccurrence(context.Background(), time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("NextBirthdayOccurrence: %v", err)
+	}
+	if got == nil {
+		t.Fatal("expected a birthday occurrence")
+	}
+	if want := time.Date(2026, 5, 12, 0, 0, 0, 0, time.UTC); !got.Date.Equal(want) {
+		t.Errorf("expected occurrence %v, got %v", want, got.Date)
+	}
+	if got.Event.Description != "Soon" {
+		t.Errorf("expected event 'Soon', got %q", got.Event.Description)
+	}
+}
+
+func TestNextBirthdayOccurrence_YearBoundaryAndLeapDay(t *testing.T) {
+	eventRepo, contactRepo := newTestEventRepo(t)
+	contactID := seedContactForEvent(t, contactRepo, "Boundary Test")
+
+	// Jan 5 birthday with a from-date late in the year: the occurrence must
+	// roll over to the next year.
+	_, err := eventRepo.Create(context.Background(), contactID, "birthday",
+		time.Date(2010, 1, 5, 0, 0, 0, 0, time.UTC), "Jan Birthday")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	got, err := eventRepo.NextBirthdayOccurrence(context.Background(), time.Date(2026, 12, 25, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("NextBirthdayOccurrence: %v", err)
+	}
+	if got == nil {
+		t.Fatal("expected a birthday occurrence")
+	}
+	if want := time.Date(2027, 1, 5, 0, 0, 0, 0, time.UTC); !got.Date.Equal(want) {
+		t.Errorf("expected occurrence %v, got %v", want, got.Date)
+	}
+}
+
+func TestNextBirthdayOccurrence_LeapDayDrift(t *testing.T) {
+	eventRepo, contactRepo := newTestEventRepo(t)
+	contactID := seedContactForEvent(t, contactRepo, "Leap Test")
+
+	// Feb 29 birthday from March 1, 2026 (non-leap): drifts to Feb 28, 2027.
+	_, err := eventRepo.Create(context.Background(), contactID, "birthday",
+		time.Date(1992, 2, 29, 0, 0, 0, 0, time.UTC), "Leap Birthday")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	got, err := eventRepo.NextBirthdayOccurrence(context.Background(), time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("NextBirthdayOccurrence: %v", err)
+	}
+	if got == nil {
+		t.Fatal("expected a birthday occurrence")
+	}
+	if want := time.Date(2027, 2, 28, 0, 0, 0, 0, time.UTC); !got.Date.Equal(want) {
+		t.Errorf("expected occurrence %v, got %v", want, got.Date)
+	}
+	if got.Event.Description != "Leap Birthday" {
+		t.Errorf("expected event 'Leap Birthday', got %q", got.Event.Description)
+	}
+}
+
+func TestNextBirthdayOccurrence_IgnoresNonBirthdays(t *testing.T) {
+	eventRepo, contactRepo := newTestEventRepo(t)
+	contactID := seedContactForEvent(t, contactRepo, "Filter Test")
+
+	_, err := eventRepo.Create(context.Background(), contactID, "anniversary",
+		time.Date(2010, 6, 1, 0, 0, 0, 0, time.UTC), "Anniversary")
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	got, err := eventRepo.NextBirthdayOccurrence(context.Background(), time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("NextBirthdayOccurrence: %v", err)
+	}
+	if got != nil {
+		t.Errorf("expected nil with only non-birthday events, got %+v", got)
+	}
+}

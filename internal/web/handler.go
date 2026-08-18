@@ -243,7 +243,9 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		laterEvents     []eventView
 	)
 
-	for _, occ := range occurrences {
+	// viewFor converts an occurrence into its display shape. Shared by the
+	// main loop and the "always show the next birthday" fallback.
+	viewFor := func(occ repository.EventOccurrence) eventView {
 		e := occ.Event
 		personName := ""
 		if p := e.Edges.Person; p != nil {
@@ -278,6 +280,13 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 			// Age is derived from the stored birth date, not the occurrence.
 			ev.AgeInfo = age.InfoFor(e.Date, now)
 		}
+		return ev
+	}
+
+	for _, occ := range occurrences {
+		days := int(occ.Date.Sub(now).Hours() / 24)
+
+		ev := viewFor(occ)
 
 		// Group by time horizon
 		switch {
@@ -292,34 +301,43 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Always show at least the next upcoming birthday: when no birthday falls
+	// inside the reminder window, pin the next birthday — however far out —
+	// to the "later" bucket so the homepage never hides it.
+	hasBirthday := false
+	for _, occ := range occurrences {
+		if occ.Event.Type == "birthday" {
+			hasBirthday = true
+			break
+		}
+	}
+	if !hasBirthday {
+		if nextBirthday, err := h.events.NextBirthdayOccurrence(r.Context(), now); err != nil {
+			slog.Error("dashboard: next birthday", "error", err)
+		} else if nextBirthday != nil {
+			laterEvents = append(laterEvents, viewFor(*nextBirthday))
+		}
+	}
+
 	// ── Greeting ──
 	greeting := greetingForTime(now)
 
 	// ── Quick-glance stats ──
 	allPeople, _ := h.people.List(r.Context())
 	peopleCount := len(allPeople)
-	totalEvents := len(occurrences)
-	channels := h.channelInfoList(r.Context())
-	configuredChannels := 0
-	for _, ch := range channels {
-		if ch.Configured {
-			configuredChannels++
-		}
-	}
+	totalEvents := len(todayEvents) + len(thisWeekEvents) + len(thisMonthEvents) + len(laterEvents)
 
 	h.render(w, r, "dashboard.html", map[string]any{
-		"Title":              "Datey - Dashboard",
-		"Greeting":           greeting,
-		"CurrentDate":        weekdayDate(h.cfg.DateVariant, now),
-		"TodayEvents":        todayEvents,
-		"ThisWeekEvents":     thisWeekEvents,
-		"ThisMonthEvents":    thisMonthEvents,
-		"LaterEvents":        laterEvents,
-		"ReminderDays":       reminderDays,
-		"PeopleCount":        peopleCount,
-		"TotalEvents":        totalEvents,
-		"ConfiguredChannels": configuredChannels,
-		"TotalChannels":      len(channels),
+		"Title":       "Datey - Dashboard",
+		"Greeting":    greeting,
+		"CurrentDate": weekdayDate(h.cfg.DateVariant, now),
+		"TodayEvents": todayEvents,
+		"ThisWeekEvents": thisWeekEvents,
+		"ThisMonthEvents": thisMonthEvents,
+		"LaterEvents": laterEvents,
+		"ReminderDays": reminderDays,
+		"PeopleCount": peopleCount,
+		"TotalEvents": totalEvents,
 	})
 }
 

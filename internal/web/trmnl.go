@@ -29,10 +29,9 @@ type trmnlStats struct {
 
 // trmnlSummary holds the quick-glance counters for the TRMNL display.
 type trmnlSummary struct {
-	PeopleCount        int `json:"people_count"`
-	EventsNext7Days    int `json:"events_next_7_days"`
-	EventsNext30Days   int `json:"events_next_30_days"`
-	ConfiguredChannels int `json:"configured_channels"`
+	PeopleCount      int `json:"people_count"`
+	EventsNext7Days  int `json:"events_next_7_days"`
+	EventsNext30Days int `json:"events_next_30_days"`
 }
 
 // trmnlStats renders the stats feed for the TRMNL e-ink display plugin.
@@ -79,25 +78,39 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	allPeople, _ := h.people.List(r.Context())
-
-	channels := h.channelInfoList(r.Context())
-	configuredChannels := 0
-	for _, ch := range channels {
-		if ch.Configured {
-			configuredChannels++
+	// Always show at least the next upcoming birthday: when no birthday falls
+	// inside the reminder window, pin the next birthday — however far out —
+	// to the display list so the feed never hides it.
+	hasBirthday := false
+	for _, ev := range upcoming {
+		if ev.Type == "birthday" {
+			hasBirthday = true
+			break
 		}
 	}
+	if !hasBirthday {
+		if nb, err := h.events.NextBirthdayOccurrence(r.Context(), now); err != nil {
+			slog.Error("trmnl stats: next birthday", "error", err)
+		} else if nb != nil {
+			ev := trmnlEventFromEvent(nb.Event, nb.Date, now, h.cfg.DateVariant)
+			upcoming = append(upcoming, ev)
+			if next == nil {
+				copy := ev
+				next = &copy
+			}
+		}
+	}
+
+	allPeople, _ := h.people.List(r.Context())
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(trmnlStats{
 		NextEvent: next,
 		Upcoming:  upcoming,
 		Stats: trmnlSummary{
-			PeopleCount:        len(allPeople),
-			EventsNext7Days:    events7,
-			EventsNext30Days:   events30,
-			ConfiguredChannels: configuredChannels,
+			PeopleCount:      len(allPeople),
+			EventsNext7Days:  events7,
+			EventsNext30Days: events30,
 		},
 	}); err != nil {
 		slog.Error("trmnl stats: encode", "error", err)
@@ -145,6 +158,19 @@ func (h *Handler) trmnlBirthdays(w http.ResponseWriter, r *http.Request) {
 		if next == nil {
 			copy := b
 			next = &copy
+		}
+	}
+
+	// Always show at least the next upcoming birthday: when none falls
+	// inside the reminder window, fall back to the next birthday — however
+	// far out — so the feed never reports "No upcoming birthdays".
+	if next == nil {
+		if nb, err := h.events.NextBirthdayOccurrence(r.Context(), now); err != nil {
+			slog.Error("trmnl birthdays: next birthday", "error", err)
+		} else if nb != nil {
+			b := trmnlBirthdayFromEvent(nb.Event, nb.Date, now, h.cfg.DateVariant)
+			birthdays = append(birthdays, b)
+			next = &b
 		}
 	}
 

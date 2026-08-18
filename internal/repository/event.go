@@ -139,3 +139,33 @@ func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to 
 	})
 	return out, nil
 }
+
+// NextBirthdayOccurrence returns the earliest birthday occurrence at or
+// after from, or nil when no birthday event exists. Annual expansion rules
+// match ListUpcomingOccurrences (month/day applied to the span years, Feb 29
+// drifting to Feb 28 in non-leap years), so a birthday whose next occurrence
+// lies beyond the reminder window is still found.
+func (r *EventRepository) NextBirthdayOccurrence(ctx context.Context, from time.Time) (*EventOccurrence, error) {
+	events, err := r.client.Event.Query().
+		Where(event.TypeEQ("birthday")).
+		WithContact().
+		WithPerson().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// A yearly event's next occurrence is at most 366 days out (Feb 29 in a
+	// leap year drifting to Feb 28 the following year).
+	to := from.AddDate(0, 0, 366)
+	var best *EventOccurrence
+	for _, e := range events {
+		for _, occ := range recurring.OccurrencesIn(e.Date, from, to) {
+			if best != nil && !occ.Before(best.Date) {
+				continue
+			}
+			best = &EventOccurrence{Event: e, Date: occ}
+		}
+	}
+	return best, nil
+}
