@@ -5,10 +5,10 @@ go 1.26.3
 require (
 	entgo.io/ent v0.14.6
 	github.com/SherClockHolmes/webpush-go v1.4.0
-	github.com/arran4/golang-ical v0.3.5
-	github.com/emersion/go-vcard v0.0.0-20260618161152-d854b7e0e2d3
+	github.com/arran4/golang-ical v0.3.6
+	github.com/emersion/go-vcard v0.1.0
 	github.com/go-chi/chi/v5 v5.3.1
-	github.com/mattn/go-sqlite3 v1.14.49
+	github.com/mattn/go-sqlite3 v1.14.50
 	github.com/riandyrn/otelchi v0.12.3
 	go.opentelemetry.io/contrib/bridges/otelslog v0.20.0
 	go.opentelemetry.io/otel v1.45.0
