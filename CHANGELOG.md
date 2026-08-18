@@ -1,3 +1,10 @@
+## [1.37.1](https://github.com/martynvdijke/datey/compare/v1.37.0...v1.37.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([aca8ce9](https://github.com/martynvdijke/datey/commit/aca8ce9a3682d4af7c961a9a75d0c3e18699236d))
+
 # [1.37.0](https://github.com/martynvdijke/datey/compare/v1.36.1...v1.37.0) (2026-08-18)
 
 
