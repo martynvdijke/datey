@@ -1,3 +1,11 @@
+## [1.37.2](https://github.com/martynvdijke/datey/compare/v1.37.1...v1.37.2) (2026-08-19)
+
+
+### Bug Fixes
+
+* **scheduler:** notify today's events and make all events annual ([c105fcb](https://github.com/martynvdijke/datey/commit/c105fcb75a4d390d82d2daf738eb6f7015914b38))
+* **scheduler:** use tagged switch for day phrasing (golangci QF1003) ([7c9b023](https://github.com/martynvdijke/datey/commit/7c9b023b1930958c5a9d6e5bf767ba638ad94ab8))
+
 ## [1.37.1](https://github.com/martynvdijke/datey/compare/v1.37.0...v1.37.1) (2026-08-18)
 
 
