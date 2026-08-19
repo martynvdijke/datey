@@ -4,7 +4,7 @@ no_screen_padding: 'no'
 dark_mode: 'no'
 static_data: ''
 polling_verb: get
-framework_version: 2.3.7
+framework_version: latest
 serverless_language:
 polling_url: "{{url}}/api/trmnl/birthdays"
 polling_headers: ''
@@ -37,6 +37,14 @@ custom_fields:
   description: The base URL of your Datey instance
   placeholder: https://datey.example.com
   help_text: Please include http:// or https:// — the plugin polls <url>/api/trmnl/birthdays
+- keyname: bio
+  name: About This Plugin
+  category: entertainment
+  field_type: author_bio
+  description: I am running a Datey instance to keep track of birthdays, this shows the upcoming birthdays with ages on my trmnl.
+  github_url: https://github.com/martynvdijke/datey
+  learn_more_url: https://github.com/martynvdijke/datey
+  email_address: martyn@vandijke.xyz
 name: Datey Birthdays
 description: Upcoming birthdays with ages.
 refresh_interval: 1440
