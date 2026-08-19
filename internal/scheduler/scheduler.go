@@ -219,9 +219,10 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 			var message string
 			if catchUp && occ.Date.Before(now) {
 				when := fmt.Sprintf("%d days ago", -days)
-				if days == 0 {
+				switch days {
+				case 0:
 					when = "today"
-				} else if days == -1 {
+				case -1:
 					when = "yesterday"
 				}
 				message = fmt.Sprintf(
