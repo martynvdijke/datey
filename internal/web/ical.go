@@ -12,7 +12,6 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/ical"
-	"github.com/datey/datey/internal/recurring"
 )
 
 // recurringFeedHorizonYears is how many years of global recurring rules
@@ -118,7 +117,7 @@ func (h *Handler) feedEvent(e *ent.Event, host string) ical.Event {
 		Description: e.Description,
 		Date:        e.Date,
 		AllDay:      true,
-		RecurYearly: recurring.IsAnnualType(e.Type),
+		RecurYearly: true, // every event recurs annually
 	}
 
 	if h.cfg.ICalEventStart != "" {

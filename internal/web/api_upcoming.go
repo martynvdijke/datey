@@ -51,7 +51,7 @@ func (h *Handler) upcomingAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, days))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), now.AddDate(0, 0, days))
 	if err != nil {
 		h.renderError(w, r, http.StatusInternalServerError)
 		return

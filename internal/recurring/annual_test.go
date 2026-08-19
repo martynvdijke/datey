@@ -5,26 +5,6 @@ import (
 	"time"
 )
 
-func TestIsAnnualType(t *testing.T) {
-	cases := []struct {
-		eventType string
-		want      bool
-	}{
-		{"birthday", true},
-		{"anniversary", true},
-		{"wedding", true},
-		{"holiday", true},
-		{"meeting", false},
-		{"custom", false},
-		{"", false},
-	}
-	for _, tc := range cases {
-		if got := IsAnnualType(tc.eventType); got != tc.want {
-			t.Errorf("IsAnnualType(%q): got %v, want %v", tc.eventType, got, tc.want)
-		}
-	}
-}
-
 func TestOccurrencesIn_AnnualHistoricalDate(t *testing.T) {
 	// Historical birthday 1990-05-12 must yield the current-year occurrence
 	// when that occurrence falls inside the window.

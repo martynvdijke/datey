@@ -219,6 +219,62 @@ func TestProcessReminders_DedupedWithinSameOccurrence(t *testing.T) {
 	}
 }
 
+func TestProcessReminders_EventDatedTodayFires(t *testing.T) {
+	s, _, fn, people, events := newTestScheduler(t, 7)
+	ctx := context.Background()
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+
+	// A custom event dated today (midnight UTC) must be reminded on the day
+	// itself. Previously the window started at time.Now(), so today's date —
+	// which is earlier than the pass time — was excluded and never notified.
+	today := midnightDaysFromNow(0)
+	if _, err := events.CreateForPerson(ctx, person.ID, "custom", today, "School event"); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	s.processReminders(ctx, false)
+
+	if n := fn.count(); n != 1 {
+		t.Fatalf("expected 1 notification for today's event, got %d (messages: %v)", n, fn.messages)
+	}
+	if !strings.Contains(fn.messages[0], "today") {
+		t.Errorf("expected 'today' phrasing, got %q", fn.messages[0])
+	}
+}
+
+func TestProcessReminders_CustomEventRecursAnnually(t *testing.T) {
+	s, _, fn, people, events := newTestScheduler(t, 365)
+	ctx := context.Background()
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+
+	// A custom event stored with a past date must recur annually: within a
+	// 365-day window its next occurrence is next year's date.
+	lastYear := midnightDaysFromNow(-300)
+	ev, err := events.CreateForPerson(ctx, person.ID, "custom", lastYear, "School event")
+	if err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	s.processReminders(ctx, false)
+
+	if n := fn.count(); n != 1 {
+		t.Fatalf("expected 1 notification for annual custom event, got %d (messages: %v)", n, fn.messages)
+	}
+	nextYearKey := "email-" + fmt.Sprintf("%d-%s", ev.ID, time.Date(lastYear.Year()+1, lastYear.Month(), lastYear.Day(), 0, 0, 0, 0, time.UTC).Format("2006-01-02"))
+	logRepo := repository.NewNotificationLogRepository(s.client)
+	if ok, err := logRepo.ExistsForDate(ctx, "email", nextYearKey); err != nil || !ok {
+		t.Errorf("expected next-year occurrence key %q logged, ok=%v err=%v", nextYearKey, ok, err)
+	}
+}
+
 // newTestCatchupScheduler returns a scheduler plus a helper to seed a person
 // whose birthday falls `daysAgo` days before now (a date inside the reminder
 // window when a catch-up pass runs).

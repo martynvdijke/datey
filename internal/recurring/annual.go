@@ -2,20 +2,6 @@ package recurring
 
 import "time"
 
-// annualEventTypes are event types whose month/day recurs every year. These
-// match the set the iCal feed renders with RRULE:FREQ=YEARLY.
-var annualEventTypes = map[string]bool{
-	"birthday":    true,
-	"anniversary": true,
-	"wedding":     true,
-	"holiday":     true,
-}
-
-// IsAnnualType reports whether an event type recurs annually.
-func IsAnnualType(eventType string) bool {
-	return annualEventTypes[eventType]
-}
-
 // isLeapYear reports whether y is a leap year (Gregorian rules).
 func isLeapYear(y int) bool {
 	return y%4 == 0 && (y%100 != 0 || y%400 == 0)
@@ -32,10 +18,10 @@ func occurrenceInYear(date time.Time, year int) time.Time {
 }
 
 // OccurrencesIn returns the annual occurrences of date whose month/day falls
-// inside the inclusive range [from, to]. The stored date's year is ignored —
-// the month/day is applied to each year the range spans, so a historical
-// birthday (e.g. 1990-05-12) yields its current-year occurrence. February 29
-// drifts to February 28 in non-leap years.
+// inside the inclusive range [from, to]. Every event recurs annually: the
+// stored date's year is ignored — the month/day is applied to each year the
+// range spans, so a historical date (e.g. 1990-05-12) yields its current-year
+// occurrence. February 29 drifts to February 28 in non-leap years.
 //
 // At most two occurrences are returned (the range spans at most one extra
 // calendar year past its start year), sorted ascending, at midnight UTC.

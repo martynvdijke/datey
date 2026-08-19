@@ -33,7 +33,7 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, h.cfg.ReminderDays))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), now.AddDate(0, 0, h.cfg.ReminderDays))
 	if err != nil {
 		slog.Error("rss: list upcoming events", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)

@@ -47,7 +47,7 @@ func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
 	}
 	windowEnd := now.AddDate(0, 0, h.cfg.ReminderDays)
 
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, horizon))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), now.AddDate(0, 0, horizon))
 	if err != nil {
 		slog.Error("trmnl stats: list upcoming", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -140,7 +140,7 @@ func (h *Handler) trmnlBirthdays(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	windowEnd := now.AddDate(0, 0, h.cfg.ReminderDays)
 
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, windowEnd)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), windowEnd)
 	if err != nil {
 		slog.Error("trmnl birthdays: list upcoming", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)

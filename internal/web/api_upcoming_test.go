@@ -158,13 +158,12 @@ func TestUpcomingAPIDaysCappedAt365(t *testing.T) {
 
 	personID := newTestPerson(t, h, "Dana")
 	newTestEvent(t, h, personID, "birthday", time.Now().AddDate(0, 0, 10))
-	// A non-annual type is used for the far event: annual types would be
-	// expanded to their same-year occurrence, which legitimately falls
-	// inside the capped horizon.
+	// A custom event 400 days out: the 365-day cap means it can only appear
+	// via its next-year annual occurrence (~35 days out), never at 400 days.
 	newTestEvent(t, h, personID, "meeting", time.Now().AddDate(0, 0, 400))
 
 	router := setupUpcomingAPIRouter(h)
-	// days=1000 requests a year+; cap at 365 excludes the 400-day event.
+	// days=1000 requests a year+; the horizon is capped at 365 days.
 	req := httptest.NewRequest("GET", "/api/upcoming?key=testapikey&days=1000", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -176,8 +175,13 @@ func TestUpcomingAPIDaysCappedAt365(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &out); err != nil {
 		t.Fatalf("invalid JSON: %v", err)
 	}
-	if len(out) != 1 || out[0].Type != "birthday" {
-		t.Fatalf("expected only the 10-day birthday event after cap, got %+v", out)
+	if len(out) != 2 {
+		t.Fatalf("expected 2 events (birthday + meeting's next-year occurrence), got %+v", out)
+	}
+	for _, ev := range out {
+		if ev.Type == "meeting" && ev.DaysRemaining > 365 {
+			t.Errorf("meeting must appear via its next-year occurrence within the capped horizon, got %d days", ev.DaysRemaining)
+		}
 	}
 }
 

@@ -270,25 +270,26 @@ func TestEventListUpcomingOccurrences_AnnualHistoricalDate(t *testing.T) {
 	}
 }
 
-func TestEventListUpcomingOccurrences_NonAnnualPassthrough(t *testing.T) {
+func TestEventListUpcomingOccurrences_CustomEventRecursAnnually(t *testing.T) {
 	eventRepo, contactRepo := newTestEventRepo(t)
 	contactID := seedContactForEvent(t, contactRepo, "One-off Test")
 
-	// Non-annual events are reported on their stored date only.
+	// Every event recurs annually, including custom types: a "meeting" stored
+	// with a past date must surface on this year's occurrence.
 	_, err := eventRepo.Create(context.Background(), contactID, "meeting",
-		time.Date(2026, 8, 15, 0, 0, 0, 0, time.UTC), "One-off")
+		time.Date(2025, 8, 15, 0, 0, 0, 0, time.UTC), "One-off")
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
-	// A second one-off outside the window must not appear.
+	// A second event whose occurrence falls outside the window must not appear.
 	_, err = eventRepo.Create(context.Background(), contactID, "meeting",
-		time.Date(2030, 8, 15, 0, 0, 0, 0, time.UTC), "Far Off")
+		time.Date(2030, 9, 15, 0, 0, 0, 0, time.UTC), "Far Off")
 	if err != nil {
 		t.Fatalf("create far: %v", err)
 	}
 
-	from := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	to := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
+	from := time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 8, 31, 0, 0, 0, 0, time.UTC)
 
 	occs, err := eventRepo.ListUpcomingOccurrences(context.Background(), from, to)
 	if err != nil {
@@ -296,6 +297,10 @@ func TestEventListUpcomingOccurrences_NonAnnualPassthrough(t *testing.T) {
 	}
 	if len(occs) != 1 {
 		t.Fatalf("expected 1 occurrence, got %d", len(occs))
+	}
+	want := time.Date(2026, 8, 15, 0, 0, 0, 0, time.UTC)
+	if !occs[0].Date.Equal(want) {
+		t.Errorf("expected occurrence %v, got %v", want, occs[0].Date)
 	}
 	if occs[0].Event.Description != "One-off" {
 		t.Errorf("expected 'One-off', got %q", occs[0].Event.Description)

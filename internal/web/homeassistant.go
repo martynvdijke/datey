@@ -61,7 +61,7 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 	}
 	windowEnd := now.AddDate(0, 0, h.cfg.ReminderDays)
 
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, now.AddDate(0, 0, horizon))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), now.AddDate(0, 0, horizon))
 	if err != nil {
 		slog.Error("home assistant stats: list upcoming", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)

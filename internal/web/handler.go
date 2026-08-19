@@ -202,6 +202,16 @@ func (h *Handler) notFound(w http.ResponseWriter, r *http.Request) {
 	h.renderError(w, r, http.StatusNotFound)
 }
 
+// todayStartUTC returns the start of today (midnight UTC), matching how event
+// dates and annual occurrences are stored/computed. "Upcoming" windows built
+// from it include events dated today, which a window starting at time.Now()
+// would otherwise skip (today's midnight-UTC date is earlier than the pass
+// time).
+func todayStartUTC() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+}
+
 func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	reminderDays := h.cfg.ReminderDays
@@ -215,7 +225,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	end := now.AddDate(0, 0, reminderDays)
 
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, end)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), end)
 	if err != nil {
 		slog.Error("dashboard: list upcoming", "error", err, "from", now.Format(time.RFC3339), "to", end.Format(time.RFC3339))
 		h.renderError(w, r, http.StatusInternalServerError)

@@ -12,7 +12,7 @@ func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
 	// Fetch upcoming events for the <noscript> fallback (next 30 days).
 	now := time.Now()
 	end := now.AddDate(0, 0, 30)
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), now, end)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), end)
 	if err != nil {
 		slog.Error("calendar page: list upcoming", "error", err)
 		occurrences = nil // degrade gracefully — noscript list will be empty
@@ -68,9 +68,9 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 		end = time.Date(now.Year(), now.Month()+2, 0, 0, 0, 0, 0, time.UTC)
 	}
 
-	// ListUpcomingOccurrences expands annual event types (birthday,
-	// anniversary, wedding, holiday) to their occurrence date in the range,
-	// so historical dates render on every year they fall due.
+	// ListUpcomingOccurrences expands every event to its annual occurrence
+	// date in the range, so historical dates render on every year they fall
+	// due.
 	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), start, end)
 	if err != nil {
 		slog.Error("calendar events: list", "error", err)

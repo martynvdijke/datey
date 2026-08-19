@@ -147,9 +147,14 @@ func (s *Scheduler) persistRun(ctx context.Context) {
 
 func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 	now := time.Now()
-	end := now.AddDate(0, 0, s.cfg.ReminderDays)
 
-	from := now
+	// The reminder window starts at the beginning of today (midnight UTC,
+	// matching how event dates and annual occurrences are stored). Starting
+	// at time.Now() would exclude events dated today — their midnight-UTC
+	// date is earlier than the pass time — so they would never be reminded.
+	from := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	end := from.AddDate(0, 0, s.cfg.ReminderDays)
+
 	if catchUp {
 		// The catch-up pass looks backwards: occurrences with dates inside
 		// [lastRun - ReminderDays, now] could have been reminded during the
@@ -210,17 +215,29 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 
 			title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
 
-			days := int(occ.Date.Sub(now).Hours() / 24)
+			days := daysBetween(now, occ.Date)
 			var message string
 			if catchUp && occ.Date.Before(now) {
+				when := fmt.Sprintf("%d days ago", -days)
+				if days == 0 {
+					when = "today"
+				} else if days == -1 {
+					when = "yesterday"
+				}
 				message = fmt.Sprintf(
-					"Missed reminder: %s for %s was %s (%d days ago)",
-					event.Type, contactName, occ.Date.Format("January 2"), -days,
+					"Missed reminder: %s for %s was %s (%s)",
+					event.Type, contactName, occ.Date.Format("January 2"), when,
 				)
 			} else {
+				when := fmt.Sprintf("%d days away", days)
+				if days <= 0 {
+					when = "today"
+				} else if days == 1 {
+					when = "tomorrow"
+				}
 				message = fmt.Sprintf(
-					"Upcoming %s for %s on %s (%d days away)",
-					event.Type, contactName, occ.Date.Format("January 2"), days,
+					"Upcoming %s for %s on %s (%s)",
+					event.Type, contactName, occ.Date.Format("January 2"), when,
 				)
 			}
 
@@ -234,6 +251,16 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 			}
 		}
 	}
+}
+
+// daysBetween returns the calendar-day difference between now and t: how many
+// days t is after now (negative when before). Both are truncated to their UTC
+// date, so an occurrence later today reads 0 ("today") and one tomorrow reads
+// 1, regardless of the pass time of day.
+func daysBetween(now, t time.Time) int {
+	nowDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	tDay := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+	return int(tDay.Sub(nowDay).Hours() / 24)
 }
 
 func (s *Scheduler) runBackup(ctx context.Context) {

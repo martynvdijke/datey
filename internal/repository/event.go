@@ -99,19 +99,18 @@ func (r *EventRepository) ListUpcoming(ctx context.Context, from, to time.Time) 
 }
 
 // EventOccurrence pairs a stored event with the concrete date it fires on.
-// For annual event types (birthday, anniversary, wedding, holiday) Date is
-// the occurrence date — the stored month/day applied to the year the range
-// spans. For all other types it equals the stored event date.
+// Every event recurs annually, so Date is the occurrence date — the stored
+// month/day applied to the year the range spans.
 type EventOccurrence struct {
 	Event *ent.Event
 	Date  time.Time
 }
 
 // ListUpcomingOccurrences returns every event with an occurrence inside the
-// inclusive range [from, to]. Annual event types are expanded to their
-// occurrence dates (so a historical birthday is reported on this year's
-// date); one-off events are reported on their stored date. Results are
-// sorted by occurrence date ascending.
+// inclusive range [from, to]. All events recur annually: the stored month/day
+// is expanded to each year the range spans, so a historical date (e.g. a
+// birthday stored as 1990-05-12) is reported on this year's occurrence.
+// Results are sorted by occurrence date ascending.
 func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to time.Time) ([]EventOccurrence, error) {
 	events, err := r.client.Event.Query().
 		WithContact().
@@ -123,14 +122,8 @@ func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to 
 
 	var out []EventOccurrence
 	for _, e := range events {
-		if recurring.IsAnnualType(e.Type) {
-			for _, occ := range recurring.OccurrencesIn(e.Date, from, to) {
-				out = append(out, EventOccurrence{Event: e, Date: occ})
-			}
-			continue
-		}
-		if !e.Date.Before(from) && !e.Date.After(to) {
-			out = append(out, EventOccurrence{Event: e, Date: e.Date})
+		for _, occ := range recurring.OccurrencesIn(e.Date, from, to) {
+			out = append(out, EventOccurrence{Event: e, Date: occ})
 		}
 	}
 
