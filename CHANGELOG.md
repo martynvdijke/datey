@@ -1,3 +1,15 @@
+# [1.38.0](https://github.com/martynvdijke/datey/compare/v1.37.3...v1.38.0) (2026-08-21)
+
+
+### Bug Fixes
+
+* **lint:** check Close error returns, drop unused testAll result type ([daf4327](https://github.com/martynvdijke/datey/commit/daf43270b727ba66ffdb20a692f4a6082022d29e))
+
+
+### Features
+
+* **people:** group categories, Immich bulk photo sync, config test buttons ([43a6d97](https://github.com/martynvdijke/datey/commit/43a6d9735d699578714baf7391f76867c3857ccd))
+
 ## [1.37.3](https://github.com/martynvdijke/datey/compare/v1.37.2...v1.37.3) (2026-08-20)
 
 
