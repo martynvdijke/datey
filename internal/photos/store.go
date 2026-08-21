@@ -99,7 +99,7 @@ func (s *Store) Save(personID int, contentType string, data []byte) (string, err
 		}
 	}()
 	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
+		_ = tmp.Close()
 		return "", fmt.Errorf("write temp file: %w", err)
 	}
 	if err := tmp.Close(); err != nil {
@@ -136,7 +136,7 @@ func (s *Store) Open(relPath string) (io.ReadCloser, int64, error) {
 	}
 	info, err := f.Stat()
 	if err != nil {
-		f.Close()
+		_ = f.Close()
 		return nil, 0, fmt.Errorf("stat photo: %w", err)
 	}
 	return f, info.Size(), nil

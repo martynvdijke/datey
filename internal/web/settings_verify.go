@@ -284,11 +284,6 @@ func (h *Handler) testDatabase(ctx context.Context) (bool, string) {
 }
 
 func (h *Handler) testAll(ctx context.Context, cfg *config.Config, form url.Values) (bool, string) {
-	type result struct {
-		name string
-		ok   bool
-		msg  string
-	}
 	checks := []struct {
 		name string
 		fn   func() (bool, string)

@@ -37,7 +37,7 @@ func (h *Handler) personPhoto(w http.ResponseWriter, r *http.Request) {
 	if p.PhotoPath != nil && *p.PhotoPath != "" {
 		f, size, err := h.photoStore.Open(*p.PhotoPath)
 		if err == nil {
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			contentType := "application/octet-stream"
 			if p.PhotoContentType != nil && *p.PhotoContentType != "" {
 				contentType = *p.PhotoContentType
@@ -153,7 +153,7 @@ func (h *Handler) uploadPersonPhoto(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, fmt.Sprintf("/people/%d?error=Choose+a+photo+to+upload", id), http.StatusSeeOther)
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	data, err := photos.Validate(header.Header.Get("Content-Type"), file)
 	if err != nil {
 		http.Redirect(w, r, fmt.Sprintf("/people/%d?error=%s", id, urlErrText(err.Error())), http.StatusSeeOther)
