@@ -8,6 +8,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/internal/recurring"
 )
@@ -40,6 +41,19 @@ func (r *EventRepository) CreateForPerson(ctx context.Context, personID int, eve
 		Save(ctx)
 }
 
+// CreateForGroup creates an event owned by a group rather than a single
+// person or contact. Exactly one owner edge must be set; callers must not
+// combine this with a person or contact ID.
+func (r *EventRepository) CreateForGroup(ctx context.Context, groupID int, eventType string, date time.Time, description string) (*ent.Event, error) {
+	return r.client.Event.Create().
+		SetType(eventType).
+		SetDate(date).
+		SetDescription(description).
+		SetCreatedAt(time.Now()).
+		SetGroupID(groupID).
+		Save(ctx)
+}
+
 func (r *EventRepository) Get(ctx context.Context, id int) (*ent.Event, error) {
 	return r.client.Event.Get(ctx, id)
 }
@@ -48,6 +62,7 @@ func (r *EventRepository) List(ctx context.Context) ([]*ent.Event, error) {
 	return r.client.Event.Query().
 		Order(ent.Asc(event.FieldDate)).
 		WithContact().
+		WithGroup().
 		WithPerson().
 		All(ctx)
 }
@@ -68,6 +83,17 @@ func (r *EventRepository) ListByPerson(ctx context.Context, personID int) ([]*en
 		All(ctx)
 }
 
+// ListByGroup returns the events owned by a group, ordered by date.
+func (r *EventRepository) ListByGroup(ctx context.Context, groupID int) ([]*ent.Event, error) {
+	return r.client.Event.Query().
+		Where(event.HasGroupWith(group.IDEQ(groupID))).
+		Order(ent.Asc(event.FieldDate)).
+		WithContact().
+		WithPerson().
+		WithGroup().
+		All(ctx)
+}
+
 func (r *EventRepository) Update(ctx context.Context, id int, eventType string, date time.Time, description string) (*ent.Event, error) {
 	return r.client.Event.UpdateOneID(id).
 		SetType(eventType).
@@ -81,6 +107,7 @@ func (r *EventRepository) ListInRange(ctx context.Context, start, end time.Time)
 		Where(event.DateGTE(start), event.DateLTE(end)).
 		Order(ent.Asc(event.FieldDate)).
 		WithContact().
+		WithGroup().
 		WithPerson().
 		All(ctx)
 }
@@ -94,6 +121,7 @@ func (r *EventRepository) ListUpcoming(ctx context.Context, from, to time.Time) 
 		Where(event.DateGTE(from), event.DateLTE(to)).
 		Order(ent.Asc(event.FieldDate)).
 		WithContact().
+		WithGroup().
 		WithPerson().
 		All(ctx)
 }
@@ -114,6 +142,7 @@ type EventOccurrence struct {
 func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to time.Time) ([]EventOccurrence, error) {
 	events, err := r.client.Event.Query().
 		WithContact().
+		WithGroup().
 		WithPerson().
 		All(ctx)
 	if err != nil {
@@ -142,6 +171,7 @@ func (r *EventRepository) NextBirthdayOccurrence(ctx context.Context, from time.
 	events, err := r.client.Event.Query().
 		Where(event.TypeEQ("birthday")).
 		WithContact().
+		WithGroup().
 		WithPerson().
 		All(ctx)
 	if err != nil {

@@ -95,13 +95,38 @@
 <div class="card mt-4 mb-4">
   <div class="card-body">
     <h2 class="h5">Profile photo</h2>
+    <div class="d-flex align-items-center gap-3 mb-3">
+      {{if .PhotoURL}}
+        <img class="person-avatar" src="{{.PhotoURL}}" alt="{{.Person.Name}}" style="width:56px;height:56px;">
+        {{if .Person.PhotoSource}}<span class="badge bg-secondary-subtle text-secondary-emphasis">source: {{.Person.PhotoSource}}</span>{{end}}
+      {{else}}
+        <span class="person-avatar avatar-color-{{.AvatarColor}}" style="width:56px;height:56px;">{{.Initial}}</span>
+        <span class="small text-muted">No photo yet.</span>
+      {{end}}
+    </div>
+    <form action="/people/{{.Person.ID}}/photo/upload" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end mb-1">
+      {{template "csrfField" .}}
+      <div class="col-md-7">
+        <label class="form-label" for="photo-upload">Upload photo <span class="text-muted fw-normal">(image up to 5 MB)</span></label>
+        <input type="file" id="photo-upload" name="photo" class="form-control" accept="image/*" required>
+      </div>
+      <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Upload</button></div>
+    </form>
+    {{if .Person.PhotoPath}}
+    <form action="/people/{{.Person.ID}}/photo/remove" method="POST" class="mb-3">
+      {{template "csrfField" .}}
+      <button class="btn btn-outline-danger btn-sm" type="submit">Remove photo</button>
+      <span class="small text-muted ms-1">Reverts to the Immich photo if one matches.</span>
+    </form>
+    {{end}}
+    <hr>
     <form action="/people/{{.Person.ID}}/immich" method="POST" class="row g-2 align-items-end">
       {{template "csrfField" .}}
       <div class="col-md-7"><label class="form-label" for="immich-person-id">Immich person ID <span class="text-muted fw-normal">(optional manual override)</span></label><input id="immich-person-id" name="immich_person_id" class="form-control" value="{{if .Person.ImmichPersonID}}{{.Person.ImmichPersonID}}{{end}}"></div>
       <div class="col-md-auto"><div class="form-check"><input class="form-check-input" type="checkbox" name="disable_photo" id="disable-photo"{{if .Person.ImmichPhotoDisabled}} checked{{end}}><label class="form-check-label" for="disable-photo">Disable photo</label></div></div>
       <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Save photo settings</button></div>
     </form>
-    <p class="small text-muted mb-0 mt-2">When enabled, Datey matches one Immich person by normalized name. Your API key stays on the server.</p>
+    <p class="small text-muted mb-0 mt-2">Bulk import happens from Settings → Immich ("Sync with Immich"). Uploaded photos are never overwritten by sync.</p>
   </div>
 </div>
 

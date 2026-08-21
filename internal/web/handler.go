@@ -20,6 +20,7 @@ import (
 	"github.com/datey/datey/internal/immich"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
+	"github.com/datey/datey/internal/photos"
 	"github.com/datey/datey/internal/repository"
 	"github.com/datey/datey/internal/session"
 	"github.com/datey/datey/internal/settings"
@@ -35,6 +36,7 @@ type Handler struct {
 	people         *repository.PersonRepository
 	groups         *repository.GroupRepository
 	events         *repository.EventRepository
+	groupNotes     *repository.GroupNoteRepository
 	notifReg       *notifier.Registry
 	recurringRules *repository.RecurringRuleRepository
 	pushSubs       *repository.PushSubscriptionRepository
@@ -44,6 +46,7 @@ type Handler struct {
 	forgotLimiter  *rateLimiter
 	passwordResetTokens *repository.PasswordResetTokenRepository
 	immich         *immich.Client
+	photoStore     *photos.Store
 }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry, logStore *logstore.Store) *Handler {
@@ -60,6 +63,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		people:         repository.NewPersonRepository(client),
 		groups:         repository.NewGroupRepository(client),
 		events:         repository.NewEventRepository(client),
+		groupNotes:     repository.NewGroupNoteRepository(client),
 		notifReg:       notifReg,
 		recurringRules: repository.NewRecurringRuleRepository(client),
 		pushSubs:       repository.NewPushSubscriptionRepository(client),
@@ -69,6 +73,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		forgotLimiter:  newRateLimiter(5, 15*time.Minute),
 		passwordResetTokens: repository.NewPasswordResetTokenRepository(client),
 		immich:         immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
+		photoStore:     photos.NewStore(cfg.DataDir),
 	}
 }
 
@@ -140,6 +145,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/people/{id}/notify-birthdays", h.toggleNotifyBirthdays)
 			r.Get("/people/{id}/photo", h.personPhoto)
 			r.Post("/people/{id}/immich", h.setImmichPhoto)
+			r.Post("/people/{id}/photo/upload", h.uploadPersonPhoto)
+			r.Post("/people/{id}/photo/remove", h.removePersonPhoto)
 			r.Post("/people/import", h.handleImportVCard)
 			r.Get("/people/{id}/vcard", h.handleExportSingleVCard)
 			r.Get("/people/export", h.handleExportAllVCard)
@@ -158,7 +165,15 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			// Group routes (admin-only)
 			r.Get("/groups", h.listGroups)
 			r.Post("/groups/create", h.createGroup)
+			r.Get("/groups/{id}", h.viewGroup)
 			r.Post("/groups/{id}/delete", h.deleteGroup)
+			r.Post("/groups/{id}/members", h.setGroupMembers)
+			r.Post("/groups/{id}/members/add", h.addGroupMember)
+			r.Post("/groups/{id}/members/{personID}/remove", h.removeGroupMember)
+			r.Get("/groups/{id}/events/new", h.newGroupEventForm)
+			r.Post("/groups/{id}/events/new", h.createGroupEvent)
+			r.Post("/groups/{id}/notes", h.createGroupNote)
+			r.Post("/groups/{id}/notes/{noteID}/delete", h.deleteGroupNote)
 
 			r.Get("/calendar", h.calendarPage)
 			r.Get("/api/calendar-events", h.calendarEvents)
@@ -186,6 +201,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Post("/settings/carddav", h.settingsCarddavSave)
 				r.Post("/settings/carddav/sync", h.settingsCarddavSync)
 				r.Post("/settings/test/{channel}", h.testNotification)
+				r.Post("/settings/config/test/{section}", h.testConfig)
+				r.Post("/settings/carddav/test", h.testCarddavConnection)
+				r.Post("/settings/immich/sync", h.immichBulkSync)
 				r.Post("/settings/logs/level", h.setLogLevel)
 				// Legacy redirects
 				r.Get("/logs", h.oldLogsRedirect)
@@ -257,12 +275,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	// main loop and the "always show the next birthday" fallback.
 	viewFor := func(occ repository.EventOccurrence) eventView {
 		e := occ.Event
-		personName := ""
-		if p := e.Edges.Person; p != nil {
-			personName = p.Name
-		} else if c := e.Edges.Contact; c != nil {
-			personName = c.Name
-		}
+		personName := eventOwnerName(e)
 
 		days := int(occ.Date.Sub(now).Hours() / 24)
 

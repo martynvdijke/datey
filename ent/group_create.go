@@ -10,7 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/person"
 )
 
@@ -66,6 +68,36 @@ func (_c *GroupCreate) AddPeople(v ...*Person) *GroupCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddPersonIDs(ids...)
+}
+
+// AddEventIDs adds the "events" edge to the Event entity by IDs.
+func (_c *GroupCreate) AddEventIDs(ids ...int) *GroupCreate {
+	_c.mutation.AddEventIDs(ids...)
+	return _c
+}
+
+// AddEvents adds the "events" edges to the Event entity.
+func (_c *GroupCreate) AddEvents(v ...*Event) *GroupCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddEventIDs(ids...)
+}
+
+// AddNoteIDs adds the "notes" edge to the GroupNote entity by IDs.
+func (_c *GroupCreate) AddNoteIDs(ids ...int) *GroupCreate {
+	_c.mutation.AddNoteIDs(ids...)
+	return _c
+}
+
+// AddNotes adds the "notes" edges to the GroupNote entity.
+func (_c *GroupCreate) AddNotes(v ...*GroupNote) *GroupCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddNoteIDs(ids...)
 }
 
 // Mutation returns the GroupMutation object of the builder.
@@ -176,6 +208,38 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.EventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.EventsTable,
+			Columns: []string{group.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.NotesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.NotesTable,
+			Columns: []string{group.NotesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(groupnote.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -20,6 +20,8 @@ type Tx struct {
 	Event *EventClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// GroupNote is the client for interacting with the GroupNote builders.
+	GroupNote *GroupNoteClient
 	// MigrationLog is the client for interacting with the MigrationLog builders.
 	MigrationLog *MigrationLogClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
@@ -173,6 +175,7 @@ func (tx *Tx) init() {
 	tx.Contact = NewContactClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
+	tx.GroupNote = NewGroupNoteClient(tx.config)
 	tx.MigrationLog = NewMigrationLogClient(tx.config)
 	tx.NotificationLog = NewNotificationLogClient(tx.config)
 	tx.PasswordResetToken = NewPasswordResetTokenClient(tx.config)

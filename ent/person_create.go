@@ -119,6 +119,62 @@ func (_c *PersonCreate) SetNillableImmichPhotoDisabled(v *bool) *PersonCreate {
 	return _c
 }
 
+// SetPhotoPath sets the "photo_path" field.
+func (_c *PersonCreate) SetPhotoPath(v string) *PersonCreate {
+	_c.mutation.SetPhotoPath(v)
+	return _c
+}
+
+// SetNillablePhotoPath sets the "photo_path" field if the given value is not nil.
+func (_c *PersonCreate) SetNillablePhotoPath(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetPhotoPath(*v)
+	}
+	return _c
+}
+
+// SetPhotoContentType sets the "photo_content_type" field.
+func (_c *PersonCreate) SetPhotoContentType(v string) *PersonCreate {
+	_c.mutation.SetPhotoContentType(v)
+	return _c
+}
+
+// SetNillablePhotoContentType sets the "photo_content_type" field if the given value is not nil.
+func (_c *PersonCreate) SetNillablePhotoContentType(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetPhotoContentType(*v)
+	}
+	return _c
+}
+
+// SetPhotoUpdatedAt sets the "photo_updated_at" field.
+func (_c *PersonCreate) SetPhotoUpdatedAt(v time.Time) *PersonCreate {
+	_c.mutation.SetPhotoUpdatedAt(v)
+	return _c
+}
+
+// SetNillablePhotoUpdatedAt sets the "photo_updated_at" field if the given value is not nil.
+func (_c *PersonCreate) SetNillablePhotoUpdatedAt(v *time.Time) *PersonCreate {
+	if v != nil {
+		_c.SetPhotoUpdatedAt(*v)
+	}
+	return _c
+}
+
+// SetPhotoSource sets the "photo_source" field.
+func (_c *PersonCreate) SetPhotoSource(v string) *PersonCreate {
+	_c.mutation.SetPhotoSource(v)
+	return _c
+}
+
+// SetNillablePhotoSource sets the "photo_source" field if the given value is not nil.
+func (_c *PersonCreate) SetNillablePhotoSource(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetPhotoSource(*v)
+	}
+	return _c
+}
+
 // SetCarddavUID sets the "carddav_uid" field.
 func (_c *PersonCreate) SetCarddavUID(v string) *PersonCreate {
 	_c.mutation.SetCarddavUID(v)
@@ -399,6 +455,22 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ImmichPhotoDisabled(); ok {
 		_spec.SetField(person.FieldImmichPhotoDisabled, field.TypeBool, value)
 		_node.ImmichPhotoDisabled = value
+	}
+	if value, ok := _c.mutation.PhotoPath(); ok {
+		_spec.SetField(person.FieldPhotoPath, field.TypeString, value)
+		_node.PhotoPath = &value
+	}
+	if value, ok := _c.mutation.PhotoContentType(); ok {
+		_spec.SetField(person.FieldPhotoContentType, field.TypeString, value)
+		_node.PhotoContentType = &value
+	}
+	if value, ok := _c.mutation.PhotoUpdatedAt(); ok {
+		_spec.SetField(person.FieldPhotoUpdatedAt, field.TypeTime, value)
+		_node.PhotoUpdatedAt = &value
+	}
+	if value, ok := _c.mutation.PhotoSource(); ok {
+		_spec.SetField(person.FieldPhotoSource, field.TypeString, value)
+		_node.PhotoSource = &value
 	}
 	if value, ok := _c.mutation.CarddavUID(); ok {
 		_spec.SetField(person.FieldCarddavUID, field.TypeString, value)

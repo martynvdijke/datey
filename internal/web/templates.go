@@ -93,6 +93,7 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"person_detail.html",
 		"person_form.html",
 		"groups.html",
+		"group_detail.html",
 		"event_form.html",
 		"calendar.html",
 		"settings.html",
@@ -111,6 +112,19 @@ func loadTemplates() (map[string]*template.Template, error) {
 			return nil, err
 		}
 		templates[page] = t
+	}
+
+	// Partials are standalone fragments rendered directly into HTMX responses
+	// (no base layout).
+	partials := []string{
+		"immich_sync_result.html",
+	}
+	for _, partial := range partials {
+		t, err := template.New(partial).Funcs(funcMap).ParseFS(templateFS, "templates/"+partial)
+		if err != nil {
+			return nil, err
+		}
+		templates[partial] = t
 	}
 
 	return templates, nil

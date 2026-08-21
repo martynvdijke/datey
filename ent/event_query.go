@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
@@ -28,6 +29,7 @@ type EventQuery struct {
 	predicates           []predicate.Event
 	withContact          *ContactQuery
 	withPerson           *PersonQuery
+	withGroup            *GroupQuery
 	withNotificationLogs *NotificationLogQuery
 	withFKs              bool
 	// intermediate query (i.e. traversal path).
@@ -103,6 +105,28 @@ func (_q *EventQuery) QueryPerson() *PersonQuery {
 			sqlgraph.From(event.Table, event.FieldID, selector),
 			sqlgraph.To(person.Table, person.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, event.PersonTable, event.PersonColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGroup chains the current query on the "group" edge.
+func (_q *EventQuery) QueryGroup() *GroupQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(event.Table, event.FieldID, selector),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, event.GroupTable, event.GroupColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -326,6 +350,7 @@ func (_q *EventQuery) Clone() *EventQuery {
 		predicates:           append([]predicate.Event{}, _q.predicates...),
 		withContact:          _q.withContact.Clone(),
 		withPerson:           _q.withPerson.Clone(),
+		withGroup:            _q.withGroup.Clone(),
 		withNotificationLogs: _q.withNotificationLogs.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -352,6 +377,17 @@ func (_q *EventQuery) WithPerson(opts ...func(*PersonQuery)) *EventQuery {
 		opt(query)
 	}
 	_q.withPerson = query
+	return _q
+}
+
+// WithGroup tells the query-builder to eager-load the nodes that are connected to
+// the "group" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EventQuery) WithGroup(opts ...func(*GroupQuery)) *EventQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGroup = query
 	return _q
 }
 
@@ -445,13 +481,14 @@ func (_q *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 		nodes       = []*Event{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withContact != nil,
 			_q.withPerson != nil,
+			_q.withGroup != nil,
 			_q.withNotificationLogs != nil,
 		}
 	)
-	if _q.withContact != nil || _q.withPerson != nil {
+	if _q.withContact != nil || _q.withPerson != nil || _q.withGroup != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -484,6 +521,12 @@ func (_q *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 	if query := _q.withPerson; query != nil {
 		if err := _q.loadPerson(ctx, query, nodes, nil,
 			func(n *Event, e *Person) { n.Edges.Person = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGroup; query != nil {
+		if err := _q.loadGroup(ctx, query, nodes, nil,
+			func(n *Event, e *Group) { n.Edges.Group = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -554,6 +597,38 @@ func (_q *EventQuery) loadPerson(ctx context.Context, query *PersonQuery, nodes 
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "person_events" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *EventQuery) loadGroup(ctx context.Context, query *GroupQuery, nodes []*Event, init func(*Event), assign func(*Event, *Group)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Event)
+	for i := range nodes {
+		if nodes[i].group_events == nil {
+			continue
+		}
+		fk := *nodes[i].group_events
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(group.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "group_events" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

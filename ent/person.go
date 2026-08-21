@@ -34,6 +34,14 @@ type Person struct {
 	ImmichPersonID *string `json:"immich_person_id,omitempty"`
 	// ImmichPhotoDisabled holds the value of the "immich_photo_disabled" field.
 	ImmichPhotoDisabled bool `json:"immich_photo_disabled,omitempty"`
+	// PhotoPath holds the value of the "photo_path" field.
+	PhotoPath *string `json:"photo_path,omitempty"`
+	// PhotoContentType holds the value of the "photo_content_type" field.
+	PhotoContentType *string `json:"photo_content_type,omitempty"`
+	// PhotoUpdatedAt holds the value of the "photo_updated_at" field.
+	PhotoUpdatedAt *time.Time `json:"photo_updated_at,omitempty"`
+	// PhotoSource holds the value of the "photo_source" field.
+	PhotoSource *string `json:"photo_source,omitempty"`
 	// CarddavUID holds the value of the "carddav_uid" field.
 	CarddavUID *string `json:"carddav_uid,omitempty"`
 	// CarddavHref holds the value of the "carddav_href" field.
@@ -107,9 +115,9 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case person.FieldID:
 			values[i] = new(sql.NullInt64)
-		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID, person.FieldCarddavUID, person.FieldCarddavHref, person.FieldCarddavEtag, person.FieldCarddavRev:
+		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID, person.FieldPhotoPath, person.FieldPhotoContentType, person.FieldPhotoSource, person.FieldCarddavUID, person.FieldCarddavHref, person.FieldCarddavEtag, person.FieldCarddavRev:
 			values[i] = new(sql.NullString)
-		case person.FieldCarddavLastModified, person.FieldCreatedAt, person.FieldUpdatedAt:
+		case person.FieldPhotoUpdatedAt, person.FieldCarddavLastModified, person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -182,6 +190,34 @@ func (_m *Person) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field immich_photo_disabled", values[i])
 			} else if value.Valid {
 				_m.ImmichPhotoDisabled = value.Bool
+			}
+		case person.FieldPhotoPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field photo_path", values[i])
+			} else if value.Valid {
+				_m.PhotoPath = new(string)
+				*_m.PhotoPath = value.String
+			}
+		case person.FieldPhotoContentType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field photo_content_type", values[i])
+			} else if value.Valid {
+				_m.PhotoContentType = new(string)
+				*_m.PhotoContentType = value.String
+			}
+		case person.FieldPhotoUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field photo_updated_at", values[i])
+			} else if value.Valid {
+				_m.PhotoUpdatedAt = new(time.Time)
+				*_m.PhotoUpdatedAt = value.Time
+			}
+		case person.FieldPhotoSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field photo_source", values[i])
+			} else if value.Valid {
+				_m.PhotoSource = new(string)
+				*_m.PhotoSource = value.String
 			}
 		case person.FieldCarddavUID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -312,6 +348,26 @@ func (_m *Person) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("immich_photo_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ImmichPhotoDisabled))
+	builder.WriteString(", ")
+	if v := _m.PhotoPath; v != nil {
+		builder.WriteString("photo_path=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.PhotoContentType; v != nil {
+		builder.WriteString("photo_content_type=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.PhotoUpdatedAt; v != nil {
+		builder.WriteString("photo_updated_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.PhotoSource; v != nil {
+		builder.WriteString("photo_source=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	if v := _m.CarddavUID; v != nil {
 		builder.WriteString("carddav_uid=")

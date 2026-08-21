@@ -28,6 +28,8 @@ const (
 	EdgeContact = "contact"
 	// EdgePerson holds the string denoting the person edge name in mutations.
 	EdgePerson = "person"
+	// EdgeGroup holds the string denoting the group edge name in mutations.
+	EdgeGroup = "group"
 	// EdgeNotificationLogs holds the string denoting the notification_logs edge name in mutations.
 	EdgeNotificationLogs = "notification_logs"
 	// Table holds the table name of the event in the database.
@@ -46,6 +48,13 @@ const (
 	PersonInverseTable = "persons"
 	// PersonColumn is the table column denoting the person relation/edge.
 	PersonColumn = "person_events"
+	// GroupTable is the table that holds the group relation/edge.
+	GroupTable = "events"
+	// GroupInverseTable is the table name for the Group entity.
+	// It exists in this package in order to avoid circular dependency with the "group" package.
+	GroupInverseTable = "groups"
+	// GroupColumn is the table column denoting the group relation/edge.
+	GroupColumn = "group_events"
 	// NotificationLogsTable is the table that holds the notification_logs relation/edge.
 	NotificationLogsTable = "notification_logs"
 	// NotificationLogsInverseTable is the table name for the NotificationLog entity.
@@ -70,6 +79,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"contact_events",
+	"group_events",
 	"person_events",
 }
 
@@ -144,6 +154,13 @@ func ByPersonField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByGroupField orders the results by group field.
+func ByGroupField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGroupStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByNotificationLogsCount orders the results by notification_logs count.
 func ByNotificationLogsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -169,6 +186,13 @@ func newPersonStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PersonInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, PersonTable, PersonColumn),
+	)
+}
+func newGroupStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GroupInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, GroupTable, GroupColumn),
 	)
 }
 func newNotificationLogsStep() *sqlgraph.Step {

@@ -6,6 +6,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/passwordresettoken"
@@ -56,6 +57,12 @@ func init() {
 	groupDescDescription := groupFields[1].Descriptor()
 	// group.DefaultDescription holds the default value on creation for the description field.
 	group.DefaultDescription = groupDescDescription.Default.(string)
+	groupnoteFields := schema.GroupNote{}.Fields()
+	_ = groupnoteFields
+	// groupnoteDescNote is the schema descriptor for note field.
+	groupnoteDescNote := groupnoteFields[0].Descriptor()
+	// groupnote.NoteValidator is a validator for the "note" field. It is called by the builders before save.
+	groupnote.NoteValidator = groupnoteDescNote.Validators[0].(func(string) error)
 	migrationlogFields := schema.MigrationLog{}.Fields()
 	_ = migrationlogFields
 	// migrationlogDescName is the schema descriptor for name field.
@@ -105,7 +112,7 @@ func init() {
 	// person.DefaultImmichPhotoDisabled holds the default value on creation for the immich_photo_disabled field.
 	person.DefaultImmichPhotoDisabled = personDescImmichPhotoDisabled.Default.(bool)
 	// personDescCarddavPendingSync is the schema descriptor for carddav_pending_sync field.
-	personDescCarddavPendingSync := personFields[13].Descriptor()
+	personDescCarddavPendingSync := personFields[17].Descriptor()
 	// person.DefaultCarddavPendingSync holds the default value on creation for the carddav_pending_sync field.
 	person.DefaultCarddavPendingSync = personDescCarddavPendingSync.Default.(bool)
 	personnoteFields := schema.PersonNote{}.Fields()

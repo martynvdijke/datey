@@ -447,3 +447,49 @@ func TestNextBirthdayOccurrence_IgnoresNonBirthdays(t *testing.T) {
 		t.Errorf("expected nil with only non-birthday events, got %+v", got)
 	}
 }
+
+func TestEventCreateForGroupAndListByGroup(t *testing.T) {
+	eventRepo, client := newTestEventRepo(t)
+	ctx := context.Background()
+
+	g, err := client.Group.Create().SetName("Crew").SetCreatedAt(time.Now()).SetUpdatedAt(time.Now()).Save(ctx)
+	if err != nil {
+		t.Fatalf("seed group: %v", err)
+	}
+
+	base := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
+	e1, err := eventRepo.CreateForGroup(ctx, g.ID, "trip", base.AddDate(0, 0, 3), "Later trip")
+	if err != nil {
+		t.Fatalf("CreateForGroup: %v", err)
+	}
+	if _, err := eventRepo.CreateForGroup(ctx, g.ID, "meeting", base, "First meeting"); err != nil {
+		t.Fatalf("CreateForGroup second: %v", err)
+	}
+
+	events, err := eventRepo.ListByGroup(ctx, g.ID)
+	if err != nil {
+		t.Fatalf("ListByGroup: %v", err)
+	}
+	if len(events) != 2 {
+		t.Fatalf("expected 2 group events, got %d", len(events))
+	}
+	if events[0].ID != e1.ID && events[0].Type != "meeting" {
+		t.Errorf("expected date-ascending order starting with meeting, got %q first", events[0].Type)
+	}
+	if events[0].Edges.Group == nil || events[0].Edges.Group.ID != g.ID {
+		t.Error("expected group edge loaded on listed events")
+	}
+
+	// A person event must not appear in the group listing.
+	p, err := client.Person.Create().SetName("Solo").SetCreatedAt(time.Now()).SetUpdatedAt(time.Now()).Save(ctx)
+	if err != nil {
+		t.Fatalf("seed person: %v", err)
+	}
+	if _, err := eventRepo.CreateForPerson(ctx, p.ID, "birthday", base, ""); err != nil {
+		t.Fatalf("CreateForPerson: %v", err)
+	}
+	events, _ = eventRepo.ListByGroup(ctx, g.ID)
+	if len(events) != 2 {
+		t.Errorf("person event leaked into group list: got %d", len(events))
+	}
+}

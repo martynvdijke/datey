@@ -431,6 +431,29 @@ func HasPersonWith(preds ...predicate.Person) predicate.Event {
 	})
 }
 
+// HasGroup applies the HasEdge predicate on the "group" edge.
+func HasGroup() predicate.Event {
+	return predicate.Event(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GroupTable, GroupColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGroupWith applies the HasEdge predicate on the "group" edge with a given conditions (other predicates).
+func HasGroupWith(preds ...predicate.Group) predicate.Event {
+	return predicate.Event(func(s *sql.Selector) {
+		step := newGroupStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasNotificationLogs applies the HasEdge predicate on the "notification_logs" edge.
 func HasNotificationLogs() predicate.Event {
 	return predicate.Event(func(s *sql.Selector) {

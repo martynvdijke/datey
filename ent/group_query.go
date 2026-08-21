@@ -12,7 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
 )
@@ -25,6 +27,8 @@ type GroupQuery struct {
 	inters     []Interceptor
 	predicates []predicate.Group
 	withPeople *PersonQuery
+	withEvents *EventQuery
+	withNotes  *GroupNoteQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +80,50 @@ func (_q *GroupQuery) QueryPeople() *PersonQuery {
 			sqlgraph.From(group.Table, group.FieldID, selector),
 			sqlgraph.To(person.Table, person.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, group.PeopleTable, group.PeoplePrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEvents chains the current query on the "events" edge.
+func (_q *GroupQuery) QueryEvents() *EventQuery {
+	query := (&EventClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(event.Table, event.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.EventsTable, group.EventsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNotes chains the current query on the "notes" edge.
+func (_q *GroupQuery) QueryNotes() *GroupNoteQuery {
+	query := (&GroupNoteClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(groupnote.Table, groupnote.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.NotesTable, group.NotesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -276,6 +324,8 @@ func (_q *GroupQuery) Clone() *GroupQuery {
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.Group{}, _q.predicates...),
 		withPeople: _q.withPeople.Clone(),
+		withEvents: _q.withEvents.Clone(),
+		withNotes:  _q.withNotes.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -290,6 +340,28 @@ func (_q *GroupQuery) WithPeople(opts ...func(*PersonQuery)) *GroupQuery {
 		opt(query)
 	}
 	_q.withPeople = query
+	return _q
+}
+
+// WithEvents tells the query-builder to eager-load the nodes that are connected to
+// the "events" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithEvents(opts ...func(*EventQuery)) *GroupQuery {
+	query := (&EventClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withEvents = query
+	return _q
+}
+
+// WithNotes tells the query-builder to eager-load the nodes that are connected to
+// the "notes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithNotes(opts ...func(*GroupNoteQuery)) *GroupQuery {
+	query := (&GroupNoteClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withNotes = query
 	return _q
 }
 
@@ -371,8 +443,10 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 	var (
 		nodes       = []*Group{}
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			_q.withPeople != nil,
+			_q.withEvents != nil,
+			_q.withNotes != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -397,6 +471,20 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 		if err := _q.loadPeople(ctx, query, nodes,
 			func(n *Group) { n.Edges.People = []*Person{} },
 			func(n *Group, e *Person) { n.Edges.People = append(n.Edges.People, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withEvents; query != nil {
+		if err := _q.loadEvents(ctx, query, nodes,
+			func(n *Group) { n.Edges.Events = []*Event{} },
+			func(n *Group, e *Event) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withNotes; query != nil {
+		if err := _q.loadNotes(ctx, query, nodes,
+			func(n *Group) { n.Edges.Notes = []*GroupNote{} },
+			func(n *Group, e *GroupNote) { n.Edges.Notes = append(n.Edges.Notes, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -461,6 +549,68 @@ func (_q *GroupQuery) loadPeople(ctx context.Context, query *PersonQuery, nodes 
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *GroupQuery) loadEvents(ctx context.Context, query *EventQuery, nodes []*Group, init func(*Group), assign func(*Group, *Event)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Event(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.EventsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.group_events
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "group_events" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_events" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GroupQuery) loadNotes(ctx context.Context, query *GroupNoteQuery, nodes []*Group, init func(*Group), assign func(*Group, *GroupNote)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.GroupNote(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.NotesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.group_notes
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "group_notes" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_notes" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

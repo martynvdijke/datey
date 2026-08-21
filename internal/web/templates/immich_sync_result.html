@@ -1,0 +1,59 @@
+<div class="sync-result" role="region" aria-live="polite">
+  <div class="alert alert-info" style="margin-bottom: 1rem;">
+    <strong>Sync complete:</strong>
+    {{.Result.Total}} people checked &middot;
+    {{.Result.ImportedN}} imported &middot;
+    {{.Result.SkippedN}} skipped (upload kept) &middot;
+    {{.Result.FailedN}} failed &middot;
+    {{.Result.UnmatchedN}} unmatched
+  </div>
+
+  {{if .Result.Matched}}
+  <h3 class="section-title">Matched ({{len .Result.Matched}})</h3>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr><th>Person</th><th>Immich person</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {{$r := .Result}}
+        {{range .Result.Matched}}
+        <tr>
+          <td><a href="/people/{{.PersonID}}">{{.Name}}</a></td>
+          <td>{{.ImmichName}}</td>
+          <td>
+            {{if .Imported}}<span class="badge badge-success">Imported</span>
+            {{else if .Skipped}}<span class="badge badge-muted">{{.Skipped}}</span>
+            {{else}}<span class="badge badge-danger">Failed: {{.Error}}</span>{{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{end}}
+
+  {{if .Result.Unmatched}}
+  <h3 class="section-title">Unmatched ({{len .Result.Unmatched}})</h3>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr><th>Person</th><th>Reason</th><th>Fix</th></tr>
+      </thead>
+      <tbody>
+        {{range .Result.Unmatched}}
+        <tr>
+          <td><a href="/people/{{.PersonID}}">{{.Name}}</a></td>
+          <td>{{.Reason}}</td>
+          <td><a href="/people/{{.PersonID}}" class="button button-small button-secondary">Set override</a></td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{end}}
+
+  {{if not .Result.Total}}
+  <div class="alert alert-warning">No people to sync yet — add people first.</div>
+  {{end}}
+</div>

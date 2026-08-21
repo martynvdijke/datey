@@ -38,7 +38,7 @@
         <tbody>
           {{range .Groups}}
           <tr>
-            <td><strong>{{.Name}}</strong></td>
+            <td><strong><a href="/groups/{{.ID}}" class="text-decoration-none">{{.Name}}</a></strong></td>
             <td>{{if .Description}}{{.Description}}{{else}}<span class="text-muted">—</span>{{end}}</td>
             <td>{{len .Edges.People}}</td>
             <td class="text-end">

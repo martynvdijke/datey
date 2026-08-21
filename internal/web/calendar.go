@@ -26,12 +26,7 @@ func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
 	var upcoming []upcomingEvent
 	for _, occ := range occurrences {
 		e := occ.Event
-		name := ""
-		if p := e.Edges.Person; p != nil {
-			name = p.Name
-		} else if c := e.Edges.Contact; c != nil {
-			name = c.Name
-		}
+		name := eventOwnerName(e)
 		upcoming = append(upcoming, upcomingEvent{
 			Name: name,
 			Date: longDate(h.cfg.DateVariant, occ.Date),
@@ -92,12 +87,7 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 	result := make([]calendarEvent, 0, len(occurrences))
 	for _, occ := range occurrences {
 		e := occ.Event
-		name := ""
-		if p := e.Edges.Person; p != nil {
-			name = p.Name
-		} else if c := e.Edges.Contact; c != nil {
-			name = c.Name
-		}
+		name := eventOwnerName(e)
 		title := name
 		if e.Type != "" {
 			if title != "" {

@@ -69,3 +69,28 @@ func (r *GroupRepository) ListPeopleInGroup(ctx context.Context, groupID int) ([
 		QueryPeople().
 		All(ctx)
 }
+
+// SetMembers replaces the group's membership with the given person IDs.
+func (r *GroupRepository) SetMembers(ctx context.Context, groupID int, personIDs []int) error {
+	return r.client.Group.UpdateOneID(groupID).
+		ClearPeople().
+		AddPersonIDs(personIDs...).
+		Exec(ctx)
+}
+
+// ListWithCounts returns all groups with their members loaded so callers can
+// derive member counts without extra queries.
+func (r *GroupRepository) ListWithCounts(ctx context.Context) ([]*ent.Group, error) {
+	return r.client.Group.Query().
+		WithPeople().
+		Order(ent.Asc(group.FieldName)).
+		All(ctx)
+}
+
+// GetWithRelations returns a group with its people loaded.
+func (r *GroupRepository) GetWithRelations(ctx context.Context, id int) (*ent.Group, error) {
+	return r.client.Group.Query().
+		Where(group.IDEQ(id)).
+		WithPeople().
+		Only(ctx)
+}

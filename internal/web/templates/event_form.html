@@ -1,8 +1,14 @@
 {{define "content"}}
-<h1 class="mb-4">Add Event</h1>
+<h1 class="mb-4">Add Event{{if .GroupName}} — {{.GroupName}}{{end}}</h1>
 <div class="row">
   <div class="col-md-8 col-lg-6">
-    <form action="/people/{{.PersonID}}/events/new" method="POST">
+    {{$target := printf "/people/%d/events/new" .PersonID}}
+    {{$cancel := printf "/people/%d" .PersonID}}
+    {{if .GroupID}}
+      {{$target = printf "/groups/%d/events/new" .GroupID}}
+      {{$cancel = printf "/groups/%d" .GroupID}}
+    {{end}}
+    <form action="{{$target}}" method="POST">
       {{template "csrfField" .}}
       <div class="mb-3">
         <label for="type" class="form-label">Type {{template "requiredIndicator" .}}</label>
@@ -24,7 +30,7 @@
         <input type="text" class="form-control" id="description" name="description" autocomplete="off" value="{{if .FormData}}{{.FormData.Description}}{{end}}">
       </div>
       <button type="submit" class="btn btn-primary">Create Event</button>
-      <a href="/people/{{.PersonID}}" class="btn btn-outline-secondary">Cancel</a>
+      <a href="{{$cancel}}" class="btn btn-outline-secondary">Cancel</a>
     </form>
   </div>
 </div>

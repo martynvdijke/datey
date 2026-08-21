@@ -126,12 +126,7 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 // homeAssistantEventFromEvent converts an ent event into the Home Assistant
 // feed shape against the occurrence date.
 func homeAssistantEventFromEvent(e *ent.Event, date, now time.Time) homeAssistantEvent {
-	personName := ""
-	if p := e.Edges.Person; p != nil {
-		personName = p.Name
-	} else if c := e.Edges.Contact; c != nil {
-		personName = c.Name
-	}
+	personName := eventOwnerName(e)
 
 	return homeAssistantEvent{
 		Name: personName,

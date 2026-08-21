@@ -120,10 +120,14 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 		pc.Gender = genderLabel(pc.Gender)
 	}
 
-	// Extract structured name (N).
+	// Extract structured name (N). When FN is missing, reconstruct the full
+	// display name — including any middle (additional) name — from N.
 	if name := card.Name(); name != nil {
 		pc.FamilyName = name.FamilyName
 		pc.GivenName = name.GivenName
+		if pc.Name == "" {
+			pc.Name = strings.Join(nameFields(name), " ")
+		}
 	}
 
 	// Extract provider bookkeeping for sync purposes. These are never shown
@@ -159,6 +163,19 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 	}
 
 	return pc
+}
+
+// nameFields returns the non-empty components of a structured name in display
+// order: given, additional (middle), family, honorific prefixes/suffixes.
+func nameFields(n *govcard.Name) []string {
+	fields := []string{n.GivenName, n.AdditionalName, n.FamilyName}
+	out := make([]string, 0, len(fields))
+	for _, f := range fields {
+		if f != "" {
+			out = append(out, f)
+		}
+	}
+	return out
 }
 
 // ParseBDAY parses a vCard BDAY value into a time.Time. Full dates are tried

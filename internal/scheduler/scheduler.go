@@ -211,6 +211,8 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 				contactName = contact.Name
 			} else if p := event.Edges.Person; p != nil {
 				contactName = p.Name
+			} else if g := event.Edges.Group; g != nil {
+				contactName = g.Name + " (group)"
 			}
 
 			title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)

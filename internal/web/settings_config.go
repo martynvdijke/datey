@@ -30,8 +30,9 @@ type configField struct {
 
 // configGroup bundles related fields under a heading in the form.
 type configGroup struct {
-	Title  string
-	Fields []configField
+	Title       string
+	Fields      []configField
+	TestSection string // section slug for the "Test" button (POST /settings/config/test/{section}); empty = no button
 }
 
 // settingsConfig renders the admin Configuration tab as an editable form.
@@ -132,7 +133,7 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		ReadOnly: true,
 	}
 
-	general := configGroup{Title: "General", Fields: []configField{
+	general := configGroup{Title: "General", TestSection: "general", Fields: []configField{
 		{Name: "PORT", Label: "Server Port", Value: val("PORT", strconv.Itoa(cfg.Port)), Type: "number", RestartRequired: true, Help: "Requires restart to apply.", Error: errFor("PORT")},
 		dataDir,
 		{Name: "SCHEDULER_HOUR", Label: "Scheduler Hour (0-23)", Value: val("SCHEDULER_HOUR", strconv.Itoa(cfg.SchedulerHour)), Type: "number", RestartRequired: true, Help: "Daily reminder run hour. Requires restart to apply.", Error: errFor("SCHEDULER_HOUR")},
@@ -144,12 +145,12 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "EINK_MODE", Label: "Force E-Ink Mode", Type: "checkbox", Checked: checked("EINK_MODE", cfg.EinkMode), Help: "Enables high-contrast E-Ink theme for all users."},
 	}}
 
-	backup := configGroup{Title: "Backups", Fields: []configField{
+	backup := configGroup{Title: "Backups", TestSection: "backup", Fields: []configField{
 		{Name: "BACKUP_DIR", Label: "Backup Directory", Value: val("BACKUP_DIR", cfg.BackupDir), Type: "text", Error: errFor("BACKUP_DIR")},
 		{Name: "BACKUP_RETENTION_DAYS", Label: "Backup Retention (days)", Value: val("BACKUP_RETENTION_DAYS", strconv.Itoa(cfg.BackupRetentionDays)), Type: "number", Error: errFor("BACKUP_RETENTION_DAYS")},
 	}}
 
-	email := configGroup{Title: "Email (SMTP)", Fields: []configField{
+	email := configGroup{Title: "Email (SMTP)", TestSection: "email", Fields: []configField{
 		{Name: "SMTP_HOST", Label: "SMTP Host", Value: val("SMTP_HOST", cfg.SMTPHost), Type: "text", Error: errFor("SMTP_HOST")},
 		{Name: "SMTP_PORT", Label: "SMTP Port", Value: val("SMTP_PORT", strconv.Itoa(cfg.SMTPPort)), Type: "number", Error: errFor("SMTP_PORT")},
 		{Name: "SMTP_USER", Label: "SMTP User", Value: val("SMTP_USER", cfg.SMTPUser), Type: "text", Error: errFor("SMTP_USER")},
@@ -159,34 +160,34 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "NOTIFICATION_EMAIL", Label: "Notification Email (recipient)", Value: val("NOTIFICATION_EMAIL", cfg.NotifyEmail), Type: "text", Error: errFor("NOTIFICATION_EMAIL")},
 	}}
 
-	gotify := configGroup{Title: "Gotify", Fields: []configField{
+	gotify := configGroup{Title: "Gotify", TestSection: "gotify", Fields: []configField{
 		{Name: "GOTIFY_URL", Label: "Gotify URL", Value: val("GOTIFY_URL", cfg.GotifyURL), Type: "text", Error: errFor("GOTIFY_URL")},
 		{Name: "GOTIFY_TOKEN", Label: "Gotify Token", Value: val("GOTIFY_TOKEN", cfg.GotifyToken), Type: "text", Secret: true, Error: errFor("GOTIFY_TOKEN")},
 	}}
 
-	telegram := configGroup{Title: "Telegram", Fields: []configField{
+	telegram := configGroup{Title: "Telegram", TestSection: "telegram", Fields: []configField{
 		{Name: "TELEGRAM_BOT_TOKEN", Label: "Bot Token", Value: val("TELEGRAM_BOT_TOKEN", cfg.TelegramBotToken), Type: "text", Secret: true, Error: errFor("TELEGRAM_BOT_TOKEN")},
 		{Name: "TELEGRAM_CHAT_ID", Label: "Chat ID", Value: val("TELEGRAM_CHAT_ID", cfg.TelegramChatID), Type: "text", Error: errFor("TELEGRAM_CHAT_ID")},
 	}}
 
-	ntfy := configGroup{Title: "ntfy", Fields: []configField{
+	ntfy := configGroup{Title: "ntfy", TestSection: "ntfy", Fields: []configField{
 		{Name: "NTFY_URL", Label: "ntfy Server URL", Value: val("NTFY_URL", cfg.NtfyURL), Type: "text", Help: "Base URL of your ntfy server. Defaults to https://ntfy.sh.", Error: errFor("NTFY_URL")},
 		{Name: "NTFY_TOPIC", Label: "Topic", Value: val("NTFY_TOPIC", cfg.NtfyTopic), Type: "text", Help: "Topic to publish reminders to. Required to enable ntfy.", Error: errFor("NTFY_TOPIC")},
 		{Name: "NTFY_TOKEN", Label: "Access Token", Value: val("NTFY_TOKEN", cfg.NtfyToken), Type: "text", Secret: true, Help: "Optional bearer token for authenticated ntfy servers.", Error: errFor("NTFY_TOKEN")},
 		{Name: "NTFY_PRIORITY", Label: "Priority (1-5)", Value: val("NTFY_PRIORITY", strconv.Itoa(cfg.NtfyPriority)), Type: "number", Help: "1 = min, 3 = default, 5 = max.", Error: errFor("NTFY_PRIORITY")},
 	}}
 
-	webhook := configGroup{Title: "Webhook", Fields: []configField{
+	webhook := configGroup{Title: "Webhook", TestSection: "webhook", Fields: []configField{
 		{Name: "WEBHOOK_URL", Label: "Webhook URLs", Value: val("WEBHOOK_URL", cfg.WebhookURL), Type: "text", Help: "Comma-separated list of URLs that receive a JSON POST per reminder. Required to enable webhook.", Error: errFor("WEBHOOK_URL")},
 		{Name: "WEBHOOK_SECRET", Label: "Webhook Secret", Value: val("WEBHOOK_SECRET", cfg.WebhookSecret), Type: "text", Secret: true, Help: "Optional secret used to sign requests (X-Datey-Signature: sha256=...).", Error: errFor("WEBHOOK_SECRET")},
 	}}
 
-	analytics := configGroup{Title: "Analytics", Fields: []configField{
+	analytics := configGroup{Title: "Analytics", TestSection: "analytics", Fields: []configField{
 		{Name: "UMAMI_URL", Label: "Umami URL", Value: val("UMAMI_URL", cfg.UmamiURL), Type: "text", Error: errFor("UMAMI_URL")},
 		{Name: "UMAMI_WEBSITE_ID", Label: "Umami Website ID", Value: val("UMAMI_WEBSITE_ID", cfg.UmamiWebsiteID), Type: "text", Error: errFor("UMAMI_WEBSITE_ID")},
 	}}
 
-	obs := configGroup{Title: "Observability", Fields: []configField{
+	obs := configGroup{Title: "Observability", TestSection: "observability", Fields: []configField{
 		{Name: "OTEL_ENDPOINT", Label: "OTLP Endpoint", Value: val("OTEL_ENDPOINT", cfg.OTLPEndpoint), Type: "text", RestartRequired: true, Help: "Requires restart to apply.", Error: errFor("OTEL_ENDPOINT")},
 	}}
 
@@ -197,7 +198,7 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		}
 	}
 
-	ical := configGroup{Title: "iCal Feed", Fields: []configField{
+	ical := configGroup{Title: "iCal Feed", TestSection: "ical", Fields: []configField{
 		{Name: "ICAL_FEED_ENABLED", Label: "Enable Public iCal Feed", Type: "checkbox", Checked: checked("ICAL_FEED_ENABLED", cfg.ICalEnabled), Help: "Exposes all tracked dates as a public iCal feed (e.g. for Google Calendar). Disabled by default; dates are personal data."},
 		{Name: "ICAL_EVENT_START", Label: "Event Start Time", Value: val("ICAL_EVENT_START", cfg.ICalEventStart), Type: "text", Help: "Start time in 24h HH:MM format (e.g. 09:00), or leave empty for all-day events.", Error: errFor("ICAL_EVENT_START")},
 		{Name: "ICAL_EVENT_DURATION", Label: "Event Duration (minutes)", Value: val("ICAL_EVENT_DURATION", strconv.Itoa(cfg.ICalDurationMinutes)), Type: "number", Help: "How long each event lasts (1-1440). Used when a start time is set.", Error: errFor("ICAL_EVENT_DURATION")},
@@ -213,7 +214,7 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		}
 	}
 
-	rssGroup := configGroup{Title: "RSS Feed", Fields: []configField{
+	rssGroup := configGroup{Title: "RSS Feed", TestSection: "rss", Fields: []configField{
 		{Name: "RSS_FEED_ENABLED", Label: "Enable Public RSS Feed", Type: "checkbox", Checked: checked("RSS_FEED_ENABLED", cfg.RSSEnabled), Help: "Exposes upcoming events as an RSS 2.0 feed for feed readers and aggregators. Disabled by default; dates are personal data."},
 		{Name: "RSS_FEED_KEY", Label: "Feed Secret Key", Value: val("RSS_FEED_KEY", rssFeedKey), Type: "text", Help: "Required as ?key=... in the feed URL. Auto-generated on first enable; change it here to rotate."},
 		{Name: "RSS_FEED_URL", Label: "RSS Feed URL", Value: "/rss.xml?key=" + rssFeedKey, Type: "readonly", ReadOnly: true, Help: "Subscribe in your feed reader. Prepend your server origin (e.g. https://datey.example.com)."},
@@ -226,7 +227,7 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		}
 	}
 
-	upcomingAPIGroup := configGroup{Title: "Upcoming Events API", Fields: []configField{
+	upcomingAPIGroup := configGroup{Title: "Upcoming Events API", TestSection: "upcoming", Fields: []configField{
 		{Name: "UPCOMING_API_ENABLED", Label: "Enable Upcoming Events API", Type: "checkbox", Checked: checked("UPCOMING_API_ENABLED", cfg.UpcomingAPIEnabled), Help: "Exposes upcoming events as JSON for scripts, dashboards and automations. Disabled by default; dates are personal data."},
 		{Name: "UPCOMING_API_KEY", Label: "API Secret Key", Value: val("UPCOMING_API_KEY", upcomingAPIKey), Type: "text", Help: "Required as ?key=... in the endpoint URL. Auto-generated on first enable; change it here to rotate."},
 		{Name: "UPCOMING_API_URL", Label: "API Endpoint URL", Value: "/api/upcoming?key=" + upcomingAPIKey, Type: "readonly", ReadOnly: true, Help: "Optionally add &days=N to override the horizon (default: reminder window, max 365)."},
@@ -239,13 +240,13 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		}
 	}
 
-	homeAssistantGroup := configGroup{Title: "Home Assistant", Fields: []configField{
+	homeAssistantGroup := configGroup{Title: "Home Assistant", TestSection: "homeassistant", Fields: []configField{
 		{Name: "HOMEASSISTANT_ENABLED", Label: "Enable Home Assistant Feed", Type: "checkbox", Checked: checked("HOMEASSISTANT_ENABLED", cfg.HomeAssistantEnabled), Help: "Exposes upcoming events as a JSON stats feed for a Home Assistant RESTful sensor. Disabled by default; dates are personal data."},
 		{Name: "HOMEASSISTANT_KEY", Label: "Feed Secret Key", Value: val("HOMEASSISTANT_KEY", homeAssistantKey), Type: "text", Help: "Required as ?key=... in the feed URL. Auto-generated on first enable; change it here to rotate."},
 		{Name: "HOMEASSISTANT_URL", Label: "Feed URL", Value: "/api/homeassistant/stats?key=" + homeAssistantKey, Type: "readonly", ReadOnly: true, Help: "Use in the RESTful sensor's resource. Prepend your server origin (e.g. http://datey.local:6270)."},
 	}}
 
-	pushGroup := configGroup{Title: "Web Push", Fields: []configField{
+	pushGroup := configGroup{Title: "Web Push", TestSection: "webpush", Fields: []configField{
 		{Name: "PUSH_ENABLED", Label: "Enable Web Push Notifications", Type: "checkbox", Checked: checked("PUSH_ENABLED", cfg.PushEnabled), Help: "Send reminders as browser notifications via Web Push. Requires HTTPS (or localhost). VAPID keys are generated automatically on first enable."},
 		{Name: "PUSH_VAPID_PUBLIC_KEY", Label: "VAPID Public Key", Value: val("PUSH_VAPID_PUBLIC_KEY", cfg.PushVAPIDPublicKey), Type: "readonly", ReadOnly: true, Help: "Public part of the VAPID key pair; served to browsers to establish subscriptions."},
 		{Name: "PUSH_VAPID_PRIVATE_KEY", Label: "VAPID Private Key", Value: val("PUSH_VAPID_PRIVATE_KEY", cfg.PushVAPIDPrivateKey), Type: "text", Secret: true, Help: "Secret signing key. Never share it; rotate by entering a new key or clearing this field and saving while enabled."},
@@ -254,7 +255,7 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 	if submitted != nil {
 		immichKeyValue = val("IMMICH_API_KEY", "")
 	}
-	immichGroup := configGroup{Title: "Immich", Fields: []configField{
+	immichGroup := configGroup{Title: "Immich", TestSection: "immich", Fields: []configField{
 		{Name: "IMMICH_URL", Label: "Immich URL", Value: val("IMMICH_URL", cfg.ImmichURL), Type: "text", Help: "Optional Immich server URL, for example https://photos.example.com.", Error: errFor("IMMICH_URL")},
 		{Name: "IMMICH_API_KEY", Label: "Immich API Key", Value: immichKeyValue, Type: "text", Secret: true, Help: "Leave blank to keep the saved key. Used only by the server.", Error: errFor("IMMICH_API_KEY")},
 	}}

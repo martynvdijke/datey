@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -70,12 +69,7 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 // day-count logic against the occurrence date. Title format: "Birthday —
 // Dana in 3 days".
 func (h *Handler) rssItem(e *ent.Event, date, now time.Time, r *http.Request) rss.Item {
-	name := ""
-	if p := e.Edges.Person; p != nil {
-		name = p.Name
-	} else if c := e.Edges.Contact; c != nil {
-		name = c.Name
-	}
+	name := eventOwnerName(e)
 
 	days := int(date.Sub(now).Hours() / 24)
 	var relative string
@@ -89,8 +83,8 @@ func (h *Handler) rssItem(e *ent.Event, date, now time.Time, r *http.Request) rs
 	}
 
 	link := feedOrigin(r)
-	if p := e.Edges.Person; p != nil {
-		link += "/people/" + strconv.Itoa(p.ID)
+	if url := eventOwnerURL(e); url != "" {
+		link += url
 	}
 
 	return rss.Item{

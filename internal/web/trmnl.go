@@ -208,12 +208,7 @@ func trmnlBirthdayFromEvent(e *ent.Event, date, now time.Time, variant string) t
 // mirroring the dashboard's label and relative-day logic against the
 // occurrence date.
 func trmnlEventFromEvent(e *ent.Event, date, now time.Time, variant string) trmnlEvent {
-	personName := ""
-	if p := e.Edges.Person; p != nil {
-		personName = p.Name
-	} else if c := e.Edges.Contact; c != nil {
-		personName = c.Name
-	}
+	personName := eventOwnerName(e)
 
 	days := int(date.Sub(now).Hours() / 24)
 

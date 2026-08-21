@@ -171,6 +171,32 @@ func (r *PersonRepository) SetImmichPhoto(ctx context.Context, id int, immichID 
 		SetUpdatedAt(time.Now()).Save(ctx)
 }
 
+// SetPhotoState records a locally stored profile photo for a person.
+// photoPath is relative to the photos directory; source is "immich" or "upload".
+func (r *PersonRepository) SetPhotoState(ctx context.Context, id int, photoPath, contentType, source string) (*ent.Person, error) {
+	now := time.Now()
+	return r.client.Person.UpdateOneID(id).
+		SetPhotoPath(photoPath).
+		SetPhotoContentType(contentType).
+		SetPhotoUpdatedAt(now).
+		SetPhotoSource(source).
+		SetUpdatedAt(now).
+		Save(ctx)
+}
+
+// ClearPhoto removes all local photo state so the person reverts to the
+// proxy/fallback behavior.
+func (r *PersonRepository) ClearPhoto(ctx context.Context, id int) (*ent.Person, error) {
+	now := time.Now()
+	return r.client.Person.UpdateOneID(id).
+		ClearPhotoPath().
+		ClearPhotoContentType().
+		ClearPhotoUpdatedAt().
+		ClearPhotoSource().
+		SetUpdatedAt(now).
+		Save(ctx)
+}
+
 func (r *PersonRepository) Delete(ctx context.Context, id int) error {
 	return r.client.Person.DeleteOneID(id).Exec(ctx)
 }

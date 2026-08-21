@@ -22,6 +22,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgePeople holds the string denoting the people edge name in mutations.
 	EdgePeople = "people"
+	// EdgeEvents holds the string denoting the events edge name in mutations.
+	EdgeEvents = "events"
+	// EdgeNotes holds the string denoting the notes edge name in mutations.
+	EdgeNotes = "notes"
 	// Table holds the table name of the group in the database.
 	Table = "groups"
 	// PeopleTable is the table that holds the people relation/edge. The primary key declared below.
@@ -29,6 +33,20 @@ const (
 	// PeopleInverseTable is the table name for the Person entity.
 	// It exists in this package in order to avoid circular dependency with the "person" package.
 	PeopleInverseTable = "persons"
+	// EventsTable is the table that holds the events relation/edge.
+	EventsTable = "events"
+	// EventsInverseTable is the table name for the Event entity.
+	// It exists in this package in order to avoid circular dependency with the "event" package.
+	EventsInverseTable = "events"
+	// EventsColumn is the table column denoting the events relation/edge.
+	EventsColumn = "group_events"
+	// NotesTable is the table that holds the notes relation/edge.
+	NotesTable = "group_notes"
+	// NotesInverseTable is the table name for the GroupNote entity.
+	// It exists in this package in order to avoid circular dependency with the "groupnote" package.
+	NotesInverseTable = "group_notes"
+	// NotesColumn is the table column denoting the notes relation/edge.
+	NotesColumn = "group_notes"
 )
 
 // Columns holds all SQL columns for group fields.
@@ -104,10 +122,52 @@ func ByPeople(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPeopleStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByEventsCount orders the results by events count.
+func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEventsStep(), opts...)
+	}
+}
+
+// ByEvents orders the results by events terms.
+func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByNotesCount orders the results by notes count.
+func ByNotesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newNotesStep(), opts...)
+	}
+}
+
+// ByNotes orders the results by notes terms.
+func ByNotes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNotesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPeopleStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PeopleInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, PeopleTable, PeoplePrimaryKey...),
+	)
+}
+func newEventsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
+	)
+}
+func newNotesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NotesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, NotesTable, NotesColumn),
 	)
 }

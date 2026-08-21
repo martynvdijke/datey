@@ -172,6 +172,86 @@ func (_u *PersonUpdate) SetNillableImmichPhotoDisabled(v *bool) *PersonUpdate {
 	return _u
 }
 
+// SetPhotoPath sets the "photo_path" field.
+func (_u *PersonUpdate) SetPhotoPath(v string) *PersonUpdate {
+	_u.mutation.SetPhotoPath(v)
+	return _u
+}
+
+// SetNillablePhotoPath sets the "photo_path" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillablePhotoPath(v *string) *PersonUpdate {
+	if v != nil {
+		_u.SetPhotoPath(*v)
+	}
+	return _u
+}
+
+// ClearPhotoPath clears the value of the "photo_path" field.
+func (_u *PersonUpdate) ClearPhotoPath() *PersonUpdate {
+	_u.mutation.ClearPhotoPath()
+	return _u
+}
+
+// SetPhotoContentType sets the "photo_content_type" field.
+func (_u *PersonUpdate) SetPhotoContentType(v string) *PersonUpdate {
+	_u.mutation.SetPhotoContentType(v)
+	return _u
+}
+
+// SetNillablePhotoContentType sets the "photo_content_type" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillablePhotoContentType(v *string) *PersonUpdate {
+	if v != nil {
+		_u.SetPhotoContentType(*v)
+	}
+	return _u
+}
+
+// ClearPhotoContentType clears the value of the "photo_content_type" field.
+func (_u *PersonUpdate) ClearPhotoContentType() *PersonUpdate {
+	_u.mutation.ClearPhotoContentType()
+	return _u
+}
+
+// SetPhotoUpdatedAt sets the "photo_updated_at" field.
+func (_u *PersonUpdate) SetPhotoUpdatedAt(v time.Time) *PersonUpdate {
+	_u.mutation.SetPhotoUpdatedAt(v)
+	return _u
+}
+
+// SetNillablePhotoUpdatedAt sets the "photo_updated_at" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillablePhotoUpdatedAt(v *time.Time) *PersonUpdate {
+	if v != nil {
+		_u.SetPhotoUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearPhotoUpdatedAt clears the value of the "photo_updated_at" field.
+func (_u *PersonUpdate) ClearPhotoUpdatedAt() *PersonUpdate {
+	_u.mutation.ClearPhotoUpdatedAt()
+	return _u
+}
+
+// SetPhotoSource sets the "photo_source" field.
+func (_u *PersonUpdate) SetPhotoSource(v string) *PersonUpdate {
+	_u.mutation.SetPhotoSource(v)
+	return _u
+}
+
+// SetNillablePhotoSource sets the "photo_source" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillablePhotoSource(v *string) *PersonUpdate {
+	if v != nil {
+		_u.SetPhotoSource(*v)
+	}
+	return _u
+}
+
+// ClearPhotoSource clears the value of the "photo_source" field.
+func (_u *PersonUpdate) ClearPhotoSource() *PersonUpdate {
+	_u.mutation.ClearPhotoSource()
+	return _u
+}
+
 // SetCarddavUID sets the "carddav_uid" field.
 func (_u *PersonUpdate) SetCarddavUID(v string) *PersonUpdate {
 	_u.mutation.SetCarddavUID(v)
@@ -520,6 +600,30 @@ func (_u *PersonUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.ImmichPhotoDisabled(); ok {
 		_spec.SetField(person.FieldImmichPhotoDisabled, field.TypeBool, value)
 	}
+	if value, ok := _u.mutation.PhotoPath(); ok {
+		_spec.SetField(person.FieldPhotoPath, field.TypeString, value)
+	}
+	if _u.mutation.PhotoPathCleared() {
+		_spec.ClearField(person.FieldPhotoPath, field.TypeString)
+	}
+	if value, ok := _u.mutation.PhotoContentType(); ok {
+		_spec.SetField(person.FieldPhotoContentType, field.TypeString, value)
+	}
+	if _u.mutation.PhotoContentTypeCleared() {
+		_spec.ClearField(person.FieldPhotoContentType, field.TypeString)
+	}
+	if value, ok := _u.mutation.PhotoUpdatedAt(); ok {
+		_spec.SetField(person.FieldPhotoUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.PhotoUpdatedAtCleared() {
+		_spec.ClearField(person.FieldPhotoUpdatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.PhotoSource(); ok {
+		_spec.SetField(person.FieldPhotoSource, field.TypeString, value)
+	}
+	if _u.mutation.PhotoSourceCleared() {
+		_spec.ClearField(person.FieldPhotoSource, field.TypeString)
+	}
 	if value, ok := _u.mutation.CarddavUID(); ok {
 		_spec.SetField(person.FieldCarddavUID, field.TypeString, value)
 	}
@@ -851,6 +955,86 @@ func (_u *PersonUpdateOne) SetNillableImmichPhotoDisabled(v *bool) *PersonUpdate
 	if v != nil {
 		_u.SetImmichPhotoDisabled(*v)
 	}
+	return _u
+}
+
+// SetPhotoPath sets the "photo_path" field.
+func (_u *PersonUpdateOne) SetPhotoPath(v string) *PersonUpdateOne {
+	_u.mutation.SetPhotoPath(v)
+	return _u
+}
+
+// SetNillablePhotoPath sets the "photo_path" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillablePhotoPath(v *string) *PersonUpdateOne {
+	if v != nil {
+		_u.SetPhotoPath(*v)
+	}
+	return _u
+}
+
+// ClearPhotoPath clears the value of the "photo_path" field.
+func (_u *PersonUpdateOne) ClearPhotoPath() *PersonUpdateOne {
+	_u.mutation.ClearPhotoPath()
+	return _u
+}
+
+// SetPhotoContentType sets the "photo_content_type" field.
+func (_u *PersonUpdateOne) SetPhotoContentType(v string) *PersonUpdateOne {
+	_u.mutation.SetPhotoContentType(v)
+	return _u
+}
+
+// SetNillablePhotoContentType sets the "photo_content_type" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillablePhotoContentType(v *string) *PersonUpdateOne {
+	if v != nil {
+		_u.SetPhotoContentType(*v)
+	}
+	return _u
+}
+
+// ClearPhotoContentType clears the value of the "photo_content_type" field.
+func (_u *PersonUpdateOne) ClearPhotoContentType() *PersonUpdateOne {
+	_u.mutation.ClearPhotoContentType()
+	return _u
+}
+
+// SetPhotoUpdatedAt sets the "photo_updated_at" field.
+func (_u *PersonUpdateOne) SetPhotoUpdatedAt(v time.Time) *PersonUpdateOne {
+	_u.mutation.SetPhotoUpdatedAt(v)
+	return _u
+}
+
+// SetNillablePhotoUpdatedAt sets the "photo_updated_at" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillablePhotoUpdatedAt(v *time.Time) *PersonUpdateOne {
+	if v != nil {
+		_u.SetPhotoUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearPhotoUpdatedAt clears the value of the "photo_updated_at" field.
+func (_u *PersonUpdateOne) ClearPhotoUpdatedAt() *PersonUpdateOne {
+	_u.mutation.ClearPhotoUpdatedAt()
+	return _u
+}
+
+// SetPhotoSource sets the "photo_source" field.
+func (_u *PersonUpdateOne) SetPhotoSource(v string) *PersonUpdateOne {
+	_u.mutation.SetPhotoSource(v)
+	return _u
+}
+
+// SetNillablePhotoSource sets the "photo_source" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillablePhotoSource(v *string) *PersonUpdateOne {
+	if v != nil {
+		_u.SetPhotoSource(*v)
+	}
+	return _u
+}
+
+// ClearPhotoSource clears the value of the "photo_source" field.
+func (_u *PersonUpdateOne) ClearPhotoSource() *PersonUpdateOne {
+	_u.mutation.ClearPhotoSource()
 	return _u
 }
 
@@ -1231,6 +1415,30 @@ func (_u *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err erro
 	}
 	if value, ok := _u.mutation.ImmichPhotoDisabled(); ok {
 		_spec.SetField(person.FieldImmichPhotoDisabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.PhotoPath(); ok {
+		_spec.SetField(person.FieldPhotoPath, field.TypeString, value)
+	}
+	if _u.mutation.PhotoPathCleared() {
+		_spec.ClearField(person.FieldPhotoPath, field.TypeString)
+	}
+	if value, ok := _u.mutation.PhotoContentType(); ok {
+		_spec.SetField(person.FieldPhotoContentType, field.TypeString, value)
+	}
+	if _u.mutation.PhotoContentTypeCleared() {
+		_spec.ClearField(person.FieldPhotoContentType, field.TypeString)
+	}
+	if value, ok := _u.mutation.PhotoUpdatedAt(); ok {
+		_spec.SetField(person.FieldPhotoUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.PhotoUpdatedAtCleared() {
+		_spec.ClearField(person.FieldPhotoUpdatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.PhotoSource(); ok {
+		_spec.SetField(person.FieldPhotoSource, field.TypeString, value)
+	}
+	if _u.mutation.PhotoSourceCleared() {
+		_spec.ClearField(person.FieldPhotoSource, field.TypeString)
 	}
 	if value, ok := _u.mutation.CarddavUID(); ok {
 		_spec.SetField(person.FieldCarddavUID, field.TypeString, value)

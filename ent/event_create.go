@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/person"
 )
@@ -111,6 +112,25 @@ func (_c *EventCreate) SetNillablePersonID(id *int) *EventCreate {
 // SetPerson sets the "person" edge to the Person entity.
 func (_c *EventCreate) SetPerson(v *Person) *EventCreate {
 	return _c.SetPersonID(v.ID)
+}
+
+// SetGroupID sets the "group" edge to the Group entity by ID.
+func (_c *EventCreate) SetGroupID(id int) *EventCreate {
+	_c.mutation.SetGroupID(id)
+	return _c
+}
+
+// SetNillableGroupID sets the "group" edge to the Group entity by ID if the given value is not nil.
+func (_c *EventCreate) SetNillableGroupID(id *int) *EventCreate {
+	if id != nil {
+		_c = _c.SetGroupID(*id)
+	}
+	return _c
+}
+
+// SetGroup sets the "group" edge to the Group entity.
+func (_c *EventCreate) SetGroup(v *Group) *EventCreate {
+	return _c.SetGroupID(v.ID)
 }
 
 // AddNotificationLogIDs adds the "notification_logs" edge to the NotificationLog entity by IDs.
@@ -271,6 +291,23 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.person_events = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.GroupTable,
+			Columns: []string{event.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.group_events = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.NotificationLogsIDs(); len(nodes) > 0 {

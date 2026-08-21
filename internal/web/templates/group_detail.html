@@ -1,0 +1,141 @@
+{{define "content"}}
+<div class="d-flex align-items-center mb-1">
+  <a href="/groups" class="text-decoration-none small">&larr; All groups</a>
+</div>
+<h1 class="mb-1">{{.Group.Name}}</h1>
+{{if .Group.Description}}<p class="text-muted mb-4">{{.Group.Description}}</p>{{else}}<div class="mb-4"></div>{{end}}
+
+<div class="row g-4">
+  <!-- Members -->
+  <div class="col-lg-6">
+    <section class="card h-100" aria-labelledby="group-members-heading">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 id="group-members-heading" class="h5 mb-0">Members <span class="badge bg-secondary-subtle text-secondary-emphasis align-middle">{{len .Members}}</span></h2>
+          {{if .Candidates}}
+          <form action="/groups/{{.Group.ID}}/members/add" method="POST" class="d-flex gap-2 align-items-center">
+            {{template "csrfField" .}}
+            <select name="person_id" class="form-select form-select-sm" required aria-label="Add member">
+              <option value="" disabled selected>Add member…</option>
+              {{range .Candidates}}
+                <option value="{{.ID}}">{{.Name}}</option>
+              {{end}}
+            </select>
+            <button type="submit" class="btn btn-outline-primary btn-sm">Add</button>
+          </form>
+          {{end}}
+        </div>
+        {{if .Members}}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <tbody>
+              {{range .Members}}
+              <tr>
+                <td><a href="/people/{{.ID}}" class="text-decoration-none fw-semibold">{{.Name}}</a></td>
+                <td class="text-end">
+                  <form action="/groups/{{$.Group.ID}}/members/{{.ID}}/remove" method="POST" style="display:inline" hx-confirm="Remove {{.Name}} from this group?" hx-post="/groups/{{$.Group.ID}}/members/{{.ID}}/remove" hx-target="closest tr" hx-swap="outerHTML">
+                    {{template "csrfField" $}}
+                    <button class="btn btn-outline-danger btn-sm py-0" type="submit">
+                      <span class="btn-text">Remove</span>
+                      <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Removing...</span></span>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+        {{else}}
+        <p class="text-muted mb-0">No members yet. Add people above or from their detail page.</p>
+        {{end}}
+      </div>
+    </section>
+  </div>
+
+  <!-- Events -->
+  <div class="col-lg-6">
+    <section class="card h-100" aria-labelledby="group-events-heading">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 id="group-events-heading" class="h5 mb-0">Events <span class="badge bg-secondary-subtle text-secondary-emphasis align-middle">{{len .Events}}</span></h2>
+          <a href="/groups/{{.Group.ID}}/events/new" class="btn btn-primary btn-sm">Add Event</a>
+        </div>
+        {{if .Events}}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr><th>Type</th><th>Date</th><th>Description</th><th></th></tr>
+            </thead>
+            <tbody>
+              {{range .Events}}
+              <tr>
+                <td><span class="badge event-type-badge event-{{.Type}}">{{.Type}}</span></td>
+                <td>{{.Date}}</td>
+                <td class="small text-muted">{{.Description}}</td>
+                <td class="text-end">
+                  <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
+                    {{template "csrfField" $}}
+                    <button class="btn btn-outline-danger btn-sm py-0" type="submit">
+                      <span class="btn-text">Delete</span>
+                      <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+        {{else}}
+        <p class="text-muted mb-0">No events yet for this group.</p>
+        {{end}}
+      </div>
+    </section>
+  </div>
+
+  <!-- Notes -->
+  <div class="col-12">
+    <section class="card" aria-labelledby="group-notes-heading">
+      <div class="card-body">
+        <h2 id="group-notes-heading" class="h5 mb-3">Notes</h2>
+        <form action="/groups/{{.Group.ID}}/notes" method="POST" class="row g-2 align-items-end mb-4">
+          {{template "csrfField" .}}
+          <div class="col-md-7">
+            <label class="form-label" for="group-note">Note {{template "requiredIndicator" .}}</label>
+            <textarea class="form-control" id="group-note" name="note" rows="2" required></textarea>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="group-note-date">Date</label>
+            <input type="date" class="form-control" id="group-note-date" name="note_date">
+          </div>
+          <div class="col-md-auto">
+            <button type="submit" class="btn btn-primary">Add Note</button>
+          </div>
+        </form>
+        {{if .Notes}}
+        <ul class="list-group list-group-flush">
+          {{range .Notes}}
+          <li class="list-group-item px-0 d-flex align-items-start gap-3">
+            <div class="flex-grow-1">
+              <div class="note-text">{{.Note}}</div>
+              <div class="small text-muted">{{.Date}}{{if .Created}} · added {{.Created}}{{end}}</div>
+            </div>
+            <form action="/groups/{{$.Group.ID}}/notes/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this note?" hx-post="/groups/{{$.Group.ID}}/notes/{{.ID}}/delete" hx-target="closest li" hx-swap="outerHTML">
+              {{template "csrfField" $}}
+              <button class="btn btn-outline-danger btn-sm py-0" type="submit">
+                <span class="btn-text">Delete</span>
+                <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+              </button>
+            </form>
+          </li>
+          {{end}}
+        </ul>
+        {{else}}
+        <p class="text-muted mb-0">No notes yet for this group.</p>
+        {{end}}
+      </div>
+    </section>
+  </div>
+</div>
+{{end}}

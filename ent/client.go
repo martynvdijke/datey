@@ -19,6 +19,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/passwordresettoken"
@@ -43,6 +44,8 @@ type Client struct {
 	Event *EventClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// GroupNote is the client for interacting with the GroupNote builders.
+	GroupNote *GroupNoteClient
 	// MigrationLog is the client for interacting with the MigrationLog builders.
 	MigrationLog *MigrationLogClient
 	// NotificationLog is the client for interacting with the NotificationLog builders.
@@ -76,6 +79,7 @@ func (c *Client) init() {
 	c.Contact = NewContactClient(c.config)
 	c.Event = NewEventClient(c.config)
 	c.Group = NewGroupClient(c.config)
+	c.GroupNote = NewGroupNoteClient(c.config)
 	c.MigrationLog = NewMigrationLogClient(c.config)
 	c.NotificationLog = NewNotificationLogClient(c.config)
 	c.PasswordResetToken = NewPasswordResetTokenClient(c.config)
@@ -181,6 +185,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Contact:            NewContactClient(cfg),
 		Event:              NewEventClient(cfg),
 		Group:              NewGroupClient(cfg),
+		GroupNote:          NewGroupNoteClient(cfg),
 		MigrationLog:       NewMigrationLogClient(cfg),
 		NotificationLog:    NewNotificationLogClient(cfg),
 		PasswordResetToken: NewPasswordResetTokenClient(cfg),
@@ -213,6 +218,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Contact:            NewContactClient(cfg),
 		Event:              NewEventClient(cfg),
 		Group:              NewGroupClient(cfg),
+		GroupNote:          NewGroupNoteClient(cfg),
 		MigrationLog:       NewMigrationLogClient(cfg),
 		NotificationLog:    NewNotificationLogClient(cfg),
 		PasswordResetToken: NewPasswordResetTokenClient(cfg),
@@ -251,9 +257,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AppConfig, c.Contact, c.Event, c.Group, c.MigrationLog, c.NotificationLog,
-		c.PasswordResetToken, c.Person, c.PersonNote, c.PushSubscription,
-		c.RecurringRule, c.Session, c.User,
+		c.AppConfig, c.Contact, c.Event, c.Group, c.GroupNote, c.MigrationLog,
+		c.NotificationLog, c.PasswordResetToken, c.Person, c.PersonNote,
+		c.PushSubscription, c.RecurringRule, c.Session, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -263,9 +269,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AppConfig, c.Contact, c.Event, c.Group, c.MigrationLog, c.NotificationLog,
-		c.PasswordResetToken, c.Person, c.PersonNote, c.PushSubscription,
-		c.RecurringRule, c.Session, c.User,
+		c.AppConfig, c.Contact, c.Event, c.Group, c.GroupNote, c.MigrationLog,
+		c.NotificationLog, c.PasswordResetToken, c.Person, c.PersonNote,
+		c.PushSubscription, c.RecurringRule, c.Session, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -282,6 +288,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Event.mutate(ctx, m)
 	case *GroupMutation:
 		return c.Group.mutate(ctx, m)
+	case *GroupNoteMutation:
+		return c.GroupNote.mutate(ctx, m)
 	case *MigrationLogMutation:
 		return c.MigrationLog.mutate(ctx, m)
 	case *NotificationLogMutation:
@@ -727,6 +735,22 @@ func (c *EventClient) QueryPerson(_m *Event) *PersonQuery {
 	return query
 }
 
+// QueryGroup queries the group edge of a Event.
+func (c *EventClient) QueryGroup(_m *Event) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(event.Table, event.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, event.GroupTable, event.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryNotificationLogs queries the notification_logs edge of a Event.
 func (c *EventClient) QueryNotificationLogs(_m *Event) *NotificationLogQuery {
 	query := (&NotificationLogClient{config: c.config}).Query()
@@ -892,6 +916,38 @@ func (c *GroupClient) QueryPeople(_m *Group) *PersonQuery {
 	return query
 }
 
+// QueryEvents queries the events edge of a Group.
+func (c *GroupClient) QueryEvents(_m *Group) *EventQuery {
+	query := (&EventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(event.Table, event.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.EventsTable, group.EventsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNotes queries the notes edge of a Group.
+func (c *GroupClient) QueryNotes(_m *Group) *GroupNoteQuery {
+	query := (&GroupNoteClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(groupnote.Table, groupnote.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.NotesTable, group.NotesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GroupClient) Hooks() []Hook {
 	return c.hooks.Group
@@ -914,6 +970,155 @@ func (c *GroupClient) mutate(ctx context.Context, m *GroupMutation) (Value, erro
 		return (&GroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Group mutation op: %q", m.Op())
+	}
+}
+
+// GroupNoteClient is a client for the GroupNote schema.
+type GroupNoteClient struct {
+	config
+}
+
+// NewGroupNoteClient returns a client for the GroupNote from the given config.
+func NewGroupNoteClient(c config) *GroupNoteClient {
+	return &GroupNoteClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `groupnote.Hooks(f(g(h())))`.
+func (c *GroupNoteClient) Use(hooks ...Hook) {
+	c.hooks.GroupNote = append(c.hooks.GroupNote, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `groupnote.Intercept(f(g(h())))`.
+func (c *GroupNoteClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GroupNote = append(c.inters.GroupNote, interceptors...)
+}
+
+// Create returns a builder for creating a GroupNote entity.
+func (c *GroupNoteClient) Create() *GroupNoteCreate {
+	mutation := newGroupNoteMutation(c.config, OpCreate)
+	return &GroupNoteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GroupNote entities.
+func (c *GroupNoteClient) CreateBulk(builders ...*GroupNoteCreate) *GroupNoteCreateBulk {
+	return &GroupNoteCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GroupNoteClient) MapCreateBulk(slice any, setFunc func(*GroupNoteCreate, int)) *GroupNoteCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GroupNoteCreateBulk{err: fmt.Errorf("calling to GroupNoteClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GroupNoteCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GroupNoteCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GroupNote.
+func (c *GroupNoteClient) Update() *GroupNoteUpdate {
+	mutation := newGroupNoteMutation(c.config, OpUpdate)
+	return &GroupNoteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GroupNoteClient) UpdateOne(_m *GroupNote) *GroupNoteUpdateOne {
+	mutation := newGroupNoteMutation(c.config, OpUpdateOne, withGroupNote(_m))
+	return &GroupNoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GroupNoteClient) UpdateOneID(id int) *GroupNoteUpdateOne {
+	mutation := newGroupNoteMutation(c.config, OpUpdateOne, withGroupNoteID(id))
+	return &GroupNoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GroupNote.
+func (c *GroupNoteClient) Delete() *GroupNoteDelete {
+	mutation := newGroupNoteMutation(c.config, OpDelete)
+	return &GroupNoteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GroupNoteClient) DeleteOne(_m *GroupNote) *GroupNoteDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GroupNoteClient) DeleteOneID(id int) *GroupNoteDeleteOne {
+	builder := c.Delete().Where(groupnote.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GroupNoteDeleteOne{builder}
+}
+
+// Query returns a query builder for GroupNote.
+func (c *GroupNoteClient) Query() *GroupNoteQuery {
+	return &GroupNoteQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGroupNote},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GroupNote entity by its id.
+func (c *GroupNoteClient) Get(ctx context.Context, id int) (*GroupNote, error) {
+	return c.Query().Where(groupnote.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GroupNoteClient) GetX(ctx context.Context, id int) *GroupNote {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGroup queries the group edge of a GroupNote.
+func (c *GroupNoteClient) QueryGroup(_m *GroupNote) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(groupnote.Table, groupnote.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, groupnote.GroupTable, groupnote.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GroupNoteClient) Hooks() []Hook {
+	return c.hooks.GroupNote
+}
+
+// Interceptors returns the client interceptors.
+func (c *GroupNoteClient) Interceptors() []Interceptor {
+	return c.inters.GroupNote
+}
+
+func (c *GroupNoteClient) mutate(ctx context.Context, m *GroupNoteMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GroupNoteCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GroupNoteUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GroupNoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GroupNoteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GroupNote mutation op: %q", m.Op())
 	}
 }
 
@@ -2293,12 +2498,12 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AppConfig, Contact, Event, Group, MigrationLog, NotificationLog,
+		AppConfig, Contact, Event, Group, GroupNote, MigrationLog, NotificationLog,
 		PasswordResetToken, Person, PersonNote, PushSubscription, RecurringRule,
 		Session, User []ent.Hook
 	}
 	inters struct {
-		AppConfig, Contact, Event, Group, MigrationLog, NotificationLog,
+		AppConfig, Contact, Event, Group, GroupNote, MigrationLog, NotificationLog,
 		PasswordResetToken, Person, PersonNote, PushSubscription, RecurringRule,
 		Session, User []ent.Interceptor
 	}

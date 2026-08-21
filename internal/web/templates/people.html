@@ -58,6 +58,11 @@
             {{if .Notes}}
               <p class="card-text text-muted small mb-2">{{.Notes}}</p>
             {{end}}
+            {{if .Groups}}
+              <div class="mb-2 d-flex flex-wrap gap-1">
+                {{range .Groups}}<span class="badge bg-secondary-subtle text-secondary-emphasis">{{.}}</span>{{end}}
+              </div>
+            {{end}}
             <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top small">
               <span class="text-muted">{{.EventCount}} event{{if ne .EventCount 1}}s{{end}}</span>
               {{if .NextEventDate}}

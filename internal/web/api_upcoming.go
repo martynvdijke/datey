@@ -60,12 +60,7 @@ func (h *Handler) upcomingAPI(w http.ResponseWriter, r *http.Request) {
 	out := make([]upcomingEvent, 0, len(occurrences))
 	for _, occ := range occurrences {
 		e := occ.Event
-		person := ""
-		if p := e.Edges.Person; p != nil {
-			person = p.Name
-		} else if c := e.Edges.Contact; c != nil {
-			person = c.Name
-		}
+		person := eventOwnerName(e)
 		out = append(out, upcomingEvent{
 			ID:            e.ID,
 			Person:        person,

@@ -15,6 +15,7 @@ import (
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/migrationlog"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/passwordresettoken"
@@ -40,6 +41,7 @@ const (
 	TypeContact            = "Contact"
 	TypeEvent              = "Event"
 	TypeGroup              = "Group"
+	TypeGroupNote          = "GroupNote"
 	TypeMigrationLog       = "MigrationLog"
 	TypeNotificationLog    = "NotificationLog"
 	TypePasswordResetToken = "PasswordResetToken"
@@ -5490,6 +5492,8 @@ type EventMutation struct {
 	clearedcontact           bool
 	person                   *int
 	clearedperson            bool
+	group                    *int
+	clearedgroup             bool
 	notification_logs        map[int]struct{}
 	removednotification_logs map[int]struct{}
 	clearednotification_logs bool
@@ -5945,6 +5949,45 @@ func (m *EventMutation) ResetPerson() {
 	m.clearedperson = false
 }
 
+// SetGroupID sets the "group" edge to the Group entity by id.
+func (m *EventMutation) SetGroupID(id int) {
+	m.group = &id
+}
+
+// ClearGroup clears the "group" edge to the Group entity.
+func (m *EventMutation) ClearGroup() {
+	m.clearedgroup = true
+}
+
+// GroupCleared reports if the "group" edge to the Group entity was cleared.
+func (m *EventMutation) GroupCleared() bool {
+	return m.clearedgroup
+}
+
+// GroupID returns the "group" edge ID in the mutation.
+func (m *EventMutation) GroupID() (id int, exists bool) {
+	if m.group != nil {
+		return *m.group, true
+	}
+	return
+}
+
+// GroupIDs returns the "group" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GroupID instead. It exists only for internal usage by the builders.
+func (m *EventMutation) GroupIDs() (ids []int) {
+	if id := m.group; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGroup resets all changes to the "group" edge.
+func (m *EventMutation) ResetGroup() {
+	m.group = nil
+	m.clearedgroup = false
+}
+
 // AddNotificationLogIDs adds the "notification_logs" edge to the NotificationLog entity by ids.
 func (m *EventMutation) AddNotificationLogIDs(ids ...int) {
 	if m.notification_logs == nil {
@@ -6238,12 +6281,15 @@ func (m *EventMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EventMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.contact != nil {
 		edges = append(edges, event.EdgeContact)
 	}
 	if m.person != nil {
 		edges = append(edges, event.EdgePerson)
+	}
+	if m.group != nil {
+		edges = append(edges, event.EdgeGroup)
 	}
 	if m.notification_logs != nil {
 		edges = append(edges, event.EdgeNotificationLogs)
@@ -6263,6 +6309,10 @@ func (m *EventMutation) AddedIDs(name string) []ent.Value {
 		if id := m.person; id != nil {
 			return []ent.Value{*id}
 		}
+	case event.EdgeGroup:
+		if id := m.group; id != nil {
+			return []ent.Value{*id}
+		}
 	case event.EdgeNotificationLogs:
 		ids := make([]ent.Value, 0, len(m.notification_logs))
 		for id := range m.notification_logs {
@@ -6275,7 +6325,7 @@ func (m *EventMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EventMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removednotification_logs != nil {
 		edges = append(edges, event.EdgeNotificationLogs)
 	}
@@ -6298,12 +6348,15 @@ func (m *EventMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EventMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcontact {
 		edges = append(edges, event.EdgeContact)
 	}
 	if m.clearedperson {
 		edges = append(edges, event.EdgePerson)
+	}
+	if m.clearedgroup {
+		edges = append(edges, event.EdgeGroup)
 	}
 	if m.clearednotification_logs {
 		edges = append(edges, event.EdgeNotificationLogs)
@@ -6319,6 +6372,8 @@ func (m *EventMutation) EdgeCleared(name string) bool {
 		return m.clearedcontact
 	case event.EdgePerson:
 		return m.clearedperson
+	case event.EdgeGroup:
+		return m.clearedgroup
 	case event.EdgeNotificationLogs:
 		return m.clearednotification_logs
 	}
@@ -6335,6 +6390,9 @@ func (m *EventMutation) ClearEdge(name string) error {
 	case event.EdgePerson:
 		m.ClearPerson()
 		return nil
+	case event.EdgeGroup:
+		m.ClearGroup()
+		return nil
 	}
 	return fmt.Errorf("unknown Event unique edge %s", name)
 }
@@ -6348,6 +6406,9 @@ func (m *EventMutation) ResetEdge(name string) error {
 		return nil
 	case event.EdgePerson:
 		m.ResetPerson()
+		return nil
+	case event.EdgeGroup:
+		m.ResetGroup()
 		return nil
 	case event.EdgeNotificationLogs:
 		m.ResetNotificationLogs()
@@ -6370,6 +6431,12 @@ type GroupMutation struct {
 	people        map[int]struct{}
 	removedpeople map[int]struct{}
 	clearedpeople bool
+	events        map[int]struct{}
+	removedevents map[int]struct{}
+	clearedevents bool
+	notes         map[int]struct{}
+	removednotes  map[int]struct{}
+	clearednotes  bool
 	done          bool
 	oldValue      func(context.Context) (*Group, error)
 	predicates    []predicate.Group
@@ -6684,6 +6751,114 @@ func (m *GroupMutation) ResetPeople() {
 	m.removedpeople = nil
 }
 
+// AddEventIDs adds the "events" edge to the Event entity by ids.
+func (m *GroupMutation) AddEventIDs(ids ...int) {
+	if m.events == nil {
+		m.events = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.events[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEvents clears the "events" edge to the Event entity.
+func (m *GroupMutation) ClearEvents() {
+	m.clearedevents = true
+}
+
+// EventsCleared reports if the "events" edge to the Event entity was cleared.
+func (m *GroupMutation) EventsCleared() bool {
+	return m.clearedevents
+}
+
+// RemoveEventIDs removes the "events" edge to the Event entity by IDs.
+func (m *GroupMutation) RemoveEventIDs(ids ...int) {
+	if m.removedevents == nil {
+		m.removedevents = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.events, ids[i])
+		m.removedevents[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEvents returns the removed IDs of the "events" edge to the Event entity.
+func (m *GroupMutation) RemovedEventsIDs() (ids []int) {
+	for id := range m.removedevents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EventsIDs returns the "events" edge IDs in the mutation.
+func (m *GroupMutation) EventsIDs() (ids []int) {
+	for id := range m.events {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEvents resets all changes to the "events" edge.
+func (m *GroupMutation) ResetEvents() {
+	m.events = nil
+	m.clearedevents = false
+	m.removedevents = nil
+}
+
+// AddNoteIDs adds the "notes" edge to the GroupNote entity by ids.
+func (m *GroupMutation) AddNoteIDs(ids ...int) {
+	if m.notes == nil {
+		m.notes = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.notes[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNotes clears the "notes" edge to the GroupNote entity.
+func (m *GroupMutation) ClearNotes() {
+	m.clearednotes = true
+}
+
+// NotesCleared reports if the "notes" edge to the GroupNote entity was cleared.
+func (m *GroupMutation) NotesCleared() bool {
+	return m.clearednotes
+}
+
+// RemoveNoteIDs removes the "notes" edge to the GroupNote entity by IDs.
+func (m *GroupMutation) RemoveNoteIDs(ids ...int) {
+	if m.removednotes == nil {
+		m.removednotes = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.notes, ids[i])
+		m.removednotes[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNotes returns the removed IDs of the "notes" edge to the GroupNote entity.
+func (m *GroupMutation) RemovedNotesIDs() (ids []int) {
+	for id := range m.removednotes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NotesIDs returns the "notes" edge IDs in the mutation.
+func (m *GroupMutation) NotesIDs() (ids []int) {
+	for id := range m.notes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNotes resets all changes to the "notes" edge.
+func (m *GroupMutation) ResetNotes() {
+	m.notes = nil
+	m.clearednotes = false
+	m.removednotes = nil
+}
+
 // Where appends a list predicates to the GroupMutation builder.
 func (m *GroupMutation) Where(ps ...predicate.Group) {
 	m.predicates = append(m.predicates, ps...)
@@ -6877,9 +7052,15 @@ func (m *GroupMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.people != nil {
 		edges = append(edges, group.EdgePeople)
+	}
+	if m.events != nil {
+		edges = append(edges, group.EdgeEvents)
+	}
+	if m.notes != nil {
+		edges = append(edges, group.EdgeNotes)
 	}
 	return edges
 }
@@ -6894,15 +7075,33 @@ func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case group.EdgeEvents:
+		ids := make([]ent.Value, 0, len(m.events))
+		for id := range m.events {
+			ids = append(ids, id)
+		}
+		return ids
+	case group.EdgeNotes:
+		ids := make([]ent.Value, 0, len(m.notes))
+		for id := range m.notes {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.removedpeople != nil {
 		edges = append(edges, group.EdgePeople)
+	}
+	if m.removedevents != nil {
+		edges = append(edges, group.EdgeEvents)
+	}
+	if m.removednotes != nil {
+		edges = append(edges, group.EdgeNotes)
 	}
 	return edges
 }
@@ -6917,15 +7116,33 @@ func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case group.EdgeEvents:
+		ids := make([]ent.Value, 0, len(m.removedevents))
+		for id := range m.removedevents {
+			ids = append(ids, id)
+		}
+		return ids
+	case group.EdgeNotes:
+		ids := make([]ent.Value, 0, len(m.removednotes))
+		for id := range m.removednotes {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.clearedpeople {
 		edges = append(edges, group.EdgePeople)
+	}
+	if m.clearedevents {
+		edges = append(edges, group.EdgeEvents)
+	}
+	if m.clearednotes {
+		edges = append(edges, group.EdgeNotes)
 	}
 	return edges
 }
@@ -6936,6 +7153,10 @@ func (m *GroupMutation) EdgeCleared(name string) bool {
 	switch name {
 	case group.EdgePeople:
 		return m.clearedpeople
+	case group.EdgeEvents:
+		return m.clearedevents
+	case group.EdgeNotes:
+		return m.clearednotes
 	}
 	return false
 }
@@ -6955,8 +7176,569 @@ func (m *GroupMutation) ResetEdge(name string) error {
 	case group.EdgePeople:
 		m.ResetPeople()
 		return nil
+	case group.EdgeEvents:
+		m.ResetEvents()
+		return nil
+	case group.EdgeNotes:
+		m.ResetNotes()
+		return nil
 	}
 	return fmt.Errorf("unknown Group edge %s", name)
+}
+
+// GroupNoteMutation represents an operation that mutates the GroupNote nodes in the graph.
+type GroupNoteMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	note          *string
+	note_date     *time.Time
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	group         *int
+	clearedgroup  bool
+	done          bool
+	oldValue      func(context.Context) (*GroupNote, error)
+	predicates    []predicate.GroupNote
+}
+
+var _ ent.Mutation = (*GroupNoteMutation)(nil)
+
+// groupnoteOption allows management of the mutation configuration using functional options.
+type groupnoteOption func(*GroupNoteMutation)
+
+// newGroupNoteMutation creates new mutation for the GroupNote entity.
+func newGroupNoteMutation(c config, op Op, opts ...groupnoteOption) *GroupNoteMutation {
+	m := &GroupNoteMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGroupNote,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGroupNoteID sets the ID field of the mutation.
+func withGroupNoteID(id int) groupnoteOption {
+	return func(m *GroupNoteMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *GroupNote
+		)
+		m.oldValue = func(ctx context.Context) (*GroupNote, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().GroupNote.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGroupNote sets the old GroupNote of the mutation.
+func withGroupNote(node *GroupNote) groupnoteOption {
+	return func(m *GroupNoteMutation) {
+		m.oldValue = func(context.Context) (*GroupNote, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GroupNoteMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GroupNoteMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GroupNoteMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GroupNoteMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().GroupNote.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetNote sets the "note" field.
+func (m *GroupNoteMutation) SetNote(s string) {
+	m.note = &s
+}
+
+// Note returns the value of the "note" field in the mutation.
+func (m *GroupNoteMutation) Note() (r string, exists bool) {
+	v := m.note
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNote returns the old "note" field's value of the GroupNote entity.
+// If the GroupNote object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupNoteMutation) OldNote(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNote is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNote requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNote: %w", err)
+	}
+	return oldValue.Note, nil
+}
+
+// ResetNote resets all changes to the "note" field.
+func (m *GroupNoteMutation) ResetNote() {
+	m.note = nil
+}
+
+// SetNoteDate sets the "note_date" field.
+func (m *GroupNoteMutation) SetNoteDate(t time.Time) {
+	m.note_date = &t
+}
+
+// NoteDate returns the value of the "note_date" field in the mutation.
+func (m *GroupNoteMutation) NoteDate() (r time.Time, exists bool) {
+	v := m.note_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNoteDate returns the old "note_date" field's value of the GroupNote entity.
+// If the GroupNote object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupNoteMutation) OldNoteDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNoteDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNoteDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNoteDate: %w", err)
+	}
+	return oldValue.NoteDate, nil
+}
+
+// ResetNoteDate resets all changes to the "note_date" field.
+func (m *GroupNoteMutation) ResetNoteDate() {
+	m.note_date = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *GroupNoteMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GroupNoteMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GroupNote entity.
+// If the GroupNote object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupNoteMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GroupNoteMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *GroupNoteMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *GroupNoteMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the GroupNote entity.
+// If the GroupNote object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupNoteMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *GroupNoteMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetGroupID sets the "group" edge to the Group entity by id.
+func (m *GroupNoteMutation) SetGroupID(id int) {
+	m.group = &id
+}
+
+// ClearGroup clears the "group" edge to the Group entity.
+func (m *GroupNoteMutation) ClearGroup() {
+	m.clearedgroup = true
+}
+
+// GroupCleared reports if the "group" edge to the Group entity was cleared.
+func (m *GroupNoteMutation) GroupCleared() bool {
+	return m.clearedgroup
+}
+
+// GroupID returns the "group" edge ID in the mutation.
+func (m *GroupNoteMutation) GroupID() (id int, exists bool) {
+	if m.group != nil {
+		return *m.group, true
+	}
+	return
+}
+
+// GroupIDs returns the "group" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GroupID instead. It exists only for internal usage by the builders.
+func (m *GroupNoteMutation) GroupIDs() (ids []int) {
+	if id := m.group; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGroup resets all changes to the "group" edge.
+func (m *GroupNoteMutation) ResetGroup() {
+	m.group = nil
+	m.clearedgroup = false
+}
+
+// Where appends a list predicates to the GroupNoteMutation builder.
+func (m *GroupNoteMutation) Where(ps ...predicate.GroupNote) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the GroupNoteMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *GroupNoteMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.GroupNote, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *GroupNoteMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *GroupNoteMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (GroupNote).
+func (m *GroupNoteMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GroupNoteMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.note != nil {
+		fields = append(fields, groupnote.FieldNote)
+	}
+	if m.note_date != nil {
+		fields = append(fields, groupnote.FieldNoteDate)
+	}
+	if m.created_at != nil {
+		fields = append(fields, groupnote.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, groupnote.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GroupNoteMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case groupnote.FieldNote:
+		return m.Note()
+	case groupnote.FieldNoteDate:
+		return m.NoteDate()
+	case groupnote.FieldCreatedAt:
+		return m.CreatedAt()
+	case groupnote.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GroupNoteMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case groupnote.FieldNote:
+		return m.OldNote(ctx)
+	case groupnote.FieldNoteDate:
+		return m.OldNoteDate(ctx)
+	case groupnote.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case groupnote.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown GroupNote field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GroupNoteMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case groupnote.FieldNote:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNote(v)
+		return nil
+	case groupnote.FieldNoteDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNoteDate(v)
+		return nil
+	case groupnote.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case groupnote.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown GroupNote field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GroupNoteMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GroupNoteMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GroupNoteMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown GroupNote numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GroupNoteMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GroupNoteMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GroupNoteMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown GroupNote nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GroupNoteMutation) ResetField(name string) error {
+	switch name {
+	case groupnote.FieldNote:
+		m.ResetNote()
+		return nil
+	case groupnote.FieldNoteDate:
+		m.ResetNoteDate()
+		return nil
+	case groupnote.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case groupnote.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown GroupNote field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GroupNoteMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.group != nil {
+		edges = append(edges, groupnote.EdgeGroup)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GroupNoteMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case groupnote.EdgeGroup:
+		if id := m.group; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GroupNoteMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GroupNoteMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GroupNoteMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedgroup {
+		edges = append(edges, groupnote.EdgeGroup)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GroupNoteMutation) EdgeCleared(name string) bool {
+	switch name {
+	case groupnote.EdgeGroup:
+		return m.clearedgroup
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GroupNoteMutation) ClearEdge(name string) error {
+	switch name {
+	case groupnote.EdgeGroup:
+		m.ClearGroup()
+		return nil
+	}
+	return fmt.Errorf("unknown GroupNote unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GroupNoteMutation) ResetEdge(name string) error {
+	switch name {
+	case groupnote.EdgeGroup:
+		m.ResetGroup()
+		return nil
+	}
+	return fmt.Errorf("unknown GroupNote edge %s", name)
 }
 
 // MigrationLogMutation represents an operation that mutates the MigrationLog nodes in the graph.
@@ -8410,6 +9192,10 @@ type PersonMutation struct {
 	appendreminder_days   []int
 	immich_person_id      *string
 	immich_photo_disabled *bool
+	photo_path            *string
+	photo_content_type    *string
+	photo_updated_at      *time.Time
+	photo_source          *string
 	carddav_uid           *string
 	carddav_href          *string
 	carddav_etag          *string
@@ -8898,6 +9684,202 @@ func (m *PersonMutation) OldImmichPhotoDisabled(ctx context.Context) (v bool, er
 // ResetImmichPhotoDisabled resets all changes to the "immich_photo_disabled" field.
 func (m *PersonMutation) ResetImmichPhotoDisabled() {
 	m.immich_photo_disabled = nil
+}
+
+// SetPhotoPath sets the "photo_path" field.
+func (m *PersonMutation) SetPhotoPath(s string) {
+	m.photo_path = &s
+}
+
+// PhotoPath returns the value of the "photo_path" field in the mutation.
+func (m *PersonMutation) PhotoPath() (r string, exists bool) {
+	v := m.photo_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhotoPath returns the old "photo_path" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldPhotoPath(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhotoPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhotoPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhotoPath: %w", err)
+	}
+	return oldValue.PhotoPath, nil
+}
+
+// ClearPhotoPath clears the value of the "photo_path" field.
+func (m *PersonMutation) ClearPhotoPath() {
+	m.photo_path = nil
+	m.clearedFields[person.FieldPhotoPath] = struct{}{}
+}
+
+// PhotoPathCleared returns if the "photo_path" field was cleared in this mutation.
+func (m *PersonMutation) PhotoPathCleared() bool {
+	_, ok := m.clearedFields[person.FieldPhotoPath]
+	return ok
+}
+
+// ResetPhotoPath resets all changes to the "photo_path" field.
+func (m *PersonMutation) ResetPhotoPath() {
+	m.photo_path = nil
+	delete(m.clearedFields, person.FieldPhotoPath)
+}
+
+// SetPhotoContentType sets the "photo_content_type" field.
+func (m *PersonMutation) SetPhotoContentType(s string) {
+	m.photo_content_type = &s
+}
+
+// PhotoContentType returns the value of the "photo_content_type" field in the mutation.
+func (m *PersonMutation) PhotoContentType() (r string, exists bool) {
+	v := m.photo_content_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhotoContentType returns the old "photo_content_type" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldPhotoContentType(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhotoContentType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhotoContentType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhotoContentType: %w", err)
+	}
+	return oldValue.PhotoContentType, nil
+}
+
+// ClearPhotoContentType clears the value of the "photo_content_type" field.
+func (m *PersonMutation) ClearPhotoContentType() {
+	m.photo_content_type = nil
+	m.clearedFields[person.FieldPhotoContentType] = struct{}{}
+}
+
+// PhotoContentTypeCleared returns if the "photo_content_type" field was cleared in this mutation.
+func (m *PersonMutation) PhotoContentTypeCleared() bool {
+	_, ok := m.clearedFields[person.FieldPhotoContentType]
+	return ok
+}
+
+// ResetPhotoContentType resets all changes to the "photo_content_type" field.
+func (m *PersonMutation) ResetPhotoContentType() {
+	m.photo_content_type = nil
+	delete(m.clearedFields, person.FieldPhotoContentType)
+}
+
+// SetPhotoUpdatedAt sets the "photo_updated_at" field.
+func (m *PersonMutation) SetPhotoUpdatedAt(t time.Time) {
+	m.photo_updated_at = &t
+}
+
+// PhotoUpdatedAt returns the value of the "photo_updated_at" field in the mutation.
+func (m *PersonMutation) PhotoUpdatedAt() (r time.Time, exists bool) {
+	v := m.photo_updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhotoUpdatedAt returns the old "photo_updated_at" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldPhotoUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhotoUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhotoUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhotoUpdatedAt: %w", err)
+	}
+	return oldValue.PhotoUpdatedAt, nil
+}
+
+// ClearPhotoUpdatedAt clears the value of the "photo_updated_at" field.
+func (m *PersonMutation) ClearPhotoUpdatedAt() {
+	m.photo_updated_at = nil
+	m.clearedFields[person.FieldPhotoUpdatedAt] = struct{}{}
+}
+
+// PhotoUpdatedAtCleared returns if the "photo_updated_at" field was cleared in this mutation.
+func (m *PersonMutation) PhotoUpdatedAtCleared() bool {
+	_, ok := m.clearedFields[person.FieldPhotoUpdatedAt]
+	return ok
+}
+
+// ResetPhotoUpdatedAt resets all changes to the "photo_updated_at" field.
+func (m *PersonMutation) ResetPhotoUpdatedAt() {
+	m.photo_updated_at = nil
+	delete(m.clearedFields, person.FieldPhotoUpdatedAt)
+}
+
+// SetPhotoSource sets the "photo_source" field.
+func (m *PersonMutation) SetPhotoSource(s string) {
+	m.photo_source = &s
+}
+
+// PhotoSource returns the value of the "photo_source" field in the mutation.
+func (m *PersonMutation) PhotoSource() (r string, exists bool) {
+	v := m.photo_source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhotoSource returns the old "photo_source" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldPhotoSource(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhotoSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhotoSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhotoSource: %w", err)
+	}
+	return oldValue.PhotoSource, nil
+}
+
+// ClearPhotoSource clears the value of the "photo_source" field.
+func (m *PersonMutation) ClearPhotoSource() {
+	m.photo_source = nil
+	m.clearedFields[person.FieldPhotoSource] = struct{}{}
+}
+
+// PhotoSourceCleared returns if the "photo_source" field was cleared in this mutation.
+func (m *PersonMutation) PhotoSourceCleared() bool {
+	_, ok := m.clearedFields[person.FieldPhotoSource]
+	return ok
+}
+
+// ResetPhotoSource resets all changes to the "photo_source" field.
+func (m *PersonMutation) ResetPhotoSource() {
+	m.photo_source = nil
+	delete(m.clearedFields, person.FieldPhotoSource)
 }
 
 // SetCarddavUID sets the "carddav_uid" field.
@@ -9449,7 +10431,7 @@ func (m *PersonMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PersonMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 20)
 	if m.name != nil {
 		fields = append(fields, person.FieldName)
 	}
@@ -9473,6 +10455,18 @@ func (m *PersonMutation) Fields() []string {
 	}
 	if m.immich_photo_disabled != nil {
 		fields = append(fields, person.FieldImmichPhotoDisabled)
+	}
+	if m.photo_path != nil {
+		fields = append(fields, person.FieldPhotoPath)
+	}
+	if m.photo_content_type != nil {
+		fields = append(fields, person.FieldPhotoContentType)
+	}
+	if m.photo_updated_at != nil {
+		fields = append(fields, person.FieldPhotoUpdatedAt)
+	}
+	if m.photo_source != nil {
+		fields = append(fields, person.FieldPhotoSource)
 	}
 	if m.carddav_uid != nil {
 		fields = append(fields, person.FieldCarddavUID)
@@ -9522,6 +10516,14 @@ func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 		return m.ImmichPersonID()
 	case person.FieldImmichPhotoDisabled:
 		return m.ImmichPhotoDisabled()
+	case person.FieldPhotoPath:
+		return m.PhotoPath()
+	case person.FieldPhotoContentType:
+		return m.PhotoContentType()
+	case person.FieldPhotoUpdatedAt:
+		return m.PhotoUpdatedAt()
+	case person.FieldPhotoSource:
+		return m.PhotoSource()
 	case person.FieldCarddavUID:
 		return m.CarddavUID()
 	case person.FieldCarddavHref:
@@ -9563,6 +10565,14 @@ func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldImmichPersonID(ctx)
 	case person.FieldImmichPhotoDisabled:
 		return m.OldImmichPhotoDisabled(ctx)
+	case person.FieldPhotoPath:
+		return m.OldPhotoPath(ctx)
+	case person.FieldPhotoContentType:
+		return m.OldPhotoContentType(ctx)
+	case person.FieldPhotoUpdatedAt:
+		return m.OldPhotoUpdatedAt(ctx)
+	case person.FieldPhotoSource:
+		return m.OldPhotoSource(ctx)
 	case person.FieldCarddavUID:
 		return m.OldCarddavUID(ctx)
 	case person.FieldCarddavHref:
@@ -9643,6 +10653,34 @@ func (m *PersonMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetImmichPhotoDisabled(v)
+		return nil
+	case person.FieldPhotoPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhotoPath(v)
+		return nil
+	case person.FieldPhotoContentType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhotoContentType(v)
+		return nil
+	case person.FieldPhotoUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhotoUpdatedAt(v)
+		return nil
+	case person.FieldPhotoSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhotoSource(v)
 		return nil
 	case person.FieldCarddavUID:
 		v, ok := value.(string)
@@ -9745,6 +10783,18 @@ func (m *PersonMutation) ClearedFields() []string {
 	if m.FieldCleared(person.FieldImmichPersonID) {
 		fields = append(fields, person.FieldImmichPersonID)
 	}
+	if m.FieldCleared(person.FieldPhotoPath) {
+		fields = append(fields, person.FieldPhotoPath)
+	}
+	if m.FieldCleared(person.FieldPhotoContentType) {
+		fields = append(fields, person.FieldPhotoContentType)
+	}
+	if m.FieldCleared(person.FieldPhotoUpdatedAt) {
+		fields = append(fields, person.FieldPhotoUpdatedAt)
+	}
+	if m.FieldCleared(person.FieldPhotoSource) {
+		fields = append(fields, person.FieldPhotoSource)
+	}
 	if m.FieldCleared(person.FieldCarddavUID) {
 		fields = append(fields, person.FieldCarddavUID)
 	}
@@ -9788,6 +10838,18 @@ func (m *PersonMutation) ClearField(name string) error {
 		return nil
 	case person.FieldImmichPersonID:
 		m.ClearImmichPersonID()
+		return nil
+	case person.FieldPhotoPath:
+		m.ClearPhotoPath()
+		return nil
+	case person.FieldPhotoContentType:
+		m.ClearPhotoContentType()
+		return nil
+	case person.FieldPhotoUpdatedAt:
+		m.ClearPhotoUpdatedAt()
+		return nil
+	case person.FieldPhotoSource:
+		m.ClearPhotoSource()
 		return nil
 	case person.FieldCarddavUID:
 		m.ClearCarddavUID()
@@ -9835,6 +10897,18 @@ func (m *PersonMutation) ResetField(name string) error {
 		return nil
 	case person.FieldImmichPhotoDisabled:
 		m.ResetImmichPhotoDisabled()
+		return nil
+	case person.FieldPhotoPath:
+		m.ResetPhotoPath()
+		return nil
+	case person.FieldPhotoContentType:
+		m.ResetPhotoContentType()
+		return nil
+	case person.FieldPhotoUpdatedAt:
+		m.ResetPhotoUpdatedAt()
+		return nil
+	case person.FieldPhotoSource:
+		m.ResetPhotoSource()
 		return nil
 	case person.FieldCarddavUID:
 		m.ResetCarddavUID()

@@ -11,7 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
+	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
 )
@@ -106,6 +108,36 @@ func (_u *GroupUpdate) AddPeople(v ...*Person) *GroupUpdate {
 	return _u.AddPersonIDs(ids...)
 }
 
+// AddEventIDs adds the "events" edge to the Event entity by IDs.
+func (_u *GroupUpdate) AddEventIDs(ids ...int) *GroupUpdate {
+	_u.mutation.AddEventIDs(ids...)
+	return _u
+}
+
+// AddEvents adds the "events" edges to the Event entity.
+func (_u *GroupUpdate) AddEvents(v ...*Event) *GroupUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEventIDs(ids...)
+}
+
+// AddNoteIDs adds the "notes" edge to the GroupNote entity by IDs.
+func (_u *GroupUpdate) AddNoteIDs(ids ...int) *GroupUpdate {
+	_u.mutation.AddNoteIDs(ids...)
+	return _u
+}
+
+// AddNotes adds the "notes" edges to the GroupNote entity.
+func (_u *GroupUpdate) AddNotes(v ...*GroupNote) *GroupUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNoteIDs(ids...)
+}
+
 // Mutation returns the GroupMutation object of the builder.
 func (_u *GroupUpdate) Mutation() *GroupMutation {
 	return _u.mutation
@@ -130,6 +162,48 @@ func (_u *GroupUpdate) RemovePeople(v ...*Person) *GroupUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePersonIDs(ids...)
+}
+
+// ClearEvents clears all "events" edges to the Event entity.
+func (_u *GroupUpdate) ClearEvents() *GroupUpdate {
+	_u.mutation.ClearEvents()
+	return _u
+}
+
+// RemoveEventIDs removes the "events" edge to Event entities by IDs.
+func (_u *GroupUpdate) RemoveEventIDs(ids ...int) *GroupUpdate {
+	_u.mutation.RemoveEventIDs(ids...)
+	return _u
+}
+
+// RemoveEvents removes "events" edges to Event entities.
+func (_u *GroupUpdate) RemoveEvents(v ...*Event) *GroupUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEventIDs(ids...)
+}
+
+// ClearNotes clears all "notes" edges to the GroupNote entity.
+func (_u *GroupUpdate) ClearNotes() *GroupUpdate {
+	_u.mutation.ClearNotes()
+	return _u
+}
+
+// RemoveNoteIDs removes the "notes" edge to GroupNote entities by IDs.
+func (_u *GroupUpdate) RemoveNoteIDs(ids ...int) *GroupUpdate {
+	_u.mutation.RemoveNoteIDs(ids...)
+	return _u
+}
+
+// RemoveNotes removes "notes" edges to GroupNote entities.
+func (_u *GroupUpdate) RemoveNotes(v ...*GroupNote) *GroupUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNoteIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -241,6 +315,96 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.EventsTable,
+			Columns: []string{group.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEventsIDs(); len(nodes) > 0 && !_u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.EventsTable,
+			Columns: []string{group.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.EventsTable,
+			Columns: []string{group.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NotesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.NotesTable,
+			Columns: []string{group.NotesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(groupnote.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNotesIDs(); len(nodes) > 0 && !_u.mutation.NotesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.NotesTable,
+			Columns: []string{group.NotesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(groupnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NotesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.NotesTable,
+			Columns: []string{group.NotesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(groupnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{group.Label}
@@ -338,6 +502,36 @@ func (_u *GroupUpdateOne) AddPeople(v ...*Person) *GroupUpdateOne {
 	return _u.AddPersonIDs(ids...)
 }
 
+// AddEventIDs adds the "events" edge to the Event entity by IDs.
+func (_u *GroupUpdateOne) AddEventIDs(ids ...int) *GroupUpdateOne {
+	_u.mutation.AddEventIDs(ids...)
+	return _u
+}
+
+// AddEvents adds the "events" edges to the Event entity.
+func (_u *GroupUpdateOne) AddEvents(v ...*Event) *GroupUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddEventIDs(ids...)
+}
+
+// AddNoteIDs adds the "notes" edge to the GroupNote entity by IDs.
+func (_u *GroupUpdateOne) AddNoteIDs(ids ...int) *GroupUpdateOne {
+	_u.mutation.AddNoteIDs(ids...)
+	return _u
+}
+
+// AddNotes adds the "notes" edges to the GroupNote entity.
+func (_u *GroupUpdateOne) AddNotes(v ...*GroupNote) *GroupUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNoteIDs(ids...)
+}
+
 // Mutation returns the GroupMutation object of the builder.
 func (_u *GroupUpdateOne) Mutation() *GroupMutation {
 	return _u.mutation
@@ -362,6 +556,48 @@ func (_u *GroupUpdateOne) RemovePeople(v ...*Person) *GroupUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePersonIDs(ids...)
+}
+
+// ClearEvents clears all "events" edges to the Event entity.
+func (_u *GroupUpdateOne) ClearEvents() *GroupUpdateOne {
+	_u.mutation.ClearEvents()
+	return _u
+}
+
+// RemoveEventIDs removes the "events" edge to Event entities by IDs.
+func (_u *GroupUpdateOne) RemoveEventIDs(ids ...int) *GroupUpdateOne {
+	_u.mutation.RemoveEventIDs(ids...)
+	return _u
+}
+
+// RemoveEvents removes "events" edges to Event entities.
+func (_u *GroupUpdateOne) RemoveEvents(v ...*Event) *GroupUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveEventIDs(ids...)
+}
+
+// ClearNotes clears all "notes" edges to the GroupNote entity.
+func (_u *GroupUpdateOne) ClearNotes() *GroupUpdateOne {
+	_u.mutation.ClearNotes()
+	return _u
+}
+
+// RemoveNoteIDs removes the "notes" edge to GroupNote entities by IDs.
+func (_u *GroupUpdateOne) RemoveNoteIDs(ids ...int) *GroupUpdateOne {
+	_u.mutation.RemoveNoteIDs(ids...)
+	return _u
+}
+
+// RemoveNotes removes "notes" edges to GroupNote entities.
+func (_u *GroupUpdateOne) RemoveNotes(v ...*GroupNote) *GroupUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNoteIDs(ids...)
 }
 
 // Where appends a list predicates to the GroupUpdate builder.
@@ -496,6 +732,96 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.EventsTable,
+			Columns: []string{group.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedEventsIDs(); len(nodes) > 0 && !_u.mutation.EventsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.EventsTable,
+			Columns: []string{group.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.EventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.EventsTable,
+			Columns: []string{group.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NotesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.NotesTable,
+			Columns: []string{group.NotesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(groupnote.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNotesIDs(); len(nodes) > 0 && !_u.mutation.NotesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.NotesTable,
+			Columns: []string{group.NotesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(groupnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NotesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.NotesTable,
+			Columns: []string{group.NotesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(groupnote.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

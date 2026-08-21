@@ -25,7 +25,8 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📊 Dashboard** — At-a-glance view of upcoming events with days remaining.
 - **🗓️ Calendar View** — Full month calendar with upcoming events, theme-aware, with `<noscript>` fallback.
 - **📅 Date Variant** — User-facing dates render day-first by default (`25 Dec`); switch to month-first (`Dec 25`) from Settings → Configuration (`DATE_VARIANT`). Existing installs render day-first after upgrade — change it back in Settings if you prefer US style. Machine feeds (iCal, RSS, APIs) always stay ISO 8601.
-- **👥 Groups** — Organize people into groups and filter by group.
+- **👥 Groups** — Organize people into one or more groups as searchable categories. Group detail pages hold members, their own events, and a shared notes timeline; filter the people list with the group dropdown or a `group:Family` search prefix.
+- **🖼️ Immich Profile Pictures** — One-click "Sync with Immich" bulk import from Settings matches every person by name (or per-person override) and imports their thumbnail locally. Uploaded photos always win over imported ones, removing a photo reverts to the live Immich proxy, and nothing is imported automatically when a person is created.
 - **👤 User Management** — Multi-user support with admin and user roles.
 - **📝 In-App Logging** — Ring-buffer log viewer filterable by level and source, with live log level changes.
 - **🔍 People Search** — Quick search through people by name.

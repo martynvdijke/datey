@@ -100,6 +100,7 @@ var (
 		{Name: "reminder_days", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "contact_events", Type: field.TypeInt, Nullable: true},
+		{Name: "group_events", Type: field.TypeInt, Nullable: true},
 		{Name: "person_events", Type: field.TypeInt, Nullable: true},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -115,8 +116,14 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "events_persons_events",
+				Symbol:     "events_groups_events",
 				Columns:    []*schema.Column{EventsColumns[8]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "events_persons_events",
+				Columns:    []*schema.Column{EventsColumns[9]},
 				RefColumns: []*schema.Column{PersonsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -147,6 +154,29 @@ var (
 		Name:       "groups",
 		Columns:    GroupsColumns,
 		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+	}
+	// GroupNotesColumns holds the columns for the "group_notes" table.
+	GroupNotesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "note", Type: field.TypeString, Size: 2147483647},
+		{Name: "note_date", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "group_notes", Type: field.TypeInt},
+	}
+	// GroupNotesTable holds the schema information for the "group_notes" table.
+	GroupNotesTable = &schema.Table{
+		Name:       "group_notes",
+		Columns:    GroupNotesColumns,
+		PrimaryKey: []*schema.Column{GroupNotesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "group_notes_groups_notes",
+				Columns:    []*schema.Column{GroupNotesColumns[5]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// MigrationLogsColumns holds the columns for the "migration_logs" table.
 	MigrationLogsColumns = []*schema.Column{
@@ -223,6 +253,10 @@ var (
 		{Name: "reminder_days", Type: field.TypeJSON, Nullable: true},
 		{Name: "immich_person_id", Type: field.TypeString, Nullable: true},
 		{Name: "immich_photo_disabled", Type: field.TypeBool, Default: false},
+		{Name: "photo_path", Type: field.TypeString, Nullable: true},
+		{Name: "photo_content_type", Type: field.TypeString, Nullable: true},
+		{Name: "photo_updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "photo_source", Type: field.TypeString, Nullable: true},
 		{Name: "carddav_uid", Type: field.TypeString, Nullable: true},
 		{Name: "carddav_href", Type: field.TypeString, Nullable: true},
 		{Name: "carddav_etag", Type: field.TypeString, Nullable: true},
@@ -371,6 +405,7 @@ var (
 		ContactsTable,
 		EventsTable,
 		GroupsTable,
+		GroupNotesTable,
 		MigrationLogsTable,
 		NotificationLogsTable,
 		PasswordResetTokensTable,
@@ -386,7 +421,9 @@ var (
 
 func init() {
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
-	EventsTable.ForeignKeys[1].RefTable = PersonsTable
+	EventsTable.ForeignKeys[1].RefTable = GroupsTable
+	EventsTable.ForeignKeys[2].RefTable = PersonsTable
+	GroupNotesTable.ForeignKeys[0].RefTable = GroupsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable
 	PasswordResetTokensTable.ForeignKeys[0].RefTable = UsersTable
 	PersonNotesTable.ForeignKeys[0].RefTable = PersonsTable

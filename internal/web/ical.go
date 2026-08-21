@@ -104,12 +104,7 @@ func (h *Handler) icalFeedPerson(w http.ResponseWriter, r *http.Request) {
 // feedEvent converts a stored event into an iCal feed event, applying the
 // configured start time / duration (when set) and yearly recurrence.
 func (h *Handler) feedEvent(e *ent.Event, host string) ical.Event {
-	name := ""
-	if p := e.Edges.Person; p != nil {
-		name = p.Name
-	} else if c := e.Edges.Contact; c != nil {
-		name = c.Name
-	}
+	name := eventOwnerName(e)
 
 	ev := ical.Event{
 		UID:         fmt.Sprintf("datey-event-%d@%s", e.ID, host),

@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
@@ -170,6 +171,25 @@ func (_u *EventUpdate) SetPerson(v *Person) *EventUpdate {
 	return _u.SetPersonID(v.ID)
 }
 
+// SetGroupID sets the "group" edge to the Group entity by ID.
+func (_u *EventUpdate) SetGroupID(id int) *EventUpdate {
+	_u.mutation.SetGroupID(id)
+	return _u
+}
+
+// SetNillableGroupID sets the "group" edge to the Group entity by ID if the given value is not nil.
+func (_u *EventUpdate) SetNillableGroupID(id *int) *EventUpdate {
+	if id != nil {
+		_u = _u.SetGroupID(*id)
+	}
+	return _u
+}
+
+// SetGroup sets the "group" edge to the Group entity.
+func (_u *EventUpdate) SetGroup(v *Group) *EventUpdate {
+	return _u.SetGroupID(v.ID)
+}
+
 // AddNotificationLogIDs adds the "notification_logs" edge to the NotificationLog entity by IDs.
 func (_u *EventUpdate) AddNotificationLogIDs(ids ...int) *EventUpdate {
 	_u.mutation.AddNotificationLogIDs(ids...)
@@ -199,6 +219,12 @@ func (_u *EventUpdate) ClearContact() *EventUpdate {
 // ClearPerson clears the "person" edge to the Person entity.
 func (_u *EventUpdate) ClearPerson() *EventUpdate {
 	_u.mutation.ClearPerson()
+	return _u
+}
+
+// ClearGroup clears the "group" edge to the Group entity.
+func (_u *EventUpdate) ClearGroup() *EventUpdate {
+	_u.mutation.ClearGroup()
 	return _u
 }
 
@@ -355,6 +381,35 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GroupCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.GroupTable,
+			Columns: []string{event.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GroupIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.GroupTable,
+			Columns: []string{event.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -565,6 +620,25 @@ func (_u *EventUpdateOne) SetPerson(v *Person) *EventUpdateOne {
 	return _u.SetPersonID(v.ID)
 }
 
+// SetGroupID sets the "group" edge to the Group entity by ID.
+func (_u *EventUpdateOne) SetGroupID(id int) *EventUpdateOne {
+	_u.mutation.SetGroupID(id)
+	return _u
+}
+
+// SetNillableGroupID sets the "group" edge to the Group entity by ID if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableGroupID(id *int) *EventUpdateOne {
+	if id != nil {
+		_u = _u.SetGroupID(*id)
+	}
+	return _u
+}
+
+// SetGroup sets the "group" edge to the Group entity.
+func (_u *EventUpdateOne) SetGroup(v *Group) *EventUpdateOne {
+	return _u.SetGroupID(v.ID)
+}
+
 // AddNotificationLogIDs adds the "notification_logs" edge to the NotificationLog entity by IDs.
 func (_u *EventUpdateOne) AddNotificationLogIDs(ids ...int) *EventUpdateOne {
 	_u.mutation.AddNotificationLogIDs(ids...)
@@ -594,6 +668,12 @@ func (_u *EventUpdateOne) ClearContact() *EventUpdateOne {
 // ClearPerson clears the "person" edge to the Person entity.
 func (_u *EventUpdateOne) ClearPerson() *EventUpdateOne {
 	_u.mutation.ClearPerson()
+	return _u
+}
+
+// ClearGroup clears the "group" edge to the Group entity.
+func (_u *EventUpdateOne) ClearGroup() *EventUpdateOne {
+	_u.mutation.ClearGroup()
 	return _u
 }
 
@@ -780,6 +860,35 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GroupCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.GroupTable,
+			Columns: []string{event.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GroupIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.GroupTable,
+			Columns: []string{event.GroupColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

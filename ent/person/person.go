@@ -28,6 +28,14 @@ const (
 	FieldImmichPersonID = "immich_person_id"
 	// FieldImmichPhotoDisabled holds the string denoting the immich_photo_disabled field in the database.
 	FieldImmichPhotoDisabled = "immich_photo_disabled"
+	// FieldPhotoPath holds the string denoting the photo_path field in the database.
+	FieldPhotoPath = "photo_path"
+	// FieldPhotoContentType holds the string denoting the photo_content_type field in the database.
+	FieldPhotoContentType = "photo_content_type"
+	// FieldPhotoUpdatedAt holds the string denoting the photo_updated_at field in the database.
+	FieldPhotoUpdatedAt = "photo_updated_at"
+	// FieldPhotoSource holds the string denoting the photo_source field in the database.
+	FieldPhotoSource = "photo_source"
 	// FieldCarddavUID holds the string denoting the carddav_uid field in the database.
 	FieldCarddavUID = "carddav_uid"
 	// FieldCarddavHref holds the string denoting the carddav_href field in the database.
@@ -84,6 +92,10 @@ var Columns = []string{
 	FieldReminderDays,
 	FieldImmichPersonID,
 	FieldImmichPhotoDisabled,
+	FieldPhotoPath,
+	FieldPhotoContentType,
+	FieldPhotoUpdatedAt,
+	FieldPhotoSource,
 	FieldCarddavUID,
 	FieldCarddavHref,
 	FieldCarddavEtag,
@@ -166,6 +178,26 @@ func ByImmichPersonID(opts ...sql.OrderTermOption) OrderOption {
 // ByImmichPhotoDisabled orders the results by the immich_photo_disabled field.
 func ByImmichPhotoDisabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldImmichPhotoDisabled, opts...).ToFunc()
+}
+
+// ByPhotoPath orders the results by the photo_path field.
+func ByPhotoPath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhotoPath, opts...).ToFunc()
+}
+
+// ByPhotoContentType orders the results by the photo_content_type field.
+func ByPhotoContentType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhotoContentType, opts...).ToFunc()
+}
+
+// ByPhotoUpdatedAt orders the results by the photo_updated_at field.
+func ByPhotoUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhotoUpdatedAt, opts...).ToFunc()
+}
+
+// ByPhotoSource orders the results by the photo_source field.
+func ByPhotoSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhotoSource, opts...).ToFunc()
 }
 
 // ByCarddavUID orders the results by the carddav_uid field.

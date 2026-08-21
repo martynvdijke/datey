@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/datey/datey/ent"
@@ -24,25 +25,76 @@ type personCard struct {
 	Age           int // current age, shown when HasAge
 	HasAge        bool
 	PhotoURL      string
+	Groups        []string
+}
+
+// listPeopleInGroups returns the de-duplicated union of the members of all
+// given group IDs.
+func (h *Handler) listPeopleInGroups(r *http.Request, ids []int) ([]*ent.Person, error) {
+	seen := make(map[int]bool)
+	var out []*ent.Person
+	for _, id := range ids {
+		members, err := h.groups.ListPeopleInGroup(r.Context(), id)
+		if err != nil {
+			return nil, err
+		}
+		for _, m := range members {
+			if seen[m.ID] {
+				continue
+			}
+			seen[m.ID] = true
+			out = append(out, m)
+		}
+	}
+	return out, nil
 }
 
 func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query().Get("q")
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
 	groupIDStr := r.URL.Query().Get("group")
+
+	// "group:Family rest of query" resolves the prefix to a group filter;
+	// any remaining text searches within that group's members.
+	searchText := ""
+	if strings.HasPrefix(q, "group:") {
+		groupName := strings.TrimSpace(strings.TrimPrefix(q, "group:"))
+		if idx := strings.Index(groupName, " "); idx >= 0 {
+			searchText = strings.TrimSpace(groupName[idx+1:])
+			groupName = groupName[:idx]
+		}
+		if groups, err := h.groups.List(r.Context()); err == nil {
+			for _, g := range groups {
+				if strings.EqualFold(g.Name, groupName) {
+					groupIDStr = strconv.Itoa(g.ID)
+					break
+				}
+			}
+		}
+	} else {
+		searchText = q
+	}
 
 	var people []*ent.Person
 	var err error
 
 	switch {
 	case groupIDStr != "":
-		groupID, parseErr := strconv.Atoi(groupIDStr)
-		if parseErr == nil {
-			people, err = h.groups.ListPeopleInGroup(r.Context(), groupID)
+		var ids []int
+		for _, part := range strings.Split(groupIDStr, ",") {
+			if id, parseErr := strconv.Atoi(strings.TrimSpace(part)); parseErr == nil && id > 0 {
+				ids = append(ids, id)
+			}
+		}
+		if len(ids) > 0 {
+			people, err = h.listPeopleInGroups(r, ids)
 		} else {
 			people, err = h.people.List(r.Context())
 		}
-	case q != "":
-		people, err = h.people.Search(r.Context(), q)
+		if err == nil && searchText != "" {
+			people = filterPeopleByName(people, searchText)
+		}
+	case searchText != "":
+		people, err = h.people.Search(r.Context(), searchText)
 	default:
 		people, err = h.people.List(r.Context())
 	}
@@ -77,6 +129,12 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 				nextEventDate = shortDate(h.cfg.DateVariant, nearest.Date)
 			}
 		}
+		var groupNames []string
+		if memberGroups, e := h.groups.ListByPerson(r.Context(), p.ID); e == nil {
+			for _, g := range memberGroups {
+				groupNames = append(groupNames, g.Name)
+			}
+		}
 		cards = append(cards, personCard{
 			ID:            p.ID,
 			Name:          p.Name,
@@ -89,6 +147,7 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			Age:           cardAge,
 			HasAge:        hasAge,
 			PhotoURL:      h.photoURL(r, p),
+			Groups:        groupNames,
 		})
 	}
 
@@ -102,6 +161,18 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 		"GroupID": groupIDStr,
 		"Query":   q,
 	})
+}
+
+// filterPeopleByName keeps people whose name contains the search text
+// (case-insensitive), mirroring repository.Search for in-memory lists.
+func filterPeopleByName(people []*ent.Person, q string) []*ent.Person {
+	out := make([]*ent.Person, 0, len(people))
+	for _, p := range people {
+		if strings.Contains(strings.ToLower(p.Name), strings.ToLower(q)) {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func (h *Handler) newPersonForm(w http.ResponseWriter, r *http.Request) {
@@ -288,6 +359,13 @@ func (h *Handler) deletePerson(w http.ResponseWriter, r *http.Request) {
 		slog.Error("delete person", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
+	}
+
+	// Best-effort cleanup of any stored profile photo files.
+	if h.photoStore != nil {
+		if err := h.photoStore.DeletePerson(id); err != nil {
+			slog.Warn("delete person photo files", "person_id", id, "error", err)
+		}
 	}
 
 	http.Redirect(w, r, "/people?success=Person+deleted", http.StatusSeeOther)

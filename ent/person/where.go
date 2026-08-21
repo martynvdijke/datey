@@ -90,6 +90,26 @@ func ImmichPhotoDisabled(v bool) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldImmichPhotoDisabled, v))
 }
 
+// PhotoPath applies equality check predicate on the "photo_path" field. It's identical to PhotoPathEQ.
+func PhotoPath(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoPath, v))
+}
+
+// PhotoContentType applies equality check predicate on the "photo_content_type" field. It's identical to PhotoContentTypeEQ.
+func PhotoContentType(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoContentType, v))
+}
+
+// PhotoUpdatedAt applies equality check predicate on the "photo_updated_at" field. It's identical to PhotoUpdatedAtEQ.
+func PhotoUpdatedAt(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoUpdatedAt, v))
+}
+
+// PhotoSource applies equality check predicate on the "photo_source" field. It's identical to PhotoSourceEQ.
+func PhotoSource(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoSource, v))
+}
+
 // CarddavUID applies equality check predicate on the "carddav_uid" field. It's identical to CarddavUIDEQ.
 func CarddavUID(v string) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCarddavUID, v))
@@ -523,6 +543,281 @@ func ImmichPhotoDisabledEQ(v bool) predicate.Person {
 // ImmichPhotoDisabledNEQ applies the NEQ predicate on the "immich_photo_disabled" field.
 func ImmichPhotoDisabledNEQ(v bool) predicate.Person {
 	return predicate.Person(sql.FieldNEQ(FieldImmichPhotoDisabled, v))
+}
+
+// PhotoPathEQ applies the EQ predicate on the "photo_path" field.
+func PhotoPathEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoPath, v))
+}
+
+// PhotoPathNEQ applies the NEQ predicate on the "photo_path" field.
+func PhotoPathNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldPhotoPath, v))
+}
+
+// PhotoPathIn applies the In predicate on the "photo_path" field.
+func PhotoPathIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldPhotoPath, vs...))
+}
+
+// PhotoPathNotIn applies the NotIn predicate on the "photo_path" field.
+func PhotoPathNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldPhotoPath, vs...))
+}
+
+// PhotoPathGT applies the GT predicate on the "photo_path" field.
+func PhotoPathGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldPhotoPath, v))
+}
+
+// PhotoPathGTE applies the GTE predicate on the "photo_path" field.
+func PhotoPathGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldPhotoPath, v))
+}
+
+// PhotoPathLT applies the LT predicate on the "photo_path" field.
+func PhotoPathLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldPhotoPath, v))
+}
+
+// PhotoPathLTE applies the LTE predicate on the "photo_path" field.
+func PhotoPathLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldPhotoPath, v))
+}
+
+// PhotoPathContains applies the Contains predicate on the "photo_path" field.
+func PhotoPathContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldPhotoPath, v))
+}
+
+// PhotoPathHasPrefix applies the HasPrefix predicate on the "photo_path" field.
+func PhotoPathHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldPhotoPath, v))
+}
+
+// PhotoPathHasSuffix applies the HasSuffix predicate on the "photo_path" field.
+func PhotoPathHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldPhotoPath, v))
+}
+
+// PhotoPathIsNil applies the IsNil predicate on the "photo_path" field.
+func PhotoPathIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldPhotoPath))
+}
+
+// PhotoPathNotNil applies the NotNil predicate on the "photo_path" field.
+func PhotoPathNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldPhotoPath))
+}
+
+// PhotoPathEqualFold applies the EqualFold predicate on the "photo_path" field.
+func PhotoPathEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldPhotoPath, v))
+}
+
+// PhotoPathContainsFold applies the ContainsFold predicate on the "photo_path" field.
+func PhotoPathContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldPhotoPath, v))
+}
+
+// PhotoContentTypeEQ applies the EQ predicate on the "photo_content_type" field.
+func PhotoContentTypeEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeNEQ applies the NEQ predicate on the "photo_content_type" field.
+func PhotoContentTypeNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeIn applies the In predicate on the "photo_content_type" field.
+func PhotoContentTypeIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldPhotoContentType, vs...))
+}
+
+// PhotoContentTypeNotIn applies the NotIn predicate on the "photo_content_type" field.
+func PhotoContentTypeNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldPhotoContentType, vs...))
+}
+
+// PhotoContentTypeGT applies the GT predicate on the "photo_content_type" field.
+func PhotoContentTypeGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeGTE applies the GTE predicate on the "photo_content_type" field.
+func PhotoContentTypeGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeLT applies the LT predicate on the "photo_content_type" field.
+func PhotoContentTypeLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeLTE applies the LTE predicate on the "photo_content_type" field.
+func PhotoContentTypeLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeContains applies the Contains predicate on the "photo_content_type" field.
+func PhotoContentTypeContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeHasPrefix applies the HasPrefix predicate on the "photo_content_type" field.
+func PhotoContentTypeHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeHasSuffix applies the HasSuffix predicate on the "photo_content_type" field.
+func PhotoContentTypeHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeIsNil applies the IsNil predicate on the "photo_content_type" field.
+func PhotoContentTypeIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldPhotoContentType))
+}
+
+// PhotoContentTypeNotNil applies the NotNil predicate on the "photo_content_type" field.
+func PhotoContentTypeNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldPhotoContentType))
+}
+
+// PhotoContentTypeEqualFold applies the EqualFold predicate on the "photo_content_type" field.
+func PhotoContentTypeEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldPhotoContentType, v))
+}
+
+// PhotoContentTypeContainsFold applies the ContainsFold predicate on the "photo_content_type" field.
+func PhotoContentTypeContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldPhotoContentType, v))
+}
+
+// PhotoUpdatedAtEQ applies the EQ predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtEQ(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoUpdatedAt, v))
+}
+
+// PhotoUpdatedAtNEQ applies the NEQ predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtNEQ(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldPhotoUpdatedAt, v))
+}
+
+// PhotoUpdatedAtIn applies the In predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtIn(vs ...time.Time) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldPhotoUpdatedAt, vs...))
+}
+
+// PhotoUpdatedAtNotIn applies the NotIn predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtNotIn(vs ...time.Time) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldPhotoUpdatedAt, vs...))
+}
+
+// PhotoUpdatedAtGT applies the GT predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtGT(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldPhotoUpdatedAt, v))
+}
+
+// PhotoUpdatedAtGTE applies the GTE predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtGTE(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldPhotoUpdatedAt, v))
+}
+
+// PhotoUpdatedAtLT applies the LT predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtLT(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldPhotoUpdatedAt, v))
+}
+
+// PhotoUpdatedAtLTE applies the LTE predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtLTE(v time.Time) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldPhotoUpdatedAt, v))
+}
+
+// PhotoUpdatedAtIsNil applies the IsNil predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldPhotoUpdatedAt))
+}
+
+// PhotoUpdatedAtNotNil applies the NotNil predicate on the "photo_updated_at" field.
+func PhotoUpdatedAtNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldPhotoUpdatedAt))
+}
+
+// PhotoSourceEQ applies the EQ predicate on the "photo_source" field.
+func PhotoSourceEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldPhotoSource, v))
+}
+
+// PhotoSourceNEQ applies the NEQ predicate on the "photo_source" field.
+func PhotoSourceNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldPhotoSource, v))
+}
+
+// PhotoSourceIn applies the In predicate on the "photo_source" field.
+func PhotoSourceIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldPhotoSource, vs...))
+}
+
+// PhotoSourceNotIn applies the NotIn predicate on the "photo_source" field.
+func PhotoSourceNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldPhotoSource, vs...))
+}
+
+// PhotoSourceGT applies the GT predicate on the "photo_source" field.
+func PhotoSourceGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldPhotoSource, v))
+}
+
+// PhotoSourceGTE applies the GTE predicate on the "photo_source" field.
+func PhotoSourceGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldPhotoSource, v))
+}
+
+// PhotoSourceLT applies the LT predicate on the "photo_source" field.
+func PhotoSourceLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldPhotoSource, v))
+}
+
+// PhotoSourceLTE applies the LTE predicate on the "photo_source" field.
+func PhotoSourceLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldPhotoSource, v))
+}
+
+// PhotoSourceContains applies the Contains predicate on the "photo_source" field.
+func PhotoSourceContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldPhotoSource, v))
+}
+
+// PhotoSourceHasPrefix applies the HasPrefix predicate on the "photo_source" field.
+func PhotoSourceHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldPhotoSource, v))
+}
+
+// PhotoSourceHasSuffix applies the HasSuffix predicate on the "photo_source" field.
+func PhotoSourceHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldPhotoSource, v))
+}
+
+// PhotoSourceIsNil applies the IsNil predicate on the "photo_source" field.
+func PhotoSourceIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldPhotoSource))
+}
+
+// PhotoSourceNotNil applies the NotNil predicate on the "photo_source" field.
+func PhotoSourceNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldPhotoSource))
+}
+
+// PhotoSourceEqualFold applies the EqualFold predicate on the "photo_source" field.
+func PhotoSourceEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldPhotoSource, v))
+}
+
+// PhotoSourceContainsFold applies the ContainsFold predicate on the "photo_source" field.
+func PhotoSourceContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldPhotoSource, v))
 }
 
 // CarddavUIDEQ applies the EQ predicate on the "carddav_uid" field.
