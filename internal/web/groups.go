@@ -168,12 +168,12 @@ func (h *Handler) viewGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, r, "group_detail.html", map[string]any{
-		"Title":       fmt.Sprintf("Datey - Group %s", g.Name),
-		"Group":       g,
-		"Members":     members,
-		"Candidates":  candidates,
-		"Events":      h.loadGroupEventRows(r, id),
-		"Notes":       h.loadGroupNoteRows(r, id),
+		"Title":      fmt.Sprintf("Datey - Group %s", g.Name),
+		"Group":      g,
+		"Members":    members,
+		"Candidates": candidates,
+		"Events":     h.loadGroupEventRows(r, id),
+		"Notes":      h.loadGroupNoteRows(r, id),
 	})
 }
 

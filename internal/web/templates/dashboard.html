@@ -25,6 +25,7 @@
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                   {{if .AgeInfo.HasAge}}<strong>{{if le .DaysRemaining 0}}{{ordinal .AgeInfo.Current}}{{else}}{{ordinal .AgeInfo.Next}}{{end}} birthday</strong> — {{end}}{{if .RelativeLabel}}<strong>{{.RelativeLabel}}</strong> — {{end}}{{.Date}}
                 </p>
+                {{if .MilestoneLabel}}<span class="badge bg-warning text-dark milestone-badge">{{.MilestoneLabel}} &#127880;</span>{{end}}
                 <p class="card-text mb-0 d-flex align-items-center gap-2">
                   <span class="days-remaining {{if le .DaysRemaining 3}}urgent{{else}}normal{{end}}">{{.DaysRemaining}}</span>
                   <span class="text-muted">days remaining</span>
@@ -80,6 +81,17 @@
     </div>
   </div>
 </div>
+
+{{if .MilestonesThisYear}}
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h6">Milestones this year</h2>
+    <ul class="list-unstyled mb-0">
+      {{range .MilestonesThisYear}}<li><span class="badge bg-warning text-dark">{{.MilestoneLabel}}</span> {{.Name}} — {{.Date}}</li>{{end}}
+    </ul>
+  </div>
+</div>
+{{end}}
 
 <!-- Grouped Events -->
 <div id="events-content">

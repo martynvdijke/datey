@@ -19,6 +19,7 @@ import (
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/immich"
 	"github.com/datey/datey/internal/logstore"
+	"github.com/datey/datey/internal/milestone"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/photos"
 	"github.com/datey/datey/internal/repository"
@@ -28,25 +29,27 @@ import (
 )
 
 type Handler struct {
-	cfg            *config.Config
-	client         *ent.Client
-	templates      map[string]*template.Template
-	users          *repository.UserRepository
-	sessions       *session.Store
-	people         *repository.PersonRepository
-	groups         *repository.GroupRepository
-	events         *repository.EventRepository
-	groupNotes     *repository.GroupNoteRepository
-	notifReg       *notifier.Registry
-	recurringRules *repository.RecurringRuleRepository
-	pushSubs       *repository.PushSubscriptionRepository
-	logStore       *logstore.Store
-	settingsStore  *settings.Store
-	loginLimiter   *rateLimiter
-	forgotLimiter  *rateLimiter
+	cfg                 *config.Config
+	client              *ent.Client
+	templates           map[string]*template.Template
+	users               *repository.UserRepository
+	sessions            *session.Store
+	people              *repository.PersonRepository
+	groups              *repository.GroupRepository
+	tags                *repository.TagRepository
+	events              *repository.EventRepository
+	groupNotes          *repository.GroupNoteRepository
+	giftIdeas           *repository.GiftIdeaRepository
+	notifReg            *notifier.Registry
+	recurringRules      *repository.RecurringRuleRepository
+	pushSubs            *repository.PushSubscriptionRepository
+	logStore            *logstore.Store
+	settingsStore       *settings.Store
+	loginLimiter        *rateLimiter
+	forgotLimiter       *rateLimiter
 	passwordResetTokens *repository.PasswordResetTokenRepository
-	immich         *immich.Client
-	photoStore     *photos.Store
+	immich              *immich.Client
+	photoStore          *photos.Store
 }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry, logStore *logstore.Store) *Handler {
@@ -55,25 +58,27 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		panic(err)
 	}
 	return &Handler{
-		cfg:            cfg,
-		client:         client,
-		templates:      templates,
-		users:          repository.NewUserRepository(client),
-		sessions:       session.NewStore(client),
-		people:         repository.NewPersonRepository(client),
-		groups:         repository.NewGroupRepository(client),
-		events:         repository.NewEventRepository(client),
-		groupNotes:     repository.NewGroupNoteRepository(client),
-		notifReg:       notifReg,
-		recurringRules: repository.NewRecurringRuleRepository(client),
-		pushSubs:       repository.NewPushSubscriptionRepository(client),
-		logStore:       logStore,
-		settingsStore:  settings.New(client),
-		loginLimiter:   newRateLimiter(5, 60*time.Second),
-		forgotLimiter:  newRateLimiter(5, 15*time.Minute),
+		cfg:                 cfg,
+		client:              client,
+		templates:           templates,
+		users:               repository.NewUserRepository(client),
+		sessions:            session.NewStore(client),
+		people:              repository.NewPersonRepository(client),
+		groups:              repository.NewGroupRepository(client),
+		tags:                repository.NewTagRepository(client),
+		events:              repository.NewEventRepository(client),
+		groupNotes:          repository.NewGroupNoteRepository(client),
+		giftIdeas:           repository.NewGiftIdeaRepository(client),
+		notifReg:            notifReg,
+		recurringRules:      repository.NewRecurringRuleRepository(client),
+		pushSubs:            repository.NewPushSubscriptionRepository(client),
+		logStore:            logStore,
+		settingsStore:       settings.New(client),
+		loginLimiter:        newRateLimiter(5, 60*time.Second),
+		forgotLimiter:       newRateLimiter(5, 15*time.Minute),
 		passwordResetTokens: repository.NewPasswordResetTokenRepository(client),
-		immich:         immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
-		photoStore:     photos.NewStore(cfg.DataDir),
+		immich:              immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
+		photoStore:          photos.NewStore(cfg.DataDir),
 	}
 }
 
@@ -141,12 +146,21 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/people/new", h.newPersonForm)
 			r.Post("/people/new", h.createPerson)
 			r.Get("/people/{id}", h.viewPerson)
+			r.Get("/people/{id}/edit", h.editPersonForm)
+			r.Post("/people/{id}/edit", h.updatePerson)
 			r.Post("/people/{id}/delete", h.deletePerson)
 			r.Post("/people/{id}/notify-birthdays", h.toggleNotifyBirthdays)
+			r.Post("/people/{id}/tags", h.addPersonTag)
+			r.Post("/people/{id}/tags/{tag}/remove", h.removePersonTag)
+			r.Post("/people/{id}/tags/remove", h.removePersonTag)
+			r.Get("/api/tags", h.autocompleteTags)
 			r.Get("/people/{id}/photo", h.personPhoto)
 			r.Post("/people/{id}/immich", h.setImmichPhoto)
 			r.Post("/people/{id}/photo/upload", h.uploadPersonPhoto)
 			r.Post("/people/{id}/photo/remove", h.removePersonPhoto)
+			r.Post("/people/{id}/gift-ideas", h.createGiftIdea)
+			r.Post("/people/{id}/gift-ideas/{giftID}/status", h.updateGiftIdeaStatus)
+			r.Post("/people/{id}/gift-ideas/{giftID}/delete", h.deleteGiftIdea)
 			r.Post("/people/import", h.handleImportVCard)
 			r.Get("/people/{id}/vcard", h.handleExportSingleVCard)
 			r.Get("/people/export", h.handleExportAllVCard)
@@ -175,6 +189,12 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/groups/{id}/notes", h.createGroupNote)
 			r.Post("/groups/{id}/notes/{noteID}/delete", h.deleteGroupNote)
 
+			r.Get("/recurring-rules", h.listRecurringRules)
+			r.Get("/recurring-rules/new", h.newRecurringRuleForm)
+			r.Post("/recurring-rules/new", h.createRecurringRule)
+			r.Post("/recurring-rules/{id}/delete", h.deleteRecurringRule)
+
+			r.Get("/stats", h.statsPage)
 			r.Get("/calendar", h.calendarPage)
 			r.Get("/api/calendar-events", h.calendarEvents)
 			r.Post("/calendar/import", h.handleImportICS)
@@ -254,14 +274,15 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	// ── eventView with person context ──
 	type eventView struct {
-		Name          string // person name
-		Type          string
-		Date          string // absolute date (e.g. "Dec 25")
-		DaysRemaining int
-		RelativeLabel string // "Today", "Tomorrow", "In 3 days", or empty
-		PersonInitial string // first character for avatar
-		AvatarColor   int    // deterministic colour index 0-7
-		AgeInfo       age.Info
+		Name           string // person name
+		Type           string
+		Date           string // absolute date (e.g. "Dec 25")
+		DaysRemaining  int
+		RelativeLabel  string // "Today", "Tomorrow", "In 3 days", or empty
+		PersonInitial  string // first character for avatar
+		AvatarColor    int    // deterministic colour index 0-7
+		AgeInfo        age.Info
+		MilestoneLabel string
 	}
 
 	var (
@@ -302,6 +323,9 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		if e.Type == "birthday" {
 			// Age is derived from the stored birth date, not the occurrence.
 			ev.AgeInfo = age.InfoFor(e.Date, now)
+		}
+		if ok, label := milestone.IsMilestone(e.Type, e.Date, occ.Date); ok {
+			ev.MilestoneLabel = label
 		}
 		return ev
 	}
@@ -350,17 +374,26 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	peopleCount := len(allPeople)
 	totalEvents := len(todayEvents) + len(thisWeekEvents) + len(thisMonthEvents) + len(laterEvents)
 
+	// Milestones this year summary
+	var milestonesThisYear []eventView
+	for _, ev := range append(append(append(todayEvents, thisWeekEvents...), thisMonthEvents...), laterEvents...) {
+		if ev.MilestoneLabel != "" {
+			milestonesThisYear = append(milestonesThisYear, ev)
+		}
+	}
+
 	h.render(w, r, "dashboard.html", map[string]any{
-		"Title":       "Datey - Dashboard",
-		"Greeting":    greeting,
-		"CurrentDate": weekdayDate(h.cfg.DateVariant, now),
-		"TodayEvents": todayEvents,
-		"ThisWeekEvents": thisWeekEvents,
-		"ThisMonthEvents": thisMonthEvents,
-		"LaterEvents": laterEvents,
-		"ReminderDays": reminderDays,
-		"PeopleCount": peopleCount,
-		"TotalEvents": totalEvents,
+		"Title":              "Datey - Dashboard",
+		"Greeting":           greeting,
+		"CurrentDate":        weekdayDate(h.cfg.DateVariant, now),
+		"TodayEvents":        todayEvents,
+		"ThisWeekEvents":     thisWeekEvents,
+		"ThisMonthEvents":    thisMonthEvents,
+		"LaterEvents":        laterEvents,
+		"MilestonesThisYear": milestonesThisYear,
+		"ReminderDays":       reminderDays,
+		"PeopleCount":        peopleCount,
+		"TotalEvents":        totalEvents,
 	})
 }
 
@@ -600,6 +633,8 @@ func inferActiveNav(path string) string {
 		return "groups"
 	case hasPrefix(path, "/calendar") || hasPrefix(path, "/api/calendar"):
 		return "calendar"
+	case path == "/stats" || hasPrefix(path, "/stats"):
+		return "stats"
 	case hasPrefix(path, "/settings") || hasPrefix(path, "/logs") || hasPrefix(path, "/users"):
 		return "settings"
 	default:

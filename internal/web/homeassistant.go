@@ -23,12 +23,12 @@ type homeAssistantEvent struct {
 // GET /api/homeassistant/stats, shaped for a Home Assistant RESTful sensor
 // (value_template + json_attributes).
 type homeAssistantStats struct {
-	NextEvent     string                `json:"next_event"`
-	NextEventDate string                `json:"next_event_date"`
-	NextEventDays int                   `json:"next_event_days"`
-	EventsIn7Days int                   `json:"events_in_7_days"`
+	NextEvent      string               `json:"next_event"`
+	NextEventDate  string               `json:"next_event_date"`
+	NextEventDays  int                  `json:"next_event_days"`
+	EventsIn7Days  int                  `json:"events_in_7_days"`
 	EventsIn30Days int                  `json:"events_in_30_days"`
-	Upcoming      []homeAssistantEvent `json:"upcoming"`
+	Upcoming       []homeAssistantEvent `json:"upcoming"`
 }
 
 // homeAssistantAccessOK mirrors the iCal/RSS/API feed key semantics: the

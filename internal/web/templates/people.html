@@ -40,6 +40,7 @@
     </select>
   </div>
 </div>
+{{if .TagFilter}}<div class="mb-2"><span class="small text-muted">Filtering by tag: <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">{{.TagFilter}}</span> <a href="/people" class="ms-1 small">Clear</a></span></div>{{end}}
 <div id="people-grid">
   {{if .Cards}}
     <div class="people-card-grid">
@@ -61,6 +62,11 @@
             {{if .Groups}}
               <div class="mb-2 d-flex flex-wrap gap-1">
                 {{range .Groups}}<span class="badge bg-secondary-subtle text-secondary-emphasis">{{.}}</span>{{end}}
+              </div>
+            {{end}}
+            {{if .Tags}}
+              <div class="mb-2 d-flex flex-wrap gap-1">
+                {{range .Tags}}<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">{{.}}</span>{{end}}
               </div>
             {{end}}
             <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top small">

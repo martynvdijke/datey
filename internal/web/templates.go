@@ -20,6 +20,12 @@ var funcMap = template.FuncMap{
 	"add": func(a, b int) int { return a + b },
 	"sub": func(a, b int) int { return a - b },
 	"div": func(a, b int) int { return int(math.Ceil(float64(a) / float64(b))) },
+	"divFloat": func(a *int, b float64) float64 {
+		if a == nil {
+			return 0
+		}
+		return float64(*a) / b
+	},
 	"iter": func(n int) []int {
 		r := make([]int, n)
 		for i := range r {
@@ -89,6 +95,7 @@ func loadTemplates() (map[string]*template.Template, error) {
 
 	pages := []string{
 		"dashboard.html",
+		"stats.html",
 		"people.html",
 		"person_detail.html",
 		"person_form.html",
@@ -103,6 +110,8 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"users.html",
 		"forgot_password.html",
 		"reset_password.html",
+		"recurring_rule_form.html",
+		"recurring_rule_list.html",
 	}
 
 	templates := make(map[string]*template.Template, len(pages))
@@ -129,4 +138,3 @@ func loadTemplates() (map[string]*template.Template, error) {
 
 	return templates, nil
 }
-

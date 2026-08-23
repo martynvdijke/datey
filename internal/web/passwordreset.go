@@ -167,8 +167,8 @@ func (h *Handler) resetPasswordPost(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(errors) > 0 {
 		h.render(w, r, "reset_password.html", map[string]any{
-			"Title": "Datey - Reset Password",
-			"Token": token,
+			"Title":  "Datey - Reset Password",
+			"Token":  token,
 			"Errors": errors,
 		})
 		return

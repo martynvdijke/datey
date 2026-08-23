@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/datey/datey/internal/milestone"
 )
 
 func (h *Handler) calendarPage(w http.ResponseWriter, r *http.Request) {
@@ -74,14 +76,15 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type calendarEvent struct {
-		ID          string   `json:"id"`
-		Title       string   `json:"title"`
-		Start       string   `json:"start"`
-		AllDay      bool     `json:"allDay"`
-		ClassNames  []string `json:"className"`
-		Description string   `json:"description"`
-		Notes       string   `json:"notes"`
-		Type        string   `json:"type"`
+		ID             string   `json:"id"`
+		Title          string   `json:"title"`
+		Start          string   `json:"start"`
+		AllDay         bool     `json:"allDay"`
+		ClassNames     []string `json:"className"`
+		Description    string   `json:"description"`
+		Notes          string   `json:"notes"`
+		Type           string   `json:"type"`
+		MilestoneLabel string   `json:"milestoneLabel,omitempty"`
 	}
 
 	result := make([]calendarEvent, 0, len(occurrences))
@@ -96,15 +99,20 @@ func (h *Handler) calendarEvents(w http.ResponseWriter, r *http.Request) {
 				title = e.Type
 			}
 		}
+		var msLabel string
+		if ok, label := milestone.IsMilestone(e.Type, e.Date, occ.Date); ok {
+			msLabel = label
+		}
 		result = append(result, calendarEvent{
-			ID:          fmt.Sprintf("%d", e.ID),
-			Title:       title,
-			Start:       occ.Date.Format("2006-01-02"),
-			AllDay:      true,
-			ClassNames:  []string{"event-" + e.Type},
-			Description: e.Description,
-			Notes:       e.Notes,
-			Type:        e.Type,
+			ID:             fmt.Sprintf("%d", e.ID),
+			Title:          title,
+			Start:          occ.Date.Format("2006-01-02"),
+			AllDay:         true,
+			ClassNames:     []string{"event-" + e.Type},
+			Description:    e.Description,
+			Notes:          e.Notes,
+			Type:           e.Type,
+			MilestoneLabel: msLabel,
 		})
 	}
 

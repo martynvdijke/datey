@@ -299,10 +299,16 @@ func (h *Handler) testAll(ctx context.Context, cfg *config.Config, form url.Valu
 		{"Web Push", func() (bool, string) { return h.testWebPush(ctx, cfg) }},
 		{"Immich", func() (bool, string) { return h.testImmich(ctx, cfg, form) }},
 		{"CardDAV", func() (bool, string) { return h.testCardDAV(ctx, cfg, form) }},
-		{"iCal", func() (bool, string) { return testFeed("iCal", cfg.ICalEnabled, cfg.ICalFeedKey, cfg.ICalEventStart, cfg) }},
+		{"iCal", func() (bool, string) {
+			return testFeed("iCal", cfg.ICalEnabled, cfg.ICalFeedKey, cfg.ICalEventStart, cfg)
+		}},
 		{"RSS", func() (bool, string) { return testFeed("RSS", cfg.RSSEnabled, cfg.RSSFeedKey, "", cfg) }},
-		{"Upcoming API", func() (bool, string) { return testFeed("Upcoming API", cfg.UpcomingAPIEnabled, cfg.UpcomingAPIKey, "", cfg) }},
-		{"Home Assistant", func() (bool, string) { return testFeed("Home Assistant", cfg.HomeAssistantEnabled, cfg.HomeAssistantKey, "", cfg) }},
+		{"Upcoming API", func() (bool, string) {
+			return testFeed("Upcoming API", cfg.UpcomingAPIEnabled, cfg.UpcomingAPIKey, "", cfg)
+		}},
+		{"Home Assistant", func() (bool, string) {
+			return testFeed("Home Assistant", cfg.HomeAssistantEnabled, cfg.HomeAssistantKey, "", cfg)
+		}},
 	}
 
 	var sb strings.Builder

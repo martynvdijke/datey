@@ -13,7 +13,7 @@ A self-hosted web application for tracking important dates and receiving automat
 
 - **📅 Event Tracking** — Manage people and their important events (birthdays, anniversaries, weddings, holidays, meetings, custom) with dates and descriptions.
 - **📥 ICS Import** — Preview and import events from `.ics` calendar files (all-day and timed events, yearly recurrences; duplicates skipped).
-- **🔄 Recurring Rules** — Built-in recurring events (Mother's Day, Father's Day, New Year's Day, Easter-based holidays) that auto-generate each year.
+- **🔄 Recurring Rules** — Built-in recurring events (Mother's Day 2nd Sunday of May, Father's Day 3rd Sunday of June, New Year's Day, Easter-based holidays) plus custom nth-weekday-of-month rules (e.g. "Last Monday of August"); ordinal 5 means "Last" and nonexistent ordinals skip the year.
 - **⏰ Daily Scheduler** — Checks for upcoming events daily at a configurable hour and sends reminders. If the server was offline when a reminder was due, it catches up on the next startup: dates that fell inside the reminder window during the downtime are re-checked and sent with "was N days ago" phrasing (no duplicate sends).
 - **📧 Email Notifications** — SMTP-based email reminders for upcoming events.
 - **🔔 Gotify Notifications** — Push notifications via Gotify self-hosted server.
@@ -23,9 +23,12 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🔧 Multi-Notification Registry** — Configure one or multiple channels; each is tested independently.
 - **✅ Test Notifications** — Send test messages per channel from the settings page.
 - **📊 Dashboard** — At-a-glance view of upcoming events with days remaining.
+- **📈 Stats Dashboard** — Read-only `/stats` overview with age distribution, busiest birthday months, events-per-month histogram, upcoming milestones (next 60 days), and recently-missed events (last 30 days); CSS-only bar charts.
 - **🗓️ Calendar View** — Full month calendar with upcoming events, theme-aware, with `<noscript>` fallback.
 - **📅 Date Variant** — User-facing dates render day-first by default (`25 Dec`); switch to month-first (`Dec 25`) from Settings → Configuration (`DATE_VARIANT`). Existing installs render day-first after upgrade — change it back in Settings if you prefer US style. Machine feeds (iCal, RSS, APIs) always stay ISO 8601.
 - **👥 Groups** — Organize people into one or more groups as searchable categories. Group detail pages hold members, their own events, and a shared notes timeline; filter the people list with the group dropdown or a `group:Family` search prefix.
+- **🏷️ Tags** — Lightweight free-form labels (e.g. `vip`, `summer-camp`) distinct from groups. Add/remove tags on a person's detail page with autocomplete (`GET /api/tags?q=`) and filter the people list via `?tag=vip` (comma-separated `?tag=a,b` is AND). Normalization is trim + lowercase, `^[a-z0-9_-]{1,30}$`, with deduplication. Tags render as `bg-info-subtle` chips, groups as `bg-secondary` badges.
+- **🎁 Gift Ideas** — Track per-person gift ideas with title, optional notes/price/URL and status lifecycle (`idea`→`purchased`→`given`, any→`archived`). Add ideas from the person detail page and hide purchased/given/archived behind a spoiler-safe toggle (`?show_purchased=1`); deleting the person cascades to its ideas.
 - **🖼️ Immich Profile Pictures** — One-click "Sync with Immich" bulk import from Settings matches every person by name (or per-person override) and imports their thumbnail locally. Uploaded photos always win over imported ones, removing a photo reverts to the live Immich proxy, and nothing is imported automatically when a person is created.
 - **👤 User Management** — Multi-user support with admin and user roles.
 - **📝 In-App Logging** — Ring-buffer log viewer filterable by level and source, with live log level changes.
@@ -33,6 +36,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📇 vCard Import/Export** — Import one or more vCard files (with optional overwrite of existing people) and export contacts as vCard. `BDAY` supports full dates (`19951120`, `1995-11-20`) and year-less formats (`--0608`, `--06-08`, `-0608`, `0608`); year-less birthdays import as regular birthday events and are shown without an age.
 - **🔁 CardDAV Sync** — Two-way, authenticated sync of people and birthdays with a CardDAV address book (Nextcloud, Baikal, iCloud, ...). Remote changes are pulled once a day (plus a manual "Sync Now" from Settings → Notifications); local edits are tracked and pushed back. `BDAY` becomes a birthday event and `NOTE` maps to notes. Conflicts resolve last-write-wins by `REV`/modification time; a server-side deletion either unlinks the local person (default, `keep`) or removes them (`delete`). Disabled until you enable it.
 - **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
+- **🎖️ Milestone Badges** — Birthdays at 10, 18, 20, 21, 30–100 (decade) and anniversaries at 10, 25 (Silver), 50 (Golden), 60 (Diamond) show a milestone badge in the dashboard, calendar, and person detail views, plus a "milestones this year" summary on the dashboard. Yearless events show no badge. Optional 10 000-day badges are available flag-gated.
 - **🎈 Annual Notifications** — Birthdays, anniversaries, weddings and holidays fire every year on their occurrence date, even when the stored date is historical (leap-day aware). Birthday reminders are on by default per person and can be turned off with the toggle on a person's detail page. On upgrade, existing people with a parseable `BDAY` in their stored vCard data get a birthday event backfilled once.
 - **💾 Database Backup** — Automatic nightly SQLite backups plus a weekly backup on a configurable weekday, with on-demand backup and configurable retention.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
@@ -212,7 +216,10 @@ datey/
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/` | Dashboard — upcoming events |
-| `GET` | `/people` | List all people (search + group filter) |
+| `GET` | `/people` | List all people (search + group + `?tag=` filter; `?tag=a,b` is AND) |
+| `POST` | `/people/{id}/tags` | Add tag to a person |
+| `POST` | `/people/{id}/tags/remove` | Remove tag from a person |
+| `GET` | `/api/tags` | Tag autocomplete (`?q=prefix`, 10 results) |
 | `GET` | `/people/new` | Add a new person |
 | `POST` | `/people/new` | Create a person |
 | `GET` | `/people/{id}` | View person and their events |

@@ -186,9 +186,9 @@ func TestSettingsConfigSave_ValidationErrors(t *testing.T) {
 	router := setupConfigRouter(h)
 
 	form := url.Values{}
-	form.Set("PORT", "99999")      // invalid
+	form.Set("PORT", "99999")       // invalid
 	form.Set("SCHEDULER_HOUR", "5") // valid
-	form.Set("REMINDER_DAYS", "0")   // invalid
+	form.Set("REMINDER_DAYS", "0")  // invalid
 
 	req := httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -353,8 +353,8 @@ func TestSettingsConfigSave_ICalFeedValidationErrors(t *testing.T) {
 
 	form := url.Values{}
 	form.Set("ICAL_FEED_ENABLED", "on")
-	form.Set("ICAL_EVENT_START", "25:99")    // invalid hour and minute
-	form.Set("ICAL_EVENT_DURATION", "9999")  // invalid duration
+	form.Set("ICAL_EVENT_START", "25:99")   // invalid hour and minute
+	form.Set("ICAL_EVENT_DURATION", "9999") // invalid duration
 
 	req := httptest.NewRequest("POST", "/settings/config", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

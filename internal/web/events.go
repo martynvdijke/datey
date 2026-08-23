@@ -18,7 +18,7 @@ func (h *Handler) newEventForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, r, "event_form.html", map[string]any{
-		"Title":     "Datey - Add Event",
+		"Title":    "Datey - Add Event",
 		"PersonID": id,
 	})
 }
@@ -49,9 +49,9 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 
 	if len(errors) > 0 {
 		h.render(w, r, "event_form.html", map[string]any{
-			"Title":   "Datey - Add Event",
+			"Title":    "Datey - Add Event",
 			"PersonID": id,
-			"Errors":  errors,
+			"Errors":   errors,
 			"FormData": map[string]string{
 				"Type":        eventType,
 				"Date":        dateStr,
@@ -65,9 +65,9 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errors["date"] = "Invalid date format"
 		h.render(w, r, "event_form.html", map[string]any{
-			"Title":   "Datey - Add Event",
+			"Title":    "Datey - Add Event",
 			"PersonID": id,
-			"Errors":  errors,
+			"Errors":   errors,
 			"FormData": map[string]string{
 				"Type":        eventType,
 				"Date":        dateStr,
