@@ -1,3 +1,10 @@
+## [1.38.1](https://github.com/martynvdijke/datey/compare/v1.38.0...v1.38.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* **immich:** handle paginated /api/people response and add client tests ([38c9a8a](https://github.com/martynvdijke/datey/commit/38c9a8ab833b298c7ac6fd2fabfad493c16c14d0))
+
 # [1.38.0](https://github.com/martynvdijke/datey/compare/v1.37.3...v1.38.0) (2026-08-21)
 
 
