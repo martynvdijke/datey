@@ -125,16 +125,30 @@
           calendarEl.style.display = 'none';
         }
       },
+      eventDidMount: function(info) {
+        if (info.event.extendedProps.milestoneLabel) {
+          info.el.title = info.event.extendedProps.milestoneLabel;
+          var badge = document.createElement('span');
+          badge.className = 'badge bg-warning text-dark ms-1';
+          badge.textContent = info.event.extendedProps.milestoneLabel;
+          if (info.el.querySelector('.fc-event-title')) {
+            info.el.querySelector('.fc-event-title').appendChild(badge);
+          }
+        }
+      },
       eventClick: function(info) {
         var props = info.event.extendedProps;
-        document.getElementById('event-contact').textContent = info.event.title;
+        var title = info.event.title;
+        if (props.milestoneLabel) title += ' — ' + props.milestoneLabel;
+        document.getElementById('event-contact').textContent = title;
         document.getElementById('event-date').textContent = info.event.start.toLocaleDateString('en-US', {
           weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
         var typeEl = document.getElementById('event-type');
         var type = props.type || 'N/A';
+        if (props.milestoneLabel) type += ' (' + props.milestoneLabel + ')';
         typeEl.textContent = type;
-        typeEl.className = 'event-type-badge event-' + type;
+        typeEl.className = 'event-type-badge event-' + props.type;
         document.getElementById('event-description').textContent = props.description || 'No description';
         document.getElementById('event-notes').textContent = props.notes || 'No notes';
         var modal = new bootstrap.Modal(document.getElementById('eventModal'));
