@@ -12,9 +12,16 @@
           <span class="badge bg-secondary me-1">{{.Name}}</span>
         {{end}}
       {{end}}
+      {{if .Tags}}
+        {{range .Tags}}
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle me-1">{{.Name}}</span>
+        {{end}}
+      {{end}}
     </div>
   </div>
   <div class="person-hero-actions">
+    <a href="/people/{{.Person.ID}}/edit" class="btn btn-outline-primary">Edit</a>
+    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#personSettingsModal" aria-haspopup="dialog">Settings</button>
     <a href="/people/{{.Person.ID}}/events/new" class="btn btn-primary">Add Event</a>
     <a href="/people/{{.Person.ID}}/vcard" class="btn btn-outline-secondary">Export vCard</a>
   </div>
@@ -28,6 +35,134 @@
   </div>
 </section>
 {{end}}
+
+<!-- Tags -->
+<div class="card mb-3">
+  <div class="card-body">
+    <h2 class="h5">Tags</h2>
+    {{if .Tags}}
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        {{range .Tags}}
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle d-inline-flex align-items-center gap-1">
+            {{.Name}}
+            <form action="/people/{{$.Person.ID}}/tags/remove" method="POST" class="d-inline">
+              {{template "csrfField" $}}
+              <input type="hidden" name="tag" value="{{.Name}}">
+              <button type="submit" class="btn-close btn-close-sm" aria-label="Remove tag {{.Name}}" style="font-size: 0.6em;"></button>
+            </form>
+          </span>
+        {{end}}
+      </div>
+    {{else}}
+      <p class="small text-muted">No tags yet.</p>
+    {{end}}
+    <form action="/people/{{.Person.ID}}/tags" method="POST" class="row g-2 align-items-end">
+      {{template "csrfField" .}}
+      <div class="col-md-6">
+        <label class="form-label" for="tag-input">Add tag</label>
+        <input type="text" id="tag-input" name="tag" class="form-control" list="tag-options" placeholder="e.g. vip" pattern="[a-z0-9_-]{1,30}" maxlength="30" required>
+        <datalist id="tag-options"></datalist>
+        <div class="form-text">Lowercase letters, numbers, _ or - (1–30 chars).</div>
+      </div>
+      <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Add</button></div>
+    </form>
+    <script>
+      (function(){
+        var input = document.getElementById('tag-input');
+        var dl = document.getElementById('tag-options');
+        if (!input || !dl) return;
+        var t;
+        input.addEventListener('input', function(){
+          clearTimeout(t);
+          var q = input.value.trim();
+          if (q.length === 0) { dl.innerHTML=''; return; }
+          t = setTimeout(function(){
+            fetch('/api/tags?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(names){
+              dl.innerHTML='';
+              names.forEach(function(n){ var o=document.createElement('option'); o.value=n; dl.appendChild(o); });
+            });
+          }, 200);
+        });
+      })();
+    </script>
+  </div>
+</div>
+
+<!-- Gift Ideas -->
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h5 mb-0">Gift Ideas</h2>
+      {{if .ShowPurchased}}
+        <a href="/people/{{.Person.ID}}" class="btn btn-outline-secondary btn-sm">Hide purchased</a>
+      {{else}}
+        <a href="/people/{{.Person.ID}}?show_purchased=1" class="btn btn-outline-secondary btn-sm">Show purchased</a>
+      {{end}}
+    </div>
+    {{if .GiftIdeas}}
+      <div class="d-flex flex-column gap-2 mb-3">
+        {{range .GiftIdeas}}
+          <div class="d-flex align-items-center gap-2 border rounded p-2">
+            <div class="flex-grow-1">
+              <strong>{{.Title}}</strong>
+              {{if .Notes}}<span class="text-muted small ms-1">{{.Notes}}</span>{{end}}
+              {{if .URL}}<a href="{{.URL}}" target="_blank" rel="noopener" class="small ms-1">{{.URL}}</a>{{end}}
+              {{if .PriceCents}}<span class="badge bg-secondary ms-1">${{printf "%.2f" (divFloat .PriceCents 100)}}</span>{{end}}
+              <span class="badge bg-light text-dark border ms-1">{{.Status}}</span>
+            </div>
+            <div class="d-flex gap-1">
+              {{if eq .Status "idea"}}
+                <form action="/people/{{$.Person.ID}}/gift-ideas/{{.ID}}/status" method="POST" class="d-inline">
+                  {{template "csrfField" $}}
+                  <input type="hidden" name="status" value="purchased">
+                  <button type="submit" class="btn btn-outline-primary btn-sm">Mark purchased</button>
+                </form>
+              {{end}}
+              {{if eq .Status "purchased"}}
+                <form action="/people/{{$.Person.ID}}/gift-ideas/{{.ID}}/status" method="POST" class="d-inline">
+                  {{template "csrfField" $}}
+                  <input type="hidden" name="status" value="given">
+                  <button type="submit" class="btn btn-outline-success btn-sm">Mark given</button>
+                </form>
+              {{end}}
+              <form action="/people/{{$.Person.ID}}/gift-ideas/{{.ID}}/status" method="POST" class="d-inline">
+                {{template "csrfField" $}}
+                <input type="hidden" name="status" value="archived">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Archive</button>
+              </form>
+              <form action="/people/{{$.Person.ID}}/gift-ideas/{{.ID}}/delete" method="POST" class="d-inline">
+                {{template "csrfField" $}}
+                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+              </form>
+            </div>
+          </div>
+        {{end}}
+      </div>
+    {{else}}
+      <p class="small text-muted">No gift ideas yet.</p>
+    {{end}}
+    <form action="/people/{{.Person.ID}}/gift-ideas" method="POST" class="row g-2 align-items-end">
+      {{template "csrfField" .}}
+      <div class="col-md-4">
+        <label class="form-label" for="gift-title">Title</label>
+        <input type="text" id="gift-title" name="title" class="form-control" placeholder="e.g. Book" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="gift-notes">Notes</label>
+        <input type="text" id="gift-notes" name="notes" class="form-control" placeholder="optional">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="gift-price">Price (cents)</label>
+        <input type="number" id="gift-price" name="price_cents" class="form-control" placeholder="e.g. 1999" min="0">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="gift-url">URL</label>
+        <input type="url" id="gift-url" name="url" class="form-control" placeholder="https://">
+      </div>
+      <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Add gift</button></div>
+    </form>
+  </div>
+</div>
 
 <!-- Birthday notification opt-out -->
 <div class="mb-3">
@@ -67,6 +202,7 @@
                 <span class="event-age text-muted small fw-semibold">{{if .IsUpcoming}}Turns {{$ai.Next}}{{else}}Age {{$ai.Current}}{{end}}</span>
               {{end}}
             {{end}}
+            {{if .MilestoneLabel}}<span class="badge bg-warning text-dark milestone-badge">{{.MilestoneLabel}} &#127880;</span>{{end}}
             {{if .Description}}
               <span class="event-timeline-desc text-muted small">{{.Description}}</span>
             {{end}}
@@ -92,41 +228,53 @@
   </div>
 {{end}}
 
-<div class="card mt-4 mb-4">
-  <div class="card-body">
-    <h2 class="h5">Profile photo</h2>
-    <div class="d-flex align-items-center gap-3 mb-3">
-      {{if .PhotoURL}}
-        <img class="person-avatar" src="{{.PhotoURL}}" alt="{{.Person.Name}}" style="width:56px;height:56px;">
-        {{if .Person.PhotoSource}}<span class="badge bg-secondary-subtle text-secondary-emphasis">source: {{.Person.PhotoSource}}</span>{{end}}
-      {{else}}
-        <span class="person-avatar avatar-color-{{.AvatarColor}}" style="width:56px;height:56px;">{{.Initial}}</span>
-        <span class="small text-muted">No photo yet.</span>
-      {{end}}
-    </div>
-    <form action="/people/{{.Person.ID}}/photo/upload" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end mb-1">
-      {{template "csrfField" .}}
-      <div class="col-md-7">
-        <label class="form-label" for="photo-upload">Upload photo <span class="text-muted fw-normal">(image up to 5 MB)</span></label>
-        <input type="file" id="photo-upload" name="photo" class="form-control" accept="image/*" required>
+<!-- Person settings modal: the only place to manage the profile photo -->
+<div class="modal fade" id="personSettingsModal" tabindex="-1" aria-labelledby="personSettingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="personSettingsModalLabel">Settings — {{.Person.Name}}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Upload</button></div>
-    </form>
-    {{if .Person.PhotoPath}}
-    <form action="/people/{{.Person.ID}}/photo/remove" method="POST" class="mb-3">
-      {{template "csrfField" .}}
-      <button class="btn btn-outline-danger btn-sm" type="submit">Remove photo</button>
-      <span class="small text-muted ms-1">Reverts to the Immich photo if one matches.</span>
-    </form>
-    {{end}}
-    <hr>
-    <form action="/people/{{.Person.ID}}/immich" method="POST" class="row g-2 align-items-end">
-      {{template "csrfField" .}}
-      <div class="col-md-7"><label class="form-label" for="immich-person-id">Immich person ID <span class="text-muted fw-normal">(optional manual override)</span></label><input id="immich-person-id" name="immich_person_id" class="form-control" value="{{if .Person.ImmichPersonID}}{{.Person.ImmichPersonID}}{{end}}"></div>
-      <div class="col-md-auto"><div class="form-check"><input class="form-check-input" type="checkbox" name="disable_photo" id="disable-photo"{{if .Person.ImmichPhotoDisabled}} checked{{end}}><label class="form-check-label" for="disable-photo">Disable photo</label></div></div>
-      <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Save photo settings</button></div>
-    </form>
-    <p class="small text-muted mb-0 mt-2">Bulk import happens from Settings → Immich ("Sync with Immich"). Uploaded photos are never overwritten by sync.</p>
+      <div class="modal-body">
+        <h2 class="h6">Profile photo</h2>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          {{if .PhotoURL}}
+            <img class="person-avatar" src="{{.PhotoURL}}" alt="{{.Person.Name}}" style="width:56px;height:56px;">
+            {{if .Person.PhotoSource}}<span class="badge bg-secondary-subtle text-secondary-emphasis">source: {{.Person.PhotoSource}}</span>{{end}}
+          {{else}}
+            <span class="person-avatar avatar-color-{{.AvatarColor}}" style="width:56px;height:56px;">{{.Initial}}</span>
+            <span class="small text-muted">No photo yet.</span>
+          {{end}}
+        </div>
+        <form action="/people/{{.Person.ID}}/photo/upload" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end mb-1">
+          {{template "csrfField" .}}
+          <div class="col-md-7">
+            <label class="form-label" for="photo-upload">Upload photo <span class="text-muted fw-normal">(image up to 5 MB)</span></label>
+            <input type="file" id="photo-upload" name="photo" class="form-control" accept="image/*" required>
+          </div>
+          <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Upload</button></div>
+        </form>
+        {{if .Person.PhotoPath}}
+        <form action="/people/{{.Person.ID}}/photo/remove" method="POST" class="mb-3">
+          {{template "csrfField" .}}
+          <button class="btn btn-outline-danger btn-sm" type="submit">Remove photo</button>
+          <span class="small text-muted ms-1">Reverts to the Immich photo if one matches.</span>
+        </form>
+        {{end}}
+        <hr>
+        <form action="/people/{{.Person.ID}}/immich" method="POST" class="row g-2 align-items-end">
+          {{template "csrfField" .}}
+          <div class="col-md-7"><label class="form-label" for="immich-person-id">Immich person ID <span class="text-muted fw-normal">(optional manual override)</span></label><input id="immich-person-id" name="immich_person_id" class="form-control" value="{{if .Person.ImmichPersonID}}{{.Person.ImmichPersonID}}{{end}}"></div>
+          <div class="col-md-auto"><div class="form-check"><input class="form-check-input" type="checkbox" name="disable_photo" id="disable-photo"{{if .Person.ImmichPhotoDisabled}} checked{{end}}><label class="form-check-label" for="disable-photo">Disable photo</label></div></div>
+          <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Save photo settings</button></div>
+        </form>
+        <p class="small text-muted mb-0 mt-2">Bulk import happens from Settings → Immich ("Sync with Immich"). Uploaded photos are never overwritten by sync.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
   </div>
 </div>
 

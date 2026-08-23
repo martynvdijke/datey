@@ -83,6 +83,16 @@ func (r *EventRepository) ListByPerson(ctx context.Context, personID int) ([]*en
 		All(ctx)
 }
 
+// FindByPersonAndType returns the person's event of the given type, or an
+// ent.NotFoundError when none exists. When several exist, the earliest by
+// date is returned.
+func (r *EventRepository) FindByPersonAndType(ctx context.Context, personID int, eventType string) (*ent.Event, error) {
+	return r.client.Event.Query().
+		Where(event.HasPersonWith(person.IDEQ(personID)), event.TypeEQ(eventType)).
+		Order(ent.Asc(event.FieldDate)).
+		First(ctx)
+}
+
 // ListByGroup returns the events owned by a group, ordered by date.
 func (r *EventRepository) ListByGroup(ctx context.Context, groupID int) ([]*ent.Event, error) {
 	return r.client.Event.Query().

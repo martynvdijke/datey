@@ -9,6 +9,7 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/age"
+	"github.com/datey/datey/internal/milestone"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -26,6 +27,7 @@ type personCard struct {
 	HasAge        bool
 	PhotoURL      string
 	Groups        []string
+	Tags          []string
 }
 
 // listPeopleInGroups returns the de-duplicated union of the members of all
@@ -52,6 +54,7 @@ func (h *Handler) listPeopleInGroups(r *http.Request, ids []int) ([]*ent.Person,
 func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
 	groupIDStr := r.URL.Query().Get("group")
+	tagParam := strings.TrimSpace(r.URL.Query().Get("tag"))
 
 	// "group:Family rest of query" resolves the prefix to a group filter;
 	// any remaining text searches within that group's members.
@@ -105,6 +108,36 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Apply tag filter (comma-separated AND semantics), composing with q/group.
+	if tagParam != "" {
+		var tagNames []string
+		for _, part := range strings.Split(tagParam, ",") {
+			if t := strings.TrimSpace(part); t != "" {
+				tagNames = append(tagNames, t)
+			}
+		}
+		if len(tagNames) > 0 {
+			tagPeople, tagErr := h.tags.ListPeopleByTags(r.Context(), tagNames)
+			if tagErr != nil {
+				slog.Error("list people by tags", "error", tagErr)
+				h.renderError(w, r, http.StatusInternalServerError)
+				return
+			}
+			// Intersect with already-filtered people
+			tagSet := make(map[int]bool, len(tagPeople))
+			for _, tp := range tagPeople {
+				tagSet[tp.ID] = true
+			}
+			filtered := make([]*ent.Person, 0, len(people))
+			for _, p := range people {
+				if tagSet[p.ID] {
+					filtered = append(filtered, p)
+				}
+			}
+			people = filtered
+		}
+	}
+
 	// Load events and build enriched card data
 	now := time.Now()
 	cards := make([]personCard, 0, len(people))
@@ -135,6 +168,12 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 				groupNames = append(groupNames, g.Name)
 			}
 		}
+		var tagNames []string
+		if personTags, e := h.tags.ListByPerson(r.Context(), p.ID); e == nil {
+			for _, t := range personTags {
+				tagNames = append(tagNames, t.Name)
+			}
+		}
 		cards = append(cards, personCard{
 			ID:            p.ID,
 			Name:          p.Name,
@@ -148,6 +187,7 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			HasAge:        hasAge,
 			PhotoURL:      h.photoURL(r, p),
 			Groups:        groupNames,
+			Tags:          tagNames,
 		})
 	}
 
@@ -155,11 +195,12 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	groups, _ := h.groups.List(r.Context())
 
 	h.render(w, r, "people.html", map[string]any{
-		"Title":   "Datey - People",
-		"Cards":   cards,
-		"Groups":  groups,
-		"GroupID": groupIDStr,
-		"Query":   q,
+		"Title":     "Datey - People",
+		"Cards":     cards,
+		"Groups":    groups,
+		"GroupID":   groupIDStr,
+		"Query":     q,
+		"TagFilter": tagParam,
 	})
 }
 
@@ -231,6 +272,179 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/people?success=Person+created", http.StatusSeeOther)
 }
 
+func (h *Handler) editPersonForm(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	person, err := h.people.Get(r.Context(), id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		slog.Error("get person", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	h.renderEditPersonForm(w, r, person, nil, nil)
+}
+
+// renderEditPersonForm renders person_form.html in edit mode with the
+// person's current values pre-filled. formData and errors are non-nil when
+// re-displaying after a validation failure.
+func (h *Handler) renderEditPersonForm(w http.ResponseWriter, r *http.Request, person *ent.Person, formData map[string]any, errors map[string]string) {
+	groups, _ := h.groups.List(r.Context())
+	memberGroups, _ := h.groups.ListByPerson(r.Context(), person.ID)
+	memberIDs := make([]string, 0, len(memberGroups))
+	for _, g := range memberGroups {
+		memberIDs = append(memberIDs, strconv.Itoa(g.ID))
+	}
+	birthday := ""
+	if bd, err := h.events.FindByPersonAndType(r.Context(), person.ID, "birthday"); err == nil && bd.Date.Year() > 1 {
+		birthday = bd.Date.Format("2006-01-02")
+	}
+	data := map[string]any{
+		"Title":          "Datey - Edit Person",
+		"Person":         person,
+		"Groups":         groups,
+		"MemberGroupIDs": memberIDs,
+		"Birthday":       birthday,
+	}
+	if formData != nil {
+		data["FormData"] = formData
+	}
+	if errors != nil {
+		data["Errors"] = errors
+	}
+	h.render(w, r, "person_form.html", data)
+}
+
+// updatePerson saves edits to an existing person: name, notes, group
+// memberships, and the birthday event (upserted when a date is submitted).
+func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	person, err := h.people.Get(r.Context(), id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		slog.Error("get person", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	name := strings.TrimSpace(r.FormValue("name"))
+	notes := r.FormValue("notes")
+	groupIDs := r.Form["groups"]
+	birthdayStr := r.FormValue("birthday")
+
+	errors := make(map[string]string)
+	var birthday time.Time
+	hasBirthday := false
+	if birthdayStr != "" {
+		var parseErr error
+		birthday, parseErr = time.Parse("2006-01-02", birthdayStr)
+		if parseErr != nil {
+			errors["birthday"] = "Invalid date format"
+		} else {
+			hasBirthday = true
+		}
+	}
+	if name == "" {
+		errors["name"] = "Name is required"
+	}
+
+	if len(errors) > 0 {
+		h.renderEditPersonForm(w, r, person, map[string]any{
+			"Name":     name,
+			"Notes":    notes,
+			"GroupIDs": groupIDs,
+			"Birthday": birthdayStr,
+		}, errors)
+		return
+	}
+
+	if _, err := h.people.Update(r.Context(), id, name, notes, ""); err != nil {
+		if ent.IsConstraintError(err) {
+			h.renderEditPersonForm(w, r, person, map[string]any{
+				"Name":     name,
+				"Notes":    notes,
+				"GroupIDs": groupIDs,
+				"Birthday": birthdayStr,
+			}, map[string]string{"name": "A person with this name already exists"})
+			return
+		}
+		slog.Error("update person", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	// Sync group memberships to the submitted checkbox state.
+	desired := make(map[int]bool, len(groupIDs))
+	for _, gidStr := range groupIDs {
+		if gid, parseErr := strconv.Atoi(strings.TrimSpace(gidStr)); parseErr == nil && gid > 0 {
+			desired[gid] = true
+		}
+	}
+	currentIDs := make(map[int]bool)
+	if current, e := h.groups.ListByPerson(r.Context(), id); e == nil {
+		for _, g := range current {
+			currentIDs[g.ID] = true
+		}
+	}
+	for gid := range desired {
+		if !currentIDs[gid] {
+			_ = h.groups.AddPerson(r.Context(), gid, id)
+		}
+	}
+	for gid := range currentIDs {
+		if !desired[gid] {
+			_ = h.groups.RemovePerson(r.Context(), gid, id)
+		}
+	}
+
+	// Upsert the birthday event. An empty field is a no-op so year-less
+	// birthdays are never clobbered.
+	if hasBirthday {
+		existing, findErr := h.events.FindByPersonAndType(r.Context(), id, "birthday")
+		switch {
+		case ent.IsNotFound(findErr):
+			if _, createErr := h.events.CreateForPerson(r.Context(), id, "birthday", birthday, ""); createErr != nil {
+				slog.Error("create birthday event", "error", createErr)
+				h.renderError(w, r, http.StatusInternalServerError)
+				return
+			}
+		case findErr != nil:
+			slog.Error("find birthday event", "error", findErr)
+			h.renderError(w, r, http.StatusInternalServerError)
+			return
+		case !existing.Date.Equal(birthday):
+			if _, updateErr := h.events.Update(r.Context(), existing.ID, "birthday", birthday, existing.Description); updateErr != nil {
+				slog.Error("update birthday event", "error", updateErr)
+				h.renderError(w, r, http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+
+	http.Redirect(w, r, "/people/"+strconv.Itoa(id)+"?success=Person+updated", http.StatusSeeOther)
+}
+
 func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
@@ -266,13 +480,14 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	today := dateOnly(now, now.Location())
 	type eventRow struct {
-		ID            int
-		Type          string
-		Date          string
-		EventDate     time.Time
-		RelativeLabel string
-		Description   string
-		IsUpcoming    bool
+		ID             int
+		Type           string
+		Date           string
+		EventDate      time.Time
+		RelativeLabel  string
+		Description    string
+		IsUpcoming     bool
+		MilestoneLabel string
 	}
 	eventRows := make([]eventRow, 0, len(events))
 	for _, e := range events {
@@ -286,26 +501,41 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		case days <= 7:
 			rel = "In " + strconv.Itoa(days) + " days"
 		}
+		occDate := time.Date(now.Year(), e.Date.Month(), e.Date.Day(), 0, 0, 0, 0, time.UTC)
+		if e.Date.Month() == time.February && e.Date.Day() == 29 && !isLeapYear(now.Year()) {
+			occDate = time.Date(now.Year(), time.February, 28, 0, 0, 0, 0, time.UTC)
+		}
+		var msLabel string
+		if ok, label := milestone.IsMilestone(e.Type, e.Date, occDate); ok {
+			msLabel = label
+		}
 		eventRows = append(eventRows, eventRow{
-			ID:            e.ID,
-			Type:          e.Type,
-			Date:          formatEventDate(h.cfg.DateVariant, e.Date),
-			EventDate:     e.Date,
-			RelativeLabel: rel,
-			Description:   e.Description,
-			IsUpcoming:    days >= 0,
+			ID:             e.ID,
+			Type:           e.Type,
+			Date:           formatEventDate(h.cfg.DateVariant, e.Date),
+			EventDate:      e.Date,
+			RelativeLabel:  rel,
+			Description:    e.Description,
+			IsUpcoming:     days >= 0,
+			MilestoneLabel: msLabel,
 		})
 	}
 
+	tags, _ := h.tags.ListByPerson(r.Context(), id)
+	showPurchased := r.URL.Query().Get("show_purchased") == "1"
+	giftIdeas, _ := h.giftIdeas.ListByPersonFiltered(r.Context(), id, showPurchased)
 	h.render(w, r, "person_detail.html", map[string]any{
-		"Title":       "Datey - " + person.Name,
-		"Person":      person,
-		"Initial":     personInitial(person.Name),
-		"AvatarColor": avatarColorIndex(person.Name),
-		"PhotoURL":    h.photoURL(r, person),
-		"EventRows":   eventRows,
-		"Groups":      groups,
-		"Now":         now,
+		"Title":         "Datey - " + person.Name,
+		"Person":        person,
+		"Initial":       personInitial(person.Name),
+		"AvatarColor":   avatarColorIndex(person.Name),
+		"PhotoURL":      h.photoURL(r, person),
+		"EventRows":     eventRows,
+		"Groups":        groups,
+		"Tags":          tags,
+		"GiftIdeas":     giftIdeas,
+		"ShowPurchased": showPurchased,
+		"Now":           now,
 	})
 }
 
@@ -404,6 +634,8 @@ func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, o
 	}
 	return age.AgeAt(latest.Date, now)
 }
+
+func isLeapYear(y int) bool { return y%4 == 0 && (y%100 != 0 || y%400 == 0) }
 
 // formatEventDate renders an event date for display in the configured date
 // variant. Dates without a usable year (year <= 1, e.g. year-less vCard

@@ -2,13 +2,21 @@
 <h1 class="mb-4">{{if .Person}}Edit{{else}}Add{{end}} Person</h1>
 <div class="row">
   <div class="col-md-8 col-lg-6">
-    <form action="/people/new" method="POST">
+    <form action="{{if .Person}}/people/{{.Person.ID}}/edit{{else}}/people/new{{end}}" method="POST">
       {{template "csrfField" .}}
       <div class="mb-3">
         <label for="name" class="form-label">Name {{template "requiredIndicator" .}}</label>
         <input type="text" class="form-control" id="name" name="name" value="{{if .FormData}}{{.FormData.Name}}{{else if .Person}}{{.Person.Name}}{{end}}" required autocomplete="name">
         {{template "fieldError" (dict "Errors" .Errors "Field" "name")}}
       </div>
+      {{if .Person}}
+      <div class="mb-3">
+        <label for="birthday" class="form-label">Birthday</label>
+        <input type="date" class="form-control" id="birthday" name="birthday" value="{{if .FormData}}{{.FormData.Birthday}}{{else}}{{.Birthday}}{{end}}">
+        {{template "fieldError" (dict "Errors" .Errors "Field" "birthday")}}
+        <div class="form-text">Leave empty to keep any existing birthday unchanged.</div>
+      </div>
+      {{end}}
       <div class="mb-3">
         <label for="notes" class="form-label">Notes</label>
         <textarea class="form-control" id="notes" name="notes" rows="3">{{if .FormData}}{{.FormData.Notes}}{{else if .Person}}{{.Person.Notes}}{{end}}</textarea>
@@ -19,7 +27,7 @@
         <div class="d-flex gap-3 mt-1 flex-wrap">
           {{range .Groups}}
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="groups" value="{{.ID}}" id="g-{{.ID}}"{{if $.FormData.GroupIDs}}{{if inList $.FormData.GroupIDs (printf "%d" .ID)}} checked{{end}}{{end}}>
+            <input class="form-check-input" type="checkbox" name="groups" value="{{.ID}}" id="g-{{.ID}}"{{if $.FormData.GroupIDs}}{{if inList $.FormData.GroupIDs (printf "%d" .ID)}} checked{{end}}{{else if $.MemberGroupIDs}}{{if inList $.MemberGroupIDs (printf "%d" .ID)}} checked{{end}}{{end}}>
             <label class="form-check-label" for="g-{{.ID}}">{{.Name}}</label>
           </div>
           {{end}}
