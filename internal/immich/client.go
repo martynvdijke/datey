@@ -1,6 +1,7 @@
 package immich
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -16,6 +17,12 @@ type Person struct {
 	Name string `json:"name"`
 }
 
+// peopleResponse matches the paginated object returned by newer Immich
+// versions for GET /api/people. Older versions returned a bare array.
+type peopleResponse struct {
+	People []Person `json:"people"`
+}
+
 type Client struct {
 	baseURL string
 	apiKey  string
@@ -29,11 +36,25 @@ func New(baseURL, apiKey string) *Client {
 func (c *Client) Enabled() bool { return c != nil && c.baseURL != "" && c.apiKey != "" }
 
 func (c *Client) People(ctx context.Context) ([]Person, error) {
-	var people []Person
-	if err := c.getJSON(ctx, "/api/people", &people); err != nil {
+	body, err := c.getBytes(ctx, "/api/people")
+	if err != nil {
 		return nil, err
 	}
-	return people, nil
+	trimmed := bytes.TrimSpace(body)
+	// Newer Immich returns a paginated object { people: [...] }; older
+	// versions returned a bare array. Support both shapes.
+	if len(trimmed) > 0 && trimmed[0] == '[' {
+		var people []Person
+		if err := json.Unmarshal(body, &people); err != nil {
+			return nil, err
+		}
+		return people, nil
+	}
+	var wrapped peopleResponse
+	if err := json.Unmarshal(body, &wrapped); err != nil {
+		return nil, err
+	}
+	return wrapped.People, nil
 }
 
 func (c *Client) Thumbnail(ctx context.Context, id string) (io.ReadCloser, string, error) {
@@ -52,20 +73,20 @@ func (c *Client) Thumbnail(ctx context.Context, id string) (io.ReadCloser, strin
 	return resp.Body, resp.Header.Get("Content-Type"), nil
 }
 
-func (c *Client) getJSON(ctx context.Context, path string, dst any) error {
+func (c *Client) getBytes(ctx context.Context, path string) ([]byte, error) {
 	req, err := c.request(ctx, http.MethodGet, path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("immich returned %s", resp.Status)
+		return nil, fmt.Errorf("immich returned %s", resp.Status)
 	}
-	return json.NewDecoder(resp.Body).Decode(dst)
+	return io.ReadAll(resp.Body)
 }
 
 func (c *Client) request(ctx context.Context, method, path string) (*http.Request, error) {
