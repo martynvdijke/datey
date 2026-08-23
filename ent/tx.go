@@ -18,6 +18,8 @@ type Tx struct {
 	Contact *ContactClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
+	// GiftIdea is the client for interacting with the GiftIdea builders.
+	GiftIdea *GiftIdeaClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// GroupNote is the client for interacting with the GroupNote builders.
@@ -38,6 +40,8 @@ type Tx struct {
 	RecurringRule *RecurringRuleClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// Tag is the client for interacting with the Tag builders.
+	Tag *TagClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -174,6 +178,7 @@ func (tx *Tx) init() {
 	tx.AppConfig = NewAppConfigClient(tx.config)
 	tx.Contact = NewContactClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
+	tx.GiftIdea = NewGiftIdeaClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.GroupNote = NewGroupNoteClient(tx.config)
 	tx.MigrationLog = NewMigrationLogClient(tx.config)
@@ -184,6 +189,7 @@ func (tx *Tx) init() {
 	tx.PushSubscription = NewPushSubscriptionClient(tx.config)
 	tx.RecurringRule = NewRecurringRuleClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
+	tx.Tag = NewTagClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

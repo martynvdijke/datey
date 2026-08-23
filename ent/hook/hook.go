@@ -45,6 +45,18 @@ func (f EventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventMutation", m)
 }
 
+// The GiftIdeaFunc type is an adapter to allow the use of ordinary
+// function as GiftIdea mutator.
+type GiftIdeaFunc func(context.Context, *ent.GiftIdeaMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GiftIdeaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GiftIdeaMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GiftIdeaMutation", m)
+}
+
 // The GroupFunc type is an adapter to allow the use of ordinary
 // function as Group mutator.
 type GroupFunc func(context.Context, *ent.GroupMutation) (ent.Value, error)
@@ -163,6 +175,18 @@ func (f SessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SessionMutation", m)
+}
+
+// The TagFunc type is an adapter to allow the use of ordinary
+// function as Tag mutator.
+type TagFunc func(context.Context, *ent.TagMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TagFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TagMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TagMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

@@ -58,6 +58,10 @@ const (
 	EdgeGroups = "groups"
 	// EdgeTimeline holds the string denoting the timeline edge name in mutations.
 	EdgeTimeline = "timeline"
+	// EdgeTags holds the string denoting the tags edge name in mutations.
+	EdgeTags = "tags"
+	// EdgeGiftIdeas holds the string denoting the giftideas edge name in mutations.
+	EdgeGiftIdeas = "giftIdeas"
 	// Table holds the table name of the person in the database.
 	Table = "persons"
 	// EventsTable is the table that holds the events relation/edge.
@@ -79,6 +83,18 @@ const (
 	TimelineInverseTable = "person_notes"
 	// TimelineColumn is the table column denoting the timeline relation/edge.
 	TimelineColumn = "person_timeline"
+	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
+	TagsTable = "person_tags"
+	// TagsInverseTable is the table name for the Tag entity.
+	// It exists in this package in order to avoid circular dependency with the "tag" package.
+	TagsInverseTable = "tags"
+	// GiftIdeasTable is the table that holds the giftIdeas relation/edge.
+	GiftIdeasTable = "gift_ideas"
+	// GiftIdeasInverseTable is the table name for the GiftIdea entity.
+	// It exists in this package in order to avoid circular dependency with the "giftidea" package.
+	GiftIdeasInverseTable = "gift_ideas"
+	// GiftIdeasColumn is the table column denoting the giftIdeas relation/edge.
+	GiftIdeasColumn = "person_gift_ideas"
 )
 
 // Columns holds all SQL columns for person fields.
@@ -110,6 +126,9 @@ var (
 	// GroupsPrimaryKey and GroupsColumn2 are the table columns denoting the
 	// primary key for the groups relation (M2M).
 	GroupsPrimaryKey = []string{"person_id", "group_id"}
+	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
+	// primary key for the tags relation (M2M).
+	TagsPrimaryKey = []string{"person_id", "tag_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -281,6 +300,34 @@ func ByTimeline(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTimelineStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTagsCount orders the results by tags count.
+func ByTagsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTagsStep(), opts...)
+	}
+}
+
+// ByTags orders the results by tags terms.
+func ByTags(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTagsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByGiftIdeasCount orders the results by giftIdeas count.
+func ByGiftIdeasCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGiftIdeasStep(), opts...)
+	}
+}
+
+// ByGiftIdeas orders the results by giftIdeas terms.
+func ByGiftIdeas(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGiftIdeasStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newEventsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -300,5 +347,19 @@ func newTimelineStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TimelineInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TimelineTable, TimelineColumn),
+	)
+}
+func newTagsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TagsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, TagsTable, TagsPrimaryKey...),
+	)
+}
+func newGiftIdeasStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GiftIdeasInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GiftIdeasTable, GiftIdeasColumn),
 	)
 }

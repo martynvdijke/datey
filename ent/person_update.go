@@ -13,10 +13,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/giftidea"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/predicate"
+	"github.com/datey/datey/ent/tag"
 )
 
 // PersonUpdate is the builder for updating Person entities.
@@ -439,6 +441,36 @@ func (_u *PersonUpdate) AddTimeline(v ...*PersonNote) *PersonUpdate {
 	return _u.AddTimelineIDs(ids...)
 }
 
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (_u *PersonUpdate) AddTagIDs(ids ...int) *PersonUpdate {
+	_u.mutation.AddTagIDs(ids...)
+	return _u
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (_u *PersonUpdate) AddTags(v ...*Tag) *PersonUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTagIDs(ids...)
+}
+
+// AddGiftIdeaIDs adds the "giftIdeas" edge to the GiftIdea entity by IDs.
+func (_u *PersonUpdate) AddGiftIdeaIDs(ids ...int) *PersonUpdate {
+	_u.mutation.AddGiftIdeaIDs(ids...)
+	return _u
+}
+
+// AddGiftIdeas adds the "giftIdeas" edges to the GiftIdea entity.
+func (_u *PersonUpdate) AddGiftIdeas(v ...*GiftIdea) *PersonUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGiftIdeaIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (_u *PersonUpdate) Mutation() *PersonMutation {
 	return _u.mutation
@@ -505,6 +537,48 @@ func (_u *PersonUpdate) RemoveTimeline(v ...*PersonNote) *PersonUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTimelineIDs(ids...)
+}
+
+// ClearTags clears all "tags" edges to the Tag entity.
+func (_u *PersonUpdate) ClearTags() *PersonUpdate {
+	_u.mutation.ClearTags()
+	return _u
+}
+
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+func (_u *PersonUpdate) RemoveTagIDs(ids ...int) *PersonUpdate {
+	_u.mutation.RemoveTagIDs(ids...)
+	return _u
+}
+
+// RemoveTags removes "tags" edges to Tag entities.
+func (_u *PersonUpdate) RemoveTags(v ...*Tag) *PersonUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTagIDs(ids...)
+}
+
+// ClearGiftIdeas clears all "giftIdeas" edges to the GiftIdea entity.
+func (_u *PersonUpdate) ClearGiftIdeas() *PersonUpdate {
+	_u.mutation.ClearGiftIdeas()
+	return _u
+}
+
+// RemoveGiftIdeaIDs removes the "giftIdeas" edge to GiftIdea entities by IDs.
+func (_u *PersonUpdate) RemoveGiftIdeaIDs(ids ...int) *PersonUpdate {
+	_u.mutation.RemoveGiftIdeaIDs(ids...)
+	return _u
+}
+
+// RemoveGiftIdeas removes "giftIdeas" edges to GiftIdea entities.
+func (_u *PersonUpdate) RemoveGiftIdeas(v ...*GiftIdea) *PersonUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGiftIdeaIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -791,6 +865,96 @@ func (_u *PersonUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   person.TagsTable,
+			Columns: person.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTagsIDs(); len(nodes) > 0 && !_u.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   person.TagsTable,
+			Columns: person.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   person.TagsTable,
+			Columns: person.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GiftIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.GiftIdeasTable,
+			Columns: []string{person.GiftIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGiftIdeasIDs(); len(nodes) > 0 && !_u.mutation.GiftIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.GiftIdeasTable,
+			Columns: []string{person.GiftIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GiftIdeasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.GiftIdeasTable,
+			Columns: []string{person.GiftIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1225,6 +1389,36 @@ func (_u *PersonUpdateOne) AddTimeline(v ...*PersonNote) *PersonUpdateOne {
 	return _u.AddTimelineIDs(ids...)
 }
 
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (_u *PersonUpdateOne) AddTagIDs(ids ...int) *PersonUpdateOne {
+	_u.mutation.AddTagIDs(ids...)
+	return _u
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (_u *PersonUpdateOne) AddTags(v ...*Tag) *PersonUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTagIDs(ids...)
+}
+
+// AddGiftIdeaIDs adds the "giftIdeas" edge to the GiftIdea entity by IDs.
+func (_u *PersonUpdateOne) AddGiftIdeaIDs(ids ...int) *PersonUpdateOne {
+	_u.mutation.AddGiftIdeaIDs(ids...)
+	return _u
+}
+
+// AddGiftIdeas adds the "giftIdeas" edges to the GiftIdea entity.
+func (_u *PersonUpdateOne) AddGiftIdeas(v ...*GiftIdea) *PersonUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGiftIdeaIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (_u *PersonUpdateOne) Mutation() *PersonMutation {
 	return _u.mutation
@@ -1291,6 +1485,48 @@ func (_u *PersonUpdateOne) RemoveTimeline(v ...*PersonNote) *PersonUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTimelineIDs(ids...)
+}
+
+// ClearTags clears all "tags" edges to the Tag entity.
+func (_u *PersonUpdateOne) ClearTags() *PersonUpdateOne {
+	_u.mutation.ClearTags()
+	return _u
+}
+
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+func (_u *PersonUpdateOne) RemoveTagIDs(ids ...int) *PersonUpdateOne {
+	_u.mutation.RemoveTagIDs(ids...)
+	return _u
+}
+
+// RemoveTags removes "tags" edges to Tag entities.
+func (_u *PersonUpdateOne) RemoveTags(v ...*Tag) *PersonUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTagIDs(ids...)
+}
+
+// ClearGiftIdeas clears all "giftIdeas" edges to the GiftIdea entity.
+func (_u *PersonUpdateOne) ClearGiftIdeas() *PersonUpdateOne {
+	_u.mutation.ClearGiftIdeas()
+	return _u
+}
+
+// RemoveGiftIdeaIDs removes the "giftIdeas" edge to GiftIdea entities by IDs.
+func (_u *PersonUpdateOne) RemoveGiftIdeaIDs(ids ...int) *PersonUpdateOne {
+	_u.mutation.RemoveGiftIdeaIDs(ids...)
+	return _u
+}
+
+// RemoveGiftIdeas removes "giftIdeas" edges to GiftIdea entities.
+func (_u *PersonUpdateOne) RemoveGiftIdeas(v ...*GiftIdea) *PersonUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGiftIdeaIDs(ids...)
 }
 
 // Where appends a list predicates to the PersonUpdate builder.
@@ -1607,6 +1843,96 @@ func (_u *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   person.TagsTable,
+			Columns: person.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedTagsIDs(); len(nodes) > 0 && !_u.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   person.TagsTable,
+			Columns: person.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   person.TagsTable,
+			Columns: person.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GiftIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.GiftIdeasTable,
+			Columns: []string{person.GiftIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGiftIdeasIDs(); len(nodes) > 0 && !_u.mutation.GiftIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.GiftIdeasTable,
+			Columns: []string{person.GiftIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GiftIdeasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.GiftIdeasTable,
+			Columns: []string{person.GiftIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

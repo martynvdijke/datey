@@ -13,22 +13,26 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/giftidea"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/predicate"
+	"github.com/datey/datey/ent/tag"
 )
 
 // PersonQuery is the builder for querying Person entities.
 type PersonQuery struct {
 	config
-	ctx          *QueryContext
-	order        []person.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.Person
-	withEvents   *EventQuery
-	withGroups   *GroupQuery
-	withTimeline *PersonNoteQuery
+	ctx           *QueryContext
+	order         []person.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Person
+	withEvents    *EventQuery
+	withGroups    *GroupQuery
+	withTimeline  *PersonNoteQuery
+	withTags      *TagQuery
+	withGiftIdeas *GiftIdeaQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -124,6 +128,50 @@ func (_q *PersonQuery) QueryTimeline() *PersonNoteQuery {
 			sqlgraph.From(person.Table, person.FieldID, selector),
 			sqlgraph.To(personnote.Table, personnote.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, person.TimelineTable, person.TimelineColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTags chains the current query on the "tags" edge.
+func (_q *PersonQuery) QueryTags() *TagQuery {
+	query := (&TagClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, selector),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, person.TagsTable, person.TagsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGiftIdeas chains the current query on the "giftIdeas" edge.
+func (_q *PersonQuery) QueryGiftIdeas() *GiftIdeaQuery {
+	query := (&GiftIdeaClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, selector),
+			sqlgraph.To(giftidea.Table, giftidea.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.GiftIdeasTable, person.GiftIdeasColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -318,14 +366,16 @@ func (_q *PersonQuery) Clone() *PersonQuery {
 		return nil
 	}
 	return &PersonQuery{
-		config:       _q.config,
-		ctx:          _q.ctx.Clone(),
-		order:        append([]person.OrderOption{}, _q.order...),
-		inters:       append([]Interceptor{}, _q.inters...),
-		predicates:   append([]predicate.Person{}, _q.predicates...),
-		withEvents:   _q.withEvents.Clone(),
-		withGroups:   _q.withGroups.Clone(),
-		withTimeline: _q.withTimeline.Clone(),
+		config:        _q.config,
+		ctx:           _q.ctx.Clone(),
+		order:         append([]person.OrderOption{}, _q.order...),
+		inters:        append([]Interceptor{}, _q.inters...),
+		predicates:    append([]predicate.Person{}, _q.predicates...),
+		withEvents:    _q.withEvents.Clone(),
+		withGroups:    _q.withGroups.Clone(),
+		withTimeline:  _q.withTimeline.Clone(),
+		withTags:      _q.withTags.Clone(),
+		withGiftIdeas: _q.withGiftIdeas.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -362,6 +412,28 @@ func (_q *PersonQuery) WithTimeline(opts ...func(*PersonNoteQuery)) *PersonQuery
 		opt(query)
 	}
 	_q.withTimeline = query
+	return _q
+}
+
+// WithTags tells the query-builder to eager-load the nodes that are connected to
+// the "tags" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PersonQuery) WithTags(opts ...func(*TagQuery)) *PersonQuery {
+	query := (&TagClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTags = query
+	return _q
+}
+
+// WithGiftIdeas tells the query-builder to eager-load the nodes that are connected to
+// the "giftIdeas" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PersonQuery) WithGiftIdeas(opts ...func(*GiftIdeaQuery)) *PersonQuery {
+	query := (&GiftIdeaClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withGiftIdeas = query
 	return _q
 }
 
@@ -443,10 +515,12 @@ func (_q *PersonQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Perso
 	var (
 		nodes       = []*Person{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [5]bool{
 			_q.withEvents != nil,
 			_q.withGroups != nil,
 			_q.withTimeline != nil,
+			_q.withTags != nil,
+			_q.withGiftIdeas != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -485,6 +559,20 @@ func (_q *PersonQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Perso
 		if err := _q.loadTimeline(ctx, query, nodes,
 			func(n *Person) { n.Edges.Timeline = []*PersonNote{} },
 			func(n *Person, e *PersonNote) { n.Edges.Timeline = append(n.Edges.Timeline, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withTags; query != nil {
+		if err := _q.loadTags(ctx, query, nodes,
+			func(n *Person) { n.Edges.Tags = []*Tag{} },
+			func(n *Person, e *Tag) { n.Edges.Tags = append(n.Edges.Tags, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withGiftIdeas; query != nil {
+		if err := _q.loadGiftIdeas(ctx, query, nodes,
+			func(n *Person) { n.Edges.GiftIdeas = []*GiftIdea{} },
+			func(n *Person, e *GiftIdea) { n.Edges.GiftIdeas = append(n.Edges.GiftIdeas, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -609,6 +697,98 @@ func (_q *PersonQuery) loadTimeline(ctx context.Context, query *PersonNoteQuery,
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "person_timeline" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *PersonQuery) loadTags(ctx context.Context, query *TagQuery, nodes []*Person, init func(*Person), assign func(*Person, *Tag)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Person)
+	nids := make(map[int]map[*Person]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(person.TagsTable)
+		s.Join(joinT).On(s.C(tag.FieldID), joinT.C(person.TagsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(person.TagsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(person.TagsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Person]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Tag](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "tags" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *PersonQuery) loadGiftIdeas(ctx context.Context, query *GiftIdeaQuery, nodes []*Person, init func(*Person), assign func(*Person, *GiftIdea)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Person)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.GiftIdea(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(person.GiftIdeasColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.person_gift_ideas
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "person_gift_ideas" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "person_gift_ideas" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

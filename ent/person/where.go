@@ -1329,6 +1329,52 @@ func HasTimelineWith(preds ...predicate.PersonNote) predicate.Person {
 	})
 }
 
+// HasTags applies the HasEdge predicate on the "tags" edge.
+func HasTags() predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, TagsTable, TagsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTagsWith applies the HasEdge predicate on the "tags" edge with a given conditions (other predicates).
+func HasTagsWith(preds ...predicate.Tag) predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := newTagsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGiftIdeas applies the HasEdge predicate on the "giftIdeas" edge.
+func HasGiftIdeas() predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GiftIdeasTable, GiftIdeasColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGiftIdeasWith applies the HasEdge predicate on the "giftIdeas" edge with a given conditions (other predicates).
+func HasGiftIdeasWith(preds ...predicate.GiftIdea) predicate.Person {
+	return predicate.Person(func(s *sql.Selector) {
+		step := newGiftIdeasStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Person) predicate.Person {
 	return predicate.Person(sql.AndPredicates(predicates...))

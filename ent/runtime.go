@@ -3,8 +3,11 @@
 package ent
 
 import (
+	"time"
+
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/giftidea"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/migrationlog"
@@ -16,6 +19,7 @@ import (
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/schema"
 	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
 )
 
@@ -47,6 +51,30 @@ func init() {
 	eventDescNotes := eventFields[3].Descriptor()
 	// event.DefaultNotes holds the default value on creation for the notes field.
 	event.DefaultNotes = eventDescNotes.Default.(string)
+	giftideaFields := schema.GiftIdea{}.Fields()
+	_ = giftideaFields
+	// giftideaDescTitle is the schema descriptor for title field.
+	giftideaDescTitle := giftideaFields[0].Descriptor()
+	// giftidea.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	giftidea.TitleValidator = giftideaDescTitle.Validators[0].(func(string) error)
+	// giftideaDescNotes is the schema descriptor for notes field.
+	giftideaDescNotes := giftideaFields[1].Descriptor()
+	// giftidea.DefaultNotes holds the default value on creation for the notes field.
+	giftidea.DefaultNotes = giftideaDescNotes.Default.(string)
+	// giftideaDescURL is the schema descriptor for url field.
+	giftideaDescURL := giftideaFields[3].Descriptor()
+	// giftidea.DefaultURL holds the default value on creation for the url field.
+	giftidea.DefaultURL = giftideaDescURL.Default.(string)
+	// giftideaDescCreatedAt is the schema descriptor for created_at field.
+	giftideaDescCreatedAt := giftideaFields[5].Descriptor()
+	// giftidea.DefaultCreatedAt holds the default value on creation for the created_at field.
+	giftidea.DefaultCreatedAt = giftideaDescCreatedAt.Default.(func() time.Time)
+	// giftideaDescUpdatedAt is the schema descriptor for updated_at field.
+	giftideaDescUpdatedAt := giftideaFields[6].Descriptor()
+	// giftidea.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	giftidea.DefaultUpdatedAt = giftideaDescUpdatedAt.Default.(func() time.Time)
+	// giftidea.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	giftidea.UpdateDefaultUpdatedAt = giftideaDescUpdatedAt.UpdateDefault.(func() time.Time)
 	groupFields := schema.Group{}.Fields()
 	_ = groupFields
 	// groupDescName is the schema descriptor for name field.
@@ -171,6 +199,16 @@ func init() {
 	sessionDescTokenHash := sessionFields[0].Descriptor()
 	// session.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
 	session.TokenHashValidator = sessionDescTokenHash.Validators[0].(func(string) error)
+	tagFields := schema.Tag{}.Fields()
+	_ = tagFields
+	// tagDescName is the schema descriptor for name field.
+	tagDescName := tagFields[0].Descriptor()
+	// tag.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	tag.NameValidator = tagDescName.Validators[0].(func(string) error)
+	// tagDescCreatedAt is the schema descriptor for created_at field.
+	tagDescCreatedAt := tagFields[1].Descriptor()
+	// tag.DefaultCreatedAt holds the default value on creation for the created_at field.
+	tag.DefaultCreatedAt = tagDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUsername is the schema descriptor for username field.

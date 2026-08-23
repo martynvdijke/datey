@@ -18,6 +18,7 @@ import (
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/giftidea"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/migrationlog"
@@ -28,6 +29,7 @@ import (
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
 )
 
@@ -42,6 +44,8 @@ type Client struct {
 	Contact *ContactClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
+	// GiftIdea is the client for interacting with the GiftIdea builders.
+	GiftIdea *GiftIdeaClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// GroupNote is the client for interacting with the GroupNote builders.
@@ -62,6 +66,8 @@ type Client struct {
 	RecurringRule *RecurringRuleClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// Tag is the client for interacting with the Tag builders.
+	Tag *TagClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -78,6 +84,7 @@ func (c *Client) init() {
 	c.AppConfig = NewAppConfigClient(c.config)
 	c.Contact = NewContactClient(c.config)
 	c.Event = NewEventClient(c.config)
+	c.GiftIdea = NewGiftIdeaClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.GroupNote = NewGroupNoteClient(c.config)
 	c.MigrationLog = NewMigrationLogClient(c.config)
@@ -88,6 +95,7 @@ func (c *Client) init() {
 	c.PushSubscription = NewPushSubscriptionClient(c.config)
 	c.RecurringRule = NewRecurringRuleClient(c.config)
 	c.Session = NewSessionClient(c.config)
+	c.Tag = NewTagClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -184,6 +192,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AppConfig:          NewAppConfigClient(cfg),
 		Contact:            NewContactClient(cfg),
 		Event:              NewEventClient(cfg),
+		GiftIdea:           NewGiftIdeaClient(cfg),
 		Group:              NewGroupClient(cfg),
 		GroupNote:          NewGroupNoteClient(cfg),
 		MigrationLog:       NewMigrationLogClient(cfg),
@@ -194,6 +203,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		PushSubscription:   NewPushSubscriptionClient(cfg),
 		RecurringRule:      NewRecurringRuleClient(cfg),
 		Session:            NewSessionClient(cfg),
+		Tag:                NewTagClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -217,6 +227,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AppConfig:          NewAppConfigClient(cfg),
 		Contact:            NewContactClient(cfg),
 		Event:              NewEventClient(cfg),
+		GiftIdea:           NewGiftIdeaClient(cfg),
 		Group:              NewGroupClient(cfg),
 		GroupNote:          NewGroupNoteClient(cfg),
 		MigrationLog:       NewMigrationLogClient(cfg),
@@ -227,6 +238,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		PushSubscription:   NewPushSubscriptionClient(cfg),
 		RecurringRule:      NewRecurringRuleClient(cfg),
 		Session:            NewSessionClient(cfg),
+		Tag:                NewTagClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -257,9 +269,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AppConfig, c.Contact, c.Event, c.Group, c.GroupNote, c.MigrationLog,
-		c.NotificationLog, c.PasswordResetToken, c.Person, c.PersonNote,
-		c.PushSubscription, c.RecurringRule, c.Session, c.User,
+		c.AppConfig, c.Contact, c.Event, c.GiftIdea, c.Group, c.GroupNote,
+		c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
+		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.Tag, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -269,9 +281,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AppConfig, c.Contact, c.Event, c.Group, c.GroupNote, c.MigrationLog,
-		c.NotificationLog, c.PasswordResetToken, c.Person, c.PersonNote,
-		c.PushSubscription, c.RecurringRule, c.Session, c.User,
+		c.AppConfig, c.Contact, c.Event, c.GiftIdea, c.Group, c.GroupNote,
+		c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
+		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.Tag, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -286,6 +298,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Contact.mutate(ctx, m)
 	case *EventMutation:
 		return c.Event.mutate(ctx, m)
+	case *GiftIdeaMutation:
+		return c.GiftIdea.mutate(ctx, m)
 	case *GroupMutation:
 		return c.Group.mutate(ctx, m)
 	case *GroupNoteMutation:
@@ -306,6 +320,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RecurringRule.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
+	case *TagMutation:
+		return c.Tag.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -789,6 +805,155 @@ func (c *EventClient) mutate(ctx context.Context, m *EventMutation) (Value, erro
 		return (&EventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Event mutation op: %q", m.Op())
+	}
+}
+
+// GiftIdeaClient is a client for the GiftIdea schema.
+type GiftIdeaClient struct {
+	config
+}
+
+// NewGiftIdeaClient returns a client for the GiftIdea from the given config.
+func NewGiftIdeaClient(c config) *GiftIdeaClient {
+	return &GiftIdeaClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `giftidea.Hooks(f(g(h())))`.
+func (c *GiftIdeaClient) Use(hooks ...Hook) {
+	c.hooks.GiftIdea = append(c.hooks.GiftIdea, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `giftidea.Intercept(f(g(h())))`.
+func (c *GiftIdeaClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GiftIdea = append(c.inters.GiftIdea, interceptors...)
+}
+
+// Create returns a builder for creating a GiftIdea entity.
+func (c *GiftIdeaClient) Create() *GiftIdeaCreate {
+	mutation := newGiftIdeaMutation(c.config, OpCreate)
+	return &GiftIdeaCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GiftIdea entities.
+func (c *GiftIdeaClient) CreateBulk(builders ...*GiftIdeaCreate) *GiftIdeaCreateBulk {
+	return &GiftIdeaCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GiftIdeaClient) MapCreateBulk(slice any, setFunc func(*GiftIdeaCreate, int)) *GiftIdeaCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GiftIdeaCreateBulk{err: fmt.Errorf("calling to GiftIdeaClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GiftIdeaCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GiftIdeaCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GiftIdea.
+func (c *GiftIdeaClient) Update() *GiftIdeaUpdate {
+	mutation := newGiftIdeaMutation(c.config, OpUpdate)
+	return &GiftIdeaUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GiftIdeaClient) UpdateOne(_m *GiftIdea) *GiftIdeaUpdateOne {
+	mutation := newGiftIdeaMutation(c.config, OpUpdateOne, withGiftIdea(_m))
+	return &GiftIdeaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GiftIdeaClient) UpdateOneID(id int) *GiftIdeaUpdateOne {
+	mutation := newGiftIdeaMutation(c.config, OpUpdateOne, withGiftIdeaID(id))
+	return &GiftIdeaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GiftIdea.
+func (c *GiftIdeaClient) Delete() *GiftIdeaDelete {
+	mutation := newGiftIdeaMutation(c.config, OpDelete)
+	return &GiftIdeaDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GiftIdeaClient) DeleteOne(_m *GiftIdea) *GiftIdeaDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GiftIdeaClient) DeleteOneID(id int) *GiftIdeaDeleteOne {
+	builder := c.Delete().Where(giftidea.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GiftIdeaDeleteOne{builder}
+}
+
+// Query returns a query builder for GiftIdea.
+func (c *GiftIdeaClient) Query() *GiftIdeaQuery {
+	return &GiftIdeaQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGiftIdea},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GiftIdea entity by its id.
+func (c *GiftIdeaClient) Get(ctx context.Context, id int) (*GiftIdea, error) {
+	return c.Query().Where(giftidea.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GiftIdeaClient) GetX(ctx context.Context, id int) *GiftIdea {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPerson queries the person edge of a GiftIdea.
+func (c *GiftIdeaClient) QueryPerson(_m *GiftIdea) *PersonQuery {
+	query := (&PersonClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(giftidea.Table, giftidea.FieldID, id),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, giftidea.PersonTable, giftidea.PersonColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GiftIdeaClient) Hooks() []Hook {
+	return c.hooks.GiftIdea
+}
+
+// Interceptors returns the client interceptors.
+func (c *GiftIdeaClient) Interceptors() []Interceptor {
+	return c.inters.GiftIdea
+}
+
+func (c *GiftIdeaClient) mutate(ctx context.Context, m *GiftIdeaMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GiftIdeaCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GiftIdeaUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GiftIdeaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GiftIdeaDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GiftIdea mutation op: %q", m.Op())
 	}
 }
 
@@ -1709,6 +1874,38 @@ func (c *PersonClient) QueryTimeline(_m *Person) *PersonNoteQuery {
 	return query
 }
 
+// QueryTags queries the tags edge of a Person.
+func (c *PersonClient) QueryTags(_m *Person) *TagQuery {
+	query := (&TagClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, id),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, person.TagsTable, person.TagsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGiftIdeas queries the giftIdeas edge of a Person.
+func (c *PersonClient) QueryGiftIdeas(_m *Person) *GiftIdeaQuery {
+	query := (&GiftIdeaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, id),
+			sqlgraph.To(giftidea.Table, giftidea.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.GiftIdeasTable, person.GiftIdeasColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PersonClient) Hooks() []Hook {
 	return c.hooks.Person
@@ -2314,6 +2511,155 @@ func (c *SessionClient) mutate(ctx context.Context, m *SessionMutation) (Value, 
 	}
 }
 
+// TagClient is a client for the Tag schema.
+type TagClient struct {
+	config
+}
+
+// NewTagClient returns a client for the Tag from the given config.
+func NewTagClient(c config) *TagClient {
+	return &TagClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `tag.Hooks(f(g(h())))`.
+func (c *TagClient) Use(hooks ...Hook) {
+	c.hooks.Tag = append(c.hooks.Tag, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `tag.Intercept(f(g(h())))`.
+func (c *TagClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Tag = append(c.inters.Tag, interceptors...)
+}
+
+// Create returns a builder for creating a Tag entity.
+func (c *TagClient) Create() *TagCreate {
+	mutation := newTagMutation(c.config, OpCreate)
+	return &TagCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Tag entities.
+func (c *TagClient) CreateBulk(builders ...*TagCreate) *TagCreateBulk {
+	return &TagCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TagClient) MapCreateBulk(slice any, setFunc func(*TagCreate, int)) *TagCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TagCreateBulk{err: fmt.Errorf("calling to TagClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TagCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TagCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Tag.
+func (c *TagClient) Update() *TagUpdate {
+	mutation := newTagMutation(c.config, OpUpdate)
+	return &TagUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TagClient) UpdateOne(_m *Tag) *TagUpdateOne {
+	mutation := newTagMutation(c.config, OpUpdateOne, withTag(_m))
+	return &TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TagClient) UpdateOneID(id int) *TagUpdateOne {
+	mutation := newTagMutation(c.config, OpUpdateOne, withTagID(id))
+	return &TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Tag.
+func (c *TagClient) Delete() *TagDelete {
+	mutation := newTagMutation(c.config, OpDelete)
+	return &TagDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TagClient) DeleteOne(_m *Tag) *TagDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TagClient) DeleteOneID(id int) *TagDeleteOne {
+	builder := c.Delete().Where(tag.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TagDeleteOne{builder}
+}
+
+// Query returns a query builder for Tag.
+func (c *TagClient) Query() *TagQuery {
+	return &TagQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTag},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Tag entity by its id.
+func (c *TagClient) Get(ctx context.Context, id int) (*Tag, error) {
+	return c.Query().Where(tag.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TagClient) GetX(ctx context.Context, id int) *Tag {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPeople queries the people edge of a Tag.
+func (c *TagClient) QueryPeople(_m *Tag) *PersonQuery {
+	query := (&PersonClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tag.Table, tag.FieldID, id),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, tag.PeopleTable, tag.PeoplePrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TagClient) Hooks() []Hook {
+	return c.hooks.Tag
+}
+
+// Interceptors returns the client interceptors.
+func (c *TagClient) Interceptors() []Interceptor {
+	return c.inters.Tag
+}
+
+func (c *TagClient) mutate(ctx context.Context, m *TagMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TagCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TagUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TagDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Tag mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -2498,13 +2844,13 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AppConfig, Contact, Event, Group, GroupNote, MigrationLog, NotificationLog,
-		PasswordResetToken, Person, PersonNote, PushSubscription, RecurringRule,
-		Session, User []ent.Hook
+		AppConfig, Contact, Event, GiftIdea, Group, GroupNote, MigrationLog,
+		NotificationLog, PasswordResetToken, Person, PersonNote, PushSubscription,
+		RecurringRule, Session, Tag, User []ent.Hook
 	}
 	inters struct {
-		AppConfig, Contact, Event, Group, GroupNote, MigrationLog, NotificationLog,
-		PasswordResetToken, Person, PersonNote, PushSubscription, RecurringRule,
-		Session, User []ent.Interceptor
+		AppConfig, Contact, Event, GiftIdea, Group, GroupNote, MigrationLog,
+		NotificationLog, PasswordResetToken, Person, PersonNote, PushSubscription,
+		RecurringRule, Session, Tag, User []ent.Interceptor
 	}
 )

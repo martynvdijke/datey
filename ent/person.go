@@ -72,9 +72,13 @@ type PersonEdges struct {
 	Groups []*Group `json:"groups,omitempty"`
 	// Timeline holds the value of the timeline edge.
 	Timeline []*PersonNote `json:"timeline,omitempty"`
+	// Tags holds the value of the tags edge.
+	Tags []*Tag `json:"tags,omitempty"`
+	// GiftIdeas holds the value of the giftIdeas edge.
+	GiftIdeas []*GiftIdea `json:"giftIdeas,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [5]bool
 }
 
 // EventsOrErr returns the Events value or an error if the edge
@@ -102,6 +106,24 @@ func (e PersonEdges) TimelineOrErr() ([]*PersonNote, error) {
 		return e.Timeline, nil
 	}
 	return nil, &NotLoadedError{edge: "timeline"}
+}
+
+// TagsOrErr returns the Tags value or an error if the edge
+// was not loaded in eager-loading.
+func (e PersonEdges) TagsOrErr() ([]*Tag, error) {
+	if e.loadedTypes[3] {
+		return e.Tags, nil
+	}
+	return nil, &NotLoadedError{edge: "tags"}
+}
+
+// GiftIdeasOrErr returns the GiftIdeas value or an error if the edge
+// was not loaded in eager-loading.
+func (e PersonEdges) GiftIdeasOrErr() ([]*GiftIdea, error) {
+	if e.loadedTypes[4] {
+		return e.GiftIdeas, nil
+	}
+	return nil, &NotLoadedError{edge: "giftIdeas"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -298,6 +320,16 @@ func (_m *Person) QueryGroups() *GroupQuery {
 // QueryTimeline queries the "timeline" edge of the Person entity.
 func (_m *Person) QueryTimeline() *PersonNoteQuery {
 	return NewPersonClient(_m.config).QueryTimeline(_m)
+}
+
+// QueryTags queries the "tags" edge of the Person entity.
+func (_m *Person) QueryTags() *TagQuery {
+	return NewPersonClient(_m.config).QueryTags(_m)
+}
+
+// QueryGiftIdeas queries the "giftIdeas" edge of the Person entity.
+func (_m *Person) QueryGiftIdeas() *GiftIdeaQuery {
+	return NewPersonClient(_m.config).QueryGiftIdeas(_m)
 }
 
 // Update returns a builder for updating this Person.

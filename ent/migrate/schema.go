@@ -141,6 +141,39 @@ var (
 			},
 		},
 	}
+	// GiftIdeasColumns holds the columns for the "gift_ideas" table.
+	GiftIdeasColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "title", Type: field.TypeString},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "price_cents", Type: field.TypeInt, Nullable: true},
+		{Name: "url", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"idea", "purchased", "given", "archived"}, Default: "idea"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "person_gift_ideas", Type: field.TypeInt},
+	}
+	// GiftIdeasTable holds the schema information for the "gift_ideas" table.
+	GiftIdeasTable = &schema.Table{
+		Name:       "gift_ideas",
+		Columns:    GiftIdeasColumns,
+		PrimaryKey: []*schema.Column{GiftIdeasColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "gift_ideas_persons_giftIdeas",
+				Columns:    []*schema.Column{GiftIdeasColumns[8]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "giftidea_status_person_gift_ideas",
+				Unique:  false,
+				Columns: []*schema.Column{GiftIdeasColumns[5], GiftIdeasColumns[8]},
+			},
+		},
+	}
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -358,6 +391,18 @@ var (
 			},
 		},
 	}
+	// TagsColumns holds the columns for the "tags" table.
+	TagsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// TagsTable holds the schema information for the "tags" table.
+	TagsTable = &schema.Table{
+		Name:       "tags",
+		Columns:    TagsColumns,
+		PrimaryKey: []*schema.Column{TagsColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -399,11 +444,37 @@ var (
 			},
 		},
 	}
+	// PersonTagsColumns holds the columns for the "person_tags" table.
+	PersonTagsColumns = []*schema.Column{
+		{Name: "person_id", Type: field.TypeInt},
+		{Name: "tag_id", Type: field.TypeInt},
+	}
+	// PersonTagsTable holds the schema information for the "person_tags" table.
+	PersonTagsTable = &schema.Table{
+		Name:       "person_tags",
+		Columns:    PersonTagsColumns,
+		PrimaryKey: []*schema.Column{PersonTagsColumns[0], PersonTagsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "person_tags_person_id",
+				Columns:    []*schema.Column{PersonTagsColumns[0]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "person_tags_tag_id",
+				Columns:    []*schema.Column{PersonTagsColumns[1]},
+				RefColumns: []*schema.Column{TagsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AppConfigsTable,
 		ContactsTable,
 		EventsTable,
+		GiftIdeasTable,
 		GroupsTable,
 		GroupNotesTable,
 		MigrationLogsTable,
@@ -414,8 +485,10 @@ var (
 		PushSubscriptionsTable,
 		RecurringRulesTable,
 		SessionsTable,
+		TagsTable,
 		UsersTable,
 		PersonGroupsTable,
+		PersonTagsTable,
 	}
 )
 
@@ -423,6 +496,7 @@ func init() {
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
 	EventsTable.ForeignKeys[1].RefTable = GroupsTable
 	EventsTable.ForeignKeys[2].RefTable = PersonsTable
+	GiftIdeasTable.ForeignKeys[0].RefTable = PersonsTable
 	GroupNotesTable.ForeignKeys[0].RefTable = GroupsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable
 	PasswordResetTokensTable.ForeignKeys[0].RefTable = UsersTable
@@ -431,4 +505,6 @@ func init() {
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	PersonGroupsTable.ForeignKeys[0].RefTable = PersonsTable
 	PersonGroupsTable.ForeignKeys[1].RefTable = GroupsTable
+	PersonTagsTable.ForeignKeys[0].RefTable = PersonsTable
+	PersonTagsTable.ForeignKeys[1].RefTable = TagsTable
 }

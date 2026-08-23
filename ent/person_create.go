@@ -11,9 +11,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/giftidea"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/personnote"
+	"github.com/datey/datey/ent/tag"
 )
 
 // PersonCreate is the builder for creating a Person entity.
@@ -316,6 +318,36 @@ func (_c *PersonCreate) AddTimeline(v ...*PersonNote) *PersonCreate {
 	return _c.AddTimelineIDs(ids...)
 }
 
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (_c *PersonCreate) AddTagIDs(ids ...int) *PersonCreate {
+	_c.mutation.AddTagIDs(ids...)
+	return _c
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (_c *PersonCreate) AddTags(v ...*Tag) *PersonCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTagIDs(ids...)
+}
+
+// AddGiftIdeaIDs adds the "giftIdeas" edge to the GiftIdea entity by IDs.
+func (_c *PersonCreate) AddGiftIdeaIDs(ids ...int) *PersonCreate {
+	_c.mutation.AddGiftIdeaIDs(ids...)
+	return _c
+}
+
+// AddGiftIdeas adds the "giftIdeas" edges to the GiftIdea entity.
+func (_c *PersonCreate) AddGiftIdeas(v ...*GiftIdea) *PersonCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGiftIdeaIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (_c *PersonCreate) Mutation() *PersonMutation {
 	return _c.mutation
@@ -545,6 +577,38 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(personnote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   person.TagsTable,
+			Columns: person.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GiftIdeasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.GiftIdeasTable,
+			Columns: []string{person.GiftIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

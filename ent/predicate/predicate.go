@@ -15,6 +15,9 @@ type Contact func(*sql.Selector)
 // Event is the predicate function for event builders.
 type Event func(*sql.Selector)
 
+// GiftIdea is the predicate function for giftidea builders.
+type GiftIdea func(*sql.Selector)
+
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 
@@ -44,6 +47,9 @@ type RecurringRule func(*sql.Selector)
 
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
+
+// Tag is the predicate function for tag builders.
+type Tag func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

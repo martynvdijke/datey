@@ -15,6 +15,7 @@ import (
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
+	"github.com/datey/datey/ent/giftidea"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/groupnote"
 	"github.com/datey/datey/ent/migrationlog"
@@ -25,6 +26,7 @@ import (
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
 )
 
@@ -89,6 +91,7 @@ func checkColumn(t, c string) error {
 			appconfig.Table:          appconfig.ValidColumn,
 			contact.Table:            contact.ValidColumn,
 			event.Table:              event.ValidColumn,
+			giftidea.Table:           giftidea.ValidColumn,
 			group.Table:              group.ValidColumn,
 			groupnote.Table:          groupnote.ValidColumn,
 			migrationlog.Table:       migrationlog.ValidColumn,
@@ -99,6 +102,7 @@ func checkColumn(t, c string) error {
 			pushsubscription.Table:   pushsubscription.ValidColumn,
 			recurringrule.Table:      recurringrule.ValidColumn,
 			session.Table:            session.ValidColumn,
+			tag.Table:                tag.ValidColumn,
 			user.Table:               user.ValidColumn,
 		})
 	})
