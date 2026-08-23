@@ -1,0 +1,102 @@
+{{define "content"}}
+<h1 class="h4 mb-4">Stats Dashboard</h1>
+
+<!-- Panel 1: Age Distribution -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h6">Age Distribution</h2>
+    {{if .TotalPeople}}
+    <div class="stats-bars">
+      {{range .AgeBuckets}}
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="text-muted small" style="width:80px;">{{.Label}}</span>
+        <div class="flex-grow-1 bg-secondary bg-opacity-10 rounded" style="height:20px;">
+          <div class="bg-primary rounded" style="width: {{.Pct}}%; height:100%;"></div>
+        </div>
+        <span class="small" style="width:30px; text-align:right;">{{.Count}}</span>
+      </div>
+      {{end}}
+    </div>
+    {{else}}
+    <div class="empty-state"><p class="mb-0">No people yet.</p></div>
+    {{end}}
+  </div>
+</div>
+
+<!-- Panel 2: Busiest Birthday Months -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h6">Busiest Birthday Months</h2>
+    {{$hasBusiest := false}}
+    {{range .BusiestMonths}}{{if gt .Count 0}}{{$hasBusiest = true}}{{end}}{{end}}
+    {{if $hasBusiest}}
+    <div class="stats-bars">
+      {{range .BusiestMonths}}
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="text-muted small" style="width:40px;">{{.Label}}</span>
+        <div class="flex-grow-1 bg-secondary bg-opacity-10 rounded" style="height:20px;">
+          <div class="rounded" style="width: {{.Pct}}%; height:100%; background: var(--event-birthday);"></div>
+        </div>
+        <span class="small" style="width:30px; text-align:right;">{{.Count}}</span>
+      </div>
+      {{end}}
+    </div>
+    {{else}}
+    <div class="empty-state"><p class="mb-0">No birthdays yet.</p></div>
+    {{end}}
+  </div>
+</div>
+
+<!-- Panel 3: Events Per Month Histogram -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h6">Events Per Month</h2>
+    {{$hasEPM := false}}
+    {{range .EventsPerMonth}}{{if gt .Count 0}}{{$hasEPM = true}}{{end}}{{end}}
+    {{if $hasEPM}}
+    <div class="stats-bars">
+      {{range .EventsPerMonth}}
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="text-muted small" style="width:40px;">{{.Label}}</span>
+        <div class="flex-grow-1 bg-secondary bg-opacity-10 rounded" style="height:20px;">
+          <div class="bg-success rounded" style="width: {{.Pct}}%; height:100%;"></div>
+        </div>
+        <span class="small" style="width:30px; text-align:right;">{{.Count}}</span>
+      </div>
+      {{end}}
+    </div>
+    {{else}}
+    <div class="empty-state"><p class="mb-0">No events yet.</p></div>
+    {{end}}
+  </div>
+</div>
+
+<!-- Panel 4: Upcoming Milestones -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h6">Upcoming Milestones (next 60 days)</h2>
+    {{if .UpcomingMilestones}}
+    <ul class="list-unstyled mb-0">
+      {{range .UpcomingMilestones}}<li><span class="badge bg-warning text-dark">{{.Label}}</span> {{.Name}} — {{.Date}}</li>{{end}}
+    </ul>
+    {{else}}
+    <div class="empty-state"><p class="mb-0">No upcoming milestones.</p></div>
+    {{end}}
+  </div>
+</div>
+
+<!-- Panel 5: Missed Recently -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h6">Missed Recently (last 30 days)</h2>
+    {{if .MissedRecently}}
+    <ul class="list-unstyled mb-0">
+      {{range .MissedRecently}}<li>{{.Name}} — {{.Type}} — {{.Date}}</li>{{end}}
+    </ul>
+    {{else}}
+    <div class="empty-state"><p class="mb-0">Nothing missed recently.</p></div>
+    {{end}}
+  </div>
+</div>
+
+{{end}}
