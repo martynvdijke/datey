@@ -1,3 +1,21 @@
+# [1.39.0](https://github.com/martynvdijke/datey/compare/v1.38.1...v1.39.0) (2026-08-23)
+
+
+### Bug Fixes
+
+* **events:** use tagged switch for pattern type validation ([ad52752](https://github.com/martynvdijke/datey/commit/ad5275212a53bb580dc0a117459f676e7ea178e1))
+
+
+### Features
+
+* **ent:** add tag and gift idea schemas with generated code ([dd292e4](https://github.com/martynvdijke/datey/commit/dd292e47670f0ac84683db3d3b3b37b12688ddf6))
+* **events:** custom nth-weekday recurrence rules ([19a1790](https://github.com/martynvdijke/datey/commit/19a1790a6991176786d0b5fa7d37d8af6b1fa5d5))
+* **people:** edit person details and per-person photo settings modal ([565a267](https://github.com/martynvdijke/datey/commit/565a267fa6e0fb631d523bab257a30a68c978ec1))
+* **people:** free-form tags with autocomplete and list filtering ([3630cf3](https://github.com/martynvdijke/datey/commit/3630cf350a6490037d2a893bd9e87389f471a4b7))
+* **people:** milestone detection for event dates ([9c196c4](https://github.com/martynvdijke/datey/commit/9c196c4653257201f73192998980164b210dd228))
+* **people:** per-person gift ideas with status lifecycle ([b04b5eb](https://github.com/martynvdijke/datey/commit/b04b5eb06f56963c8645f5b55c35b105fb74f0f8))
+* **stats:** read-only stats dashboard with css-only charts ([ba74be8](https://github.com/martynvdijke/datey/commit/ba74be8f7675f7ab64bb3785586129712f96dca3))
+
 ## [1.38.1](https://github.com/martynvdijke/datey/compare/v1.38.0...v1.38.1) (2026-08-23)
 
 
