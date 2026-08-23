@@ -48,7 +48,8 @@ func (h *Handler) createRecurringRule(w http.ResponseWriter, r *http.Request) {
 	}
 
 	month, nth, weekday, day := 0, 0, 0, 0
-	if patternType == recurring.NthWeekdayRule {
+	switch patternType {
+	case recurring.NthWeekdayRule:
 		if monthStr == "" {
 			errors["month"] = "Month is required"
 		} else {
@@ -79,7 +80,7 @@ func (h *Handler) createRecurringRule(w http.ResponseWriter, r *http.Request) {
 				weekday = v
 			}
 		}
-	} else if patternType == "fixed" {
+	case "fixed":
 		if monthStr == "" {
 			errors["month"] = "Month is required"
 		} else {
