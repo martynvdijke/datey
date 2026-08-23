@@ -1,0 +1,93 @@
+{{define "content"}}
+<h1 class="mb-4">New Recurring Rule</h1>
+<div class="row">
+  <div class="col-md-8 col-lg-6">
+    <form action="/recurring-rules/new" method="POST" id="recurring-rule-form">
+      {{template "csrfField" .}}
+      <div class="mb-3">
+        <label for="name" class="form-label">Name {{template "requiredIndicator" .}}</label>
+        <input type="text" class="form-control" id="name" name="name" required value="{{if .FormData}}{{.FormData.Name}}{{end}}">
+        {{template "fieldError" (dict "Errors" .Errors "Field" "name")}}
+      </div>
+      <div class="mb-3">
+        <label for="pattern_type" class="form-label">Type {{template "requiredIndicator" .}}</label>
+        <select class="form-select" id="pattern_type" name="pattern_type" required onchange="toggleNthFields()">
+          <option value="">-- select --</option>
+          <option value="fixed"{{if eq .FormData.PatternType "fixed"}} selected{{end}}>Fixed date</option>
+          <option value="easter_sunday"{{if eq .FormData.PatternType "easter_sunday"}} selected{{end}}>Easter Sunday</option>
+          <option value="good_friday"{{if eq .FormData.PatternType "good_friday"}} selected{{end}}>Good Friday</option>
+          <option value="easter_monday"{{if eq .FormData.PatternType "easter_monday"}} selected{{end}}>Easter Monday</option>
+          <option value="ash_wednesday"{{if eq .FormData.PatternType "ash_wednesday"}} selected{{end}}>Ash Wednesday</option>
+          <option value="pentecost"{{if eq .FormData.PatternType "pentecost"}} selected{{end}}>Pentecost</option>
+          <option value="nth_weekday"{{if eq .FormData.PatternType "nth_weekday"}} selected{{end}}>Nth weekday of month</option>
+        </select>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "pattern_type")}}
+      </div>
+      <div id="nth-fields" style="display:none">
+        <div class="mb-3">
+          <label for="month" class="form-label">Month</label>
+          <select class="form-select" id="month" name="month">
+            <option value="">-- select month --</option>
+            <option value="1"{{if eq .FormData.Month "1"}} selected{{end}}>January</option>
+            <option value="2"{{if eq .FormData.Month "2"}} selected{{end}}>February</option>
+            <option value="3"{{if eq .FormData.Month "3"}} selected{{end}}>March</option>
+            <option value="4"{{if eq .FormData.Month "4"}} selected{{end}}>April</option>
+            <option value="5"{{if eq .FormData.Month "5"}} selected{{end}}>May</option>
+            <option value="6"{{if eq .FormData.Month "6"}} selected{{end}}>June</option>
+            <option value="7"{{if eq .FormData.Month "7"}} selected{{end}}>July</option>
+            <option value="8"{{if eq .FormData.Month "8"}} selected{{end}}>August</option>
+            <option value="9"{{if eq .FormData.Month "9"}} selected{{end}}>September</option>
+            <option value="10"{{if eq .FormData.Month "10"}} selected{{end}}>October</option>
+            <option value="11"{{if eq .FormData.Month "11"}} selected{{end}}>November</option>
+            <option value="12"{{if eq .FormData.Month "12"}} selected{{end}}>December</option>
+          </select>
+          {{template "fieldError" (dict "Errors" .Errors "Field" "month")}}
+        </div>
+        <div class="mb-3">
+          <label for="nth" class="form-label">Ordinal</label>
+          <select class="form-select" id="nth" name="nth">
+            <option value="">-- select --</option>
+            <option value="1"{{if eq .FormData.Nth "1"}} selected{{end}}>1st</option>
+            <option value="2"{{if eq .FormData.Nth "2"}} selected{{end}}>2nd</option>
+            <option value="3"{{if eq .FormData.Nth "3"}} selected{{end}}>3rd</option>
+            <option value="4"{{if eq .FormData.Nth "4"}} selected{{end}}>4th</option>
+            <option value="5"{{if eq .FormData.Nth "5"}} selected{{end}}>Last</option>
+          </select>
+          {{template "fieldError" (dict "Errors" .Errors "Field" "nth")}}
+        </div>
+        <div class="mb-3">
+          <label for="weekday" class="form-label">Weekday</label>
+          <select class="form-select" id="weekday" name="weekday">
+            <option value="">-- select --</option>
+            <option value="0"{{if eq .FormData.Weekday "0"}} selected{{end}}>Sunday</option>
+            <option value="1"{{if eq .FormData.Weekday "1"}} selected{{end}}>Monday</option>
+            <option value="2"{{if eq .FormData.Weekday "2"}} selected{{end}}>Tuesday</option>
+            <option value="3"{{if eq .FormData.Weekday "3"}} selected{{end}}>Wednesday</option>
+            <option value="4"{{if eq .FormData.Weekday "4"}} selected{{end}}>Thursday</option>
+            <option value="5"{{if eq .FormData.Weekday "5"}} selected{{end}}>Friday</option>
+            <option value="6"{{if eq .FormData.Weekday "6"}} selected{{end}}>Saturday</option>
+          </select>
+          {{template "fieldError" (dict "Errors" .Errors "Field" "weekday")}}
+        </div>
+      </div>
+      <div id="fixed-fields" style="display:none">
+        <div class="mb-3">
+          <label for="day" class="form-label">Day</label>
+          <input type="number" class="form-control" id="day" name="day" min="1" max="31" value="{{if .FormData}}{{.FormData.Day}}{{end}}">
+          {{template "fieldError" (dict "Errors" .Errors "Field" "day")}}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Create</button>
+      <a href="/recurring-rules" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+<script>
+function toggleNthFields() {
+  var t = document.getElementById('pattern_type').value;
+  document.getElementById('nth-fields').style.display = t === 'nth_weekday' ? 'block' : 'none';
+  document.getElementById('fixed-fields').style.display = t === 'fixed' ? 'block' : 'none';
+}
+toggleNthFields();
+</script>
+{{end}}

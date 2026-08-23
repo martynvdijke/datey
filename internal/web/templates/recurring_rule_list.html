@@ -1,0 +1,7 @@
+{{define "content"}}
+<h1>Recurring Rules</h1>
+<a href="/recurring-rules/new" class="btn btn-primary mb-3">New Rule</a>
+<ul>
+{{range .Rules}}<li>{{.Name}} ({{.PatternType}})</li>{{end}}
+</ul>
+{{end}}

@@ -12,7 +12,8 @@ import (
 )
 
 func TestCalcNthWeekday_MothersDay2026(t *testing.T) {
-	date := calcNthWeekday(2, time.Sunday, time.May, 2026)
+	d, _ := recurring.NthWeekdayOfMonth(2026, 5, 2, 0)
+	date := d
 	want := time.Date(2026, time.May, 10, 0, 0, 0, 0, time.UTC)
 	if !date.Equal(want) {
 		t.Errorf("Mother's Day 2026: got %s, want %s", date.Format("2006-01-02"), want.Format("2006-01-02"))
@@ -20,7 +21,8 @@ func TestCalcNthWeekday_MothersDay2026(t *testing.T) {
 }
 
 func TestCalcNthWeekday_FathersDay2026(t *testing.T) {
-	date := calcNthWeekday(3, time.Sunday, time.June, 2026)
+	d, _ := recurring.NthWeekdayOfMonth(2026, 6, 3, 0)
+	date := d
 	want := time.Date(2026, time.June, 21, 0, 0, 0, 0, time.UTC)
 	if !date.Equal(want) {
 		t.Errorf("Father's Day 2026: got %s, want %s", date.Format("2006-01-02"), want.Format("2006-01-02"))
@@ -28,7 +30,8 @@ func TestCalcNthWeekday_FathersDay2026(t *testing.T) {
 }
 
 func TestCalcNthWeekday_FirstMonday(t *testing.T) {
-	date := calcNthWeekday(1, time.Monday, time.January, 2026)
+	d, _ := recurring.NthWeekdayOfMonth(2026, 1, 1, 1)
+	date := d
 	want := time.Date(2026, time.January, 5, 0, 0, 0, 0, time.UTC)
 	if !date.Equal(want) {
 		t.Errorf("First Monday Jan 2026: got %s, want %s", date.Format("2006-01-02"), want.Format("2006-01-02"))
@@ -36,7 +39,8 @@ func TestCalcNthWeekday_FirstMonday(t *testing.T) {
 }
 
 func TestCalcNthWeekday_FourthFriday(t *testing.T) {
-	date := calcNthWeekday(4, time.Friday, time.November, 2026)
+	d, _ := recurring.NthWeekdayOfMonth(2026, 11, 4, 5)
+	date := d
 	if date.Month() != time.November || date.Weekday() != time.Friday {
 		t.Errorf("Fourth Friday Nov 2026: got %s", date.Format("2006-01-02"))
 	}

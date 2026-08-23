@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/datey/datey/ent"
@@ -59,8 +60,12 @@ func (r *RecurringRuleRepository) Delete(ctx context.Context, id int) error {
 
 func (r *RecurringRuleRepository) CalculateDate(rule *ent.RecurringRule, year int) time.Time {
 	switch rule.PatternType {
-	case "nth_weekday":
-		return calcNthWeekday(rule.Nth, time.Weekday(rule.Weekday), time.Month(rule.Month), year)
+	case recurring.NthWeekdayRule:
+		if d, ok := recurring.NthWeekdayOfMonth(year, rule.Month, rule.Nth, rule.Weekday); ok {
+			return d
+		}
+		slog.Info("recurring: nth_weekday skipped", "rule", rule.Name, "year", year)
+		return time.Time{}
 	case "last_weekday":
 		return calcLastWeekday(time.Weekday(rule.Weekday), time.Month(rule.Month), year)
 	case "fixed":
@@ -74,24 +79,10 @@ func (r *RecurringRuleRepository) CalculateDate(rule *ent.RecurringRule, year in
 	}
 }
 
-func calcNthWeekday(nth int, weekday time.Weekday, month time.Month, year int) time.Time {
-	firstDay := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
-	daysUntil := (int(weekday) - int(firstDay.Weekday()) + 7) % 7
-	day := 1 + daysUntil + (nth-1)*7
-	if day > daysInMonth(month, year) {
-		day -= 7
-	}
-	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
-}
-
 func calcLastWeekday(weekday time.Weekday, month time.Month, year int) time.Time {
 	lastDay := time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC)
 	daysBack := (int(lastDay.Weekday()) - int(weekday) + 7) % 7
 	return lastDay.AddDate(0, 0, -daysBack)
-}
-
-func daysInMonth(month time.Month, year int) int {
-	return time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC).Day()
 }
 
 func NextOccurrence(date time.Time) time.Time {
