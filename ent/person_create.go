@@ -304,6 +304,20 @@ func (_c *PersonCreate) SetNillableCarddavPendingSync(v *bool) *PersonCreate {
 	return _c
 }
 
+// SetGoogleResourceName sets the "google_resource_name" field.
+func (_c *PersonCreate) SetGoogleResourceName(v string) *PersonCreate {
+	_c.mutation.SetGoogleResourceName(v)
+	return _c
+}
+
+// SetNillableGoogleResourceName sets the "google_resource_name" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableGoogleResourceName(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetGoogleResourceName(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *PersonCreate) SetCreatedAt(v time.Time) *PersonCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -627,6 +641,10 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CarddavPendingSync(); ok {
 		_spec.SetField(person.FieldCarddavPendingSync, field.TypeBool, value)
 		_node.CarddavPendingSync = value
+	}
+	if value, ok := _c.mutation.GoogleResourceName(); ok {
+		_spec.SetField(person.FieldGoogleResourceName, field.TypeString, value)
+		_node.GoogleResourceName = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)

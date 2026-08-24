@@ -60,6 +60,8 @@ type Person struct {
 	CarddavLastModified *time.Time `json:"carddav_last_modified,omitempty"`
 	// CarddavPendingSync holds the value of the "carddav_pending_sync" field.
 	CarddavPendingSync bool `json:"carddav_pending_sync,omitempty"`
+	// GoogleResourceName holds the value of the "google_resource_name" field.
+	GoogleResourceName *string `json:"google_resource_name,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -165,7 +167,7 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case person.FieldID:
 			values[i] = new(sql.NullInt64)
-		case person.FieldName, person.FieldFirstName, person.FieldMiddleName, person.FieldLastName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID, person.FieldPhotoPath, person.FieldPhotoContentType, person.FieldPhotoSource, person.FieldCarddavUID, person.FieldCarddavHref, person.FieldCarddavEtag, person.FieldCarddavRev:
+		case person.FieldName, person.FieldFirstName, person.FieldMiddleName, person.FieldLastName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID, person.FieldPhotoPath, person.FieldPhotoContentType, person.FieldPhotoSource, person.FieldCarddavUID, person.FieldCarddavHref, person.FieldCarddavEtag, person.FieldCarddavRev, person.FieldGoogleResourceName:
 			values[i] = new(sql.NullString)
 		case person.FieldPhotoUpdatedAt, person.FieldCarddavLastModified, person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -330,6 +332,13 @@ func (_m *Person) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field carddav_pending_sync", values[i])
 			} else if value.Valid {
 				_m.CarddavPendingSync = value.Bool
+			}
+		case person.FieldGoogleResourceName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_resource_name", values[i])
+			} else if value.Valid {
+				_m.GoogleResourceName = new(string)
+				*_m.GoogleResourceName = value.String
 			}
 		case person.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -502,6 +511,11 @@ func (_m *Person) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("carddav_pending_sync=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CarddavPendingSync))
+	builder.WriteString(", ")
+	if v := _m.GoogleResourceName; v != nil {
+		builder.WriteString("google_resource_name=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

@@ -135,6 +135,22 @@ const (
 	FieldCarddavLastSync = "carddav_last_sync"
 	// FieldCarddavDeletePolicy holds the string denoting the carddav_delete_policy field in the database.
 	FieldCarddavDeletePolicy = "carddav_delete_policy"
+	// FieldGoogleContactsEnabled holds the string denoting the google_contacts_enabled field in the database.
+	FieldGoogleContactsEnabled = "google_contacts_enabled"
+	// FieldGoogleClientID holds the string denoting the google_client_id field in the database.
+	FieldGoogleClientID = "google_client_id"
+	// FieldGoogleClientSecret holds the string denoting the google_client_secret field in the database.
+	FieldGoogleClientSecret = "google_client_secret"
+	// FieldGoogleRefreshToken holds the string denoting the google_refresh_token field in the database.
+	FieldGoogleRefreshToken = "google_refresh_token"
+	// FieldGoogleSyncToken holds the string denoting the google_sync_token field in the database.
+	FieldGoogleSyncToken = "google_sync_token"
+	// FieldGoogleLastSync holds the string denoting the google_last_sync field in the database.
+	FieldGoogleLastSync = "google_last_sync"
+	// FieldGoogleDeletePolicy holds the string denoting the google_delete_policy field in the database.
+	FieldGoogleDeletePolicy = "google_delete_policy"
+	// FieldGoogleOauthState holds the string denoting the google_oauth_state field in the database.
+	FieldGoogleOauthState = "google_oauth_state"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// FieldAuditRetentionMax holds the string denoting the audit_retention_max field in the database.
@@ -208,6 +224,14 @@ var Columns = []string{
 	FieldCarddavSyncToken,
 	FieldCarddavLastSync,
 	FieldCarddavDeletePolicy,
+	FieldGoogleContactsEnabled,
+	FieldGoogleClientID,
+	FieldGoogleClientSecret,
+	FieldGoogleRefreshToken,
+	FieldGoogleSyncToken,
+	FieldGoogleLastSync,
+	FieldGoogleDeletePolicy,
+	FieldGoogleOauthState,
 	FieldUpdatedAt,
 	FieldAuditRetentionMax,
 }
@@ -538,6 +562,46 @@ func ByCarddavLastSync(opts ...sql.OrderTermOption) OrderOption {
 // ByCarddavDeletePolicy orders the results by the carddav_delete_policy field.
 func ByCarddavDeletePolicy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCarddavDeletePolicy, opts...).ToFunc()
+}
+
+// ByGoogleContactsEnabled orders the results by the google_contacts_enabled field.
+func ByGoogleContactsEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleContactsEnabled, opts...).ToFunc()
+}
+
+// ByGoogleClientID orders the results by the google_client_id field.
+func ByGoogleClientID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleClientID, opts...).ToFunc()
+}
+
+// ByGoogleClientSecret orders the results by the google_client_secret field.
+func ByGoogleClientSecret(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleClientSecret, opts...).ToFunc()
+}
+
+// ByGoogleRefreshToken orders the results by the google_refresh_token field.
+func ByGoogleRefreshToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleRefreshToken, opts...).ToFunc()
+}
+
+// ByGoogleSyncToken orders the results by the google_sync_token field.
+func ByGoogleSyncToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleSyncToken, opts...).ToFunc()
+}
+
+// ByGoogleLastSync orders the results by the google_last_sync field.
+func ByGoogleLastSync(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleLastSync, opts...).ToFunc()
+}
+
+// ByGoogleDeletePolicy orders the results by the google_delete_policy field.
+func ByGoogleDeletePolicy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleDeletePolicy, opts...).ToFunc()
+}
+
+// ByGoogleOauthState orders the results by the google_oauth_state field.
+func ByGoogleOauthState(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleOauthState, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

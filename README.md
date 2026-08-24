@@ -36,6 +36,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🔍 People Search** — Quick search through people by name.
 - **📇 vCard Import/Export** — Import one or more vCard files (with optional overwrite of existing people) and export contacts as vCard. `BDAY` supports full dates (`19951120`, `1995-11-20`) and year-less formats (`--0608`, `--06-08`, `-0608`, `0608`); year-less birthdays import as regular birthday events and are shown without an age.
 - **🔁 CardDAV Sync** — Two-way, authenticated sync of people and birthdays with a CardDAV address book (Nextcloud, Baikal, iCloud, ...). Remote changes are pulled once a day (plus a manual "Sync Now" from Settings → Notifications); local edits are tracked and pushed back. `BDAY` becomes a birthday event and `NOTE` maps to notes. Conflicts resolve last-write-wins by `REV`/modification time; a server-side deletion either unlinks the local person (default, `keep`) or removes them (`delete`). Disabled until you enable it.
+- **👥 Google Contacts Sync** — Pull-only (v1) sync of people, birthdays and notes from Google Contacts via the People API (`people.connections.list`) with OAuth2. Daily auto-sync plus manual "Sync Now" from Settings → Notifications.
 - **🎂 Age Display** — Ages derived from birthday events, shown on the people list, person detail, and dashboard (leap-day aware).
 - **🎖️ Milestone Badges** — Birthdays at 10, 18, 20, 21, 30–100 (decade) and anniversaries at 10, 25 (Silver), 50 (Golden), 60 (Diamond) show a milestone badge in the dashboard, calendar, and person detail views, plus a "milestones this year" summary on the dashboard. Yearless events show no badge. Optional 10 000-day badges are available flag-gated.
 - **🎈 Annual Notifications** — Birthdays, anniversaries, weddings and holidays fire every year on their occurrence date, even when the stored date is historical (leap-day aware). Birthday reminders are on by default per person and can be turned off with the toggle on a person's detail page. On upgrade, existing people with a parseable `BDAY` in their stored vCard data get a birthday event backfilled once.
@@ -145,6 +146,11 @@ See `.env.example` for a template.
 | `CARDDAV_USERNAME` | — | CardDAV username (Basic auth) |
 | `CARDDAV_PASSWORD` | — | CardDAV password / app password (never logged; masked in the admin UI) |
 | `CARDDAV_DELETE_POLICY` | `keep` | What happens when a contact is deleted on the server: `keep` = unlink and keep locally, `delete` = remove locally (**enforced**: `keep` or `delete`) |
+| `GOOGLE_CONTACTS_ENABLED` | `false` | Enable Google Contacts pull-only sync |
+| `GOOGLE_CLIENT_ID` | — | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | — | Google OAuth client secret (masked in UI, never logged) |
+| `GOOGLE_REFRESH_TOKEN` | — | Google OAuth refresh token (stored after consent, masked) |
+| `GOOGLE_DELETE_POLICY` | `keep` | Deletion policy for Google sync: `keep` or `delete` (**enforced**) |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
@@ -159,6 +165,16 @@ See `.env.example` for a template.
 ### Per-User Notifications
 
 Each user configures personal delivery targets under **Settings → Notifications** (email address, Telegram chat ID, etc.) for channels the admin has enabled globally. Users may choose **All events** or **Selected groups** scope; the scheduler expands each event into per-user deliveries and honors the scope (group events outside the selection are skipped). Dedup keys are per-user (`channel-event-date-user`) so two users receiving the same event do not suppress each other. When a user has no personal target for an enabled channel, delivery falls back to the global `app_config` value, preserving single-user behavior byte-identically.
+
+### Google Contacts Sync Setup
+
+1. Create a Google Cloud project at https://console.cloud.google.com, enable the **People API**.
+2. Configure an OAuth consent screen (External, add scope `https://www.googleapis.com/auth/contacts.readonly`, add your Google account as test user while in testing).
+3. Create OAuth credentials (Web application) and add the redirect URI `https://your-datey.example.com/settings/google/callback` (and `http://localhost:6270/settings/google/callback` for local testing).
+4. In Datey go to **Settings → Notifications → Google Contacts Sync**, paste the Client ID and Client Secret, save, then press **Connect / Consent** and approve. The refresh token is stored masked; the "Connected" badge appears.
+5. Press **Sync Now** or wait for the daily scheduler run (at most once per day after the CardDAV job).
+
+Required scope: `https://www.googleapis.com/auth/contacts.readonly` (pull-only v1; no write-back).
 
 ### CardDAV Sync Setup
 

@@ -1331,6 +1331,166 @@ func (_u *AppConfigUpdate) ClearCarddavDeletePolicy() *AppConfigUpdate {
 	return _u
 }
 
+// SetGoogleContactsEnabled sets the "google_contacts_enabled" field.
+func (_u *AppConfigUpdate) SetGoogleContactsEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetGoogleContactsEnabled(v)
+	return _u
+}
+
+// SetNillableGoogleContactsEnabled sets the "google_contacts_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleContactsEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleContactsEnabled(*v)
+	}
+	return _u
+}
+
+// ClearGoogleContactsEnabled clears the value of the "google_contacts_enabled" field.
+func (_u *AppConfigUpdate) ClearGoogleContactsEnabled() *AppConfigUpdate {
+	_u.mutation.ClearGoogleContactsEnabled()
+	return _u
+}
+
+// SetGoogleClientID sets the "google_client_id" field.
+func (_u *AppConfigUpdate) SetGoogleClientID(v string) *AppConfigUpdate {
+	_u.mutation.SetGoogleClientID(v)
+	return _u
+}
+
+// SetNillableGoogleClientID sets the "google_client_id" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleClientID(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleClientID(*v)
+	}
+	return _u
+}
+
+// ClearGoogleClientID clears the value of the "google_client_id" field.
+func (_u *AppConfigUpdate) ClearGoogleClientID() *AppConfigUpdate {
+	_u.mutation.ClearGoogleClientID()
+	return _u
+}
+
+// SetGoogleClientSecret sets the "google_client_secret" field.
+func (_u *AppConfigUpdate) SetGoogleClientSecret(v string) *AppConfigUpdate {
+	_u.mutation.SetGoogleClientSecret(v)
+	return _u
+}
+
+// SetNillableGoogleClientSecret sets the "google_client_secret" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleClientSecret(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleClientSecret(*v)
+	}
+	return _u
+}
+
+// ClearGoogleClientSecret clears the value of the "google_client_secret" field.
+func (_u *AppConfigUpdate) ClearGoogleClientSecret() *AppConfigUpdate {
+	_u.mutation.ClearGoogleClientSecret()
+	return _u
+}
+
+// SetGoogleRefreshToken sets the "google_refresh_token" field.
+func (_u *AppConfigUpdate) SetGoogleRefreshToken(v string) *AppConfigUpdate {
+	_u.mutation.SetGoogleRefreshToken(v)
+	return _u
+}
+
+// SetNillableGoogleRefreshToken sets the "google_refresh_token" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleRefreshToken(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleRefreshToken(*v)
+	}
+	return _u
+}
+
+// ClearGoogleRefreshToken clears the value of the "google_refresh_token" field.
+func (_u *AppConfigUpdate) ClearGoogleRefreshToken() *AppConfigUpdate {
+	_u.mutation.ClearGoogleRefreshToken()
+	return _u
+}
+
+// SetGoogleSyncToken sets the "google_sync_token" field.
+func (_u *AppConfigUpdate) SetGoogleSyncToken(v string) *AppConfigUpdate {
+	_u.mutation.SetGoogleSyncToken(v)
+	return _u
+}
+
+// SetNillableGoogleSyncToken sets the "google_sync_token" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleSyncToken(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleSyncToken(*v)
+	}
+	return _u
+}
+
+// ClearGoogleSyncToken clears the value of the "google_sync_token" field.
+func (_u *AppConfigUpdate) ClearGoogleSyncToken() *AppConfigUpdate {
+	_u.mutation.ClearGoogleSyncToken()
+	return _u
+}
+
+// SetGoogleLastSync sets the "google_last_sync" field.
+func (_u *AppConfigUpdate) SetGoogleLastSync(v time.Time) *AppConfigUpdate {
+	_u.mutation.SetGoogleLastSync(v)
+	return _u
+}
+
+// SetNillableGoogleLastSync sets the "google_last_sync" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleLastSync(v *time.Time) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleLastSync(*v)
+	}
+	return _u
+}
+
+// ClearGoogleLastSync clears the value of the "google_last_sync" field.
+func (_u *AppConfigUpdate) ClearGoogleLastSync() *AppConfigUpdate {
+	_u.mutation.ClearGoogleLastSync()
+	return _u
+}
+
+// SetGoogleDeletePolicy sets the "google_delete_policy" field.
+func (_u *AppConfigUpdate) SetGoogleDeletePolicy(v string) *AppConfigUpdate {
+	_u.mutation.SetGoogleDeletePolicy(v)
+	return _u
+}
+
+// SetNillableGoogleDeletePolicy sets the "google_delete_policy" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleDeletePolicy(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleDeletePolicy(*v)
+	}
+	return _u
+}
+
+// ClearGoogleDeletePolicy clears the value of the "google_delete_policy" field.
+func (_u *AppConfigUpdate) ClearGoogleDeletePolicy() *AppConfigUpdate {
+	_u.mutation.ClearGoogleDeletePolicy()
+	return _u
+}
+
+// SetGoogleOauthState sets the "google_oauth_state" field.
+func (_u *AppConfigUpdate) SetGoogleOauthState(v string) *AppConfigUpdate {
+	_u.mutation.SetGoogleOauthState(v)
+	return _u
+}
+
+// SetNillableGoogleOauthState sets the "google_oauth_state" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableGoogleOauthState(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetGoogleOauthState(*v)
+	}
+	return _u
+}
+
+// ClearGoogleOauthState clears the value of the "google_oauth_state" field.
+func (_u *AppConfigUpdate) ClearGoogleOauthState() *AppConfigUpdate {
+	_u.mutation.ClearGoogleOauthState()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdate) SetUpdatedAt(v time.Time) *AppConfigUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -1817,6 +1977,54 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.CarddavDeletePolicyCleared() {
 		_spec.ClearField(appconfig.FieldCarddavDeletePolicy, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleContactsEnabled(); ok {
+		_spec.SetField(appconfig.FieldGoogleContactsEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.GoogleContactsEnabledCleared() {
+		_spec.ClearField(appconfig.FieldGoogleContactsEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.GoogleClientID(); ok {
+		_spec.SetField(appconfig.FieldGoogleClientID, field.TypeString, value)
+	}
+	if _u.mutation.GoogleClientIDCleared() {
+		_spec.ClearField(appconfig.FieldGoogleClientID, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleClientSecret(); ok {
+		_spec.SetField(appconfig.FieldGoogleClientSecret, field.TypeString, value)
+	}
+	if _u.mutation.GoogleClientSecretCleared() {
+		_spec.ClearField(appconfig.FieldGoogleClientSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleRefreshToken(); ok {
+		_spec.SetField(appconfig.FieldGoogleRefreshToken, field.TypeString, value)
+	}
+	if _u.mutation.GoogleRefreshTokenCleared() {
+		_spec.ClearField(appconfig.FieldGoogleRefreshToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleSyncToken(); ok {
+		_spec.SetField(appconfig.FieldGoogleSyncToken, field.TypeString, value)
+	}
+	if _u.mutation.GoogleSyncTokenCleared() {
+		_spec.ClearField(appconfig.FieldGoogleSyncToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleLastSync(); ok {
+		_spec.SetField(appconfig.FieldGoogleLastSync, field.TypeTime, value)
+	}
+	if _u.mutation.GoogleLastSyncCleared() {
+		_spec.ClearField(appconfig.FieldGoogleLastSync, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GoogleDeletePolicy(); ok {
+		_spec.SetField(appconfig.FieldGoogleDeletePolicy, field.TypeString, value)
+	}
+	if _u.mutation.GoogleDeletePolicyCleared() {
+		_spec.ClearField(appconfig.FieldGoogleDeletePolicy, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleOauthState(); ok {
+		_spec.SetField(appconfig.FieldGoogleOauthState, field.TypeString, value)
+	}
+	if _u.mutation.GoogleOauthStateCleared() {
+		_spec.ClearField(appconfig.FieldGoogleOauthState, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
@@ -3156,6 +3364,166 @@ func (_u *AppConfigUpdateOne) ClearCarddavDeletePolicy() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetGoogleContactsEnabled sets the "google_contacts_enabled" field.
+func (_u *AppConfigUpdateOne) SetGoogleContactsEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleContactsEnabled(v)
+	return _u
+}
+
+// SetNillableGoogleContactsEnabled sets the "google_contacts_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleContactsEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleContactsEnabled(*v)
+	}
+	return _u
+}
+
+// ClearGoogleContactsEnabled clears the value of the "google_contacts_enabled" field.
+func (_u *AppConfigUpdateOne) ClearGoogleContactsEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleContactsEnabled()
+	return _u
+}
+
+// SetGoogleClientID sets the "google_client_id" field.
+func (_u *AppConfigUpdateOne) SetGoogleClientID(v string) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleClientID(v)
+	return _u
+}
+
+// SetNillableGoogleClientID sets the "google_client_id" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleClientID(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleClientID(*v)
+	}
+	return _u
+}
+
+// ClearGoogleClientID clears the value of the "google_client_id" field.
+func (_u *AppConfigUpdateOne) ClearGoogleClientID() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleClientID()
+	return _u
+}
+
+// SetGoogleClientSecret sets the "google_client_secret" field.
+func (_u *AppConfigUpdateOne) SetGoogleClientSecret(v string) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleClientSecret(v)
+	return _u
+}
+
+// SetNillableGoogleClientSecret sets the "google_client_secret" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleClientSecret(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleClientSecret(*v)
+	}
+	return _u
+}
+
+// ClearGoogleClientSecret clears the value of the "google_client_secret" field.
+func (_u *AppConfigUpdateOne) ClearGoogleClientSecret() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleClientSecret()
+	return _u
+}
+
+// SetGoogleRefreshToken sets the "google_refresh_token" field.
+func (_u *AppConfigUpdateOne) SetGoogleRefreshToken(v string) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleRefreshToken(v)
+	return _u
+}
+
+// SetNillableGoogleRefreshToken sets the "google_refresh_token" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleRefreshToken(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleRefreshToken(*v)
+	}
+	return _u
+}
+
+// ClearGoogleRefreshToken clears the value of the "google_refresh_token" field.
+func (_u *AppConfigUpdateOne) ClearGoogleRefreshToken() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleRefreshToken()
+	return _u
+}
+
+// SetGoogleSyncToken sets the "google_sync_token" field.
+func (_u *AppConfigUpdateOne) SetGoogleSyncToken(v string) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleSyncToken(v)
+	return _u
+}
+
+// SetNillableGoogleSyncToken sets the "google_sync_token" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleSyncToken(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleSyncToken(*v)
+	}
+	return _u
+}
+
+// ClearGoogleSyncToken clears the value of the "google_sync_token" field.
+func (_u *AppConfigUpdateOne) ClearGoogleSyncToken() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleSyncToken()
+	return _u
+}
+
+// SetGoogleLastSync sets the "google_last_sync" field.
+func (_u *AppConfigUpdateOne) SetGoogleLastSync(v time.Time) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleLastSync(v)
+	return _u
+}
+
+// SetNillableGoogleLastSync sets the "google_last_sync" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleLastSync(v *time.Time) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleLastSync(*v)
+	}
+	return _u
+}
+
+// ClearGoogleLastSync clears the value of the "google_last_sync" field.
+func (_u *AppConfigUpdateOne) ClearGoogleLastSync() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleLastSync()
+	return _u
+}
+
+// SetGoogleDeletePolicy sets the "google_delete_policy" field.
+func (_u *AppConfigUpdateOne) SetGoogleDeletePolicy(v string) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleDeletePolicy(v)
+	return _u
+}
+
+// SetNillableGoogleDeletePolicy sets the "google_delete_policy" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleDeletePolicy(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleDeletePolicy(*v)
+	}
+	return _u
+}
+
+// ClearGoogleDeletePolicy clears the value of the "google_delete_policy" field.
+func (_u *AppConfigUpdateOne) ClearGoogleDeletePolicy() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleDeletePolicy()
+	return _u
+}
+
+// SetGoogleOauthState sets the "google_oauth_state" field.
+func (_u *AppConfigUpdateOne) SetGoogleOauthState(v string) *AppConfigUpdateOne {
+	_u.mutation.SetGoogleOauthState(v)
+	return _u
+}
+
+// SetNillableGoogleOauthState sets the "google_oauth_state" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableGoogleOauthState(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetGoogleOauthState(*v)
+	}
+	return _u
+}
+
+// ClearGoogleOauthState clears the value of the "google_oauth_state" field.
+func (_u *AppConfigUpdateOne) ClearGoogleOauthState() *AppConfigUpdateOne {
+	_u.mutation.ClearGoogleOauthState()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AppConfigUpdateOne) SetUpdatedAt(v time.Time) *AppConfigUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -3672,6 +4040,54 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.CarddavDeletePolicyCleared() {
 		_spec.ClearField(appconfig.FieldCarddavDeletePolicy, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleContactsEnabled(); ok {
+		_spec.SetField(appconfig.FieldGoogleContactsEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.GoogleContactsEnabledCleared() {
+		_spec.ClearField(appconfig.FieldGoogleContactsEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.GoogleClientID(); ok {
+		_spec.SetField(appconfig.FieldGoogleClientID, field.TypeString, value)
+	}
+	if _u.mutation.GoogleClientIDCleared() {
+		_spec.ClearField(appconfig.FieldGoogleClientID, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleClientSecret(); ok {
+		_spec.SetField(appconfig.FieldGoogleClientSecret, field.TypeString, value)
+	}
+	if _u.mutation.GoogleClientSecretCleared() {
+		_spec.ClearField(appconfig.FieldGoogleClientSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleRefreshToken(); ok {
+		_spec.SetField(appconfig.FieldGoogleRefreshToken, field.TypeString, value)
+	}
+	if _u.mutation.GoogleRefreshTokenCleared() {
+		_spec.ClearField(appconfig.FieldGoogleRefreshToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleSyncToken(); ok {
+		_spec.SetField(appconfig.FieldGoogleSyncToken, field.TypeString, value)
+	}
+	if _u.mutation.GoogleSyncTokenCleared() {
+		_spec.ClearField(appconfig.FieldGoogleSyncToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleLastSync(); ok {
+		_spec.SetField(appconfig.FieldGoogleLastSync, field.TypeTime, value)
+	}
+	if _u.mutation.GoogleLastSyncCleared() {
+		_spec.ClearField(appconfig.FieldGoogleLastSync, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GoogleDeletePolicy(); ok {
+		_spec.SetField(appconfig.FieldGoogleDeletePolicy, field.TypeString, value)
+	}
+	if _u.mutation.GoogleDeletePolicyCleared() {
+		_spec.ClearField(appconfig.FieldGoogleDeletePolicy, field.TypeString)
+	}
+	if value, ok := _u.mutation.GoogleOauthState(); ok {
+		_spec.SetField(appconfig.FieldGoogleOauthState, field.TypeString, value)
+	}
+	if _u.mutation.GoogleOauthStateCleared() {
+		_spec.ClearField(appconfig.FieldGoogleOauthState, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

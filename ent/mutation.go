@@ -140,6 +140,14 @@ type AppConfigMutation struct {
 	carddav_sync_token       *string
 	carddav_last_sync        *time.Time
 	carddav_delete_policy    *string
+	google_contacts_enabled  *bool
+	google_client_id         *string
+	google_client_secret     *string
+	google_refresh_token     *string
+	google_sync_token        *string
+	google_last_sync         *time.Time
+	google_delete_policy     *string
+	google_oauth_state       *string
 	updated_at               *time.Time
 	audit_retention_max      *int
 	addaudit_retention_max   *int
@@ -3474,6 +3482,398 @@ func (m *AppConfigMutation) ResetCarddavDeletePolicy() {
 	delete(m.clearedFields, appconfig.FieldCarddavDeletePolicy)
 }
 
+// SetGoogleContactsEnabled sets the "google_contacts_enabled" field.
+func (m *AppConfigMutation) SetGoogleContactsEnabled(b bool) {
+	m.google_contacts_enabled = &b
+}
+
+// GoogleContactsEnabled returns the value of the "google_contacts_enabled" field in the mutation.
+func (m *AppConfigMutation) GoogleContactsEnabled() (r bool, exists bool) {
+	v := m.google_contacts_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleContactsEnabled returns the old "google_contacts_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleContactsEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleContactsEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleContactsEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleContactsEnabled: %w", err)
+	}
+	return oldValue.GoogleContactsEnabled, nil
+}
+
+// ClearGoogleContactsEnabled clears the value of the "google_contacts_enabled" field.
+func (m *AppConfigMutation) ClearGoogleContactsEnabled() {
+	m.google_contacts_enabled = nil
+	m.clearedFields[appconfig.FieldGoogleContactsEnabled] = struct{}{}
+}
+
+// GoogleContactsEnabledCleared returns if the "google_contacts_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleContactsEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleContactsEnabled]
+	return ok
+}
+
+// ResetGoogleContactsEnabled resets all changes to the "google_contacts_enabled" field.
+func (m *AppConfigMutation) ResetGoogleContactsEnabled() {
+	m.google_contacts_enabled = nil
+	delete(m.clearedFields, appconfig.FieldGoogleContactsEnabled)
+}
+
+// SetGoogleClientID sets the "google_client_id" field.
+func (m *AppConfigMutation) SetGoogleClientID(s string) {
+	m.google_client_id = &s
+}
+
+// GoogleClientID returns the value of the "google_client_id" field in the mutation.
+func (m *AppConfigMutation) GoogleClientID() (r string, exists bool) {
+	v := m.google_client_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleClientID returns the old "google_client_id" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleClientID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleClientID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleClientID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleClientID: %w", err)
+	}
+	return oldValue.GoogleClientID, nil
+}
+
+// ClearGoogleClientID clears the value of the "google_client_id" field.
+func (m *AppConfigMutation) ClearGoogleClientID() {
+	m.google_client_id = nil
+	m.clearedFields[appconfig.FieldGoogleClientID] = struct{}{}
+}
+
+// GoogleClientIDCleared returns if the "google_client_id" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleClientIDCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleClientID]
+	return ok
+}
+
+// ResetGoogleClientID resets all changes to the "google_client_id" field.
+func (m *AppConfigMutation) ResetGoogleClientID() {
+	m.google_client_id = nil
+	delete(m.clearedFields, appconfig.FieldGoogleClientID)
+}
+
+// SetGoogleClientSecret sets the "google_client_secret" field.
+func (m *AppConfigMutation) SetGoogleClientSecret(s string) {
+	m.google_client_secret = &s
+}
+
+// GoogleClientSecret returns the value of the "google_client_secret" field in the mutation.
+func (m *AppConfigMutation) GoogleClientSecret() (r string, exists bool) {
+	v := m.google_client_secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleClientSecret returns the old "google_client_secret" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleClientSecret(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleClientSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleClientSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleClientSecret: %w", err)
+	}
+	return oldValue.GoogleClientSecret, nil
+}
+
+// ClearGoogleClientSecret clears the value of the "google_client_secret" field.
+func (m *AppConfigMutation) ClearGoogleClientSecret() {
+	m.google_client_secret = nil
+	m.clearedFields[appconfig.FieldGoogleClientSecret] = struct{}{}
+}
+
+// GoogleClientSecretCleared returns if the "google_client_secret" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleClientSecretCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleClientSecret]
+	return ok
+}
+
+// ResetGoogleClientSecret resets all changes to the "google_client_secret" field.
+func (m *AppConfigMutation) ResetGoogleClientSecret() {
+	m.google_client_secret = nil
+	delete(m.clearedFields, appconfig.FieldGoogleClientSecret)
+}
+
+// SetGoogleRefreshToken sets the "google_refresh_token" field.
+func (m *AppConfigMutation) SetGoogleRefreshToken(s string) {
+	m.google_refresh_token = &s
+}
+
+// GoogleRefreshToken returns the value of the "google_refresh_token" field in the mutation.
+func (m *AppConfigMutation) GoogleRefreshToken() (r string, exists bool) {
+	v := m.google_refresh_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleRefreshToken returns the old "google_refresh_token" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleRefreshToken(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleRefreshToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleRefreshToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleRefreshToken: %w", err)
+	}
+	return oldValue.GoogleRefreshToken, nil
+}
+
+// ClearGoogleRefreshToken clears the value of the "google_refresh_token" field.
+func (m *AppConfigMutation) ClearGoogleRefreshToken() {
+	m.google_refresh_token = nil
+	m.clearedFields[appconfig.FieldGoogleRefreshToken] = struct{}{}
+}
+
+// GoogleRefreshTokenCleared returns if the "google_refresh_token" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleRefreshTokenCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleRefreshToken]
+	return ok
+}
+
+// ResetGoogleRefreshToken resets all changes to the "google_refresh_token" field.
+func (m *AppConfigMutation) ResetGoogleRefreshToken() {
+	m.google_refresh_token = nil
+	delete(m.clearedFields, appconfig.FieldGoogleRefreshToken)
+}
+
+// SetGoogleSyncToken sets the "google_sync_token" field.
+func (m *AppConfigMutation) SetGoogleSyncToken(s string) {
+	m.google_sync_token = &s
+}
+
+// GoogleSyncToken returns the value of the "google_sync_token" field in the mutation.
+func (m *AppConfigMutation) GoogleSyncToken() (r string, exists bool) {
+	v := m.google_sync_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleSyncToken returns the old "google_sync_token" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleSyncToken(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleSyncToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleSyncToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleSyncToken: %w", err)
+	}
+	return oldValue.GoogleSyncToken, nil
+}
+
+// ClearGoogleSyncToken clears the value of the "google_sync_token" field.
+func (m *AppConfigMutation) ClearGoogleSyncToken() {
+	m.google_sync_token = nil
+	m.clearedFields[appconfig.FieldGoogleSyncToken] = struct{}{}
+}
+
+// GoogleSyncTokenCleared returns if the "google_sync_token" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleSyncTokenCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleSyncToken]
+	return ok
+}
+
+// ResetGoogleSyncToken resets all changes to the "google_sync_token" field.
+func (m *AppConfigMutation) ResetGoogleSyncToken() {
+	m.google_sync_token = nil
+	delete(m.clearedFields, appconfig.FieldGoogleSyncToken)
+}
+
+// SetGoogleLastSync sets the "google_last_sync" field.
+func (m *AppConfigMutation) SetGoogleLastSync(t time.Time) {
+	m.google_last_sync = &t
+}
+
+// GoogleLastSync returns the value of the "google_last_sync" field in the mutation.
+func (m *AppConfigMutation) GoogleLastSync() (r time.Time, exists bool) {
+	v := m.google_last_sync
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleLastSync returns the old "google_last_sync" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleLastSync(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleLastSync is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleLastSync requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleLastSync: %w", err)
+	}
+	return oldValue.GoogleLastSync, nil
+}
+
+// ClearGoogleLastSync clears the value of the "google_last_sync" field.
+func (m *AppConfigMutation) ClearGoogleLastSync() {
+	m.google_last_sync = nil
+	m.clearedFields[appconfig.FieldGoogleLastSync] = struct{}{}
+}
+
+// GoogleLastSyncCleared returns if the "google_last_sync" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleLastSyncCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleLastSync]
+	return ok
+}
+
+// ResetGoogleLastSync resets all changes to the "google_last_sync" field.
+func (m *AppConfigMutation) ResetGoogleLastSync() {
+	m.google_last_sync = nil
+	delete(m.clearedFields, appconfig.FieldGoogleLastSync)
+}
+
+// SetGoogleDeletePolicy sets the "google_delete_policy" field.
+func (m *AppConfigMutation) SetGoogleDeletePolicy(s string) {
+	m.google_delete_policy = &s
+}
+
+// GoogleDeletePolicy returns the value of the "google_delete_policy" field in the mutation.
+func (m *AppConfigMutation) GoogleDeletePolicy() (r string, exists bool) {
+	v := m.google_delete_policy
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleDeletePolicy returns the old "google_delete_policy" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleDeletePolicy(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleDeletePolicy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleDeletePolicy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleDeletePolicy: %w", err)
+	}
+	return oldValue.GoogleDeletePolicy, nil
+}
+
+// ClearGoogleDeletePolicy clears the value of the "google_delete_policy" field.
+func (m *AppConfigMutation) ClearGoogleDeletePolicy() {
+	m.google_delete_policy = nil
+	m.clearedFields[appconfig.FieldGoogleDeletePolicy] = struct{}{}
+}
+
+// GoogleDeletePolicyCleared returns if the "google_delete_policy" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleDeletePolicyCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleDeletePolicy]
+	return ok
+}
+
+// ResetGoogleDeletePolicy resets all changes to the "google_delete_policy" field.
+func (m *AppConfigMutation) ResetGoogleDeletePolicy() {
+	m.google_delete_policy = nil
+	delete(m.clearedFields, appconfig.FieldGoogleDeletePolicy)
+}
+
+// SetGoogleOauthState sets the "google_oauth_state" field.
+func (m *AppConfigMutation) SetGoogleOauthState(s string) {
+	m.google_oauth_state = &s
+}
+
+// GoogleOauthState returns the value of the "google_oauth_state" field in the mutation.
+func (m *AppConfigMutation) GoogleOauthState() (r string, exists bool) {
+	v := m.google_oauth_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleOauthState returns the old "google_oauth_state" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldGoogleOauthState(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleOauthState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleOauthState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleOauthState: %w", err)
+	}
+	return oldValue.GoogleOauthState, nil
+}
+
+// ClearGoogleOauthState clears the value of the "google_oauth_state" field.
+func (m *AppConfigMutation) ClearGoogleOauthState() {
+	m.google_oauth_state = nil
+	m.clearedFields[appconfig.FieldGoogleOauthState] = struct{}{}
+}
+
+// GoogleOauthStateCleared returns if the "google_oauth_state" field was cleared in this mutation.
+func (m *AppConfigMutation) GoogleOauthStateCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldGoogleOauthState]
+	return ok
+}
+
+// ResetGoogleOauthState resets all changes to the "google_oauth_state" field.
+func (m *AppConfigMutation) ResetGoogleOauthState() {
+	m.google_oauth_state = nil
+	delete(m.clearedFields, appconfig.FieldGoogleOauthState)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *AppConfigMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -3627,7 +4027,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 64)
+	fields := make([]string, 0, 72)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -3814,6 +4214,30 @@ func (m *AppConfigMutation) Fields() []string {
 	if m.carddav_delete_policy != nil {
 		fields = append(fields, appconfig.FieldCarddavDeletePolicy)
 	}
+	if m.google_contacts_enabled != nil {
+		fields = append(fields, appconfig.FieldGoogleContactsEnabled)
+	}
+	if m.google_client_id != nil {
+		fields = append(fields, appconfig.FieldGoogleClientID)
+	}
+	if m.google_client_secret != nil {
+		fields = append(fields, appconfig.FieldGoogleClientSecret)
+	}
+	if m.google_refresh_token != nil {
+		fields = append(fields, appconfig.FieldGoogleRefreshToken)
+	}
+	if m.google_sync_token != nil {
+		fields = append(fields, appconfig.FieldGoogleSyncToken)
+	}
+	if m.google_last_sync != nil {
+		fields = append(fields, appconfig.FieldGoogleLastSync)
+	}
+	if m.google_delete_policy != nil {
+		fields = append(fields, appconfig.FieldGoogleDeletePolicy)
+	}
+	if m.google_oauth_state != nil {
+		fields = append(fields, appconfig.FieldGoogleOauthState)
+	}
 	if m.updated_at != nil {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -3952,6 +4376,22 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.CarddavLastSync()
 	case appconfig.FieldCarddavDeletePolicy:
 		return m.CarddavDeletePolicy()
+	case appconfig.FieldGoogleContactsEnabled:
+		return m.GoogleContactsEnabled()
+	case appconfig.FieldGoogleClientID:
+		return m.GoogleClientID()
+	case appconfig.FieldGoogleClientSecret:
+		return m.GoogleClientSecret()
+	case appconfig.FieldGoogleRefreshToken:
+		return m.GoogleRefreshToken()
+	case appconfig.FieldGoogleSyncToken:
+		return m.GoogleSyncToken()
+	case appconfig.FieldGoogleLastSync:
+		return m.GoogleLastSync()
+	case appconfig.FieldGoogleDeletePolicy:
+		return m.GoogleDeletePolicy()
+	case appconfig.FieldGoogleOauthState:
+		return m.GoogleOauthState()
 	case appconfig.FieldUpdatedAt:
 		return m.UpdatedAt()
 	case appconfig.FieldAuditRetentionMax:
@@ -4089,6 +4529,22 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldCarddavLastSync(ctx)
 	case appconfig.FieldCarddavDeletePolicy:
 		return m.OldCarddavDeletePolicy(ctx)
+	case appconfig.FieldGoogleContactsEnabled:
+		return m.OldGoogleContactsEnabled(ctx)
+	case appconfig.FieldGoogleClientID:
+		return m.OldGoogleClientID(ctx)
+	case appconfig.FieldGoogleClientSecret:
+		return m.OldGoogleClientSecret(ctx)
+	case appconfig.FieldGoogleRefreshToken:
+		return m.OldGoogleRefreshToken(ctx)
+	case appconfig.FieldGoogleSyncToken:
+		return m.OldGoogleSyncToken(ctx)
+	case appconfig.FieldGoogleLastSync:
+		return m.OldGoogleLastSync(ctx)
+	case appconfig.FieldGoogleDeletePolicy:
+		return m.OldGoogleDeletePolicy(ctx)
+	case appconfig.FieldGoogleOauthState:
+		return m.OldGoogleOauthState(ctx)
 	case appconfig.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	case appconfig.FieldAuditRetentionMax:
@@ -4536,6 +4992,62 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCarddavDeletePolicy(v)
 		return nil
+	case appconfig.FieldGoogleContactsEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleContactsEnabled(v)
+		return nil
+	case appconfig.FieldGoogleClientID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleClientID(v)
+		return nil
+	case appconfig.FieldGoogleClientSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleClientSecret(v)
+		return nil
+	case appconfig.FieldGoogleRefreshToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleRefreshToken(v)
+		return nil
+	case appconfig.FieldGoogleSyncToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleSyncToken(v)
+		return nil
+	case appconfig.FieldGoogleLastSync:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleLastSync(v)
+		return nil
+	case appconfig.FieldGoogleDeletePolicy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleDeletePolicy(v)
+		return nil
+	case appconfig.FieldGoogleOauthState:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleOauthState(v)
+		return nil
 	case appconfig.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -4889,6 +5401,30 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldCarddavDeletePolicy) {
 		fields = append(fields, appconfig.FieldCarddavDeletePolicy)
 	}
+	if m.FieldCleared(appconfig.FieldGoogleContactsEnabled) {
+		fields = append(fields, appconfig.FieldGoogleContactsEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldGoogleClientID) {
+		fields = append(fields, appconfig.FieldGoogleClientID)
+	}
+	if m.FieldCleared(appconfig.FieldGoogleClientSecret) {
+		fields = append(fields, appconfig.FieldGoogleClientSecret)
+	}
+	if m.FieldCleared(appconfig.FieldGoogleRefreshToken) {
+		fields = append(fields, appconfig.FieldGoogleRefreshToken)
+	}
+	if m.FieldCleared(appconfig.FieldGoogleSyncToken) {
+		fields = append(fields, appconfig.FieldGoogleSyncToken)
+	}
+	if m.FieldCleared(appconfig.FieldGoogleLastSync) {
+		fields = append(fields, appconfig.FieldGoogleLastSync)
+	}
+	if m.FieldCleared(appconfig.FieldGoogleDeletePolicy) {
+		fields = append(fields, appconfig.FieldGoogleDeletePolicy)
+	}
+	if m.FieldCleared(appconfig.FieldGoogleOauthState) {
+		fields = append(fields, appconfig.FieldGoogleOauthState)
+	}
 	if m.FieldCleared(appconfig.FieldUpdatedAt) {
 		fields = append(fields, appconfig.FieldUpdatedAt)
 	}
@@ -5095,6 +5631,30 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldCarddavDeletePolicy:
 		m.ClearCarddavDeletePolicy()
 		return nil
+	case appconfig.FieldGoogleContactsEnabled:
+		m.ClearGoogleContactsEnabled()
+		return nil
+	case appconfig.FieldGoogleClientID:
+		m.ClearGoogleClientID()
+		return nil
+	case appconfig.FieldGoogleClientSecret:
+		m.ClearGoogleClientSecret()
+		return nil
+	case appconfig.FieldGoogleRefreshToken:
+		m.ClearGoogleRefreshToken()
+		return nil
+	case appconfig.FieldGoogleSyncToken:
+		m.ClearGoogleSyncToken()
+		return nil
+	case appconfig.FieldGoogleLastSync:
+		m.ClearGoogleLastSync()
+		return nil
+	case appconfig.FieldGoogleDeletePolicy:
+		m.ClearGoogleDeletePolicy()
+		return nil
+	case appconfig.FieldGoogleOauthState:
+		m.ClearGoogleOauthState()
+		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ClearUpdatedAt()
 		return nil
@@ -5294,6 +5854,30 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldCarddavDeletePolicy:
 		m.ResetCarddavDeletePolicy()
+		return nil
+	case appconfig.FieldGoogleContactsEnabled:
+		m.ResetGoogleContactsEnabled()
+		return nil
+	case appconfig.FieldGoogleClientID:
+		m.ResetGoogleClientID()
+		return nil
+	case appconfig.FieldGoogleClientSecret:
+		m.ResetGoogleClientSecret()
+		return nil
+	case appconfig.FieldGoogleRefreshToken:
+		m.ResetGoogleRefreshToken()
+		return nil
+	case appconfig.FieldGoogleSyncToken:
+		m.ResetGoogleSyncToken()
+		return nil
+	case appconfig.FieldGoogleLastSync:
+		m.ResetGoogleLastSync()
+		return nil
+	case appconfig.FieldGoogleDeletePolicy:
+		m.ResetGoogleDeletePolicy()
+		return nil
+	case appconfig.FieldGoogleOauthState:
+		m.ResetGoogleOauthState()
 		return nil
 	case appconfig.FieldUpdatedAt:
 		m.ResetUpdatedAt()
@@ -11503,6 +12087,7 @@ type PersonMutation struct {
 	carddav_rev                   *string
 	carddav_last_modified         *time.Time
 	carddav_pending_sync          *bool
+	google_resource_name          *string
 	created_at                    *time.Time
 	updated_at                    *time.Time
 	clearedFields                 map[string]struct{}
@@ -12623,6 +13208,55 @@ func (m *PersonMutation) ResetCarddavPendingSync() {
 	m.carddav_pending_sync = nil
 }
 
+// SetGoogleResourceName sets the "google_resource_name" field.
+func (m *PersonMutation) SetGoogleResourceName(s string) {
+	m.google_resource_name = &s
+}
+
+// GoogleResourceName returns the value of the "google_resource_name" field in the mutation.
+func (m *PersonMutation) GoogleResourceName() (r string, exists bool) {
+	v := m.google_resource_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGoogleResourceName returns the old "google_resource_name" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldGoogleResourceName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGoogleResourceName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGoogleResourceName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGoogleResourceName: %w", err)
+	}
+	return oldValue.GoogleResourceName, nil
+}
+
+// ClearGoogleResourceName clears the value of the "google_resource_name" field.
+func (m *PersonMutation) ClearGoogleResourceName() {
+	m.google_resource_name = nil
+	m.clearedFields[person.FieldGoogleResourceName] = struct{}{}
+}
+
+// GoogleResourceNameCleared returns if the "google_resource_name" field was cleared in this mutation.
+func (m *PersonMutation) GoogleResourceNameCleared() bool {
+	_, ok := m.clearedFields[person.FieldGoogleResourceName]
+	return ok
+}
+
+// ResetGoogleResourceName resets all changes to the "google_resource_name" field.
+func (m *PersonMutation) ResetGoogleResourceName() {
+	m.google_resource_name = nil
+	delete(m.clearedFields, person.FieldGoogleResourceName)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *PersonMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -13107,7 +13741,7 @@ func (m *PersonMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PersonMutation) Fields() []string {
-	fields := make([]string, 0, 23)
+	fields := make([]string, 0, 24)
 	if m.name != nil {
 		fields = append(fields, person.FieldName)
 	}
@@ -13171,6 +13805,9 @@ func (m *PersonMutation) Fields() []string {
 	if m.carddav_pending_sync != nil {
 		fields = append(fields, person.FieldCarddavPendingSync)
 	}
+	if m.google_resource_name != nil {
+		fields = append(fields, person.FieldGoogleResourceName)
+	}
 	if m.created_at != nil {
 		fields = append(fields, person.FieldCreatedAt)
 	}
@@ -13227,6 +13864,8 @@ func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 		return m.CarddavLastModified()
 	case person.FieldCarddavPendingSync:
 		return m.CarddavPendingSync()
+	case person.FieldGoogleResourceName:
+		return m.GoogleResourceName()
 	case person.FieldCreatedAt:
 		return m.CreatedAt()
 	case person.FieldUpdatedAt:
@@ -13282,6 +13921,8 @@ func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldCarddavLastModified(ctx)
 	case person.FieldCarddavPendingSync:
 		return m.OldCarddavPendingSync(ctx)
+	case person.FieldGoogleResourceName:
+		return m.OldGoogleResourceName(ctx)
 	case person.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case person.FieldUpdatedAt:
@@ -13442,6 +14083,13 @@ func (m *PersonMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCarddavPendingSync(v)
 		return nil
+	case person.FieldGoogleResourceName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGoogleResourceName(v)
+		return nil
 	case person.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -13537,6 +14185,9 @@ func (m *PersonMutation) ClearedFields() []string {
 	if m.FieldCleared(person.FieldCarddavLastModified) {
 		fields = append(fields, person.FieldCarddavLastModified)
 	}
+	if m.FieldCleared(person.FieldGoogleResourceName) {
+		fields = append(fields, person.FieldGoogleResourceName)
+	}
 	return fields
 }
 
@@ -13601,6 +14252,9 @@ func (m *PersonMutation) ClearField(name string) error {
 		return nil
 	case person.FieldCarddavLastModified:
 		m.ClearCarddavLastModified()
+		return nil
+	case person.FieldGoogleResourceName:
+		m.ClearGoogleResourceName()
 		return nil
 	}
 	return fmt.Errorf("unknown Person nullable field %s", name)
@@ -13672,6 +14326,9 @@ func (m *PersonMutation) ResetField(name string) error {
 		return nil
 	case person.FieldCarddavPendingSync:
 		m.ResetCarddavPendingSync()
+		return nil
+	case person.FieldGoogleResourceName:
+		m.ResetGoogleResourceName()
 		return nil
 	case person.FieldCreatedAt:
 		m.ResetCreatedAt()

@@ -887,6 +887,118 @@ func (_c *AppConfigCreate) SetNillableCarddavDeletePolicy(v *string) *AppConfigC
 	return _c
 }
 
+// SetGoogleContactsEnabled sets the "google_contacts_enabled" field.
+func (_c *AppConfigCreate) SetGoogleContactsEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetGoogleContactsEnabled(v)
+	return _c
+}
+
+// SetNillableGoogleContactsEnabled sets the "google_contacts_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleContactsEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleContactsEnabled(*v)
+	}
+	return _c
+}
+
+// SetGoogleClientID sets the "google_client_id" field.
+func (_c *AppConfigCreate) SetGoogleClientID(v string) *AppConfigCreate {
+	_c.mutation.SetGoogleClientID(v)
+	return _c
+}
+
+// SetNillableGoogleClientID sets the "google_client_id" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleClientID(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleClientID(*v)
+	}
+	return _c
+}
+
+// SetGoogleClientSecret sets the "google_client_secret" field.
+func (_c *AppConfigCreate) SetGoogleClientSecret(v string) *AppConfigCreate {
+	_c.mutation.SetGoogleClientSecret(v)
+	return _c
+}
+
+// SetNillableGoogleClientSecret sets the "google_client_secret" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleClientSecret(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleClientSecret(*v)
+	}
+	return _c
+}
+
+// SetGoogleRefreshToken sets the "google_refresh_token" field.
+func (_c *AppConfigCreate) SetGoogleRefreshToken(v string) *AppConfigCreate {
+	_c.mutation.SetGoogleRefreshToken(v)
+	return _c
+}
+
+// SetNillableGoogleRefreshToken sets the "google_refresh_token" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleRefreshToken(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleRefreshToken(*v)
+	}
+	return _c
+}
+
+// SetGoogleSyncToken sets the "google_sync_token" field.
+func (_c *AppConfigCreate) SetGoogleSyncToken(v string) *AppConfigCreate {
+	_c.mutation.SetGoogleSyncToken(v)
+	return _c
+}
+
+// SetNillableGoogleSyncToken sets the "google_sync_token" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleSyncToken(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleSyncToken(*v)
+	}
+	return _c
+}
+
+// SetGoogleLastSync sets the "google_last_sync" field.
+func (_c *AppConfigCreate) SetGoogleLastSync(v time.Time) *AppConfigCreate {
+	_c.mutation.SetGoogleLastSync(v)
+	return _c
+}
+
+// SetNillableGoogleLastSync sets the "google_last_sync" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleLastSync(v *time.Time) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleLastSync(*v)
+	}
+	return _c
+}
+
+// SetGoogleDeletePolicy sets the "google_delete_policy" field.
+func (_c *AppConfigCreate) SetGoogleDeletePolicy(v string) *AppConfigCreate {
+	_c.mutation.SetGoogleDeletePolicy(v)
+	return _c
+}
+
+// SetNillableGoogleDeletePolicy sets the "google_delete_policy" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleDeletePolicy(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleDeletePolicy(*v)
+	}
+	return _c
+}
+
+// SetGoogleOauthState sets the "google_oauth_state" field.
+func (_c *AppConfigCreate) SetGoogleOauthState(v string) *AppConfigCreate {
+	_c.mutation.SetGoogleOauthState(v)
+	return _c
+}
+
+// SetNillableGoogleOauthState sets the "google_oauth_state" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableGoogleOauthState(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetGoogleOauthState(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AppConfigCreate) SetUpdatedAt(v time.Time) *AppConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -1222,6 +1334,38 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CarddavDeletePolicy(); ok {
 		_spec.SetField(appconfig.FieldCarddavDeletePolicy, field.TypeString, value)
 		_node.CarddavDeletePolicy = &value
+	}
+	if value, ok := _c.mutation.GoogleContactsEnabled(); ok {
+		_spec.SetField(appconfig.FieldGoogleContactsEnabled, field.TypeBool, value)
+		_node.GoogleContactsEnabled = &value
+	}
+	if value, ok := _c.mutation.GoogleClientID(); ok {
+		_spec.SetField(appconfig.FieldGoogleClientID, field.TypeString, value)
+		_node.GoogleClientID = &value
+	}
+	if value, ok := _c.mutation.GoogleClientSecret(); ok {
+		_spec.SetField(appconfig.FieldGoogleClientSecret, field.TypeString, value)
+		_node.GoogleClientSecret = &value
+	}
+	if value, ok := _c.mutation.GoogleRefreshToken(); ok {
+		_spec.SetField(appconfig.FieldGoogleRefreshToken, field.TypeString, value)
+		_node.GoogleRefreshToken = &value
+	}
+	if value, ok := _c.mutation.GoogleSyncToken(); ok {
+		_spec.SetField(appconfig.FieldGoogleSyncToken, field.TypeString, value)
+		_node.GoogleSyncToken = &value
+	}
+	if value, ok := _c.mutation.GoogleLastSync(); ok {
+		_spec.SetField(appconfig.FieldGoogleLastSync, field.TypeTime, value)
+		_node.GoogleLastSync = &value
+	}
+	if value, ok := _c.mutation.GoogleDeletePolicy(); ok {
+		_spec.SetField(appconfig.FieldGoogleDeletePolicy, field.TypeString, value)
+		_node.GoogleDeletePolicy = &value
+	}
+	if value, ok := _c.mutation.GoogleOauthState(); ok {
+		_spec.SetField(appconfig.FieldGoogleOauthState, field.TypeString, value)
+		_node.GoogleOauthState = &value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)

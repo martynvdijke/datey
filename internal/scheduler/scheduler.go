@@ -10,6 +10,7 @@ import (
 	"github.com/datey/datey/internal/carddav"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/db"
+	"github.com/datey/datey/internal/googlecontacts"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
 	"github.com/datey/datey/internal/settings"
@@ -77,6 +78,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 			s.runBackup(ctx)
 			s.runWeeklyBackup(ctx)
 			s.runCarddavSync(ctx)
+			s.runGoogleSync(ctx)
 			s.pruneAuditLog(ctx)
 			timer.Reset(24 * time.Hour)
 		}
@@ -106,6 +108,30 @@ func (s *Scheduler) runCarddavSync(ctx context.Context) {
 	syncer := carddav.NewSyncer(s.cfg, s.client, s.settings)
 	if _, err := syncer.Sync(ctx, carddav.SyncFull, false); err != nil {
 		slog.Error("scheduler: carddav sync failed", "source", "scheduler", "error", err)
+	}
+}
+
+func (s *Scheduler) runGoogleSync(ctx context.Context) {
+	if !s.cfg.GoogleContactsEnabled || s.cfg.GoogleClientID == "" || s.cfg.GoogleRefreshToken == "" {
+		return
+	}
+	lastSync, err := s.settings.GoogleLastSync(ctx)
+	if err != nil {
+		slog.Error("scheduler: read google last sync", "source", "scheduler", "error", err)
+		return
+	}
+	if lastSync != nil && time.Since(*lastSync) < 24*time.Hour {
+		slog.Debug("scheduler: google sync not due", "source", "scheduler", "last_sync", lastSync.Format(time.RFC3339))
+		return
+	}
+	slog.Info("scheduler: running google sync", "source", "scheduler")
+	oauthCfg := googlecontacts.OAuthConfig(s.cfg.GoogleClientID, s.cfg.GoogleClientSecret, "")
+	ts := googlecontacts.TokenSource(ctx, oauthCfg, s.cfg.GoogleRefreshToken)
+	transport := &googlecontacts.OAuth2Transport{TokenSource: ts}
+	client := googlecontacts.New(transport)
+	syncer := googlecontacts.NewSyncer(s.cfg, s.client, s.settings, client)
+	if _, err := syncer.Sync(ctx); err != nil {
+		slog.Error("scheduler: google sync failed", "source", "scheduler", "error", err)
 	}
 }
 

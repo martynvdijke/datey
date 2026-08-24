@@ -99,6 +99,15 @@ func (AppConfig) Fields() []ent.Field {
 		field.Time("carddav_last_sync").Optional().Nillable(),
 		field.String("carddav_delete_policy").Optional().Nillable(),
 
+		field.Bool("google_contacts_enabled").Optional().Nillable(),
+		field.String("google_client_id").Optional().Nillable(),
+		field.String("google_client_secret").Optional().Nillable(),
+		field.String("google_refresh_token").Optional().Nillable(),
+		field.String("google_sync_token").Optional().Nillable(),
+		field.Time("google_last_sync").Optional().Nillable(),
+		field.String("google_delete_policy").Optional().Nillable(),
+		field.String("google_oauth_state").Optional().Nillable(),
+
 		field.Time("updated_at").Optional().Nillable(),
 
 		field.Int("audit_retention_max").Optional().Nillable(),

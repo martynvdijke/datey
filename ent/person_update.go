@@ -429,6 +429,26 @@ func (_u *PersonUpdate) SetNillableCarddavPendingSync(v *bool) *PersonUpdate {
 	return _u
 }
 
+// SetGoogleResourceName sets the "google_resource_name" field.
+func (_u *PersonUpdate) SetGoogleResourceName(v string) *PersonUpdate {
+	_u.mutation.SetGoogleResourceName(v)
+	return _u
+}
+
+// SetNillableGoogleResourceName sets the "google_resource_name" field if the given value is not nil.
+func (_u *PersonUpdate) SetNillableGoogleResourceName(v *string) *PersonUpdate {
+	if v != nil {
+		_u.SetGoogleResourceName(*v)
+	}
+	return _u
+}
+
+// ClearGoogleResourceName clears the value of the "google_resource_name" field.
+func (_u *PersonUpdate) ClearGoogleResourceName() *PersonUpdate {
+	_u.mutation.ClearGoogleResourceName()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *PersonUpdate) SetCreatedAt(v time.Time) *PersonUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -896,6 +916,12 @@ func (_u *PersonUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.CarddavPendingSync(); ok {
 		_spec.SetField(person.FieldCarddavPendingSync, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.GoogleResourceName(); ok {
+		_spec.SetField(person.FieldGoogleResourceName, field.TypeString, value)
+	}
+	if _u.mutation.GoogleResourceNameCleared() {
+		_spec.ClearField(person.FieldGoogleResourceName, field.TypeString)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)
@@ -1632,6 +1658,26 @@ func (_u *PersonUpdateOne) SetNillableCarddavPendingSync(v *bool) *PersonUpdateO
 	return _u
 }
 
+// SetGoogleResourceName sets the "google_resource_name" field.
+func (_u *PersonUpdateOne) SetGoogleResourceName(v string) *PersonUpdateOne {
+	_u.mutation.SetGoogleResourceName(v)
+	return _u
+}
+
+// SetNillableGoogleResourceName sets the "google_resource_name" field if the given value is not nil.
+func (_u *PersonUpdateOne) SetNillableGoogleResourceName(v *string) *PersonUpdateOne {
+	if v != nil {
+		_u.SetGoogleResourceName(*v)
+	}
+	return _u
+}
+
+// ClearGoogleResourceName clears the value of the "google_resource_name" field.
+func (_u *PersonUpdateOne) ClearGoogleResourceName() *PersonUpdateOne {
+	_u.mutation.ClearGoogleResourceName()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *PersonUpdateOne) SetCreatedAt(v time.Time) *PersonUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -2129,6 +2175,12 @@ func (_u *PersonUpdateOne) sqlSave(ctx context.Context) (_node *Person, err erro
 	}
 	if value, ok := _u.mutation.CarddavPendingSync(); ok {
 		_spec.SetField(person.FieldCarddavPendingSync, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.GoogleResourceName(); ok {
+		_spec.SetField(person.FieldGoogleResourceName, field.TypeString, value)
+	}
+	if _u.mutation.GoogleResourceNameCleared() {
+		_spec.ClearField(person.FieldGoogleResourceName, field.TypeString)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(person.FieldCreatedAt, field.TypeTime, value)

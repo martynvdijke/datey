@@ -155,6 +155,11 @@ func CarddavPendingSync(v bool) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCarddavPendingSync, v))
 }
 
+// GoogleResourceName applies equality check predicate on the "google_resource_name" field. It's identical to GoogleResourceNameEQ.
+func GoogleResourceName(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldGoogleResourceName, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Person {
 	return predicate.Person(sql.FieldEQ(FieldCreatedAt, v))
@@ -1418,6 +1423,81 @@ func CarddavPendingSyncEQ(v bool) predicate.Person {
 // CarddavPendingSyncNEQ applies the NEQ predicate on the "carddav_pending_sync" field.
 func CarddavPendingSyncNEQ(v bool) predicate.Person {
 	return predicate.Person(sql.FieldNEQ(FieldCarddavPendingSync, v))
+}
+
+// GoogleResourceNameEQ applies the EQ predicate on the "google_resource_name" field.
+func GoogleResourceNameEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldEQ(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameNEQ applies the NEQ predicate on the "google_resource_name" field.
+func GoogleResourceNameNEQ(v string) predicate.Person {
+	return predicate.Person(sql.FieldNEQ(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameIn applies the In predicate on the "google_resource_name" field.
+func GoogleResourceNameIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldIn(FieldGoogleResourceName, vs...))
+}
+
+// GoogleResourceNameNotIn applies the NotIn predicate on the "google_resource_name" field.
+func GoogleResourceNameNotIn(vs ...string) predicate.Person {
+	return predicate.Person(sql.FieldNotIn(FieldGoogleResourceName, vs...))
+}
+
+// GoogleResourceNameGT applies the GT predicate on the "google_resource_name" field.
+func GoogleResourceNameGT(v string) predicate.Person {
+	return predicate.Person(sql.FieldGT(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameGTE applies the GTE predicate on the "google_resource_name" field.
+func GoogleResourceNameGTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldGTE(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameLT applies the LT predicate on the "google_resource_name" field.
+func GoogleResourceNameLT(v string) predicate.Person {
+	return predicate.Person(sql.FieldLT(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameLTE applies the LTE predicate on the "google_resource_name" field.
+func GoogleResourceNameLTE(v string) predicate.Person {
+	return predicate.Person(sql.FieldLTE(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameContains applies the Contains predicate on the "google_resource_name" field.
+func GoogleResourceNameContains(v string) predicate.Person {
+	return predicate.Person(sql.FieldContains(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameHasPrefix applies the HasPrefix predicate on the "google_resource_name" field.
+func GoogleResourceNameHasPrefix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasPrefix(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameHasSuffix applies the HasSuffix predicate on the "google_resource_name" field.
+func GoogleResourceNameHasSuffix(v string) predicate.Person {
+	return predicate.Person(sql.FieldHasSuffix(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameIsNil applies the IsNil predicate on the "google_resource_name" field.
+func GoogleResourceNameIsNil() predicate.Person {
+	return predicate.Person(sql.FieldIsNull(FieldGoogleResourceName))
+}
+
+// GoogleResourceNameNotNil applies the NotNil predicate on the "google_resource_name" field.
+func GoogleResourceNameNotNil() predicate.Person {
+	return predicate.Person(sql.FieldNotNull(FieldGoogleResourceName))
+}
+
+// GoogleResourceNameEqualFold applies the EqualFold predicate on the "google_resource_name" field.
+func GoogleResourceNameEqualFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldEqualFold(FieldGoogleResourceName, v))
+}
+
+// GoogleResourceNameContainsFold applies the ContainsFold predicate on the "google_resource_name" field.
+func GoogleResourceNameContainsFold(v string) predicate.Person {
+	return predicate.Person(sql.FieldContainsFold(FieldGoogleResourceName, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

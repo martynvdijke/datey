@@ -36,6 +36,7 @@ func (Person) Fields() []ent.Field {
 		field.String("carddav_rev").Optional().Nillable(),
 		field.Time("carddav_last_modified").Optional().Nillable(),
 		field.Bool("carddav_pending_sync").Default(false),
+		field.String("google_resource_name").Optional().Nillable(),
 		field.Time("created_at"),
 		field.Time("updated_at"),
 	}

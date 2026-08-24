@@ -250,6 +250,26 @@ func (r *PersonRepository) Delete(ctx context.Context, id int) error {
 	return r.client.Person.DeleteOneID(id).Exec(ctx)
 }
 
+func (r *PersonRepository) FindByGoogleResourceName(ctx context.Context, rn string) (*ent.Person, error) {
+	return r.client.Person.Query().Where(person.GoogleResourceName(rn)).Only(ctx)
+}
+
+func (r *PersonRepository) ListGoogleSynced(ctx context.Context) ([]*ent.Person, error) {
+	return r.client.Person.Query().Where(person.GoogleResourceNameNotNil()).Order(ent.Asc(person.FieldName)).All(ctx)
+}
+
+func (r *PersonRepository) SetGoogleResourceName(ctx context.Context, id int, rn string) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).SetGoogleResourceName(rn).SetUpdatedAt(time.Now()).Save(ctx)
+}
+
+func (r *PersonRepository) ClearGoogleResourceName(ctx context.Context, id int) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).ClearGoogleResourceName().SetUpdatedAt(time.Now()).Save(ctx)
+}
+
+func (r *PersonRepository) UpdateGoogleFields(ctx context.Context, id int, name, notes string) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).SetName(name).SetNotes(notes).SetUpdatedAt(time.Now()).Save(ctx)
+}
+
 // nillableStrOrNil converts an empty string to nil so ent can clear a
 // nullable column when the value is intentionally absent.
 func nillableStrOrNil(s string) *string {

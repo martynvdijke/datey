@@ -73,6 +73,14 @@ var (
 		{Name: "carddav_sync_token", Type: field.TypeString, Nullable: true},
 		{Name: "carddav_last_sync", Type: field.TypeTime, Nullable: true},
 		{Name: "carddav_delete_policy", Type: field.TypeString, Nullable: true},
+		{Name: "google_contacts_enabled", Type: field.TypeBool, Nullable: true},
+		{Name: "google_client_id", Type: field.TypeString, Nullable: true},
+		{Name: "google_client_secret", Type: field.TypeString, Nullable: true},
+		{Name: "google_refresh_token", Type: field.TypeString, Nullable: true},
+		{Name: "google_sync_token", Type: field.TypeString, Nullable: true},
+		{Name: "google_last_sync", Type: field.TypeTime, Nullable: true},
+		{Name: "google_delete_policy", Type: field.TypeString, Nullable: true},
+		{Name: "google_oauth_state", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "audit_retention_max", Type: field.TypeInt, Nullable: true},
 	}
@@ -342,6 +350,7 @@ var (
 		{Name: "carddav_rev", Type: field.TypeString, Nullable: true},
 		{Name: "carddav_last_modified", Type: field.TypeTime, Nullable: true},
 		{Name: "carddav_pending_sync", Type: field.TypeBool, Default: false},
+		{Name: "google_resource_name", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

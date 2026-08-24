@@ -141,6 +141,22 @@ type AppConfig struct {
 	CarddavLastSync *time.Time `json:"carddav_last_sync,omitempty"`
 	// CarddavDeletePolicy holds the value of the "carddav_delete_policy" field.
 	CarddavDeletePolicy *string `json:"carddav_delete_policy,omitempty"`
+	// GoogleContactsEnabled holds the value of the "google_contacts_enabled" field.
+	GoogleContactsEnabled *bool `json:"google_contacts_enabled,omitempty"`
+	// GoogleClientID holds the value of the "google_client_id" field.
+	GoogleClientID *string `json:"google_client_id,omitempty"`
+	// GoogleClientSecret holds the value of the "google_client_secret" field.
+	GoogleClientSecret *string `json:"google_client_secret,omitempty"`
+	// GoogleRefreshToken holds the value of the "google_refresh_token" field.
+	GoogleRefreshToken *string `json:"google_refresh_token,omitempty"`
+	// GoogleSyncToken holds the value of the "google_sync_token" field.
+	GoogleSyncToken *string `json:"google_sync_token,omitempty"`
+	// GoogleLastSync holds the value of the "google_last_sync" field.
+	GoogleLastSync *time.Time `json:"google_last_sync,omitempty"`
+	// GoogleDeletePolicy holds the value of the "google_delete_policy" field.
+	GoogleDeletePolicy *string `json:"google_delete_policy,omitempty"`
+	// GoogleOauthState holds the value of the "google_oauth_state" field.
+	GoogleOauthState *string `json:"google_oauth_state,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 	// AuditRetentionMax holds the value of the "audit_retention_max" field.
@@ -153,13 +169,13 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled:
+		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled, appconfig.FieldGoogleContactsEnabled:
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes, appconfig.FieldAuditRetentionMax:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
 			values[i] = new(sql.NullString)
-		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldUpdatedAt:
+		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldGoogleLastSync, appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -616,6 +632,62 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 				_m.CarddavDeletePolicy = new(string)
 				*_m.CarddavDeletePolicy = value.String
 			}
+		case appconfig.FieldGoogleContactsEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field google_contacts_enabled", values[i])
+			} else if value.Valid {
+				_m.GoogleContactsEnabled = new(bool)
+				*_m.GoogleContactsEnabled = value.Bool
+			}
+		case appconfig.FieldGoogleClientID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_client_id", values[i])
+			} else if value.Valid {
+				_m.GoogleClientID = new(string)
+				*_m.GoogleClientID = value.String
+			}
+		case appconfig.FieldGoogleClientSecret:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_client_secret", values[i])
+			} else if value.Valid {
+				_m.GoogleClientSecret = new(string)
+				*_m.GoogleClientSecret = value.String
+			}
+		case appconfig.FieldGoogleRefreshToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_refresh_token", values[i])
+			} else if value.Valid {
+				_m.GoogleRefreshToken = new(string)
+				*_m.GoogleRefreshToken = value.String
+			}
+		case appconfig.FieldGoogleSyncToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_sync_token", values[i])
+			} else if value.Valid {
+				_m.GoogleSyncToken = new(string)
+				*_m.GoogleSyncToken = value.String
+			}
+		case appconfig.FieldGoogleLastSync:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field google_last_sync", values[i])
+			} else if value.Valid {
+				_m.GoogleLastSync = new(time.Time)
+				*_m.GoogleLastSync = value.Time
+			}
+		case appconfig.FieldGoogleDeletePolicy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_delete_policy", values[i])
+			} else if value.Valid {
+				_m.GoogleDeletePolicy = new(string)
+				*_m.GoogleDeletePolicy = value.String
+			}
+		case appconfig.FieldGoogleOauthState:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_oauth_state", values[i])
+			} else if value.Valid {
+				_m.GoogleOauthState = new(string)
+				*_m.GoogleOauthState = value.String
+			}
 		case appconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -973,6 +1045,46 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.CarddavDeletePolicy; v != nil {
 		builder.WriteString("carddav_delete_policy=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleContactsEnabled; v != nil {
+		builder.WriteString("google_contacts_enabled=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleClientID; v != nil {
+		builder.WriteString("google_client_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleClientSecret; v != nil {
+		builder.WriteString("google_client_secret=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleRefreshToken; v != nil {
+		builder.WriteString("google_refresh_token=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleSyncToken; v != nil {
+		builder.WriteString("google_sync_token=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleLastSync; v != nil {
+		builder.WriteString("google_last_sync=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleDeletePolicy; v != nil {
+		builder.WriteString("google_delete_policy=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GoogleOauthState; v != nil {
+		builder.WriteString("google_oauth_state=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

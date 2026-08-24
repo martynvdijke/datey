@@ -364,6 +364,46 @@ func CarddavDeletePolicy(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldCarddavDeletePolicy, v))
 }
 
+// GoogleContactsEnabled applies equality check predicate on the "google_contacts_enabled" field. It's identical to GoogleContactsEnabledEQ.
+func GoogleContactsEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleContactsEnabled, v))
+}
+
+// GoogleClientID applies equality check predicate on the "google_client_id" field. It's identical to GoogleClientIDEQ.
+func GoogleClientID(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleClientID, v))
+}
+
+// GoogleClientSecret applies equality check predicate on the "google_client_secret" field. It's identical to GoogleClientSecretEQ.
+func GoogleClientSecret(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleClientSecret, v))
+}
+
+// GoogleRefreshToken applies equality check predicate on the "google_refresh_token" field. It's identical to GoogleRefreshTokenEQ.
+func GoogleRefreshToken(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleRefreshToken, v))
+}
+
+// GoogleSyncToken applies equality check predicate on the "google_sync_token" field. It's identical to GoogleSyncTokenEQ.
+func GoogleSyncToken(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleSyncToken, v))
+}
+
+// GoogleLastSync applies equality check predicate on the "google_last_sync" field. It's identical to GoogleLastSyncEQ.
+func GoogleLastSync(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleLastSync, v))
+}
+
+// GoogleDeletePolicy applies equality check predicate on the "google_delete_policy" field. It's identical to GoogleDeletePolicyEQ.
+func GoogleDeletePolicy(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleOauthState applies equality check predicate on the "google_oauth_state" field. It's identical to GoogleOauthStateEQ.
+func GoogleOauthState(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleOauthState, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpdatedAt, v))
@@ -4197,6 +4237,526 @@ func CarddavDeletePolicyEqualFold(v string) predicate.AppConfig {
 // CarddavDeletePolicyContainsFold applies the ContainsFold predicate on the "carddav_delete_policy" field.
 func CarddavDeletePolicyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldCarddavDeletePolicy, v))
+}
+
+// GoogleContactsEnabledEQ applies the EQ predicate on the "google_contacts_enabled" field.
+func GoogleContactsEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleContactsEnabled, v))
+}
+
+// GoogleContactsEnabledNEQ applies the NEQ predicate on the "google_contacts_enabled" field.
+func GoogleContactsEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleContactsEnabled, v))
+}
+
+// GoogleContactsEnabledIsNil applies the IsNil predicate on the "google_contacts_enabled" field.
+func GoogleContactsEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleContactsEnabled))
+}
+
+// GoogleContactsEnabledNotNil applies the NotNil predicate on the "google_contacts_enabled" field.
+func GoogleContactsEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleContactsEnabled))
+}
+
+// GoogleClientIDEQ applies the EQ predicate on the "google_client_id" field.
+func GoogleClientIDEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDNEQ applies the NEQ predicate on the "google_client_id" field.
+func GoogleClientIDNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDIn applies the In predicate on the "google_client_id" field.
+func GoogleClientIDIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldGoogleClientID, vs...))
+}
+
+// GoogleClientIDNotIn applies the NotIn predicate on the "google_client_id" field.
+func GoogleClientIDNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldGoogleClientID, vs...))
+}
+
+// GoogleClientIDGT applies the GT predicate on the "google_client_id" field.
+func GoogleClientIDGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDGTE applies the GTE predicate on the "google_client_id" field.
+func GoogleClientIDGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDLT applies the LT predicate on the "google_client_id" field.
+func GoogleClientIDLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDLTE applies the LTE predicate on the "google_client_id" field.
+func GoogleClientIDLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDContains applies the Contains predicate on the "google_client_id" field.
+func GoogleClientIDContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDHasPrefix applies the HasPrefix predicate on the "google_client_id" field.
+func GoogleClientIDHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDHasSuffix applies the HasSuffix predicate on the "google_client_id" field.
+func GoogleClientIDHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDIsNil applies the IsNil predicate on the "google_client_id" field.
+func GoogleClientIDIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleClientID))
+}
+
+// GoogleClientIDNotNil applies the NotNil predicate on the "google_client_id" field.
+func GoogleClientIDNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleClientID))
+}
+
+// GoogleClientIDEqualFold applies the EqualFold predicate on the "google_client_id" field.
+func GoogleClientIDEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldGoogleClientID, v))
+}
+
+// GoogleClientIDContainsFold applies the ContainsFold predicate on the "google_client_id" field.
+func GoogleClientIDContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldGoogleClientID, v))
+}
+
+// GoogleClientSecretEQ applies the EQ predicate on the "google_client_secret" field.
+func GoogleClientSecretEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretNEQ applies the NEQ predicate on the "google_client_secret" field.
+func GoogleClientSecretNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretIn applies the In predicate on the "google_client_secret" field.
+func GoogleClientSecretIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldGoogleClientSecret, vs...))
+}
+
+// GoogleClientSecretNotIn applies the NotIn predicate on the "google_client_secret" field.
+func GoogleClientSecretNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldGoogleClientSecret, vs...))
+}
+
+// GoogleClientSecretGT applies the GT predicate on the "google_client_secret" field.
+func GoogleClientSecretGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretGTE applies the GTE predicate on the "google_client_secret" field.
+func GoogleClientSecretGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretLT applies the LT predicate on the "google_client_secret" field.
+func GoogleClientSecretLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretLTE applies the LTE predicate on the "google_client_secret" field.
+func GoogleClientSecretLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretContains applies the Contains predicate on the "google_client_secret" field.
+func GoogleClientSecretContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretHasPrefix applies the HasPrefix predicate on the "google_client_secret" field.
+func GoogleClientSecretHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretHasSuffix applies the HasSuffix predicate on the "google_client_secret" field.
+func GoogleClientSecretHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretIsNil applies the IsNil predicate on the "google_client_secret" field.
+func GoogleClientSecretIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleClientSecret))
+}
+
+// GoogleClientSecretNotNil applies the NotNil predicate on the "google_client_secret" field.
+func GoogleClientSecretNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleClientSecret))
+}
+
+// GoogleClientSecretEqualFold applies the EqualFold predicate on the "google_client_secret" field.
+func GoogleClientSecretEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldGoogleClientSecret, v))
+}
+
+// GoogleClientSecretContainsFold applies the ContainsFold predicate on the "google_client_secret" field.
+func GoogleClientSecretContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldGoogleClientSecret, v))
+}
+
+// GoogleRefreshTokenEQ applies the EQ predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenNEQ applies the NEQ predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenIn applies the In predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldGoogleRefreshToken, vs...))
+}
+
+// GoogleRefreshTokenNotIn applies the NotIn predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldGoogleRefreshToken, vs...))
+}
+
+// GoogleRefreshTokenGT applies the GT predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenGTE applies the GTE predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenLT applies the LT predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenLTE applies the LTE predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenContains applies the Contains predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenHasPrefix applies the HasPrefix predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenHasSuffix applies the HasSuffix predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenIsNil applies the IsNil predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleRefreshToken))
+}
+
+// GoogleRefreshTokenNotNil applies the NotNil predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleRefreshToken))
+}
+
+// GoogleRefreshTokenEqualFold applies the EqualFold predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldGoogleRefreshToken, v))
+}
+
+// GoogleRefreshTokenContainsFold applies the ContainsFold predicate on the "google_refresh_token" field.
+func GoogleRefreshTokenContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldGoogleRefreshToken, v))
+}
+
+// GoogleSyncTokenEQ applies the EQ predicate on the "google_sync_token" field.
+func GoogleSyncTokenEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenNEQ applies the NEQ predicate on the "google_sync_token" field.
+func GoogleSyncTokenNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenIn applies the In predicate on the "google_sync_token" field.
+func GoogleSyncTokenIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldGoogleSyncToken, vs...))
+}
+
+// GoogleSyncTokenNotIn applies the NotIn predicate on the "google_sync_token" field.
+func GoogleSyncTokenNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldGoogleSyncToken, vs...))
+}
+
+// GoogleSyncTokenGT applies the GT predicate on the "google_sync_token" field.
+func GoogleSyncTokenGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenGTE applies the GTE predicate on the "google_sync_token" field.
+func GoogleSyncTokenGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenLT applies the LT predicate on the "google_sync_token" field.
+func GoogleSyncTokenLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenLTE applies the LTE predicate on the "google_sync_token" field.
+func GoogleSyncTokenLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenContains applies the Contains predicate on the "google_sync_token" field.
+func GoogleSyncTokenContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenHasPrefix applies the HasPrefix predicate on the "google_sync_token" field.
+func GoogleSyncTokenHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenHasSuffix applies the HasSuffix predicate on the "google_sync_token" field.
+func GoogleSyncTokenHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenIsNil applies the IsNil predicate on the "google_sync_token" field.
+func GoogleSyncTokenIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleSyncToken))
+}
+
+// GoogleSyncTokenNotNil applies the NotNil predicate on the "google_sync_token" field.
+func GoogleSyncTokenNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleSyncToken))
+}
+
+// GoogleSyncTokenEqualFold applies the EqualFold predicate on the "google_sync_token" field.
+func GoogleSyncTokenEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldGoogleSyncToken, v))
+}
+
+// GoogleSyncTokenContainsFold applies the ContainsFold predicate on the "google_sync_token" field.
+func GoogleSyncTokenContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldGoogleSyncToken, v))
+}
+
+// GoogleLastSyncEQ applies the EQ predicate on the "google_last_sync" field.
+func GoogleLastSyncEQ(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleLastSync, v))
+}
+
+// GoogleLastSyncNEQ applies the NEQ predicate on the "google_last_sync" field.
+func GoogleLastSyncNEQ(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleLastSync, v))
+}
+
+// GoogleLastSyncIn applies the In predicate on the "google_last_sync" field.
+func GoogleLastSyncIn(vs ...time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldGoogleLastSync, vs...))
+}
+
+// GoogleLastSyncNotIn applies the NotIn predicate on the "google_last_sync" field.
+func GoogleLastSyncNotIn(vs ...time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldGoogleLastSync, vs...))
+}
+
+// GoogleLastSyncGT applies the GT predicate on the "google_last_sync" field.
+func GoogleLastSyncGT(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldGoogleLastSync, v))
+}
+
+// GoogleLastSyncGTE applies the GTE predicate on the "google_last_sync" field.
+func GoogleLastSyncGTE(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldGoogleLastSync, v))
+}
+
+// GoogleLastSyncLT applies the LT predicate on the "google_last_sync" field.
+func GoogleLastSyncLT(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldGoogleLastSync, v))
+}
+
+// GoogleLastSyncLTE applies the LTE predicate on the "google_last_sync" field.
+func GoogleLastSyncLTE(v time.Time) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldGoogleLastSync, v))
+}
+
+// GoogleLastSyncIsNil applies the IsNil predicate on the "google_last_sync" field.
+func GoogleLastSyncIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleLastSync))
+}
+
+// GoogleLastSyncNotNil applies the NotNil predicate on the "google_last_sync" field.
+func GoogleLastSyncNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleLastSync))
+}
+
+// GoogleDeletePolicyEQ applies the EQ predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyNEQ applies the NEQ predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyIn applies the In predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldGoogleDeletePolicy, vs...))
+}
+
+// GoogleDeletePolicyNotIn applies the NotIn predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldGoogleDeletePolicy, vs...))
+}
+
+// GoogleDeletePolicyGT applies the GT predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyGTE applies the GTE predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyLT applies the LT predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyLTE applies the LTE predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyContains applies the Contains predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyHasPrefix applies the HasPrefix predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyHasSuffix applies the HasSuffix predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyIsNil applies the IsNil predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleDeletePolicy))
+}
+
+// GoogleDeletePolicyNotNil applies the NotNil predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleDeletePolicy))
+}
+
+// GoogleDeletePolicyEqualFold applies the EqualFold predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleDeletePolicyContainsFold applies the ContainsFold predicate on the "google_delete_policy" field.
+func GoogleDeletePolicyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldGoogleDeletePolicy, v))
+}
+
+// GoogleOauthStateEQ applies the EQ predicate on the "google_oauth_state" field.
+func GoogleOauthStateEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateNEQ applies the NEQ predicate on the "google_oauth_state" field.
+func GoogleOauthStateNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateIn applies the In predicate on the "google_oauth_state" field.
+func GoogleOauthStateIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldGoogleOauthState, vs...))
+}
+
+// GoogleOauthStateNotIn applies the NotIn predicate on the "google_oauth_state" field.
+func GoogleOauthStateNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldGoogleOauthState, vs...))
+}
+
+// GoogleOauthStateGT applies the GT predicate on the "google_oauth_state" field.
+func GoogleOauthStateGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateGTE applies the GTE predicate on the "google_oauth_state" field.
+func GoogleOauthStateGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateLT applies the LT predicate on the "google_oauth_state" field.
+func GoogleOauthStateLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateLTE applies the LTE predicate on the "google_oauth_state" field.
+func GoogleOauthStateLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateContains applies the Contains predicate on the "google_oauth_state" field.
+func GoogleOauthStateContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateHasPrefix applies the HasPrefix predicate on the "google_oauth_state" field.
+func GoogleOauthStateHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateHasSuffix applies the HasSuffix predicate on the "google_oauth_state" field.
+func GoogleOauthStateHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateIsNil applies the IsNil predicate on the "google_oauth_state" field.
+func GoogleOauthStateIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldGoogleOauthState))
+}
+
+// GoogleOauthStateNotNil applies the NotNil predicate on the "google_oauth_state" field.
+func GoogleOauthStateNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldGoogleOauthState))
+}
+
+// GoogleOauthStateEqualFold applies the EqualFold predicate on the "google_oauth_state" field.
+func GoogleOauthStateEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldGoogleOauthState, v))
+}
+
+// GoogleOauthStateContainsFold applies the ContainsFold predicate on the "google_oauth_state" field.
+func GoogleOauthStateContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldGoogleOauthState, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

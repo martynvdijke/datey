@@ -235,6 +235,24 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.CarddavDeletePolicy; v != nil {
 		cfg.CarddavDeletePolicy = *v
 	}
+	if v := row.GoogleContactsEnabled; v != nil {
+		cfg.GoogleContactsEnabled = *v
+	}
+	if v := row.GoogleClientID; v != nil {
+		cfg.GoogleClientID = *v
+	}
+	if v := row.GoogleClientSecret; v != nil {
+		cfg.GoogleClientSecret = *v
+	}
+	if v := row.GoogleRefreshToken; v != nil {
+		cfg.GoogleRefreshToken = *v
+	}
+	if v := row.GoogleSyncToken; v != nil {
+		cfg.GoogleSyncToken = *v
+	}
+	if v := row.GoogleDeletePolicy; v != nil {
+		cfg.GoogleDeletePolicy = *v
+	}
 	if v := row.AuditRetentionMax; v != nil {
 		cfg.AuditRetentionMax = *v
 		if cfg.AuditRetentionMax < 100 {
@@ -347,6 +365,121 @@ func (s *Store) SetCarddavLastSync(ctx context.Context, t time.Time) error {
 }
 
 var validDeletePolicies = map[string]bool{"keep": true, "delete": true}
+
+// Google Contacts helpers
+
+func (s *Store) GoogleSyncToken(ctx context.Context) (string, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return "", err
+	}
+	if row.GoogleSyncToken == nil {
+		return "", nil
+	}
+	return *row.GoogleSyncToken, nil
+}
+
+func (s *Store) SetGoogleSyncToken(ctx context.Context, token string) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).SetGoogleSyncToken(token).Save(ctx); err != nil {
+		return fmt.Errorf("persist google_sync_token: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) GoogleLastSync(ctx context.Context) (*time.Time, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return row.GoogleLastSync, nil
+}
+
+func (s *Store) SetGoogleLastSync(ctx context.Context, t time.Time) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).SetGoogleLastSync(t).Save(ctx); err != nil {
+		return fmt.Errorf("persist google_last_sync: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) SetGoogleRefreshToken(ctx context.Context, token string) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).SetGoogleRefreshToken(token).Save(ctx); err != nil {
+		return fmt.Errorf("persist google_refresh_token: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) GoogleOAuthState(ctx context.Context) (string, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return "", err
+	}
+	if row.GoogleOauthState == nil {
+		return "", nil
+	}
+	return *row.GoogleOauthState, nil
+}
+
+func (s *Store) SetGoogleOAuthState(ctx context.Context, state string) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := s.client.AppConfig.UpdateOneID(row.ID).SetGoogleOauthState(state).Save(ctx); err != nil {
+		return fmt.Errorf("persist google_oauth_state: %w", err)
+	}
+	return nil
+}
+
+func (s *Store) ApplyGoogleForm(ctx context.Context, cfg *config.Config, form url.Values) (map[string]string, error) {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return nil, err
+	}
+	errs := map[string]string{}
+	enabled := form.Get("GOOGLE_CONTACTS_ENABLED") == "on"
+	clientID := form.Get("GOOGLE_CLIENT_ID")
+	clientSecret := form.Get("GOOGLE_CLIENT_SECRET")
+	deletePolicy := form.Get("GOOGLE_DELETE_POLICY")
+	if deletePolicy == "" {
+		deletePolicy = "keep"
+	}
+	if !validDeletePolicies[deletePolicy] {
+		errs["GOOGLE_DELETE_POLICY"] = "Delete policy must be one of: keep, delete"
+	}
+	if len(errs) > 0 {
+		return errs, errInvalid
+	}
+	effectiveSecret := clientSecret
+	if effectiveSecret == "" {
+		effectiveSecret = cfg.GoogleClientSecret
+	}
+	upd := s.client.AppConfig.UpdateOneID(row.ID).
+		SetNillableGoogleContactsEnabled(&enabled).
+		SetNillableGoogleClientID(nillableStr(clientID)).
+		SetNillableGoogleClientSecret(nillableStr(effectiveSecret)).
+		SetNillableGoogleDeletePolicy(nillableStr(deletePolicy)).
+		SetUpdatedAt(time.Now())
+	if _, err := upd.Save(ctx); err != nil {
+		return nil, fmt.Errorf("persist google settings: %w", err)
+	}
+	cfg.GoogleContactsEnabled = enabled
+	cfg.GoogleClientID = clientID
+	cfg.GoogleClientSecret = effectiveSecret
+	cfg.GoogleDeletePolicy = deletePolicy
+	return nil, nil
+}
 
 // ApplyCarddavForm persists the CardDAV section of the Notifications settings
 // tab. An empty password submission keeps the existing stored password (the

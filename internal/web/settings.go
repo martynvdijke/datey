@@ -65,6 +65,31 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 			carddav.DeletePolicy = v
 		}
 	}
+	google := googleView{
+		Enabled:      h.cfg.GoogleContactsEnabled,
+		ClientID:     h.cfg.GoogleClientID,
+		HasSecret:    h.cfg.GoogleClientSecret != "",
+		HasRefresh:   h.cfg.GoogleRefreshToken != "",
+		DeletePolicy: h.cfg.GoogleDeletePolicy,
+		Errors:       errs,
+	}
+	if submitted != nil {
+		if v, ok := submitted["GOOGLE_CONTACTS_ENABLED"]; ok && len(v) > 0 {
+			google.Enabled = v[0] == "on"
+		}
+		if v := submitted.Get("GOOGLE_CLIENT_ID"); v != "" {
+			google.ClientID = v
+		}
+		if v := submitted.Get("GOOGLE_DELETE_POLICY"); v != "" {
+			google.DeletePolicy = v
+		}
+	}
+	if google.DeletePolicy == "" {
+		google.DeletePolicy = "keep"
+	}
+	if lastSync, err := h.settingsStore.GoogleLastSync(r.Context()); err == nil && lastSync != nil {
+		google.LastSync = lastSync.Format("2006-01-02 15:04:05")
+	}
 
 	locale := ""
 	if u := UserFromContext(r.Context()); u != nil && u.Locale != nil {
@@ -75,6 +100,7 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 		"SettingsTab":   "notifications",
 		"Channels":      channels,
 		"Carddav":       carddav,
+		"Google":        google,
 		"CurrentLocale": locale,
 	})
 }

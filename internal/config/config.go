@@ -89,6 +89,13 @@ type Config struct {
 	CarddavPassword     string
 	CarddavDeletePolicy string
 
+	GoogleContactsEnabled bool
+	GoogleClientID        string
+	GoogleClientSecret    string
+	GoogleRefreshToken    string
+	GoogleSyncToken       string
+	GoogleDeletePolicy    string
+
 	AuditRetentionMax int
 }
 
@@ -163,6 +170,13 @@ func Load() (*Config, error) {
 		CarddavUsername:     getEnv("CARDDAV_USERNAME", ""),
 		CarddavPassword:     getEnv("CARDDAV_PASSWORD", ""),
 		CarddavDeletePolicy: getEnv("CARDDAV_DELETE_POLICY", "keep"),
+
+		GoogleContactsEnabled: getEnv("GOOGLE_CONTACTS_ENABLED", "") == "true",
+		GoogleClientID:        getEnv("GOOGLE_CLIENT_ID", ""),
+		GoogleClientSecret:    getEnv("GOOGLE_CLIENT_SECRET", ""),
+		GoogleRefreshToken:    getEnv("GOOGLE_REFRESH_TOKEN", ""),
+		GoogleSyncToken:       getEnv("GOOGLE_SYNC_TOKEN", ""),
+		GoogleDeletePolicy:    getEnv("GOOGLE_DELETE_POLICY", "keep"),
 
 		AuditRetentionMax: getEnvInt("AUDIT_RETENTION_MAX", 10000),
 	}
@@ -273,6 +287,9 @@ func (c *Config) Validate() error {
 	}
 	if c.CarddavDeletePolicy != "" && c.CarddavDeletePolicy != "keep" && c.CarddavDeletePolicy != "delete" {
 		return fmt.Errorf("CARDDAV_DELETE_POLICY must be one of keep, delete; got %q", c.CarddavDeletePolicy)
+	}
+	if c.GoogleDeletePolicy != "" && c.GoogleDeletePolicy != "keep" && c.GoogleDeletePolicy != "delete" {
+		return fmt.Errorf("GOOGLE_DELETE_POLICY must be one of keep, delete; got %q", c.GoogleDeletePolicy)
 	}
 	if c.AuditRetentionMax != 0 && c.AuditRetentionMax < 100 {
 		return fmt.Errorf("AUDIT_RETENTION_MAX must be at least 100, got %d", c.AuditRetentionMax)

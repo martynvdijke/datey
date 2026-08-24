@@ -165,6 +165,44 @@
         <div id="carddav-result" class="mt-3"></div>
       </div>
     </div>
+
+    <h2 class="mb-3 mt-4">Google Contacts Sync</h2>
+    <div class="card mb-4">
+      <div class="card-body">
+        <p class="text-muted small mb-3">Pull-only sync of people, birthdays and notes from Google Contacts via the People API. Daily auto-sync plus manual trigger.</p>
+        <form hx-post="/settings/google" hx-swap="none">
+          {{template "csrfField" .}}
+          <div class="mb-3 form-check">
+            <input class="form-check-input" type="checkbox" id="GOOGLE_CONTACTS_ENABLED" name="GOOGLE_CONTACTS_ENABLED" {{if .Google.Enabled}}checked{{end}}>
+            <label class="form-check-label" for="GOOGLE_CONTACTS_ENABLED">Enable Google Contacts sync</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="GOOGLE_CLIENT_ID">Client ID</label>
+            <input class="form-control" type="text" id="GOOGLE_CLIENT_ID" name="GOOGLE_CLIENT_ID" value="{{.Google.ClientID}}" autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="GOOGLE_CLIENT_SECRET">Client Secret</label>
+            <input class="form-control" type="password" id="GOOGLE_CLIENT_SECRET" name="GOOGLE_CLIENT_SECRET" value="" {{if .Google.HasSecret}}placeholder="••••••••"{{end}} autocomplete="off">
+            {{if .Google.HasSecret}}<div class="form-text text-muted">Leave blank to keep the stored secret.</div>{{end}}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="GOOGLE_DELETE_POLICY">Deletion Policy</label>
+            <select class="form-select" id="GOOGLE_DELETE_POLICY" name="GOOGLE_DELETE_POLICY">
+              <option value="keep" {{if eq .Google.DeletePolicy "keep"}}selected{{end}}>Keep locally (unlink)</option>
+              <option value="delete" {{if eq .Google.DeletePolicy "delete"}}selected{{end}}>Delete locally</option>
+            </select>
+          </div>
+          {{if .Google.LastSync}}<div class="mb-2 small text-muted">Last sync: {{.Google.LastSync}}</div>{{end}}
+          {{if .Google.HasRefresh}}<div class="mb-2"><span class="badge bg-success">Connected</span></div>{{else}}<div class="mb-2"><span class="badge bg-secondary">Not connected</span></div>{{end}}
+          <button class="btn btn-primary" type="submit">Save Google Settings</button>
+        </form>
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          <a class="btn btn-outline-secondary" href="/settings/google/auth">Connect / Consent</a>
+          <button class="btn btn-outline-secondary" hx-post="/settings/google/sync" hx-target="#google-result" hx-swap="innerHTML">Sync Now</button>
+        </div>
+        <div id="google-result" class="mt-3"></div>
+      </div>
+    </div>
   {{end}}
 
   {{if eq .SettingsTab "config"}}

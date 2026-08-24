@@ -54,6 +54,8 @@ const (
 	FieldCarddavLastModified = "carddav_last_modified"
 	// FieldCarddavPendingSync holds the string denoting the carddav_pending_sync field in the database.
 	FieldCarddavPendingSync = "carddav_pending_sync"
+	// FieldGoogleResourceName holds the string denoting the google_resource_name field in the database.
+	FieldGoogleResourceName = "google_resource_name"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -145,6 +147,7 @@ var Columns = []string{
 	FieldCarddavRev,
 	FieldCarddavLastModified,
 	FieldCarddavPendingSync,
+	FieldGoogleResourceName,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -295,6 +298,11 @@ func ByCarddavLastModified(opts ...sql.OrderTermOption) OrderOption {
 // ByCarddavPendingSync orders the results by the carddav_pending_sync field.
 func ByCarddavPendingSync(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCarddavPendingSync, opts...).ToFunc()
+}
+
+// ByGoogleResourceName orders the results by the google_resource_name field.
+func ByGoogleResourceName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGoogleResourceName, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
