@@ -369,6 +369,11 @@ func UpdatedAt(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// AuditRetentionMax applies equality check predicate on the "audit_retention_max" field. It's identical to AuditRetentionMaxEQ.
+func AuditRetentionMax(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldAuditRetentionMax, v))
+}
+
 // PortEQ applies the EQ predicate on the "port" field.
 func PortEQ(v int) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldPort, v))
@@ -4242,6 +4247,56 @@ func UpdatedAtIsNil() predicate.AppConfig {
 // UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
 func UpdatedAtNotNil() predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotNull(FieldUpdatedAt))
+}
+
+// AuditRetentionMaxEQ applies the EQ predicate on the "audit_retention_max" field.
+func AuditRetentionMaxEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldAuditRetentionMax, v))
+}
+
+// AuditRetentionMaxNEQ applies the NEQ predicate on the "audit_retention_max" field.
+func AuditRetentionMaxNEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldAuditRetentionMax, v))
+}
+
+// AuditRetentionMaxIn applies the In predicate on the "audit_retention_max" field.
+func AuditRetentionMaxIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldAuditRetentionMax, vs...))
+}
+
+// AuditRetentionMaxNotIn applies the NotIn predicate on the "audit_retention_max" field.
+func AuditRetentionMaxNotIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldAuditRetentionMax, vs...))
+}
+
+// AuditRetentionMaxGT applies the GT predicate on the "audit_retention_max" field.
+func AuditRetentionMaxGT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldAuditRetentionMax, v))
+}
+
+// AuditRetentionMaxGTE applies the GTE predicate on the "audit_retention_max" field.
+func AuditRetentionMaxGTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldAuditRetentionMax, v))
+}
+
+// AuditRetentionMaxLT applies the LT predicate on the "audit_retention_max" field.
+func AuditRetentionMaxLT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldAuditRetentionMax, v))
+}
+
+// AuditRetentionMaxLTE applies the LTE predicate on the "audit_retention_max" field.
+func AuditRetentionMaxLTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldAuditRetentionMax, v))
+}
+
+// AuditRetentionMaxIsNil applies the IsNil predicate on the "audit_retention_max" field.
+func AuditRetentionMaxIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldAuditRetentionMax))
+}
+
+// AuditRetentionMaxNotNil applies the NotNil predicate on the "audit_retention_max" field.
+func AuditRetentionMaxNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldAuditRetentionMax))
 }
 
 // And groups predicates with the AND operator between them.

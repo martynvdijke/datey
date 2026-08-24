@@ -21,6 +21,18 @@ func (f AppConfigFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AppConfigMutation", m)
 }
 
+// The AuditEntryFunc type is an adapter to allow the use of ordinary
+// function as AuditEntry mutator.
+type AuditEntryFunc func(context.Context, *ent.AuditEntryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AuditEntryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AuditEntryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuditEntryMutation", m)
+}
+
 // The ContactFunc type is an adapter to allow the use of ordinary
 // function as Contact mutator.
 type ContactFunc func(context.Context, *ent.ContactMutation) (ent.Value, error)

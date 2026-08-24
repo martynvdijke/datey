@@ -60,6 +60,8 @@ func (h *Handler) Auth(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), userContextKey, u)
+		// Also store under plain string key for auditlog recorder (which uses a different typed key).
+		ctx = context.WithValue(ctx, "user", u) //nolint:staticcheck
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -154,6 +156,7 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 
 	u, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil {
+		h.auditRecord(r, "auth.login_failure", username)
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
@@ -165,6 +168,7 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
+		h.auditRecord(r, "auth.login_failure", username)
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
@@ -186,16 +190,22 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session.SetCookie(w, token, r.TLS != nil)
+	h.auditRecord(r, "auth.login_success", username)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
+	actor := ""
+	if u := UserFromContext(r.Context()); u != nil {
+		actor = u.Username
+	}
 	token, err := session.ReadCookie(r)
 	if err == nil && token != "" {
 		if err := h.sessions.Delete(r.Context(), token); err != nil {
 			slog.Warn("logout: delete session", "error", err)
 		}
 	}
+	h.auditRecord(r, "auth.logout", actor)
 	session.ClearCookie(w)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

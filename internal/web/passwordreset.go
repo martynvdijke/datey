@@ -198,6 +198,7 @@ func (h *Handler) resetPasswordPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("password reset completed", "user_id", u.ID)
+	h.auditRecord(r, "auth.password_reset", u.Username)
 	http.Redirect(w, r, "/login?success=Password+reset.+Please+log+in.", http.StatusSeeOther)
 }
 

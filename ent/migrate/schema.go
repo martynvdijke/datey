@@ -74,12 +74,40 @@ var (
 		{Name: "carddav_last_sync", Type: field.TypeTime, Nullable: true},
 		{Name: "carddav_delete_policy", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "audit_retention_max", Type: field.TypeInt, Nullable: true},
 	}
 	// AppConfigsTable holds the schema information for the "app_configs" table.
 	AppConfigsTable = &schema.Table{
 		Name:       "app_configs",
 		Columns:    AppConfigsColumns,
 		PrimaryKey: []*schema.Column{AppConfigsColumns[0]},
+	}
+	// AuditEntriesColumns holds the columns for the "audit_entries" table.
+	AuditEntriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "actor_username", Type: field.TypeString},
+		{Name: "action", Type: field.TypeString},
+		{Name: "target", Type: field.TypeString, Default: ""},
+		{Name: "source_ip", Type: field.TypeString, Nullable: true, Default: ""},
+	}
+	// AuditEntriesTable holds the schema information for the "audit_entries" table.
+	AuditEntriesTable = &schema.Table{
+		Name:       "audit_entries",
+		Columns:    AuditEntriesColumns,
+		PrimaryKey: []*schema.Column{AuditEntriesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "auditentry_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{AuditEntriesColumns[1]},
+			},
+			{
+				Name:    "auditentry_action",
+				Unique:  false,
+				Columns: []*schema.Column{AuditEntriesColumns[3]},
+			},
+		},
 	}
 	// ContactsColumns holds the columns for the "contacts" table.
 	ContactsColumns = []*schema.Column{
@@ -567,6 +595,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AppConfigsTable,
+		AuditEntriesTable,
 		ContactsTable,
 		EventsTable,
 		GiftIdeasTable,

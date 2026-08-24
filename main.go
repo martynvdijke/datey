@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/datey/datey/handlers"
+	"github.com/datey/datey/internal/auditlog"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/db"
 	"github.com/datey/datey/internal/logstore"
@@ -135,6 +136,7 @@ func main() {
 	}
 
 	handler := web.NewHandler(cfg, client, reg, store)
+	handler.SetAuditRecorder(auditlog.NewFromClient(client))
 	handlers.Version = Version
 	handler.RegisterRoutes(r)
 

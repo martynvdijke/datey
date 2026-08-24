@@ -9,6 +9,9 @@ import (
 // AppConfig is the predicate function for appconfig builders.
 type AppConfig func(*sql.Selector)
 
+// AuditEntry is the predicate function for auditentry builders.
+type AuditEntry func(*sql.Selector)
+
 // Contact is the predicate function for contact builders.
 type Contact func(*sql.Selector)
 

@@ -76,6 +76,7 @@ func (h *Handler) deleteGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.auditRecord(r, "group.delete", strconv.Itoa(id))
 	http.Redirect(w, r, "/groups?success=Group+deleted", http.StatusSeeOther)
 }
 

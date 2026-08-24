@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -52,7 +53,21 @@ type Handler struct {
 	passwordResetTokens *repository.PasswordResetTokenRepository
 	immich              *immich.Client
 	photoStore          *photos.Store
+	audit               auditRecorder
 }
+
+type auditRecorder interface {
+	Record(r *http.Request, action, target string)
+	RecordWithActor(ctx context.Context, actor, ip, action, target string)
+}
+
+func (h *Handler) auditRecord(r *http.Request, action, target string) {
+	if h.audit != nil {
+		h.audit.Record(r, action, target)
+	}
+}
+
+func (h *Handler) SetAuditRecorder(a auditRecorder) { h.audit = a }
 
 func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Registry, logStore *logstore.Store) *Handler {
 	templates, err := loadTemplates()
@@ -249,6 +264,13 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Get("/users", h.usersList)
 				r.Post("/users/create", h.userCreate)
 				r.Post("/users/{id}/delete", h.userDelete)
+				r.Get("/settings/audit", h.auditLog)
+				r.Post("/settings/feed/regenerate/ical", h.regenerateFeedKey("ical", "feedkey.regenerate"))
+				r.Post("/settings/feed/regenerate/rss", h.regenerateFeedKey("rss", "feedkey.regenerate"))
+				r.Post("/settings/feed/regenerate/upcoming", h.regenerateFeedKey("upcoming", "feedkey.regenerate"))
+				r.Post("/settings/feed/regenerate/homeassistant", h.regenerateFeedKey("homeassistant", "feedkey.regenerate"))
+				r.Post("/settings/feed/regenerate/trmnl", h.regenerateFeedKey("trmnl", "feedkey.regenerate"))
+				r.Post("/settings/backup/restore", h.settingsBackupRestore)
 			})
 		})
 	})
@@ -559,6 +581,7 @@ func (h *Handler) userCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.auditRecord(r, "user.create", username)
 	http.Redirect(w, r, "/users?success=User+"+username+"+created", http.StatusSeeOther)
 }
 
@@ -602,6 +625,7 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 	} else {
 		toastHeader(w, "User deleted", "success")
 	}
+	h.auditRecord(r, "user.delete", username)
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)
 }

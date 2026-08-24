@@ -1351,6 +1351,33 @@ func (_u *AppConfigUpdate) ClearUpdatedAt() *AppConfigUpdate {
 	return _u
 }
 
+// SetAuditRetentionMax sets the "audit_retention_max" field.
+func (_u *AppConfigUpdate) SetAuditRetentionMax(v int) *AppConfigUpdate {
+	_u.mutation.ResetAuditRetentionMax()
+	_u.mutation.SetAuditRetentionMax(v)
+	return _u
+}
+
+// SetNillableAuditRetentionMax sets the "audit_retention_max" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableAuditRetentionMax(v *int) *AppConfigUpdate {
+	if v != nil {
+		_u.SetAuditRetentionMax(*v)
+	}
+	return _u
+}
+
+// AddAuditRetentionMax adds value to the "audit_retention_max" field.
+func (_u *AppConfigUpdate) AddAuditRetentionMax(v int) *AppConfigUpdate {
+	_u.mutation.AddAuditRetentionMax(v)
+	return _u
+}
+
+// ClearAuditRetentionMax clears the value of the "audit_retention_max" field.
+func (_u *AppConfigUpdate) ClearAuditRetentionMax() *AppConfigUpdate {
+	_u.mutation.ClearAuditRetentionMax()
+	return _u
+}
+
 // Mutation returns the AppConfigMutation object of the builder.
 func (_u *AppConfigUpdate) Mutation() *AppConfigMutation {
 	return _u.mutation
@@ -1796,6 +1823,15 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.UpdatedAtCleared() {
 		_spec.ClearField(appconfig.FieldUpdatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.AuditRetentionMax(); ok {
+		_spec.SetField(appconfig.FieldAuditRetentionMax, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAuditRetentionMax(); ok {
+		_spec.AddField(appconfig.FieldAuditRetentionMax, field.TypeInt, value)
+	}
+	if _u.mutation.AuditRetentionMaxCleared() {
+		_spec.ClearField(appconfig.FieldAuditRetentionMax, field.TypeInt)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -3140,6 +3176,33 @@ func (_u *AppConfigUpdateOne) ClearUpdatedAt() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetAuditRetentionMax sets the "audit_retention_max" field.
+func (_u *AppConfigUpdateOne) SetAuditRetentionMax(v int) *AppConfigUpdateOne {
+	_u.mutation.ResetAuditRetentionMax()
+	_u.mutation.SetAuditRetentionMax(v)
+	return _u
+}
+
+// SetNillableAuditRetentionMax sets the "audit_retention_max" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableAuditRetentionMax(v *int) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetAuditRetentionMax(*v)
+	}
+	return _u
+}
+
+// AddAuditRetentionMax adds value to the "audit_retention_max" field.
+func (_u *AppConfigUpdateOne) AddAuditRetentionMax(v int) *AppConfigUpdateOne {
+	_u.mutation.AddAuditRetentionMax(v)
+	return _u
+}
+
+// ClearAuditRetentionMax clears the value of the "audit_retention_max" field.
+func (_u *AppConfigUpdateOne) ClearAuditRetentionMax() *AppConfigUpdateOne {
+	_u.mutation.ClearAuditRetentionMax()
+	return _u
+}
+
 // Mutation returns the AppConfigMutation object of the builder.
 func (_u *AppConfigUpdateOne) Mutation() *AppConfigMutation {
 	return _u.mutation
@@ -3615,6 +3678,15 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.UpdatedAtCleared() {
 		_spec.ClearField(appconfig.FieldUpdatedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.AuditRetentionMax(); ok {
+		_spec.SetField(appconfig.FieldAuditRetentionMax, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAuditRetentionMax(); ok {
+		_spec.AddField(appconfig.FieldAuditRetentionMax, field.TypeInt, value)
+	}
+	if _u.mutation.AuditRetentionMaxCleared() {
+		_spec.ClearField(appconfig.FieldAuditRetentionMax, field.TypeInt)
 	}
 	_node = &AppConfig{config: _u.config}
 	_spec.Assign = _node.assignValues

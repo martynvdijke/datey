@@ -739,6 +739,7 @@ func (h *Handler) deletePerson(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	h.auditRecord(r, "person.delete", strconv.Itoa(id))
 	http.Redirect(w, r, "/people?success=Person+deleted", http.StatusSeeOther)
 }
 

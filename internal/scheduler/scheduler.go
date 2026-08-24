@@ -77,6 +77,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 			s.runBackup(ctx)
 			s.runWeeklyBackup(ctx)
 			s.runCarddavSync(ctx)
+			s.pruneAuditLog(ctx)
 			timer.Reset(24 * time.Hour)
 		}
 	}
@@ -412,6 +413,22 @@ func (s *Scheduler) runBackup(ctx context.Context) {
 // runWeeklyBackup creates a weekly backup when today is the configured
 // WEEKLY_BACKUP_DAY (0=Sunday..6=Saturday). Weekly backups use their own
 // retention, so they survive the shorter daily retention window.
+func (s *Scheduler) pruneAuditLog(ctx context.Context) {
+	cap := s.cfg.AuditRetentionMax
+	if cap < 100 {
+		cap = 10000
+	}
+	if cap == 0 {
+		cap = 10000
+	}
+	repo := repository.NewAuditEntryRepository(s.client)
+	if n, err := repo.PruneToCap(ctx, cap); err != nil {
+		slog.Warn("scheduler: audit prune failed", "error", err)
+	} else if n > 0 {
+		slog.Info("scheduler: audit log pruned", "removed", n, "cap", cap)
+	}
+}
+
 func (s *Scheduler) runWeeklyBackup(ctx context.Context) {
 	if int(time.Now().Weekday()) != s.cfg.WeeklyBackupDay {
 		return

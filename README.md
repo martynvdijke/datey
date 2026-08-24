@@ -49,6 +49,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📲 PWA Offline Support** — installable Progressive Web App (`/manifest.json`, `/sw.js` caches the app shell and shows a generic offline page when offline; versioned cache busts on deploy). Add to Home Screen from your browser menu and enjoy instant loads.
 - **🔔 Web Push Notifications** — browser push notifications via VAPID + service worker (`/sw.js`); enabled from Settings → Configuration, requires HTTPS (or localhost).
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
+- **📜 Audit Log** — Append-only, retention-capped record of security-relevant mutations (login success/failure, user create/delete, config saves, person/event/group deletes, backup run/restore, feed-key regeneration) with admin-only filterable viewer at `/settings/audit`. Retention via `AUDIT_RETENTION_MAX` (default 10000, min 100).
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets. One-time password-reset links are emailed via the configured email channel (see `APP_URL`); reset requests are rate-limited per IP and responses never reveal whether a username exists.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
 - **🔭 OpenTelemetry Support** — Export logs to OTLP-compatible backends.

@@ -142,8 +142,10 @@ type AppConfig struct {
 	// CarddavDeletePolicy holds the value of the "carddav_delete_policy" field.
 	CarddavDeletePolicy *string `json:"carddav_delete_policy,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
-	selectValues sql.SelectValues
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	// AuditRetentionMax holds the value of the "audit_retention_max" field.
+	AuditRetentionMax *int `json:"audit_retention_max,omitempty"`
+	selectValues      sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -153,7 +155,7 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled:
 			values[i] = new(sql.NullBool)
-		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
+		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes, appconfig.FieldAuditRetentionMax:
 			values[i] = new(sql.NullInt64)
 		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy:
 			values[i] = new(sql.NullString)
@@ -621,6 +623,13 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 				_m.UpdatedAt = new(time.Time)
 				*_m.UpdatedAt = value.Time
 			}
+		case appconfig.FieldAuditRetentionMax:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field audit_retention_max", values[i])
+			} else if value.Valid {
+				_m.AuditRetentionMax = new(int)
+				*_m.AuditRetentionMax = int(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -970,6 +979,11 @@ func (_m *AppConfig) String() string {
 	if v := _m.UpdatedAt; v != nil {
 		builder.WriteString("updated_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.AuditRetentionMax; v != nil {
+		builder.WriteString("audit_retention_max=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')
 	return builder.String()

@@ -84,6 +84,7 @@ func (h *Handler) settingsConfigSave(w http.ResponseWriter, r *http.Request) {
 		h.logStore.SetLevel(level)
 	}
 
+	h.auditRecord(r, "config.save", "")
 	toastHeader(w, "Settings saved. Restart-required fields apply on next restart.", "success")
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)

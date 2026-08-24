@@ -137,6 +137,8 @@ const (
 	FieldCarddavDeletePolicy = "carddav_delete_policy"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldAuditRetentionMax holds the string denoting the audit_retention_max field in the database.
+	FieldAuditRetentionMax = "audit_retention_max"
 	// Table holds the table name of the appconfig in the database.
 	Table = "app_configs"
 )
@@ -207,6 +209,7 @@ var Columns = []string{
 	FieldCarddavLastSync,
 	FieldCarddavDeletePolicy,
 	FieldUpdatedAt,
+	FieldAuditRetentionMax,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -540,4 +543,9 @@ func ByCarddavDeletePolicy(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByAuditRetentionMax orders the results by the audit_retention_max field.
+func ByAuditRetentionMax(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuditRetentionMax, opts...).ToFunc()
 }

@@ -39,10 +39,10 @@ func baseCfg() *config.Config {
 		NotifyEmail:         "notify@example.com",
 		GotifyURL:           "",
 		GotifyToken:         "",
-		TelegramBotToken:     "",
-		TelegramChatID:       "",
-		UmamiURL:             "",
-		UmamiWebsiteID:       "",
+		TelegramBotToken:    "",
+		TelegramChatID:      "",
+		UmamiURL:            "",
+		UmamiWebsiteID:      "",
 		EinkMode:            false,
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/datey/datey/ent/appconfig"
+	"github.com/datey/datey/ent/auditentry"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/giftidea"
@@ -91,6 +92,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			appconfig.Table:               appconfig.ValidColumn,
+			auditentry.Table:              auditentry.ValidColumn,
 			contact.Table:                 contact.ValidColumn,
 			event.Table:                   event.ValidColumn,
 			giftidea.Table:                giftidea.ValidColumn,

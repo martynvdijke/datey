@@ -137,7 +137,6 @@ func TestValidate_WeeklyBackupDayOutOfRange(t *testing.T) {
 	}
 }
 
-
 // --- Validation tests (task 2.7) ---
 
 func TestValidate_SchedulerHourTooLow(t *testing.T) {

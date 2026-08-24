@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/datey/datey/ent/auditentry"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/giftidea"
@@ -29,6 +30,26 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	auditentryFields := schema.AuditEntry{}.Fields()
+	_ = auditentryFields
+	// auditentryDescActorUsername is the schema descriptor for actor_username field.
+	auditentryDescActorUsername := auditentryFields[1].Descriptor()
+	// auditentry.ActorUsernameValidator is a validator for the "actor_username" field. It is called by the builders before save.
+	auditentry.ActorUsernameValidator = auditentryDescActorUsername.Validators[0].(func(string) error)
+	// auditentryDescAction is the schema descriptor for action field.
+	auditentryDescAction := auditentryFields[2].Descriptor()
+	// auditentry.ActionValidator is a validator for the "action" field. It is called by the builders before save.
+	auditentry.ActionValidator = auditentryDescAction.Validators[0].(func(string) error)
+	// auditentryDescTarget is the schema descriptor for target field.
+	auditentryDescTarget := auditentryFields[3].Descriptor()
+	// auditentry.DefaultTarget holds the default value on creation for the target field.
+	auditentry.DefaultTarget = auditentryDescTarget.Default.(string)
+	// auditentry.TargetValidator is a validator for the "target" field. It is called by the builders before save.
+	auditentry.TargetValidator = auditentryDescTarget.Validators[0].(func(string) error)
+	// auditentryDescSourceIP is the schema descriptor for source_ip field.
+	auditentryDescSourceIP := auditentryFields[4].Descriptor()
+	// auditentry.DefaultSourceIP holds the default value on creation for the source_ip field.
+	auditentry.DefaultSourceIP = auditentryDescSourceIP.Default.(string)
 	contactFields := schema.Contact{}.Fields()
 	_ = contactFields
 	// contactDescName is the schema descriptor for name field.

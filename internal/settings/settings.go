@@ -235,7 +235,35 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.CarddavDeletePolicy; v != nil {
 		cfg.CarddavDeletePolicy = *v
 	}
+	if v := row.AuditRetentionMax; v != nil {
+		cfg.AuditRetentionMax = *v
+		if cfg.AuditRetentionMax < 100 {
+			cfg.AuditRetentionMax = 100
+		}
+	}
 	return nil
+}
+
+func (s *Store) SetFeedKey(ctx context.Context, kind, key string) error {
+	row, err := s.Current(ctx)
+	if err != nil {
+		return err
+	}
+	upd := s.client.AppConfig.UpdateOneID(row.ID)
+	switch kind {
+	case "ical":
+		upd = upd.SetNillableIcalFeedKey(&key)
+	case "rss":
+		upd = upd.SetNillableRssFeedKey(&key)
+	case "upcoming":
+		upd = upd.SetNillableUpcomingAPIKey(&key)
+	case "homeassistant":
+		upd = upd.SetNillableHomeassistantKey(&key)
+	default:
+		return nil
+	}
+	_, err = upd.Save(ctx)
+	return err
 }
 
 // ErrInvalid signals validation failures distinguishable from persistence errors.
@@ -463,6 +491,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	if immichAPIKey == "" {
 		immichAPIKey = cfg.ImmichAPIKey
 	}
+	auditRetentionMax := parseIntPtr(form, "AUDIT_RETENTION_MAX", errs)
 
 	if port != nil && (*port < 1 || *port > 65535) {
 		errs["PORT"] = "Port must be between 1 and 65535"
@@ -537,6 +566,9 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		if err != nil || u.Scheme == "" || u.Host == "" {
 			errs["MATRIX_HOMESERVER_URL"] = "Matrix homeserver URL must be an absolute URL"
 		}
+	}
+	if auditRetentionMax != nil && *auditRetentionMax < 100 {
+		errs["AUDIT_RETENTION_MAX"] = "Audit retention must be at least 100"
 	}
 
 	if len(errs) > 0 {
@@ -666,6 +698,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillablePushVapidPrivateKey(nillableStr(effectivePushPrivateKey)).
 		SetNillableImmichURL(nillableStr(immichURL)).
 		SetNillableImmichAPIKey(nillableStr(immichAPIKey)).
+		SetNillableAuditRetentionMax(auditRetentionMax).
 		SetUpdatedAt(time.Now())
 
 	if _, err := upd.Save(ctx); err != nil {
@@ -726,6 +759,12 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.ImmichURL = immichURL
 	if immichAPIKey != "" {
 		cfg.ImmichAPIKey = immichAPIKey
+	}
+	if auditRetentionMax != nil {
+		cfg.AuditRetentionMax = *auditRetentionMax
+		if cfg.AuditRetentionMax < 100 {
+			cfg.AuditRetentionMax = 100
+		}
 	}
 
 	return nil, nil

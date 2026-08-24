@@ -901,6 +901,20 @@ func (_c *AppConfigCreate) SetNillableUpdatedAt(v *time.Time) *AppConfigCreate {
 	return _c
 }
 
+// SetAuditRetentionMax sets the "audit_retention_max" field.
+func (_c *AppConfigCreate) SetAuditRetentionMax(v int) *AppConfigCreate {
+	_c.mutation.SetAuditRetentionMax(v)
+	return _c
+}
+
+// SetNillableAuditRetentionMax sets the "audit_retention_max" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableAuditRetentionMax(v *int) *AppConfigCreate {
+	if v != nil {
+		_c.SetAuditRetentionMax(*v)
+	}
+	return _c
+}
+
 // Mutation returns the AppConfigMutation object of the builder.
 func (_c *AppConfigCreate) Mutation() *AppConfigMutation {
 	return _c.mutation
@@ -1212,6 +1226,10 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(appconfig.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = &value
+	}
+	if value, ok := _c.mutation.AuditRetentionMax(); ok {
+		_spec.SetField(appconfig.FieldAuditRetentionMax, field.TypeInt, value)
+		_node.AuditRetentionMax = &value
 	}
 	return _node, _spec
 }

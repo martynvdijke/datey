@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AppConfig is the client for interacting with the AppConfig builders.
 	AppConfig *AppConfigClient
+	// AuditEntry is the client for interacting with the AuditEntry builders.
+	AuditEntry *AuditEntryClient
 	// Contact is the client for interacting with the Contact builders.
 	Contact *ContactClient
 	// Event is the client for interacting with the Event builders.
@@ -180,6 +182,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AppConfig = NewAppConfigClient(tx.config)
+	tx.AuditEntry = NewAuditEntryClient(tx.config)
 	tx.Contact = NewContactClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
 	tx.GiftIdea = NewGiftIdeaClient(tx.config)

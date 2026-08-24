@@ -162,6 +162,7 @@ func (h *Handler) deleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.auditRecord(r, "event.delete", strconv.Itoa(id))
 	toastHeader(w, "Event deleted", "success")
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)

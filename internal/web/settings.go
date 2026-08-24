@@ -160,6 +160,7 @@ func (h *Handler) settingsBackupRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slog.Info("manual backup completed", "dir", h.cfg.BackupDir)
+	h.auditRecord(r, "backup.run", h.cfg.BackupDir)
 	if _, err := w.Write([]byte(`<div class="alert alert-success">Backup completed successfully!</div>`)); err != nil {
 		slog.Error("write response", "error", err)
 	}

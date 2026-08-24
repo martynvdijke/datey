@@ -21,6 +21,7 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/internal/auditlog"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
@@ -29,11 +30,11 @@ import (
 )
 
 var (
-	testRouter   *chi.Mux
-	adminToken   string
+	testRouter    *chi.Mux
+	adminToken    string
 	testCSRFToken string
-	testDataDir  string
-	testClient   *ent.Client
+	testDataDir   string
+	testClient    *ent.Client
 )
 
 func TestMain(m *testing.M) {
@@ -127,6 +128,7 @@ func TestMain(m *testing.M) {
 
 	// Create handler and register routes
 	handler := web.NewHandler(cfg, testClient, notifReg, logStore)
+	handler.SetAuditRecorder(auditlog.NewFromClient(testClient))
 	testRouter = chi.NewRouter()
 	handler.RegisterRoutes(testRouter)
 
@@ -179,5 +181,3 @@ func unauthenticatedRequest(method, path string) *http.Request {
 	req, _ := http.NewRequest(method, path, nil)
 	return req
 }
-
-

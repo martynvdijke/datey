@@ -100,6 +100,8 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("carddav_delete_policy").Optional().Nillable(),
 
 		field.Time("updated_at").Optional().Nillable(),
+
+		field.Int("audit_retention_max").Optional().Nillable(),
 	}
 }
 
