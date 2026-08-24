@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/martynvdijke/datey/compare/v1.41.0...v1.42.0) (2026-08-24)
+
+
+### Features
+
+* **i18n:** embedded en/de catalogs, locale middleware, per-user language setting ([b5501ec](https://github.com/martynvdijke/datey/commit/b5501ec73c4fd6de69bf39ad7947c84e6eb7c0b9))
+
 # [1.41.0](https://github.com/martynvdijke/datey/compare/v1.40.0...v1.41.0) (2026-08-24)
 
 
