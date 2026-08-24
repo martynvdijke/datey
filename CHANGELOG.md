@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/martynvdijke/datey/compare/v1.43.0...v1.44.0) (2026-08-24)
+
+
+### Features
+
+* **notifications:** per-user channel targets, event scoping, and global fallback ([02e402d](https://github.com/martynvdijke/datey/commit/02e402d7cabbb922394b54d5a8ac181b1195a470))
+
 # [1.43.0](https://github.com/martynvdijke/datey/compare/v1.42.0...v1.43.0) (2026-08-24)
 
 
