@@ -147,25 +147,42 @@ func (h *Handler) homeAssistantCalendar(w http.ResponseWriter, r *http.Request) 
 
 	startStr := r.URL.Query().Get("start")
 	endStr := r.URL.Query().Get("end")
-	start, err := time.Parse("2006-01-02", startStr)
-	if err != nil {
-		h.renderError(w, r, http.StatusBadRequest)
-		return
-	}
-	end, err := time.Parse("2006-01-02", endStr)
-	if err != nil {
-		h.renderError(w, r, http.StatusBadRequest)
-		return
-	}
-	start = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.UTC)
-	end = time.Date(end.Year(), end.Month(), end.Day(), 0, 0, 0, 0, time.UTC)
-	if !end.After(start) {
-		h.renderError(w, r, http.StatusBadRequest)
-		return
-	}
-	if int(end.Sub(start).Hours()/24) > 365 {
-		h.renderError(w, r, http.StatusBadRequest)
-		return
+	var start, end time.Time
+	if startStr == "" && endStr == "" {
+		// Default window respects the configured reminder window.
+		start = todayStartUTC()
+		end = time.Now().AddDate(0, 0, h.cfg.ReminderDays)
+		// Normalize to midnight UTC boundaries.
+		end = time.Date(end.Year(), end.Month(), end.Day(), 0, 0, 0, 0, time.UTC)
+		if !end.After(start) {
+			end = start.AddDate(0, 0, 1)
+		}
+	} else {
+		if startStr == "" || endStr == "" {
+			h.renderError(w, r, http.StatusBadRequest)
+			return
+		}
+		var err error
+		start, err = time.Parse("2006-01-02", startStr)
+		if err != nil {
+			h.renderError(w, r, http.StatusBadRequest)
+			return
+		}
+		end, err = time.Parse("2006-01-02", endStr)
+		if err != nil {
+			h.renderError(w, r, http.StatusBadRequest)
+			return
+		}
+		start = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.UTC)
+		end = time.Date(end.Year(), end.Month(), end.Day(), 0, 0, 0, 0, time.UTC)
+		if !end.After(start) {
+			h.renderError(w, r, http.StatusBadRequest)
+			return
+		}
+		if int(end.Sub(start).Hours()/24) > 365 {
+			h.renderError(w, r, http.StatusBadRequest)
+			return
+		}
 	}
 
 	// ListUpcomingOccurrences is inclusive on both ends; we need [start,end) exclusive end.

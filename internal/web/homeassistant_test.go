@@ -362,6 +362,111 @@ func TestHACalendarLunarConversion(t *testing.T) {
 	}
 }
 
+func TestHACalendarKeyRegenerationInvalidatesOldKey(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	personID := newTestPerson(t, h, "Dana")
+	newTestEvent(t, h, personID, "birthday", time.Date(1990, 3, 15, 0, 0, 0, 0, time.UTC))
+	router := setupHARouter(h)
+
+	// Old key works.
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-03-01&end=2026-04-01", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 with original key, got %d", w.Code)
+	}
+
+	// Regenerate key.
+	h.cfg.HomeAssistantKey = "newkey123"
+
+	// Old key should now fail.
+	req = httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-03-01&end=2026-04-01", nil)
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 with old key after regeneration, got %d", w.Code)
+	}
+
+	// New key should succeed.
+	req = httptest.NewRequest("GET", "/api/homeassistant/calendar?key=newkey123&start=2026-03-01&end=2026-04-01", nil)
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 with new key, got %d", w.Code)
+	}
+	// Also verify stats endpoint uses same key.
+	req = httptest.NewRequest("GET", "/api/homeassistant/stats?key=testhakey", nil)
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 stats with old key, got %d", w.Code)
+	}
+	req = httptest.NewRequest("GET", "/api/homeassistant/stats?key=newkey123", nil)
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 stats with new key, got %d", w.Code)
+	}
+}
+
+func TestHACalendarDefaultWindowRespectsReminderDays(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	h.cfg.ReminderDays = 7
+	personID := newTestPerson(t, h, "Dana")
+	now := time.Now()
+	midnight := func(days int) time.Time {
+		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
+	}
+	// Event 3 days out (inside 7-day window) and 20 days out (outside).
+	newTestEvent(t, h, personID, "birthday", midnight(3))
+	newTestEvent(t, h, personID, "anniversary", midnight(20))
+
+	router := setupHARouter(h)
+	// No start/end params → default window is ReminderDays (7).
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 with default window, got %d", w.Code)
+	}
+	var events []homeAssistantCalendarEvent
+	if err := json.Unmarshal(w.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("expected 1 event inside default ReminderDays window, got %d: %s", len(events), w.Body.String())
+	}
+	if !contains(events[0].Summary, "Dana") {
+		t.Errorf("expected Dana event, got %q", events[0].Summary)
+	}
+
+	// Explicit range overriding default should include the far event.
+	start := midnight(0).Format("2006-01-02")
+	end := midnight(25).Format("2006-01-02")
+	req = httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start="+start+"&end="+end, nil)
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 with explicit range, got %d", w.Code)
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(events) != 2 {
+		t.Fatalf("expected 2 events with explicit range, got %d", len(events))
+	}
+
+	// One-sided params should be 400.
+	req = httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start="+start, nil)
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 with only start, got %d", w.Code)
+	}
+}
+
 func nilContext() context.Context { return context.Background() }
 
 func contains(s, substr string) bool { return strings.Contains(s, substr) }

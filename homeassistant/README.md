@@ -79,6 +79,35 @@ content: |
   {{ state_attr('sensor.next_datey_event', 'next_event') }}**
 ```
 
+## Optional binary sensors — birthday today / tomorrow
+
+Use template binary sensors to drive automations based on whether any
+birthday falls today or tomorrow (polls the same stats feed):
+
+```yaml
+template:
+  - binary_sensor:
+      - name: "Datey Birthday Today"
+        state: "{{ (state_attr('sensor.next_datey_event', 'upcoming') | selectattr('days', 'equalto', 0) | list | count) > 0 }}"
+      - name: "Datey Birthday Tomorrow"
+        state: "{{ (state_attr('sensor.next_datey_event', 'upcoming') | selectattr('days', 'equalto', 1) | list | count) > 0 }}"
+```
+
+Alternatively, poll the calendar feed directly and check for events whose
+`start.date` equals today/tomorrow:
+
+```yaml
+binary_sensor:
+  - platform: template
+    sensors:
+      datey_birthday_today:
+        value_template: "{{ states('sensor.datey_calendar_count') | int > 0 }}"
+```
+
+where `sensor.datey_calendar_count` is a REST sensor on
+`/api/homeassistant/calendar?key=YOUR_KEY&start={{ now().strftime('%Y-%m-%d') }}&end={{ (now() + timedelta(days=1)).strftime('%Y-%m-%d') }}`
+with `value_template: "{{ value_json | length }}"`.
+
 ## Notes
 
 - Dates are personal data: unlike the TRMNL stats feed, this endpoint is

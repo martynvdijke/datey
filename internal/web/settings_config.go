@@ -243,7 +243,8 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 	homeAssistantGroup := configGroup{Title: "Home Assistant", TestSection: "homeassistant", Fields: []configField{
 		{Name: "HOMEASSISTANT_ENABLED", Label: "Enable Home Assistant Feed", Type: "checkbox", Checked: checked("HOMEASSISTANT_ENABLED", cfg.HomeAssistantEnabled), Help: "Exposes upcoming events as a JSON stats feed for a Home Assistant RESTful sensor. Disabled by default; dates are personal data."},
 		{Name: "HOMEASSISTANT_KEY", Label: "Feed Secret Key", Value: val("HOMEASSISTANT_KEY", homeAssistantKey), Type: "text", Help: "Required as ?key=... in the feed URL. Auto-generated on first enable; change it here to rotate."},
-		{Name: "HOMEASSISTANT_URL", Label: "Feed URL", Value: "/api/homeassistant/stats?key=" + homeAssistantKey, Type: "readonly", ReadOnly: true, Help: "Use in the RESTful sensor's resource. Prepend your server origin (e.g. http://datey.local:6270)."},
+		{Name: "HOMEASSISTANT_URL", Label: "Stats Feed URL", Value: "/api/homeassistant/stats?key=" + homeAssistantKey, Type: "readonly", ReadOnly: true, Help: "Use in the RESTful sensor's resource. Prepend your server origin (e.g. http://datey.local:6270)."},
+		{Name: "HOMEASSISTANT_CALENDAR_URL", Label: "Calendar Feed URL", Value: "/api/homeassistant/calendar?key=" + homeAssistantKey + "&start=YYYY-MM-DD&end=YYYY-MM-DD", Type: "readonly", ReadOnly: true, Help: "Use for the calendar entity (all-day events). Replace dates with your window (max 365 days) or omit start/end to use the reminder window. Prepend your server origin."},
 	}}
 
 	pushGroup := configGroup{Title: "Web Push", TestSection: "webpush", Fields: []configField{
