@@ -275,6 +275,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Post("/settings/feed/regenerate/homeassistant", h.regenerateFeedKey("homeassistant", "feedkey.regenerate"))
 				r.Post("/settings/feed/regenerate/trmnl", h.regenerateFeedKey("trmnl", "feedkey.regenerate"))
 				r.Post("/settings/backup/restore", h.settingsBackupRestore)
+				r.Get("/settings/backup/download", h.settingsBackupDownload)
 			})
 		})
 	})

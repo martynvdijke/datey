@@ -168,11 +168,15 @@ func (h *Handler) settingsLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) settingsBackup(w http.ResponseWriter, r *http.Request) {
+	files := listBackupFiles(h.cfg.BackupDir)
+	pending, _ := db.ReadRestorePending(h.cfg.DataDir)
 	h.render(w, r, "settings.html", map[string]any{
 		"Title":               "Datey - Settings",
 		"SettingsTab":         "backup",
 		"BackupDir":           h.cfg.BackupDir,
 		"BackupRetentionDays": h.cfg.BackupRetentionDays,
+		"BackupFiles":         files,
+		"RestorePending":      pending,
 	})
 }
 

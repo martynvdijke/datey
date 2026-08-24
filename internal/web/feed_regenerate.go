@@ -14,11 +14,6 @@ func generateKey() string {
 	return hex.EncodeToString(b)
 }
 
-func (h *Handler) settingsBackupRestore(w http.ResponseWriter, r *http.Request) {
-	h.auditRecord(r, "backup.restore_staged", "")
-	http.Redirect(w, r, "/settings/backup?success=Restore+staged", http.StatusSeeOther)
-}
-
 func (h *Handler) regenerateFeedKey(kind string, auditAction string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := generateKey()

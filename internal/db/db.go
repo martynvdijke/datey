@@ -320,6 +320,7 @@ func DropOneTimeNotificationTables(ctx context.Context, client *ent.Client, dbPa
 }
 
 func Init(cfg *config.Config) (*ent.Client, error) {
+	applyPendingRestore(cfg.DataDir)
 	dbPath := cfg.DataDir + "/datey.db"
 	client, err := ent.Open("sqlite3", dbPath+"?_journal_mode=WAL&_timeout=5000&_fk=1")
 	if err != nil {

@@ -451,13 +451,57 @@
       </div>
     </div>
 
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
       <button class="btn btn-primary" hx-post="/settings/backup" hx-target="#backup-result" hx-swap="innerHTML" hx-indicator="#backup-spinner">
         <span class="btn-text">Run Backup Now</span>
         <span id="backup-spinner" class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Backing up...</span></span>
       </button>
+      <a class="btn btn-outline-secondary" href="/settings/backup/download">Download current database</a>
       <div id="backup-result"></div>
     </div>
+
+    {{if .RestorePending}}
+    <div class="alert alert-warning mt-3">Restore pending — restart to apply ({{.RestorePending.Filename}}).</div>
+    {{end}}
+    {{if .RestoreError}}<div class="alert alert-danger mt-3">{{.RestoreError}}</div>{{end}}
+
+    <div class="alert alert-danger mt-3"><strong>Warning:</strong> Restore replaces ALL data. Download a safety copy before restoring. Restart is required to apply.</div>
+
+    <h3 class="mt-4">Restorable Backups</h3>
+    {{if .BackupFiles}}
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead class="table-dark"><tr><th>File</th><th>Size</th><th>Modified</th><th></th></tr></thead>
+        <tbody>
+          {{range .BackupFiles}}
+          <tr>
+            <td><code>{{.Name}}</code></td>
+            <td>{{.Size}} bytes</td>
+            <td>{{.Modified.Format "2006-01-02 15:04:05"}}</td>
+            <td>
+              <form method="POST" action="/settings/backup/restore">
+                {{template "csrfField" $}}
+                <input type="hidden" name="file" value="{{.Name}}">
+                <input type="text" name="confirm" placeholder="Type RESTORE" class="form-control form-control-sm d-inline w-auto" required>
+                <button type="submit" class="btn btn-sm btn-danger">Restore</button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{else}}
+    <p class="text-muted">No backup files found.</p>
+    {{end}}
+
+    <h3 class="mt-4">Upload Database to Restore</h3>
+    <form method="POST" action="/settings/backup/restore" enctype="multipart/form-data" class="card card-body">
+      {{template "csrfField" .}}
+      <div class="mb-3"><label class="form-label">Database file (.db)</label><input type="file" name="file" accept=".db" class="form-control" required></div>
+      <div class="mb-3"><label class="form-label">Type RESTORE to confirm</label><input type="text" name="confirm" class="form-control" placeholder="RESTORE" required></div>
+      <button type="submit" class="btn btn-danger">Restore Uploaded File</button>
+    </form>
   {{end}}
 </div>
 {{end}}

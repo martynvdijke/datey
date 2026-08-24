@@ -42,6 +42,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🎈 Annual Notifications** — Birthdays, anniversaries, weddings and holidays fire every year on their occurrence date, even when the stored date is historical (leap-day aware). Birthday reminders are on by default per person and can be turned off with the toggle on a person's detail page. On upgrade, existing people with a parseable `BDAY` in their stored vCard data get a birthday event backfilled once.
 - **🌙 Lunar Calendar Birthdays** — Per-event calendar system (`gregorian` default | `lunar`) with per-year Chinese lunisolar conversion (via [6tail/lunar-go](https://github.com/6tail/lunar-go), MIT). Lunar month/day maps to a different Gregorian date each year; leap-month-marked entries resolve only in years containing that leap month (else no occurrence), regular entries always use the regular month. UI shows converted Gregorian date primary with lunar notation secondary (e.g. `Mar 4 · lunar 1/15`); feeds (iCal/RSS/upcoming JSON) emit Gregorian only. Supported year range ~1900–2100. Age for lunar birthdays counts completed lunar years (one per anniversary of the stored lunar month/day).
 - **💾 Database Backup** — Automatic nightly SQLite backups plus a weekly backup on a configurable weekday, with on-demand backup and configurable retention.
+- **♻️ Database Restore** — Validated, confirmation-guarded restore from any backup file in `BACKUP_DIR` or an uploaded `.db` file. Candidate is checked for SQLite header and `PRAGMA integrity_check`, staged as `restore-pending.db` with sentinel, and swapped at next restart. Download current database as safety copy before restoring; restore replaces ALL data.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
  - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
  - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
@@ -185,6 +186,16 @@ CardDAV sync keeps your Datey people and birthday events in two-way sync with an
 - **Deletion policy** — with the default `keep`, deleting a contact on the server only unlinks the local person (they stay in Datey); with `delete`, the local person and their events are removed too. Deleting a person in Datey removes the remote vCard when the policy is `delete`.
 - **Credentials** are stored like other secrets (e.g. `SMTP_PASS`) and never rendered in the admin UI — the password field shows a masked placeholder and is left blank to keep the stored value.
 - **Notes** map to the vCard `NOTE` field and a vCard `BDAY` becomes a birthday event (including year-less dates such as `--03-15`). Provider properties (`UID`, `REV`, `ETag`) are kept as sync state and never appear in notes.
+
+### Backup & Restore
+
+Backups are plain SQLite files written nightly/weekly/on-demand into `BACKUP_DIR`. Restore is admin-only at **Settings → Backups**:
+
+1. Download the current database as a safety copy.
+2. Select a file from `BACKUP_DIR` or upload a `.db` file.
+3. Type `RESTORE` exactly to confirm.
+
+The candidate is validated (SQLite magic header + `PRAGMA integrity_check` on a temp copy); invalid files never touch the data directory. On success the file is staged as `<DATA_DIR>/restore-pending.db` with a sentinel (`restore-pending.json`) and a persistent "restore pending — restart to apply" banner appears. The swap happens atomically at next boot before the DB is opened; if the staged file is missing or corrupt at boot it is discarded and boot continues with the existing database. **Restore replaces ALL data.**
 
 ## Project Structure
 
