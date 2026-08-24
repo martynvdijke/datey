@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/martynvdijke/datey/compare/v1.42.0...v1.43.0) (2026-08-24)
+
+
+### Features
+
+* **notifier:** Discord, Slack, and Matrix notification channels ([7f115e1](https://github.com/martynvdijke/datey/commit/7f115e11d41d06e34ea7f395f26ad06b17df6ec9))
+
 # [1.42.0](https://github.com/martynvdijke/datey/compare/v1.41.0...v1.42.0) (2026-08-24)
 
 
