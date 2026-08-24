@@ -18,21 +18,24 @@ import (
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/predicate"
+	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/tag"
 )
 
 // PersonQuery is the builder for querying Person entities.
 type PersonQuery struct {
 	config
-	ctx           *QueryContext
-	order         []person.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.Person
-	withEvents    *EventQuery
-	withGroups    *GroupQuery
-	withTimeline  *PersonNoteQuery
-	withTags      *TagQuery
-	withGiftIdeas *GiftIdeaQuery
+	ctx                       *QueryContext
+	order                     []person.OrderOption
+	inters                    []Interceptor
+	predicates                []predicate.Person
+	withEvents                *EventQuery
+	withGroups                *GroupQuery
+	withTimeline              *PersonNoteQuery
+	withTags                  *TagQuery
+	withGiftIdeas             *GiftIdeaQuery
+	withOutgoingRelationships *RelationshipQuery
+	withIncomingRelationships *RelationshipQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -172,6 +175,50 @@ func (_q *PersonQuery) QueryGiftIdeas() *GiftIdeaQuery {
 			sqlgraph.From(person.Table, person.FieldID, selector),
 			sqlgraph.To(giftidea.Table, giftidea.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, person.GiftIdeasTable, person.GiftIdeasColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOutgoingRelationships chains the current query on the "outgoing_relationships" edge.
+func (_q *PersonQuery) QueryOutgoingRelationships() *RelationshipQuery {
+	query := (&RelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, selector),
+			sqlgraph.To(relationship.Table, relationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.OutgoingRelationshipsTable, person.OutgoingRelationshipsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIncomingRelationships chains the current query on the "incoming_relationships" edge.
+func (_q *PersonQuery) QueryIncomingRelationships() *RelationshipQuery {
+	query := (&RelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, selector),
+			sqlgraph.To(relationship.Table, relationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.IncomingRelationshipsTable, person.IncomingRelationshipsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -366,16 +413,18 @@ func (_q *PersonQuery) Clone() *PersonQuery {
 		return nil
 	}
 	return &PersonQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]person.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.Person{}, _q.predicates...),
-		withEvents:    _q.withEvents.Clone(),
-		withGroups:    _q.withGroups.Clone(),
-		withTimeline:  _q.withTimeline.Clone(),
-		withTags:      _q.withTags.Clone(),
-		withGiftIdeas: _q.withGiftIdeas.Clone(),
+		config:                    _q.config,
+		ctx:                       _q.ctx.Clone(),
+		order:                     append([]person.OrderOption{}, _q.order...),
+		inters:                    append([]Interceptor{}, _q.inters...),
+		predicates:                append([]predicate.Person{}, _q.predicates...),
+		withEvents:                _q.withEvents.Clone(),
+		withGroups:                _q.withGroups.Clone(),
+		withTimeline:              _q.withTimeline.Clone(),
+		withTags:                  _q.withTags.Clone(),
+		withGiftIdeas:             _q.withGiftIdeas.Clone(),
+		withOutgoingRelationships: _q.withOutgoingRelationships.Clone(),
+		withIncomingRelationships: _q.withIncomingRelationships.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -434,6 +483,28 @@ func (_q *PersonQuery) WithGiftIdeas(opts ...func(*GiftIdeaQuery)) *PersonQuery 
 		opt(query)
 	}
 	_q.withGiftIdeas = query
+	return _q
+}
+
+// WithOutgoingRelationships tells the query-builder to eager-load the nodes that are connected to
+// the "outgoing_relationships" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PersonQuery) WithOutgoingRelationships(opts ...func(*RelationshipQuery)) *PersonQuery {
+	query := (&RelationshipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOutgoingRelationships = query
+	return _q
+}
+
+// WithIncomingRelationships tells the query-builder to eager-load the nodes that are connected to
+// the "incoming_relationships" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PersonQuery) WithIncomingRelationships(opts ...func(*RelationshipQuery)) *PersonQuery {
+	query := (&RelationshipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIncomingRelationships = query
 	return _q
 }
 
@@ -515,12 +586,14 @@ func (_q *PersonQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Perso
 	var (
 		nodes       = []*Person{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [7]bool{
 			_q.withEvents != nil,
 			_q.withGroups != nil,
 			_q.withTimeline != nil,
 			_q.withTags != nil,
 			_q.withGiftIdeas != nil,
+			_q.withOutgoingRelationships != nil,
+			_q.withIncomingRelationships != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -573,6 +646,24 @@ func (_q *PersonQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Perso
 		if err := _q.loadGiftIdeas(ctx, query, nodes,
 			func(n *Person) { n.Edges.GiftIdeas = []*GiftIdea{} },
 			func(n *Person, e *GiftIdea) { n.Edges.GiftIdeas = append(n.Edges.GiftIdeas, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOutgoingRelationships; query != nil {
+		if err := _q.loadOutgoingRelationships(ctx, query, nodes,
+			func(n *Person) { n.Edges.OutgoingRelationships = []*Relationship{} },
+			func(n *Person, e *Relationship) {
+				n.Edges.OutgoingRelationships = append(n.Edges.OutgoingRelationships, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIncomingRelationships; query != nil {
+		if err := _q.loadIncomingRelationships(ctx, query, nodes,
+			func(n *Person) { n.Edges.IncomingRelationships = []*Relationship{} },
+			func(n *Person, e *Relationship) {
+				n.Edges.IncomingRelationships = append(n.Edges.IncomingRelationships, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -789,6 +880,66 @@ func (_q *PersonQuery) loadGiftIdeas(ctx context.Context, query *GiftIdeaQuery, 
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "person_gift_ideas" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *PersonQuery) loadOutgoingRelationships(ctx context.Context, query *RelationshipQuery, nodes []*Person, init func(*Person), assign func(*Person, *Relationship)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Person)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(relationship.FieldFromID)
+	}
+	query.Where(predicate.Relationship(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(person.OutgoingRelationshipsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.FromID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "from_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *PersonQuery) loadIncomingRelationships(ctx context.Context, query *RelationshipQuery, nodes []*Person, init func(*Person), assign func(*Person, *Relationship)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Person)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(relationship.FieldToID)
+	}
+	query.Where(predicate.Relationship(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(person.IncomingRelationshipsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ToID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "to_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

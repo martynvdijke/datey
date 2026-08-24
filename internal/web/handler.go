@@ -41,6 +41,7 @@ type Handler struct {
 	events              *repository.EventRepository
 	groupNotes          *repository.GroupNoteRepository
 	giftIdeas           *repository.GiftIdeaRepository
+	relationships       *repository.RelationshipRepository
 	notifReg            *notifier.Registry
 	recurringRules      *repository.RecurringRuleRepository
 	pushSubs            *repository.PushSubscriptionRepository
@@ -70,6 +71,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		events:              repository.NewEventRepository(client),
 		groupNotes:          repository.NewGroupNoteRepository(client),
 		giftIdeas:           repository.NewGiftIdeaRepository(client),
+		relationships:       repository.NewRelationshipRepository(client),
 		notifReg:            notifReg,
 		recurringRules:      repository.NewRecurringRuleRepository(client),
 		pushSubs:            repository.NewPushSubscriptionRepository(client),
@@ -164,6 +166,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/people/{id}/tags", h.addPersonTag)
 			r.Post("/people/{id}/tags/{tag}/remove", h.removePersonTag)
 			r.Post("/people/{id}/tags/remove", h.removePersonTag)
+			r.Post("/people/{id}/relationships", h.addRelationship)
+			r.Post("/people/{id}/relationships/{relID}/delete", h.removeRelationship)
 			r.Get("/api/tags", h.autocompleteTags)
 			r.Get("/people/{id}/photo", h.personPhoto)
 			r.Post("/people/{id}/immich", h.setImmichPhoto)

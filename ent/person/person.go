@@ -68,6 +68,10 @@ const (
 	EdgeTags = "tags"
 	// EdgeGiftIdeas holds the string denoting the giftideas edge name in mutations.
 	EdgeGiftIdeas = "giftIdeas"
+	// EdgeOutgoingRelationships holds the string denoting the outgoing_relationships edge name in mutations.
+	EdgeOutgoingRelationships = "outgoing_relationships"
+	// EdgeIncomingRelationships holds the string denoting the incoming_relationships edge name in mutations.
+	EdgeIncomingRelationships = "incoming_relationships"
 	// Table holds the table name of the person in the database.
 	Table = "persons"
 	// EventsTable is the table that holds the events relation/edge.
@@ -101,6 +105,20 @@ const (
 	GiftIdeasInverseTable = "gift_ideas"
 	// GiftIdeasColumn is the table column denoting the giftIdeas relation/edge.
 	GiftIdeasColumn = "person_gift_ideas"
+	// OutgoingRelationshipsTable is the table that holds the outgoing_relationships relation/edge.
+	OutgoingRelationshipsTable = "relationships"
+	// OutgoingRelationshipsInverseTable is the table name for the Relationship entity.
+	// It exists in this package in order to avoid circular dependency with the "relationship" package.
+	OutgoingRelationshipsInverseTable = "relationships"
+	// OutgoingRelationshipsColumn is the table column denoting the outgoing_relationships relation/edge.
+	OutgoingRelationshipsColumn = "from_id"
+	// IncomingRelationshipsTable is the table that holds the incoming_relationships relation/edge.
+	IncomingRelationshipsTable = "relationships"
+	// IncomingRelationshipsInverseTable is the table name for the Relationship entity.
+	// It exists in this package in order to avoid circular dependency with the "relationship" package.
+	IncomingRelationshipsInverseTable = "relationships"
+	// IncomingRelationshipsColumn is the table column denoting the incoming_relationships relation/edge.
+	IncomingRelationshipsColumn = "to_id"
 )
 
 // Columns holds all SQL columns for person fields.
@@ -358,6 +376,34 @@ func ByGiftIdeas(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newGiftIdeasStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOutgoingRelationshipsCount orders the results by outgoing_relationships count.
+func ByOutgoingRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOutgoingRelationshipsStep(), opts...)
+	}
+}
+
+// ByOutgoingRelationships orders the results by outgoing_relationships terms.
+func ByOutgoingRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOutgoingRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByIncomingRelationshipsCount orders the results by incoming_relationships count.
+func ByIncomingRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncomingRelationshipsStep(), opts...)
+	}
+}
+
+// ByIncomingRelationships orders the results by incoming_relationships terms.
+func ByIncomingRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncomingRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newEventsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -391,5 +437,19 @@ func newGiftIdeasStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GiftIdeasInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, GiftIdeasTable, GiftIdeasColumn),
+	)
+}
+func newOutgoingRelationshipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OutgoingRelationshipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OutgoingRelationshipsTable, OutgoingRelationshipsColumn),
+	)
+}
+func newIncomingRelationshipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncomingRelationshipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, IncomingRelationshipsTable, IncomingRelationshipsColumn),
 	)
 }

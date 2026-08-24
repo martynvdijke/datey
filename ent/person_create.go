@@ -15,6 +15,7 @@ import (
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/personnote"
+	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/tag"
 )
 
@@ -390,6 +391,36 @@ func (_c *PersonCreate) AddGiftIdeas(v ...*GiftIdea) *PersonCreate {
 	return _c.AddGiftIdeaIDs(ids...)
 }
 
+// AddOutgoingRelationshipIDs adds the "outgoing_relationships" edge to the Relationship entity by IDs.
+func (_c *PersonCreate) AddOutgoingRelationshipIDs(ids ...int) *PersonCreate {
+	_c.mutation.AddOutgoingRelationshipIDs(ids...)
+	return _c
+}
+
+// AddOutgoingRelationships adds the "outgoing_relationships" edges to the Relationship entity.
+func (_c *PersonCreate) AddOutgoingRelationships(v ...*Relationship) *PersonCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOutgoingRelationshipIDs(ids...)
+}
+
+// AddIncomingRelationshipIDs adds the "incoming_relationships" edge to the Relationship entity by IDs.
+func (_c *PersonCreate) AddIncomingRelationshipIDs(ids ...int) *PersonCreate {
+	_c.mutation.AddIncomingRelationshipIDs(ids...)
+	return _c
+}
+
+// AddIncomingRelationships adds the "incoming_relationships" edges to the Relationship entity.
+func (_c *PersonCreate) AddIncomingRelationships(v ...*Relationship) *PersonCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddIncomingRelationshipIDs(ids...)
+}
+
 // Mutation returns the PersonMutation object of the builder.
 func (_c *PersonCreate) Mutation() *PersonMutation {
 	return _c.mutation
@@ -678,6 +709,38 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(giftidea.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OutgoingRelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.OutgoingRelationshipsTable,
+			Columns: []string{person.OutgoingRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(relationship.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IncomingRelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   person.IncomingRelationshipsTable,
+			Columns: []string{person.IncomingRelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(relationship.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

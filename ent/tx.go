@@ -38,6 +38,8 @@ type Tx struct {
 	PushSubscription *PushSubscriptionClient
 	// RecurringRule is the client for interacting with the RecurringRule builders.
 	RecurringRule *RecurringRuleClient
+	// Relationship is the client for interacting with the Relationship builders.
+	Relationship *RelationshipClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// Tag is the client for interacting with the Tag builders.
@@ -190,6 +192,7 @@ func (tx *Tx) init() {
 	tx.PersonNote = NewPersonNoteClient(tx.config)
 	tx.PushSubscription = NewPushSubscriptionClient(tx.config)
 	tx.RecurringRule = NewRecurringRuleClient(tx.config)
+	tx.Relationship = NewRelationshipClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.User = NewUserClient(tx.config)

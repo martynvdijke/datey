@@ -7,6 +7,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/giftidea"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/relationship"
 )
 
 type PersonRepository struct {
@@ -241,6 +242,9 @@ func (r *PersonRepository) Delete(ctx context.Context, id int) error {
 	// Cascade: delete gift ideas owned by this person before deleting the person
 	// to avoid FK violations.
 	if _, err := r.client.GiftIdea.Delete().Where(giftidea.HasPersonWith(person.IDEQ(id))).Exec(ctx); err != nil {
+		return err
+	}
+	if _, err := r.client.Relationship.Delete().Where(relationship.Or(relationship.FromIDEQ(id), relationship.ToIDEQ(id))).Exec(ctx); err != nil {
 		return err
 	}
 	return r.client.Person.DeleteOneID(id).Exec(ctx)

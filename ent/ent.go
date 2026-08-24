@@ -25,6 +25,7 @@ import (
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
+	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
@@ -102,6 +103,7 @@ func checkColumn(t, c string) error {
 			personnote.Table:              personnote.ValidColumn,
 			pushsubscription.Table:        pushsubscription.ValidColumn,
 			recurringrule.Table:           recurringrule.ValidColumn,
+			relationship.Table:            relationship.ValidColumn,
 			session.Table:                 session.ValidColumn,
 			tag.Table:                     tag.ValidColumn,
 			user.Table:                    user.ValidColumn,

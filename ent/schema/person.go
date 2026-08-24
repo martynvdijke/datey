@@ -48,5 +48,7 @@ func (Person) Edges() []ent.Edge {
 		edge.To("timeline", PersonNote.Type),
 		edge.To("tags", Tag.Type),
 		edge.To("giftIdeas", GiftIdea.Type),
+		edge.To("outgoing_relationships", Relationship.Type),
+		edge.To("incoming_relationships", Relationship.Type),
 	}
 }

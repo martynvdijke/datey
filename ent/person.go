@@ -82,9 +82,13 @@ type PersonEdges struct {
 	Tags []*Tag `json:"tags,omitempty"`
 	// GiftIdeas holds the value of the giftIdeas edge.
 	GiftIdeas []*GiftIdea `json:"giftIdeas,omitempty"`
+	// OutgoingRelationships holds the value of the outgoing_relationships edge.
+	OutgoingRelationships []*Relationship `json:"outgoing_relationships,omitempty"`
+	// IncomingRelationships holds the value of the incoming_relationships edge.
+	IncomingRelationships []*Relationship `json:"incoming_relationships,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [7]bool
 }
 
 // EventsOrErr returns the Events value or an error if the edge
@@ -130,6 +134,24 @@ func (e PersonEdges) GiftIdeasOrErr() ([]*GiftIdea, error) {
 		return e.GiftIdeas, nil
 	}
 	return nil, &NotLoadedError{edge: "giftIdeas"}
+}
+
+// OutgoingRelationshipsOrErr returns the OutgoingRelationships value or an error if the edge
+// was not loaded in eager-loading.
+func (e PersonEdges) OutgoingRelationshipsOrErr() ([]*Relationship, error) {
+	if e.loadedTypes[5] {
+		return e.OutgoingRelationships, nil
+	}
+	return nil, &NotLoadedError{edge: "outgoing_relationships"}
+}
+
+// IncomingRelationshipsOrErr returns the IncomingRelationships value or an error if the edge
+// was not loaded in eager-loading.
+func (e PersonEdges) IncomingRelationshipsOrErr() ([]*Relationship, error) {
+	if e.loadedTypes[6] {
+		return e.IncomingRelationships, nil
+	}
+	return nil, &NotLoadedError{edge: "incoming_relationships"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -357,6 +379,16 @@ func (_m *Person) QueryTags() *TagQuery {
 // QueryGiftIdeas queries the "giftIdeas" edge of the Person entity.
 func (_m *Person) QueryGiftIdeas() *GiftIdeaQuery {
 	return NewPersonClient(_m.config).QueryGiftIdeas(_m)
+}
+
+// QueryOutgoingRelationships queries the "outgoing_relationships" edge of the Person entity.
+func (_m *Person) QueryOutgoingRelationships() *RelationshipQuery {
+	return NewPersonClient(_m.config).QueryOutgoingRelationships(_m)
+}
+
+// QueryIncomingRelationships queries the "incoming_relationships" edge of the Person entity.
+func (_m *Person) QueryIncomingRelationships() *RelationshipQuery {
+	return NewPersonClient(_m.config).QueryIncomingRelationships(_m)
 }
 
 // Update returns a builder for updating this Person.

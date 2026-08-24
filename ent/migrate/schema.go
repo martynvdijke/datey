@@ -387,6 +387,51 @@ var (
 		Columns:    RecurringRulesColumns,
 		PrimaryKey: []*schema.Column{RecurringRulesColumns[0]},
 	}
+	// RelationshipsColumns holds the columns for the "relationships" table.
+	RelationshipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"partner", "parent", "sibling", "custom"}},
+		{Name: "label", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "from_id", Type: field.TypeInt},
+		{Name: "to_id", Type: field.TypeInt},
+	}
+	// RelationshipsTable holds the schema information for the "relationships" table.
+	RelationshipsTable = &schema.Table{
+		Name:       "relationships",
+		Columns:    RelationshipsColumns,
+		PrimaryKey: []*schema.Column{RelationshipsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "relationships_persons_outgoing_relationships",
+				Columns:    []*schema.Column{RelationshipsColumns[3]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "relationships_persons_incoming_relationships",
+				Columns:    []*schema.Column{RelationshipsColumns[4]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "relationship_from_id",
+				Unique:  false,
+				Columns: []*schema.Column{RelationshipsColumns[3]},
+			},
+			{
+				Name:    "relationship_to_id",
+				Unique:  false,
+				Columns: []*schema.Column{RelationshipsColumns[4]},
+			},
+			{
+				Name:    "relationship_from_id_to_id_type",
+				Unique:  true,
+				Columns: []*schema.Column{RelationshipsColumns[3], RelationshipsColumns[4], RelationshipsColumns[1]},
+			},
+		},
+	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -534,6 +579,7 @@ var (
 		PersonNotesTable,
 		PushSubscriptionsTable,
 		RecurringRulesTable,
+		RelationshipsTable,
 		SessionsTable,
 		TagsTable,
 		UsersTable,
@@ -553,6 +599,8 @@ func init() {
 	PasswordResetTokensTable.ForeignKeys[0].RefTable = UsersTable
 	PersonNotesTable.ForeignKeys[0].RefTable = PersonsTable
 	PushSubscriptionsTable.ForeignKeys[0].RefTable = UsersTable
+	RelationshipsTable.ForeignKeys[0].RefTable = PersonsTable
+	RelationshipsTable.ForeignKeys[1].RefTable = PersonsTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	UserNotificationChannelsTable.ForeignKeys[0].RefTable = UsersTable
 	PersonGroupsTable.ForeignKeys[0].RefTable = PersonsTable

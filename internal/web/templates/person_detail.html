@@ -39,6 +39,67 @@
 </section>
 {{end}}
 
+<!-- Related people -->
+<div class="card mb-3">
+  <div class="card-body">
+    <h2 class="h5">Related people</h2>
+    {{if .RelationshipError}}<div class="alert alert-danger">{{.RelationshipError}}</div>{{end}}
+    {{if .GroupedRelations}}
+      {{range $label, $entries := .GroupedRelations}}
+        <h3 class="h6 text-capitalize mt-3">{{$label}}</h3>
+        <ul class="list-unstyled mb-2">
+          {{range $entries}}
+            <li class="d-flex align-items-center gap-2 mb-1">
+              <a href="/people/{{.OtherID}}">{{.OtherName}}</a>
+              <span class="badge bg-secondary text-capitalize">{{.Label}}</span>
+              {{if .HasUpcoming}}<span class="small text-muted">{{.NextDate}} (in {{.DaysUntil}} days)</span>{{end}}
+              <form action="/people/{{$.Person.ID}}/relationships/{{.ID}}/delete" method="POST" class="ms-auto d-inline">
+                {{template "csrfField" $}}
+                <button type="submit" class="btn btn-outline-danger btn-sm py-0">Remove</button>
+              </form>
+            </li>
+          {{end}}
+        </ul>
+      {{end}}
+    {{else}}
+      <p class="small text-muted">No relationships yet.</p>
+    {{end}}
+    <form action="/people/{{.Person.ID}}/relationships" method="POST" class="row g-2 align-items-end mt-3">
+      {{template "csrfField" .}}
+      <div class="col-md-4">
+        <label class="form-label" for="rel-target">Person</label>
+        <select id="rel-target" name="target_id" class="form-select" required>
+          <option value="">Select person</option>
+          {{range .PickerPeople}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="rel-type">Type</label>
+        <select id="rel-type" name="type" class="form-select" required>
+          <option value="partner">partner</option>
+          <option value="parent">parent</option>
+          <option value="sibling">sibling</option>
+          <option value="custom">custom</option>
+        </select>
+      </div>
+      <div class="col-md-3" id="rel-label-group" style="display:none;">
+        <label class="form-label" for="rel-label">Custom label</label>
+        <input type="text" id="rel-label" name="label" class="form-control" maxlength="50" placeholder="e.g. godparent">
+      </div>
+      <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Add</button></div>
+    </form>
+    <script>
+      (function(){
+        var sel=document.getElementById('rel-type');
+        var grp=document.getElementById('rel-label-group');
+        if(!sel||!grp) return;
+        function tog(){ grp.style.display = sel.value==='custom' ? '' : 'none'; }
+        sel.addEventListener('change', tog); tog();
+      })();
+    </script>
+  </div>
+</div>
+
 <!-- Tags -->
 <div class="card mb-3">
   <div class="card-body">

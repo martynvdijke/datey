@@ -587,19 +587,97 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	tags, _ := h.tags.ListByPerson(r.Context(), id)
 	showPurchased := r.URL.Query().Get("show_purchased") == "1"
 	giftIdeas, _ := h.giftIdeas.ListByPersonFiltered(r.Context(), id, showPurchased)
+	relEntries, _ := h.relationships.ListForPerson(r.Context(), id)
+	// Group relationships by EffectiveTypeLabel
+	// Build related people upcoming info
+	type relatedView struct {
+		ID          int
+		OtherID     int
+		OtherName   string
+		Label       string
+		NextDate    string
+		DaysUntil   int
+		HasUpcoming bool
+	}
+	// Group map
+	grouped := make(map[string][]relatedView)
+	for _, e := range relEntries {
+		rv := relatedView{
+			ID:        e.ID,
+			OtherID:   e.OtherPersonID,
+			OtherName: e.OtherPersonName,
+			Label:     e.EffectiveTypeLabel,
+		}
+		// Find next upcoming date for other person
+		if otherEvents, err := h.events.ListByPerson(r.Context(), e.OtherPersonID); err == nil {
+			bestDays := 99999
+			for _, ev := range otherEvents {
+				occDate, _ := displayDateForEvent(ev, now)
+				// displayDateForEvent may return past date for gregorian if birthday this year already passed; ensure future
+				if dateOnly(occDate, now.Location()).Before(dateOnly(now, now.Location())) {
+					// try next year for gregorian
+					if ev.CalendarSystem != "lunar" {
+						occDate = time.Date(now.Year()+1, ev.Date.Month(), ev.Date.Day(), 0, 0, 0, 0, time.UTC)
+						if ev.Date.Month() == time.February && ev.Date.Day() == 29 && !isLeapYear(now.Year()+1) {
+							occDate = time.Date(now.Year()+1, time.February, 28, 0, 0, 0, 0, time.UTC)
+						}
+					} else {
+						continue
+					}
+					if dateOnly(occDate, now.Location()).Before(dateOnly(now, now.Location())) {
+						continue
+					}
+				}
+				days := calendarDayDelta(dateOnly(now, now.Location()), dateOnly(occDate, now.Location()))
+				if days < bestDays {
+					bestDays = days
+					rv.NextDate = formatEventDate(h.cfg.DateVariant, occDate)
+					rv.DaysUntil = days
+					rv.HasUpcoming = true
+				}
+			}
+		}
+		key := e.EffectiveTypeLabel
+		// Normalize grouping: parent/child etc. Use label as key so custom labels group themselves.
+		grouped[key] = append(grouped[key], rv)
+	}
+	allPeople, _ := h.people.List(r.Context())
+	var pickerPeople []*ent.Person
+	for _, p := range allPeople {
+		if p.ID != id {
+			pickerPeople = append(pickerPeople, p)
+		}
+	}
+	// Check for inline relationship error from query param or passed via context
+	relErr := r.URL.Query().Get("rel_error")
 	h.render(w, r, "person_detail.html", map[string]any{
-		"Title":         "Datey - " + person.Name,
-		"Person":        person,
-		"Initial":       personInitial(person.Name),
-		"AvatarColor":   avatarColorIndex(person.Name),
-		"PhotoURL":      h.photoURL(r, person),
-		"EventRows":     eventRows,
-		"Groups":        groups,
-		"Tags":          tags,
-		"GiftIdeas":     giftIdeas,
-		"ShowPurchased": showPurchased,
-		"Now":           now,
+		"Title":             "Datey - " + person.Name,
+		"Person":            person,
+		"Initial":           personInitial(person.Name),
+		"AvatarColor":       avatarColorIndex(person.Name),
+		"PhotoURL":          h.photoURL(r, person),
+		"EventRows":         eventRows,
+		"Groups":            groups,
+		"Tags":              tags,
+		"GiftIdeas":         giftIdeas,
+		"ShowPurchased":     showPurchased,
+		"Now":               now,
+		"Relationships":     relEntries,
+		"GroupedRelations":  grouped,
+		"PickerPeople":      pickerPeople,
+		"RelationshipError": relErr,
 	})
+}
+
+func (h *Handler) renderPersonDetailWithError(w http.ResponseWriter, r *http.Request, id int, errMsg string) {
+	// Redirect with error query param so viewPerson picks it up, but also directly render to keep inline error
+	// Use redirect with rel_error to keep GET semantics
+	http.Redirect(w, r, "/people/"+strconv.Itoa(id)+"?rel_error="+urlQueryEscape(errMsg), http.StatusSeeOther)
+}
+
+func urlQueryEscape(s string) string {
+	// minimal escape for query param
+	return strings.ReplaceAll(strings.ReplaceAll(s, " ", "+"), "&", "%26")
 }
 
 func dateOnly(t time.Time, loc *time.Location) time.Time {

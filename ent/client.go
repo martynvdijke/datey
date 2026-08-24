@@ -28,6 +28,7 @@ import (
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
+	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
@@ -65,6 +66,8 @@ type Client struct {
 	PushSubscription *PushSubscriptionClient
 	// RecurringRule is the client for interacting with the RecurringRule builders.
 	RecurringRule *RecurringRuleClient
+	// Relationship is the client for interacting with the Relationship builders.
+	Relationship *RelationshipClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// Tag is the client for interacting with the Tag builders.
@@ -97,6 +100,7 @@ func (c *Client) init() {
 	c.PersonNote = NewPersonNoteClient(c.config)
 	c.PushSubscription = NewPushSubscriptionClient(c.config)
 	c.RecurringRule = NewRecurringRuleClient(c.config)
+	c.Relationship = NewRelationshipClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -206,6 +210,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		PersonNote:              NewPersonNoteClient(cfg),
 		PushSubscription:        NewPushSubscriptionClient(cfg),
 		RecurringRule:           NewRecurringRuleClient(cfg),
+		Relationship:            NewRelationshipClient(cfg),
 		Session:                 NewSessionClient(cfg),
 		Tag:                     NewTagClient(cfg),
 		User:                    NewUserClient(cfg),
@@ -242,6 +247,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		PersonNote:              NewPersonNoteClient(cfg),
 		PushSubscription:        NewPushSubscriptionClient(cfg),
 		RecurringRule:           NewRecurringRuleClient(cfg),
+		Relationship:            NewRelationshipClient(cfg),
 		Session:                 NewSessionClient(cfg),
 		Tag:                     NewTagClient(cfg),
 		User:                    NewUserClient(cfg),
@@ -277,8 +283,8 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AppConfig, c.Contact, c.Event, c.GiftIdea, c.Group, c.GroupNote,
 		c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
-		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.Tag, c.User,
-		c.UserNotificationChannel,
+		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Relationship, c.Session,
+		c.Tag, c.User, c.UserNotificationChannel,
 	} {
 		n.Use(hooks...)
 	}
@@ -290,8 +296,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AppConfig, c.Contact, c.Event, c.GiftIdea, c.Group, c.GroupNote,
 		c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
-		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.Tag, c.User,
-		c.UserNotificationChannel,
+		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Relationship, c.Session,
+		c.Tag, c.User, c.UserNotificationChannel,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -326,6 +332,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.PushSubscription.mutate(ctx, m)
 	case *RecurringRuleMutation:
 		return c.RecurringRule.mutate(ctx, m)
+	case *RelationshipMutation:
+		return c.Relationship.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
 	case *TagMutation:
@@ -1916,6 +1924,38 @@ func (c *PersonClient) QueryGiftIdeas(_m *Person) *GiftIdeaQuery {
 	return query
 }
 
+// QueryOutgoingRelationships queries the outgoing_relationships edge of a Person.
+func (c *PersonClient) QueryOutgoingRelationships(_m *Person) *RelationshipQuery {
+	query := (&RelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, id),
+			sqlgraph.To(relationship.Table, relationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.OutgoingRelationshipsTable, person.OutgoingRelationshipsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncomingRelationships queries the incoming_relationships edge of a Person.
+func (c *PersonClient) QueryIncomingRelationships(_m *Person) *RelationshipQuery {
+	query := (&RelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(person.Table, person.FieldID, id),
+			sqlgraph.To(relationship.Table, relationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, person.IncomingRelationshipsTable, person.IncomingRelationshipsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PersonClient) Hooks() []Hook {
 	return c.hooks.Person
@@ -2369,6 +2409,171 @@ func (c *RecurringRuleClient) mutate(ctx context.Context, m *RecurringRuleMutati
 		return (&RecurringRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown RecurringRule mutation op: %q", m.Op())
+	}
+}
+
+// RelationshipClient is a client for the Relationship schema.
+type RelationshipClient struct {
+	config
+}
+
+// NewRelationshipClient returns a client for the Relationship from the given config.
+func NewRelationshipClient(c config) *RelationshipClient {
+	return &RelationshipClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `relationship.Hooks(f(g(h())))`.
+func (c *RelationshipClient) Use(hooks ...Hook) {
+	c.hooks.Relationship = append(c.hooks.Relationship, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `relationship.Intercept(f(g(h())))`.
+func (c *RelationshipClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Relationship = append(c.inters.Relationship, interceptors...)
+}
+
+// Create returns a builder for creating a Relationship entity.
+func (c *RelationshipClient) Create() *RelationshipCreate {
+	mutation := newRelationshipMutation(c.config, OpCreate)
+	return &RelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Relationship entities.
+func (c *RelationshipClient) CreateBulk(builders ...*RelationshipCreate) *RelationshipCreateBulk {
+	return &RelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RelationshipClient) MapCreateBulk(slice any, setFunc func(*RelationshipCreate, int)) *RelationshipCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RelationshipCreateBulk{err: fmt.Errorf("calling to RelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RelationshipCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Relationship.
+func (c *RelationshipClient) Update() *RelationshipUpdate {
+	mutation := newRelationshipMutation(c.config, OpUpdate)
+	return &RelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RelationshipClient) UpdateOne(_m *Relationship) *RelationshipUpdateOne {
+	mutation := newRelationshipMutation(c.config, OpUpdateOne, withRelationship(_m))
+	return &RelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RelationshipClient) UpdateOneID(id int) *RelationshipUpdateOne {
+	mutation := newRelationshipMutation(c.config, OpUpdateOne, withRelationshipID(id))
+	return &RelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Relationship.
+func (c *RelationshipClient) Delete() *RelationshipDelete {
+	mutation := newRelationshipMutation(c.config, OpDelete)
+	return &RelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RelationshipClient) DeleteOne(_m *Relationship) *RelationshipDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RelationshipClient) DeleteOneID(id int) *RelationshipDeleteOne {
+	builder := c.Delete().Where(relationship.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RelationshipDeleteOne{builder}
+}
+
+// Query returns a query builder for Relationship.
+func (c *RelationshipClient) Query() *RelationshipQuery {
+	return &RelationshipQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRelationship},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Relationship entity by its id.
+func (c *RelationshipClient) Get(ctx context.Context, id int) (*Relationship, error) {
+	return c.Query().Where(relationship.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RelationshipClient) GetX(ctx context.Context, id int) *Relationship {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryFromPerson queries the from_person edge of a Relationship.
+func (c *RelationshipClient) QueryFromPerson(_m *Relationship) *PersonQuery {
+	query := (&PersonClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(relationship.Table, relationship.FieldID, id),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, relationship.FromPersonTable, relationship.FromPersonColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryToPerson queries the to_person edge of a Relationship.
+func (c *RelationshipClient) QueryToPerson(_m *Relationship) *PersonQuery {
+	query := (&PersonClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(relationship.Table, relationship.FieldID, id),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, relationship.ToPersonTable, relationship.ToPersonColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RelationshipClient) Hooks() []Hook {
+	return c.hooks.Relationship
+}
+
+// Interceptors returns the client interceptors.
+func (c *RelationshipClient) Interceptors() []Interceptor {
+	return c.inters.Relationship
+}
+
+func (c *RelationshipClient) mutate(ctx context.Context, m *RelationshipMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Relationship mutation op: %q", m.Op())
 	}
 }
 
@@ -3021,11 +3226,13 @@ type (
 	hooks struct {
 		AppConfig, Contact, Event, GiftIdea, Group, GroupNote, MigrationLog,
 		NotificationLog, PasswordResetToken, Person, PersonNote, PushSubscription,
-		RecurringRule, Session, Tag, User, UserNotificationChannel []ent.Hook
+		RecurringRule, Relationship, Session, Tag, User,
+		UserNotificationChannel []ent.Hook
 	}
 	inters struct {
 		AppConfig, Contact, Event, GiftIdea, Group, GroupNote, MigrationLog,
 		NotificationLog, PasswordResetToken, Person, PersonNote, PushSubscription,
-		RecurringRule, Session, Tag, User, UserNotificationChannel []ent.Interceptor
+		RecurringRule, Relationship, Session, Tag, User,
+		UserNotificationChannel []ent.Interceptor
 	}
 )

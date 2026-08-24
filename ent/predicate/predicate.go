@@ -45,6 +45,9 @@ type PushSubscription func(*sql.Selector)
 // RecurringRule is the predicate function for recurringrule builders.
 type RecurringRule func(*sql.Selector)
 
+// Relationship is the predicate function for relationship builders.
+type Relationship func(*sql.Selector)
+
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
 

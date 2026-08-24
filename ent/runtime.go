@@ -17,6 +17,7 @@ import (
 	"github.com/datey/datey/ent/personnote"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/recurringrule"
+	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/schema"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/tag"
@@ -254,6 +255,12 @@ func init() {
 	recurringruleDescEnabled := recurringruleFields[6].Descriptor()
 	// recurringrule.DefaultEnabled holds the default value on creation for the enabled field.
 	recurringrule.DefaultEnabled = recurringruleDescEnabled.Default.(bool)
+	relationshipFields := schema.Relationship{}.Fields()
+	_ = relationshipFields
+	// relationshipDescLabel is the schema descriptor for label field.
+	relationshipDescLabel := relationshipFields[3].Descriptor()
+	// relationship.LabelValidator is a validator for the "label" field. It is called by the builders before save.
+	relationship.LabelValidator = relationshipDescLabel.Validators[0].(func(string) error)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescTokenHash is the schema descriptor for token_hash field.
