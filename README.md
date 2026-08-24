@@ -44,7 +44,7 @@ A self-hosted web application for tracking important dates and receiving automat
  - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
  - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
  - **🔌 Upcoming Events API** — Public, key-protected JSON API (`/api/upcoming`) for scripts, dashboards and automations.
- - **🏠 Home Assistant Plugin** — `homeassistant/` plugin folder with a key-protected `/api/homeassistant/stats` feed and a RESTful `sensor.yaml` snippet for Home Assistant dashboards.
+  - **🏠 Home Assistant Plugin** — `homeassistant/` plugin folder with key-protected `/api/homeassistant/stats` (RESTful sensor) and `/api/homeassistant/calendar` (calendar entity, all-day `start.date`/`end.date`) feeds plus `sensor.yaml`/`calendar.yaml` snippets for Home Assistant dashboards.
 - **🔔 Web Push Notifications** — browser push notifications via VAPID + service worker (`/sw.js`); enabled from Settings → Configuration, requires HTTPS (or localhost).
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets. One-time password-reset links are emailed via the configured email channel (see `APP_URL`); reset requests are rate-limited per IP and responses never reveal whether a username exists.
@@ -267,6 +267,7 @@ datey/
 | `GET` | `/rss.xml` | Public RSS 2.0 feed of upcoming events (`?key=...` required; 404 when disabled) |
 | `GET` | `/api/upcoming` | Public JSON API of upcoming events (`?key=...` required; `days` optional, max 365; 404 when disabled) |
 | `GET` | `/api/homeassistant/stats` | Public JSON stats feed for the Home Assistant plugin (`?key=...` required; 404 when disabled) |
+| `GET` | `/api/homeassistant/calendar` | Public HA calendar feed (`?key=...&start=YYYY-MM-DD&end=YYYY-MM-DD`, max 365 days; all-day `start.date`/`end.date`; 404 when disabled) |
 | `GET` | `/sw.js` | Service worker for Web Push notifications |
 | `POST` | `/push/subscribe` | Store a Web Push subscription (authenticated) |
 | `POST` | `/push/unsubscribe` | Remove a Web Push subscription (authenticated) |

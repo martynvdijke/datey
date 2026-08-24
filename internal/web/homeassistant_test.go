@@ -1,9 +1,11 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +15,7 @@ import (
 func setupHARouter(h *Handler) chi.Router {
 	r := chi.NewRouter()
 	r.Get("/api/homeassistant/stats", h.homeAssistantStats)
+	r.Get("/api/homeassistant/calendar", h.homeAssistantCalendar)
 	return r
 }
 
@@ -155,3 +158,210 @@ func TestHAFeedEmptyState(t *testing.T) {
 		t.Errorf("upcoming: got %d entries want 0", len(stats.Upcoming))
 	}
 }
+
+// Calendar endpoint tests
+
+func TestHACalendarDisabledReturns404(t *testing.T) {
+	h := newTestWebHandler(t)
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-01-01&end=2026-01-31", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 when disabled, got %d", w.Code)
+	}
+}
+
+func TestHACalendarMissingKeyReturns404(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?start=2026-01-01&end=2026-01-31", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 without key, got %d", w.Code)
+	}
+}
+
+func TestHACalendarWrongKeyReturns404(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=wrong&start=2026-01-01&end=2026-01-31", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 with wrong key, got %d", w.Code)
+	}
+}
+
+func TestHACalendarValidRangeReturnsEvents(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	personID := newTestPerson(t, h, "Dana")
+	newTestEvent(t, h, personID, "birthday", time.Date(1990, 3, 15, 0, 0, 0, 0, time.UTC))
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-03-01&end=2026-04-01", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	var events []homeAssistantCalendarEvent
+	if err := json.Unmarshal(w.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("expected 1 event, got %d", len(events))
+	}
+	ev := events[0]
+	if ev.Start.Date != "2026-03-15" {
+		t.Errorf("start.date got %q want 2026-03-15", ev.Start.Date)
+	}
+	if ev.End.Date != "2026-03-16" {
+		t.Errorf("end.date got %q want 2026-03-16", ev.End.Date)
+	}
+	if ev.Summary == "" || ev.UID == "" {
+		t.Errorf("summary/uid should not be empty: %+v", ev)
+	}
+	// Summary should contain person's name
+	if !contains(ev.Summary, "Dana") {
+		t.Errorf("summary should contain Dana, got %q", ev.Summary)
+	}
+}
+
+func TestHACalendarOutsideRangeExcluded(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	personID := newTestPerson(t, h, "Dana")
+	newTestEvent(t, h, personID, "birthday", time.Date(1990, 7, 4, 0, 0, 0, 0, time.UTC))
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-01-01&end=2026-02-01", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	var events []homeAssistantCalendarEvent
+	if err := json.Unmarshal(w.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(events) != 0 {
+		t.Fatalf("expected 0 events outside range, got %d", len(events))
+	}
+}
+
+func TestHACalendarEndExclusive(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	personID := newTestPerson(t, h, "Dana")
+	newTestEvent(t, h, personID, "birthday", time.Date(1990, 3, 15, 0, 0, 0, 0, time.UTC))
+	router := setupHARouter(h)
+	// end is exclusive, event on end date should not appear
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-03-01&end=2026-03-15", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	var events []homeAssistantCalendarEvent
+	if err := json.Unmarshal(w.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(events) != 0 {
+		t.Fatalf("expected 0 events when occurrence == end (exclusive), got %d", len(events))
+	}
+}
+
+func TestHACalendarEmptyState(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-01-01&end=2026-01-31", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	var events []homeAssistantCalendarEvent
+	if err := json.Unmarshal(w.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(events) != 0 {
+		t.Fatalf("expected empty array, got %d", len(events))
+	}
+	// Must be JSON array not null
+	if string(w.Body.Bytes()) == "null\n" {
+		t.Error("expected [] not null")
+	}
+}
+
+func TestHACalendarInvalidDateReturns400(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	router := setupHARouter(h)
+	cases := []string{
+		"/api/homeassistant/calendar?key=testhakey&start=invalid&end=2026-01-31",
+		"/api/homeassistant/calendar?key=testhakey&start=2026-01-01&end=invalid",
+		"/api/homeassistant/calendar?key=testhakey&start=2026-01-01",
+		"/api/homeassistant/calendar?key=testhakey&end=2026-01-31",
+		"/api/homeassistant/calendar?key=testhakey&start=2026-02-01&end=2026-01-01",
+	}
+	for _, url := range cases {
+		req := httptest.NewRequest("GET", url, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		if w.Code != http.StatusBadRequest {
+			t.Errorf("url %q expected 400, got %d", url, w.Code)
+		}
+	}
+}
+
+func TestHACalendarRangeTooLargeReturns400(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-01-01&end=2027-01-02", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for >365 day range, got %d", w.Code)
+	}
+}
+
+func TestHACalendarLunarConversion(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableHAFeed(h)
+	personID := newTestPerson(t, h, "Luna")
+	// Create lunar event: lunar 1/1
+	lm, ld := 1, 1
+	_, err := h.events.CreateForPersonWithCalendar(nilContext(), personID, "birthday", time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC), "", "lunar", &lm, &ld, false)
+	if err != nil {
+		// fallback via ent client
+		_, err = h.client.Event.Create().SetType("birthday").SetDate(time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)).SetCreatedAt(time.Now()).SetPersonID(personID).SetCalendarSystem("lunar").SetLunarMonth(1).SetLunarDay(1).Save(nilContext())
+		if err != nil {
+			t.Fatalf("create lunar event: %v", err)
+		}
+	}
+	// Lunar 1/1 in 2026 is 2026-02-17 (known conversion)
+	// Query range covering that date
+	router := setupHARouter(h)
+	req := httptest.NewRequest("GET", "/api/homeassistant/calendar?key=testhakey&start=2026-02-17&end=2026-02-18", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	var events []homeAssistantCalendarEvent
+	if err := json.Unmarshal(w.Body.Bytes(), &events); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("expected 1 lunar event on converted date, got %d: %s", len(events), w.Body.String())
+	}
+	if events[0].Start.Date != "2026-02-17" {
+		t.Errorf("lunar occurrence expected 2026-02-17, got %q", events[0].Start.Date)
+	}
+}
+
+func nilContext() context.Context { return context.Background() }
+
+func contains(s, substr string) bool { return strings.Contains(s, substr) }

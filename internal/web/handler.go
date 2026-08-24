@@ -126,6 +126,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 		// Public Home Assistant stats feed — same key protection.
 		r.Get("/api/homeassistant/stats", h.homeAssistantStats)
+		r.Get("/api/homeassistant/calendar", h.homeAssistantCalendar)
 
 		// Public TRMNL e-ink stats feed — unauthenticated (TRMNL devices cannot log in)
 		r.Get("/api/trmnl/stats", h.trmnlStats)

@@ -3,6 +3,7 @@ package web
 import (
 	"crypto/subtle"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -120,6 +121,94 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 		Upcoming:       upcoming,
 	}); err != nil {
 		slog.Error("home assistant stats: encode", "error", err)
+	}
+}
+
+// homeAssistantCalendarDate is the HA all-day date wrapper.
+type homeAssistantCalendarDate struct {
+	Date string `json:"date"`
+}
+
+// homeAssistantCalendarEvent is an HA calendar entity event (all-day).
+type homeAssistantCalendarEvent struct {
+	Summary     string                    `json:"summary"`
+	Description string                    `json:"description"`
+	Start       homeAssistantCalendarDate `json:"start"`
+	End         homeAssistantCalendarDate `json:"end"`
+	UID         string                    `json:"uid"`
+}
+
+// homeAssistantCalendar serves GET /api/homeassistant/calendar.
+func (h *Handler) homeAssistantCalendar(w http.ResponseWriter, r *http.Request) {
+	if !h.homeAssistantAccessOK(r) {
+		h.renderError(w, r, http.StatusNotFound)
+		return
+	}
+
+	startStr := r.URL.Query().Get("start")
+	endStr := r.URL.Query().Get("end")
+	start, err := time.Parse("2006-01-02", startStr)
+	if err != nil {
+		h.renderError(w, r, http.StatusBadRequest)
+		return
+	}
+	end, err := time.Parse("2006-01-02", endStr)
+	if err != nil {
+		h.renderError(w, r, http.StatusBadRequest)
+		return
+	}
+	start = time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.UTC)
+	end = time.Date(end.Year(), end.Month(), end.Day(), 0, 0, 0, 0, time.UTC)
+	if !end.After(start) {
+		h.renderError(w, r, http.StatusBadRequest)
+		return
+	}
+	if int(end.Sub(start).Hours()/24) > 365 {
+		h.renderError(w, r, http.StatusBadRequest)
+		return
+	}
+
+	// ListUpcomingOccurrences is inclusive on both ends; we need [start,end) exclusive end.
+	// Use end - 1ns as inclusive upper bound and filter strictly < end.
+	toInclusive := end.Add(-time.Nanosecond)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), start, toInclusive)
+	if err != nil {
+		slog.Error("home assistant calendar: list upcoming", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	out := make([]homeAssistantCalendarEvent, 0, len(occurrences))
+	for _, occ := range occurrences {
+		if occ.Date.Before(start) || !occ.Date.Before(end) {
+			continue
+		}
+		e := occ.Event
+		owner := eventOwnerName(e)
+		summary := titleCase(e.Type)
+		if owner != "" {
+			summary = owner + "'s " + titleCase(e.Type)
+		}
+		uid := fmt.Sprintf("datey-event-%d-%s@%s", e.ID, occ.Date.Format("2006-01-02"), r.Host)
+		if r.Host == "" {
+			uid = fmt.Sprintf("datey-event-%d-%s@datey", e.ID, occ.Date.Format("2006-01-02"))
+		}
+		out = append(out, homeAssistantCalendarEvent{
+			Summary:     summary,
+			Description: e.Description,
+			Start:       homeAssistantCalendarDate{Date: occ.Date.Format("2006-01-02")},
+			End:         homeAssistantCalendarDate{Date: occ.Date.AddDate(0, 0, 1).Format("2006-01-02")},
+			UID:         uid,
+		})
+	}
+	if out == nil {
+		out = []homeAssistantCalendarEvent{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-cache")
+	if err := json.NewEncoder(w).Encode(out); err != nil {
+		slog.Error("home assistant calendar: encode", "error", err)
 	}
 }
 

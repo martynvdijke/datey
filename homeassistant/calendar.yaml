@@ -1,0 +1,41 @@
+# Home Assistant calendar entity for Datey (all-day birthdays)
+# This is an example using the REST calendar via a command-line sensor polling
+# the Datey calendar endpoint. Adjust YOUR_INSTANCE and YOUR_KEY.
+# The calendar endpoint returns all-day events with start.date / end.date.
+#
+# Option A: Use the RESTful sensor polling the calendar endpoint with a date window.
+# Home Assistant does not have a native REST calendar platform; use a template
+# or an automation that fetches the calendar JSON. Example automation:
+#
+# automation:
+#   - alias: "Datey calendar poll"
+#     trigger:
+#       - platform: time_pattern
+#         hours: "/1"
+#     action:
+#       - service: rest_command.datey_calendar
+#
+# rest_command:
+#   datey_calendar:
+#     url: "http://YOUR_INSTANCE:6270/api/homeassistant/calendar?key=YOUR_KEY&start={{ now().strftime('%Y-%m-%d') }}&end={{ (now() + timedelta(days=30)).strftime('%Y-%m-%d') }}"
+#     method: GET
+#
+# Option B: Direct curl example for testing:
+# curl "http://YOUR_INSTANCE:6270/api/homeassistant/calendar?key=YOUR_KEY&start=2026-01-01&end=2026-01-31"
+#
+# Response shape:
+# [
+#   {
+#     "summary": "Dana's Birthday",
+#     "description": "",
+#     "start": {"date": "2026-01-15"},
+#     "end": {"date": "2026-01-16"},
+#     "uid": "datey-event-1-2026-01-15@datey"
+#   }
+# ]
+#
+# Endpoint details:
+# - GET /api/homeassistant/calendar?key=YOUR_KEY&start=YYYY-MM-DD&end=YYYY-MM-DD
+# - start inclusive, end exclusive; max range 365 days (400 otherwise)
+# - Requires Home Assistant feed enabled (same key as /api/homeassistant/stats)
+# - All events are all-day (date, not dateTime); lunar birthdays use converted Gregorian date

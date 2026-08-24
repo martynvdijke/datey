@@ -34,6 +34,20 @@ The feed is disabled by default — no data is exposed until you enable it. Keep
 `configuration.yaml` readable only by users you trust: the key grants read
 access to all tracked dates.
 
+## Calendar entity
+
+Datey also exposes a calendar feed for HA calendar cards and automations:
+
+```
+GET /api/homeassistant/calendar?key=YOUR_KEY&start=YYYY-MM-DD&end=YYYY-MM-DD
+```
+
+- `start` inclusive, `end` exclusive (`YYYY-MM-DD`); max range 365 days (400 if exceeded).
+- Returns `[{summary, description, start:{date}, end:{date}, uid}]` — all-day events (`end` = `start`+1 day). Lunar birthdays use the converted Gregorian occurrence for the requested year.
+- Same key and enable toggle as the stats sensor (`HomeAssistantEnabled`+`HomeAssistantKey`); missing/invalid key or disabled feed → 404.
+- Example: `curl "http://YOUR_INSTANCE:6270/api/homeassistant/calendar?key=YOUR_KEY&start=2026-01-01&end=2026-02-01"`.
+- See `calendar.yaml` for polling/automation snippets.
+
 ## sensor.yaml
 
 A ready-to-paste RESTful sensor configuration. Replace `YOUR_INSTANCE` and
