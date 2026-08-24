@@ -38,7 +38,11 @@ func main() {
 		slog.Error("open database", "path", cfg.DataDir+"/datey.db", "error", err)
 		return
 	}
-	defer client.Close()
+	defer func() {
+		if cerr := client.Close(); cerr != nil {
+			slog.Warn("close database", "error", cerr)
+		}
+	}()
 
 	ctx := context.Background()
 	people := repository.NewPersonRepository(client)
