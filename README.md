@@ -45,6 +45,7 @@ A self-hosted web application for tracking important dates and receiving automat
  - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
  - **🔌 Upcoming Events API** — Public, key-protected JSON API (`/api/upcoming`) for scripts, dashboards and automations.
   - **🏠 Home Assistant Plugin** — `homeassistant/` plugin folder with key-protected `/api/homeassistant/stats` (RESTful sensor) and `/api/homeassistant/calendar` (calendar entity, all-day `start.date`/`end.date`) feeds plus `sensor.yaml`/`calendar.yaml` snippets for Home Assistant dashboards.
+- **📲 PWA Offline Support** — installable Progressive Web App (`/manifest.json`, `/sw.js` caches the app shell and shows a generic offline page when offline; versioned cache busts on deploy). Add to Home Screen from your browser menu and enjoy instant loads.
 - **🔔 Web Push Notifications** — browser push notifications via VAPID + service worker (`/sw.js`); enabled from Settings → Configuration, requires HTTPS (or localhost).
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets. One-time password-reset links are emailed via the configured email channel (see `APP_URL`); reset requests are rate-limited per IP and responses never reveal whether a username exists.

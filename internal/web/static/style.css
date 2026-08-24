@@ -924,3 +924,14 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
   width: 1px;
 }
+
+/* ── Offline Banner ── */
+.offline-banner {
+  background: #f59e0b;
+  color: #1f2937;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.offline-banner[hidden] { display: none !important; }

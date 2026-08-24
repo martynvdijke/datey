@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{.Title}}</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='28' height='26' x='2' y='4' rx='3' fill='%232d3a5c'/><rect width='20' height='2' x='6' y='2' rx='1' fill='%232d3a5c'/><rect width='2' height='4' x='9' y='2' rx='1' fill='%235b7bb5'/><rect width='2' height='4' x='21' y='2' rx='1' fill='%235b7bb5'/><text x='16' y='22' font-size='12' font-family='system-ui' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="/manifest.json">
   <meta property="og:title" content="{{.Title}}">
   <meta property="og:description" content="Datey — Important Date Reminder">
   <meta property="og:type" content="website">
@@ -59,6 +61,7 @@
 </head>
 <body>
   <a href="#main-content" class="skip-to-content">Skip to content</a>
+  <div id="offline-banner" class="offline-banner" role="status" aria-live="polite" hidden>You are offline — showing cached content may be stale.</div>
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <nav class="navbar navbar-expand-xl">
@@ -328,6 +331,19 @@
           });
         }
       }).catch(function () { /* service worker unavailable — skip quietly */ });
+    })();
+  </script>
+  <script>
+    // Offline indicator banner.
+    (function() {
+      var banner = document.getElementById('offline-banner');
+      if (!banner) return;
+      function update() {
+        banner.hidden = navigator.onLine;
+      }
+      window.addEventListener('online', update);
+      window.addEventListener('offline', update);
+      update();
     })();
   </script>
 </body>

@@ -85,9 +85,19 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	// Static files — no middleware applied
 	r.Get("/static/*", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "static/" + r.PathValue("*")
+		path := r.PathValue("*")
+		if path == "manifest.json" {
+			w.Header().Set("Content-Type", "application/manifest+json")
+		}
+		r.URL.Path = "static/" + path
 		http.FileServer(http.FS(staticFS)).ServeHTTP(w, r)
 	})
+
+	// Manifest at root for installability (spec: /manifest.json)
+	r.Get("/manifest.json", h.manifest)
+
+	// Service worker for web push — must live at the origin root for scope.
+	r.Get("/sw.js", h.pushServiceWorker)
 
 	// Health check on its own (no middleware applied)
 	r.Get("/health", handlers.HealthCheck)
@@ -133,9 +143,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 		// Public TRMNL e-ink birthdays feed — unauthenticated (TRMNL devices cannot log in)
 		r.Get("/api/trmnl/birthdays", h.trmnlBirthdays)
-
-		// Service worker for web push — must live at the origin root for scope.
-		r.Get("/sw.js", h.pushServiceWorker)
 
 		// Protected routes — require authentication
 		r.Group(func(r chi.Router) {

@@ -1,9 +1,12 @@
 package web
 
 import (
+	"bytes"
 	"encoding/json"
 	"log/slog"
 	"net/http"
+
+	"github.com/datey/datey/handlers"
 )
 
 // pushVAPIDPublicKey returns the VAPID public key as JSON so the browser can
@@ -84,9 +87,22 @@ func (h *Handler) pushServiceWorker(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusInternalServerError, "service worker unavailable")
 		return
 	}
+	// Inject the app version so the SW cache namespace busts on every release.
+	sw = bytes.ReplaceAll(sw, []byte("__DATEY_VERSION__"), []byte(handlers.Version))
 	w.Header().Set("Content-Type", "application/javascript")
 	w.Header().Set("Cache-Control", "no-cache")
 	_, _ = w.Write(sw)
+}
+
+func (h *Handler) manifest(w http.ResponseWriter, r *http.Request) {
+	data, err := staticFS.ReadFile("static/manifest.json")
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "application/manifest+json")
+	w.Header().Set("Cache-Control", "no-cache")
+	_, _ = w.Write(data)
 }
 
 // userID returns the authenticated user's ID.
