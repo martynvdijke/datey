@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/martynvdijke/datey/compare/v1.45.0...v1.46.0) (2026-08-24)
+
+
+### Features
+
+* **people:** typed person relationships with derived inverses ([505dbcd](https://github.com/martynvdijke/datey/commit/505dbcd06c8e4843fdd16dcce0327ae841385202))
+
 # [1.45.0](https://github.com/martynvdijke/datey/compare/v1.44.1...v1.45.0) (2026-08-24)
 
 
