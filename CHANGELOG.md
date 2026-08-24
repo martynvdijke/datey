@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/martynvdijke/datey/compare/v1.40.0...v1.41.0) (2026-08-24)
+
+
+### Features
+
+* **pwa:** installable manifest, versioned offline service worker, offline banner ([10d5f7e](https://github.com/martynvdijke/datey/commit/10d5f7e72100cd4ada9984e70dbdd4faafac7921))
+
 # [1.40.0](https://github.com/martynvdijke/datey/compare/v1.39.0...v1.40.0) (2026-08-24)
 
 
