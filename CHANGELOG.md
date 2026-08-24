@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/martynvdijke/datey/compare/v1.47.0...v1.48.0) (2026-08-24)
+
+
+### Features
+
+* **contacts:** pull-only Google Contacts sync via People API ([acf3ba1](https://github.com/martynvdijke/datey/commit/acf3ba1c6530b6eb8e71a5bafe2db521471649ca))
+
 # [1.47.0](https://github.com/martynvdijke/datey/compare/v1.46.0...v1.47.0) (2026-08-24)
 
 
