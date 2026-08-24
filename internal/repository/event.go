@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -112,6 +113,52 @@ func (r *EventRepository) Update(ctx context.Context, id int, eventType string, 
 		Save(ctx)
 }
 
+// CreateForPersonWithCalendar creates an event with explicit calendar fields.
+func (r *EventRepository) CreateForPersonWithCalendar(ctx context.Context, personID int, eventType string, date time.Time, description string, calendarSystem string, lunarMonth, lunarDay *int, lunarLeap bool) (*ent.Event, error) {
+	if err := validateLunar(calendarSystem, lunarMonth, lunarDay); err != nil {
+		return nil, err
+	}
+	cb := r.client.Event.Create().
+		SetType(eventType).
+		SetDate(date).
+		SetDescription(description).
+		SetCreatedAt(time.Now()).
+		SetPersonID(personID).
+		SetCalendarSystem(calendarSystem).
+		SetLunarLeap(lunarLeap)
+	if lunarMonth != nil {
+		cb = cb.SetLunarMonth(*lunarMonth)
+	}
+	if lunarDay != nil {
+		cb = cb.SetLunarDay(*lunarDay)
+	}
+	return cb.Save(ctx)
+}
+
+// UpdateWithCalendar updates an event with calendar fields.
+func (r *EventRepository) UpdateWithCalendar(ctx context.Context, id int, eventType string, date time.Time, description string, calendarSystem string, lunarMonth, lunarDay *int, lunarLeap bool) (*ent.Event, error) {
+	if err := validateLunar(calendarSystem, lunarMonth, lunarDay); err != nil {
+		return nil, err
+	}
+	u := r.client.Event.UpdateOneID(id).
+		SetType(eventType).
+		SetDate(date).
+		SetDescription(description).
+		SetCalendarSystem(calendarSystem).
+		SetLunarLeap(lunarLeap)
+	if lunarMonth != nil {
+		u = u.SetLunarMonth(*lunarMonth)
+	} else {
+		u = u.ClearLunarMonth()
+	}
+	if lunarDay != nil {
+		u = u.SetLunarDay(*lunarDay)
+	} else {
+		u = u.ClearLunarDay()
+	}
+	return u.Save(ctx)
+}
+
 func (r *EventRepository) ListInRange(ctx context.Context, start, end time.Time) ([]*ent.Event, error) {
 	return r.client.Event.Query().
 		Where(event.DateGTE(start), event.DateLTE(end)).
@@ -144,10 +191,26 @@ type EventOccurrence struct {
 	Date  time.Time
 }
 
+// validateLunar checks that lunar events carry required fields.
+func validateLunar(calendarSystem string, lunarMonth, lunarDay *int) error {
+	if calendarSystem == "lunar" {
+		if lunarMonth == nil || lunarDay == nil {
+			return fmt.Errorf("lunar event requires lunar_month and lunar_day")
+		}
+		if *lunarMonth < 1 || *lunarMonth > 12 {
+			return fmt.Errorf("lunar_month out of range")
+		}
+		if *lunarDay < 1 || *lunarDay > 30 {
+			return fmt.Errorf("lunar_day out of range")
+		}
+	}
+	return nil
+}
+
 // ListUpcomingOccurrences returns every event with an occurrence inside the
-// inclusive range [from, to]. All events recur annually: the stored month/day
-// is expanded to each year the range spans, so a historical date (e.g. a
-// birthday stored as 1990-05-12) is reported on this year's occurrence.
+// inclusive range [from, to]. All events recur annually: for gregorian events
+// the stored month/day is expanded; for lunar events the lunar month/day is
+// converted to Gregorian per target year before window comparison.
 // Results are sorted by occurrence date ascending.
 func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to time.Time) ([]EventOccurrence, error) {
 	events, err := r.client.Event.Query().
@@ -161,7 +224,7 @@ func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to 
 
 	var out []EventOccurrence
 	for _, e := range events {
-		for _, occ := range recurring.OccurrencesIn(e.Date, from, to) {
+		for _, occ := range recurring.OccurrencesInForEvent(e, from, to) {
 			out = append(out, EventOccurrence{Event: e, Date: occ})
 		}
 	}
@@ -174,9 +237,7 @@ func (r *EventRepository) ListUpcomingOccurrences(ctx context.Context, from, to 
 
 // NextBirthdayOccurrence returns the earliest birthday occurrence at or
 // after from, or nil when no birthday event exists. Annual expansion rules
-// match ListUpcomingOccurrences (month/day applied to the span years, Feb 29
-// drifting to Feb 28 in non-leap years), so a birthday whose next occurrence
-// lies beyond the reminder window is still found.
+// match ListUpcomingOccurrences, lunar-aware.
 func (r *EventRepository) NextBirthdayOccurrence(ctx context.Context, from time.Time) (*EventOccurrence, error) {
 	events, err := r.client.Event.Query().
 		Where(event.TypeEQ("birthday")).
@@ -188,12 +249,10 @@ func (r *EventRepository) NextBirthdayOccurrence(ctx context.Context, from time.
 		return nil, err
 	}
 
-	// A yearly event's next occurrence is at most 366 days out (Feb 29 in a
-	// leap year drifting to Feb 28 the following year).
 	to := from.AddDate(0, 0, 366)
 	var best *EventOccurrence
 	for _, e := range events {
-		for _, occ := range recurring.OccurrencesIn(e.Date, from, to) {
+		for _, occ := range recurring.OccurrencesInForEvent(e, from, to) {
 			if best != nil && !occ.Before(best.Date) {
 				continue
 			}

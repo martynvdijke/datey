@@ -19,6 +19,10 @@ func (Event) Fields() []ent.Field {
 		field.Text("notes").Optional().Default(""),
 		field.Ints("reminder_days").Optional(),
 		field.Time("created_at"),
+		field.String("calendar_system").Default("gregorian"),
+		field.Int("lunar_month").Optional().Nillable().Min(1).Max(12),
+		field.Int("lunar_day").Optional().Nillable().Min(1).Max(30),
+		field.Bool("lunar_leap").Default(false),
 	}
 }
 

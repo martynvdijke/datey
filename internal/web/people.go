@@ -488,10 +488,25 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		Description    string
 		IsUpcoming     bool
 		MilestoneLabel string
+		LunarNotation  string
 	}
 	eventRows := make([]eventRow, 0, len(events))
 	for _, e := range events {
-		days := calendarDayDelta(today, dateOnly(e.Date, now.Location()))
+		var occDate time.Time
+		var lunarNote string
+		if e.CalendarSystem == "lunar" && e.LunarMonth != nil && e.LunarDay != nil {
+			lunarNote = formatLunarNotation(e)
+			occDate, _ = displayDateForEvent(e, now)
+		} else {
+			occDate = time.Date(now.Year(), e.Date.Month(), e.Date.Day(), 0, 0, 0, 0, time.UTC)
+			if e.Date.Month() == time.February && e.Date.Day() == 29 && !isLeapYear(now.Year()) {
+				occDate = time.Date(now.Year(), time.February, 28, 0, 0, 0, 0, time.UTC)
+			}
+		}
+		_ = occDate
+		// For upcoming checks use occurrence date
+		occForCheck := occDate
+		days := calendarDayDelta(today, dateOnly(occForCheck, now.Location()))
 		var rel string
 		switch {
 		case days == 0:
@@ -501,23 +516,26 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		case days <= 7:
 			rel = "In " + strconv.Itoa(days) + " days"
 		}
-		occDate := time.Date(now.Year(), e.Date.Month(), e.Date.Day(), 0, 0, 0, 0, time.UTC)
-		if e.Date.Month() == time.February && e.Date.Day() == 29 && !isLeapYear(now.Year()) {
-			occDate = time.Date(now.Year(), time.February, 28, 0, 0, 0, 0, time.UTC)
-		}
 		var msLabel string
 		if ok, label := milestone.IsMilestone(e.Type, e.Date, occDate); ok {
 			msLabel = label
 		}
+		var dateStr string
+		if lunarNote != "" {
+			dateStr = formatEventDate(h.cfg.DateVariant, occDate) + " · " + lunarNote
+		} else {
+			dateStr = formatEventDate(h.cfg.DateVariant, e.Date)
+		}
 		eventRows = append(eventRows, eventRow{
 			ID:             e.ID,
 			Type:           e.Type,
-			Date:           formatEventDate(h.cfg.DateVariant, e.Date),
+			Date:           dateStr,
 			EventDate:      e.Date,
 			RelativeLabel:  rel,
 			Description:    e.Description,
 			IsUpcoming:     days >= 0,
 			MilestoneLabel: msLabel,
+			LunarNotation:  lunarNote,
 		})
 	}
 
@@ -616,9 +634,8 @@ func (h *Handler) redirectContactsView(w http.ResponseWriter, r *http.Request) {
 }
 
 // birthdayAgeForEvents derives the current age from a person's birthday
-// events. When multiple birthday events exist, the most recent birth date
-// (largest year) is used. ok is false when no birthday event carries a usable
-// birth year.
+// events. For lunar birthdays age counts completed lunar years (one per
+// anniversary of the stored lunar month/day), documented in code.
 func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, ok bool) {
 	var latest *ent.Event
 	for _, e := range events {
@@ -631,6 +648,22 @@ func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, o
 	}
 	if latest == nil {
 		return 0, false
+	}
+	if latest.CalendarSystem == "lunar" && latest.LunarMonth != nil && latest.LunarDay != nil {
+		if latest.Date.Year() <= 1 {
+			return 0, false
+		}
+		years := now.Year() - latest.Date.Year()
+		display, _ := displayDateForEvent(latest, now)
+		nowDay := dateOnly(now, now.Location())
+		occDay := dateOnly(display, time.UTC)
+		if occDay.After(nowDay) {
+			years--
+		}
+		if years < 0 {
+			return 0, false
+		}
+		return years, true
 	}
 	return age.AgeAt(latest.Date, now)
 }

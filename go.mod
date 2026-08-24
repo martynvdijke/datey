@@ -4,6 +4,7 @@ go 1.26.3
 
 require (
 	entgo.io/ent v0.14.6
+	github.com/6tail/lunar-go v1.4.6
 	github.com/SherClockHolmes/webpush-go v1.4.0
 	github.com/arran4/golang-ical v0.3.6
 	github.com/emersion/go-vcard v0.1.0
@@ -28,7 +29,6 @@ require (
 
 require (
 	ariga.io/atlas v0.36.2-0.20250730182955-2c6300d0a3e1 // indirect
-	github.com/6tail/lunar-go v1.4.6 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect

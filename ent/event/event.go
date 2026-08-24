@@ -24,6 +24,14 @@ const (
 	FieldReminderDays = "reminder_days"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldCalendarSystem holds the string denoting the calendar_system field in the database.
+	FieldCalendarSystem = "calendar_system"
+	// FieldLunarMonth holds the string denoting the lunar_month field in the database.
+	FieldLunarMonth = "lunar_month"
+	// FieldLunarDay holds the string denoting the lunar_day field in the database.
+	FieldLunarDay = "lunar_day"
+	// FieldLunarLeap holds the string denoting the lunar_leap field in the database.
+	FieldLunarLeap = "lunar_leap"
 	// EdgeContact holds the string denoting the contact edge name in mutations.
 	EdgeContact = "contact"
 	// EdgePerson holds the string denoting the person edge name in mutations.
@@ -73,6 +81,10 @@ var Columns = []string{
 	FieldNotes,
 	FieldReminderDays,
 	FieldCreatedAt,
+	FieldCalendarSystem,
+	FieldLunarMonth,
+	FieldLunarDay,
+	FieldLunarLeap,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"
@@ -105,6 +117,14 @@ var (
 	DefaultDescription string
 	// DefaultNotes holds the default value on creation for the "notes" field.
 	DefaultNotes string
+	// DefaultCalendarSystem holds the default value on creation for the "calendar_system" field.
+	DefaultCalendarSystem string
+	// LunarMonthValidator is a validator for the "lunar_month" field. It is called by the builders before save.
+	LunarMonthValidator func(int) error
+	// LunarDayValidator is a validator for the "lunar_day" field. It is called by the builders before save.
+	LunarDayValidator func(int) error
+	// DefaultLunarLeap holds the default value on creation for the "lunar_leap" field.
+	DefaultLunarLeap bool
 )
 
 // OrderOption defines the ordering options for the Event queries.
@@ -138,6 +158,26 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByCalendarSystem orders the results by the calendar_system field.
+func ByCalendarSystem(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCalendarSystem, opts...).ToFunc()
+}
+
+// ByLunarMonth orders the results by the lunar_month field.
+func ByLunarMonth(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLunarMonth, opts...).ToFunc()
+}
+
+// ByLunarDay orders the results by the lunar_day field.
+func ByLunarDay(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLunarDay, opts...).ToFunc()
+}
+
+// ByLunarLeap orders the results by the lunar_leap field.
+func ByLunarLeap(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLunarLeap, opts...).ToFunc()
 }
 
 // ByContactField orders the results by contact field.

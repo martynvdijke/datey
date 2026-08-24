@@ -99,6 +99,10 @@ var (
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "reminder_days", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "calendar_system", Type: field.TypeString, Default: "gregorian"},
+		{Name: "lunar_month", Type: field.TypeInt, Nullable: true},
+		{Name: "lunar_day", Type: field.TypeInt, Nullable: true},
+		{Name: "lunar_leap", Type: field.TypeBool, Default: false},
 		{Name: "contact_events", Type: field.TypeInt, Nullable: true},
 		{Name: "group_events", Type: field.TypeInt, Nullable: true},
 		{Name: "person_events", Type: field.TypeInt, Nullable: true},
@@ -111,19 +115,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "events_contacts_events",
-				Columns:    []*schema.Column{EventsColumns[7]},
+				Columns:    []*schema.Column{EventsColumns[11]},
 				RefColumns: []*schema.Column{ContactsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "events_groups_events",
-				Columns:    []*schema.Column{EventsColumns[8]},
+				Columns:    []*schema.Column{EventsColumns[12]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "events_persons_events",
-				Columns:    []*schema.Column{EventsColumns[9]},
+				Columns:    []*schema.Column{EventsColumns[13]},
 				RefColumns: []*schema.Column{PersonsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

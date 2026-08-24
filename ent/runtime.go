@@ -51,6 +51,50 @@ func init() {
 	eventDescNotes := eventFields[3].Descriptor()
 	// event.DefaultNotes holds the default value on creation for the notes field.
 	event.DefaultNotes = eventDescNotes.Default.(string)
+	// eventDescCalendarSystem is the schema descriptor for calendar_system field.
+	eventDescCalendarSystem := eventFields[6].Descriptor()
+	// event.DefaultCalendarSystem holds the default value on creation for the calendar_system field.
+	event.DefaultCalendarSystem = eventDescCalendarSystem.Default.(string)
+	// eventDescLunarMonth is the schema descriptor for lunar_month field.
+	eventDescLunarMonth := eventFields[7].Descriptor()
+	// event.LunarMonthValidator is a validator for the "lunar_month" field. It is called by the builders before save.
+	event.LunarMonthValidator = func() func(int) error {
+		validators := eventDescLunarMonth.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(lunar_month int) error {
+			for _, fn := range fns {
+				if err := fn(lunar_month); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// eventDescLunarDay is the schema descriptor for lunar_day field.
+	eventDescLunarDay := eventFields[8].Descriptor()
+	// event.LunarDayValidator is a validator for the "lunar_day" field. It is called by the builders before save.
+	event.LunarDayValidator = func() func(int) error {
+		validators := eventDescLunarDay.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(lunar_day int) error {
+			for _, fn := range fns {
+				if err := fn(lunar_day); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// eventDescLunarLeap is the schema descriptor for lunar_leap field.
+	eventDescLunarLeap := eventFields[9].Descriptor()
+	// event.DefaultLunarLeap holds the default value on creation for the lunar_leap field.
+	event.DefaultLunarLeap = eventDescLunarLeap.Default.(bool)
 	giftideaFields := schema.GiftIdea{}.Fields()
 	_ = giftideaFields
 	// giftideaDescTitle is the schema descriptor for title field.

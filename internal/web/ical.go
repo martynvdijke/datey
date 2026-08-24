@@ -103,14 +103,21 @@ func (h *Handler) icalFeedPerson(w http.ResponseWriter, r *http.Request) {
 
 // feedEvent converts a stored event into an iCal feed event, applying the
 // configured start time / duration (when set) and yearly recurrence.
+// For lunar events the Gregorian occurrence for the current year is used as
+// the DATE value (feeds emit Gregorian only).
 func (h *Handler) feedEvent(e *ent.Event, host string) ical.Event {
 	name := eventOwnerName(e)
-
+	date := e.Date
+	if e.CalendarSystem == "lunar" && e.LunarMonth != nil && e.LunarDay != nil {
+		if occ, err := h.lunarOccurrenceForYear(e, time.Now().Year()); err == nil {
+			date = occ
+		}
+	}
 	ev := ical.Event{
 		UID:         fmt.Sprintf("datey-event-%d@%s", e.ID, host),
 		Summary:     name + " - " + e.Type,
 		Description: e.Description,
-		Date:        e.Date,
+		Date:        date,
 		AllDay:      true,
 		RecurYearly: true, // every event recurs annually
 	}

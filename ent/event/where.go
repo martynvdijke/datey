@@ -80,6 +80,26 @@ func CreatedAt(v time.Time) predicate.Event {
 	return predicate.Event(sql.FieldEQ(FieldCreatedAt, v))
 }
 
+// CalendarSystem applies equality check predicate on the "calendar_system" field. It's identical to CalendarSystemEQ.
+func CalendarSystem(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldCalendarSystem, v))
+}
+
+// LunarMonth applies equality check predicate on the "lunar_month" field. It's identical to LunarMonthEQ.
+func LunarMonth(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldLunarMonth, v))
+}
+
+// LunarDay applies equality check predicate on the "lunar_day" field. It's identical to LunarDayEQ.
+func LunarDay(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldLunarDay, v))
+}
+
+// LunarLeap applies equality check predicate on the "lunar_leap" field. It's identical to LunarLeapEQ.
+func LunarLeap(v bool) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldLunarLeap, v))
+}
+
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v string) predicate.Event {
 	return predicate.Event(sql.FieldEQ(FieldType, v))
@@ -383,6 +403,181 @@ func CreatedAtLT(v time.Time) predicate.Event {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.Event {
 	return predicate.Event(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// CalendarSystemEQ applies the EQ predicate on the "calendar_system" field.
+func CalendarSystemEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldCalendarSystem, v))
+}
+
+// CalendarSystemNEQ applies the NEQ predicate on the "calendar_system" field.
+func CalendarSystemNEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldCalendarSystem, v))
+}
+
+// CalendarSystemIn applies the In predicate on the "calendar_system" field.
+func CalendarSystemIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldCalendarSystem, vs...))
+}
+
+// CalendarSystemNotIn applies the NotIn predicate on the "calendar_system" field.
+func CalendarSystemNotIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldCalendarSystem, vs...))
+}
+
+// CalendarSystemGT applies the GT predicate on the "calendar_system" field.
+func CalendarSystemGT(v string) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldCalendarSystem, v))
+}
+
+// CalendarSystemGTE applies the GTE predicate on the "calendar_system" field.
+func CalendarSystemGTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldCalendarSystem, v))
+}
+
+// CalendarSystemLT applies the LT predicate on the "calendar_system" field.
+func CalendarSystemLT(v string) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldCalendarSystem, v))
+}
+
+// CalendarSystemLTE applies the LTE predicate on the "calendar_system" field.
+func CalendarSystemLTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldCalendarSystem, v))
+}
+
+// CalendarSystemContains applies the Contains predicate on the "calendar_system" field.
+func CalendarSystemContains(v string) predicate.Event {
+	return predicate.Event(sql.FieldContains(FieldCalendarSystem, v))
+}
+
+// CalendarSystemHasPrefix applies the HasPrefix predicate on the "calendar_system" field.
+func CalendarSystemHasPrefix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasPrefix(FieldCalendarSystem, v))
+}
+
+// CalendarSystemHasSuffix applies the HasSuffix predicate on the "calendar_system" field.
+func CalendarSystemHasSuffix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasSuffix(FieldCalendarSystem, v))
+}
+
+// CalendarSystemEqualFold applies the EqualFold predicate on the "calendar_system" field.
+func CalendarSystemEqualFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldEqualFold(FieldCalendarSystem, v))
+}
+
+// CalendarSystemContainsFold applies the ContainsFold predicate on the "calendar_system" field.
+func CalendarSystemContainsFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldContainsFold(FieldCalendarSystem, v))
+}
+
+// LunarMonthEQ applies the EQ predicate on the "lunar_month" field.
+func LunarMonthEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldLunarMonth, v))
+}
+
+// LunarMonthNEQ applies the NEQ predicate on the "lunar_month" field.
+func LunarMonthNEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldLunarMonth, v))
+}
+
+// LunarMonthIn applies the In predicate on the "lunar_month" field.
+func LunarMonthIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldLunarMonth, vs...))
+}
+
+// LunarMonthNotIn applies the NotIn predicate on the "lunar_month" field.
+func LunarMonthNotIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldLunarMonth, vs...))
+}
+
+// LunarMonthGT applies the GT predicate on the "lunar_month" field.
+func LunarMonthGT(v int) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldLunarMonth, v))
+}
+
+// LunarMonthGTE applies the GTE predicate on the "lunar_month" field.
+func LunarMonthGTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldLunarMonth, v))
+}
+
+// LunarMonthLT applies the LT predicate on the "lunar_month" field.
+func LunarMonthLT(v int) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldLunarMonth, v))
+}
+
+// LunarMonthLTE applies the LTE predicate on the "lunar_month" field.
+func LunarMonthLTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldLunarMonth, v))
+}
+
+// LunarMonthIsNil applies the IsNil predicate on the "lunar_month" field.
+func LunarMonthIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldLunarMonth))
+}
+
+// LunarMonthNotNil applies the NotNil predicate on the "lunar_month" field.
+func LunarMonthNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldLunarMonth))
+}
+
+// LunarDayEQ applies the EQ predicate on the "lunar_day" field.
+func LunarDayEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldLunarDay, v))
+}
+
+// LunarDayNEQ applies the NEQ predicate on the "lunar_day" field.
+func LunarDayNEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldLunarDay, v))
+}
+
+// LunarDayIn applies the In predicate on the "lunar_day" field.
+func LunarDayIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldLunarDay, vs...))
+}
+
+// LunarDayNotIn applies the NotIn predicate on the "lunar_day" field.
+func LunarDayNotIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldLunarDay, vs...))
+}
+
+// LunarDayGT applies the GT predicate on the "lunar_day" field.
+func LunarDayGT(v int) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldLunarDay, v))
+}
+
+// LunarDayGTE applies the GTE predicate on the "lunar_day" field.
+func LunarDayGTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldLunarDay, v))
+}
+
+// LunarDayLT applies the LT predicate on the "lunar_day" field.
+func LunarDayLT(v int) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldLunarDay, v))
+}
+
+// LunarDayLTE applies the LTE predicate on the "lunar_day" field.
+func LunarDayLTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldLunarDay, v))
+}
+
+// LunarDayIsNil applies the IsNil predicate on the "lunar_day" field.
+func LunarDayIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldLunarDay))
+}
+
+// LunarDayNotNil applies the NotNil predicate on the "lunar_day" field.
+func LunarDayNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldLunarDay))
+}
+
+// LunarLeapEQ applies the EQ predicate on the "lunar_leap" field.
+func LunarLeapEQ(v bool) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldLunarLeap, v))
+}
+
+// LunarLeapNEQ applies the NEQ predicate on the "lunar_leap" field.
+func LunarLeapNEQ(v bool) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldLunarLeap, v))
 }
 
 // HasContact applies the HasEdge predicate on the "contact" edge.

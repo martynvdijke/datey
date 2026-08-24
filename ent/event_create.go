@@ -76,6 +76,62 @@ func (_c *EventCreate) SetCreatedAt(v time.Time) *EventCreate {
 	return _c
 }
 
+// SetCalendarSystem sets the "calendar_system" field.
+func (_c *EventCreate) SetCalendarSystem(v string) *EventCreate {
+	_c.mutation.SetCalendarSystem(v)
+	return _c
+}
+
+// SetNillableCalendarSystem sets the "calendar_system" field if the given value is not nil.
+func (_c *EventCreate) SetNillableCalendarSystem(v *string) *EventCreate {
+	if v != nil {
+		_c.SetCalendarSystem(*v)
+	}
+	return _c
+}
+
+// SetLunarMonth sets the "lunar_month" field.
+func (_c *EventCreate) SetLunarMonth(v int) *EventCreate {
+	_c.mutation.SetLunarMonth(v)
+	return _c
+}
+
+// SetNillableLunarMonth sets the "lunar_month" field if the given value is not nil.
+func (_c *EventCreate) SetNillableLunarMonth(v *int) *EventCreate {
+	if v != nil {
+		_c.SetLunarMonth(*v)
+	}
+	return _c
+}
+
+// SetLunarDay sets the "lunar_day" field.
+func (_c *EventCreate) SetLunarDay(v int) *EventCreate {
+	_c.mutation.SetLunarDay(v)
+	return _c
+}
+
+// SetNillableLunarDay sets the "lunar_day" field if the given value is not nil.
+func (_c *EventCreate) SetNillableLunarDay(v *int) *EventCreate {
+	if v != nil {
+		_c.SetLunarDay(*v)
+	}
+	return _c
+}
+
+// SetLunarLeap sets the "lunar_leap" field.
+func (_c *EventCreate) SetLunarLeap(v bool) *EventCreate {
+	_c.mutation.SetLunarLeap(v)
+	return _c
+}
+
+// SetNillableLunarLeap sets the "lunar_leap" field if the given value is not nil.
+func (_c *EventCreate) SetNillableLunarLeap(v *bool) *EventCreate {
+	if v != nil {
+		_c.SetLunarLeap(*v)
+	}
+	return _c
+}
+
 // SetContactID sets the "contact" edge to the Contact entity by ID.
 func (_c *EventCreate) SetContactID(id int) *EventCreate {
 	_c.mutation.SetContactID(id)
@@ -191,6 +247,14 @@ func (_c *EventCreate) defaults() {
 		v := event.DefaultNotes
 		_c.mutation.SetNotes(v)
 	}
+	if _, ok := _c.mutation.CalendarSystem(); !ok {
+		v := event.DefaultCalendarSystem
+		_c.mutation.SetCalendarSystem(v)
+	}
+	if _, ok := _c.mutation.LunarLeap(); !ok {
+		v := event.DefaultLunarLeap
+		_c.mutation.SetLunarLeap(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -208,6 +272,22 @@ func (_c *EventCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Event.created_at"`)}
+	}
+	if _, ok := _c.mutation.CalendarSystem(); !ok {
+		return &ValidationError{Name: "calendar_system", err: errors.New(`ent: missing required field "Event.calendar_system"`)}
+	}
+	if v, ok := _c.mutation.LunarMonth(); ok {
+		if err := event.LunarMonthValidator(v); err != nil {
+			return &ValidationError{Name: "lunar_month", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_month": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.LunarDay(); ok {
+		if err := event.LunarDayValidator(v); err != nil {
+			return &ValidationError{Name: "lunar_day", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_day": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.LunarLeap(); !ok {
+		return &ValidationError{Name: "lunar_leap", err: errors.New(`ent: missing required field "Event.lunar_leap"`)}
 	}
 	return nil
 }
@@ -258,6 +338,22 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(event.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.CalendarSystem(); ok {
+		_spec.SetField(event.FieldCalendarSystem, field.TypeString, value)
+		_node.CalendarSystem = value
+	}
+	if value, ok := _c.mutation.LunarMonth(); ok {
+		_spec.SetField(event.FieldLunarMonth, field.TypeInt, value)
+		_node.LunarMonth = &value
+	}
+	if value, ok := _c.mutation.LunarDay(); ok {
+		_spec.SetField(event.FieldLunarDay, field.TypeInt, value)
+		_node.LunarDay = &value
+	}
+	if value, ok := _c.mutation.LunarLeap(); ok {
+		_spec.SetField(event.FieldLunarLeap, field.TypeBool, value)
+		_node.LunarLeap = value
 	}
 	if nodes := _c.mutation.ContactIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

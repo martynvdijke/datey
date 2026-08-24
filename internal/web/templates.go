@@ -17,6 +17,13 @@ var templateFS embed.FS
 var staticFS embed.FS
 
 var funcMap = template.FuncMap{
+	"seq": func(start, end int) []int {
+		var out []int
+		for i := start; i <= end; i++ {
+			out = append(out, i)
+		}
+		return out
+	},
 	"add": func(a, b int) int { return a + b },
 	"sub": func(a, b int) int { return a - b },
 	"div": func(a, b int) int { return int(math.Ceil(float64(a) / float64(b))) },

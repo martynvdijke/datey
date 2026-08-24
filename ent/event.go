@@ -33,6 +33,14 @@ type Event struct {
 	ReminderDays []int `json:"reminder_days,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// CalendarSystem holds the value of the "calendar_system" field.
+	CalendarSystem string `json:"calendar_system,omitempty"`
+	// LunarMonth holds the value of the "lunar_month" field.
+	LunarMonth *int `json:"lunar_month,omitempty"`
+	// LunarDay holds the value of the "lunar_day" field.
+	LunarDay *int `json:"lunar_day,omitempty"`
+	// LunarLeap holds the value of the "lunar_leap" field.
+	LunarLeap bool `json:"lunar_leap,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventQuery when eager-loading is set.
 	Edges          EventEdges `json:"edges"`
@@ -106,9 +114,11 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case event.FieldReminderDays:
 			values[i] = new([]byte)
-		case event.FieldID:
+		case event.FieldLunarLeap:
+			values[i] = new(sql.NullBool)
+		case event.FieldID, event.FieldLunarMonth, event.FieldLunarDay:
 			values[i] = new(sql.NullInt64)
-		case event.FieldType, event.FieldDescription, event.FieldNotes:
+		case event.FieldType, event.FieldDescription, event.FieldNotes, event.FieldCalendarSystem:
 			values[i] = new(sql.NullString)
 		case event.FieldDate, event.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -176,6 +186,32 @@ func (_m *Event) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
+			}
+		case event.FieldCalendarSystem:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field calendar_system", values[i])
+			} else if value.Valid {
+				_m.CalendarSystem = value.String
+			}
+		case event.FieldLunarMonth:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field lunar_month", values[i])
+			} else if value.Valid {
+				_m.LunarMonth = new(int)
+				*_m.LunarMonth = int(value.Int64)
+			}
+		case event.FieldLunarDay:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field lunar_day", values[i])
+			} else if value.Valid {
+				_m.LunarDay = new(int)
+				*_m.LunarDay = int(value.Int64)
+			}
+		case event.FieldLunarLeap:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field lunar_leap", values[i])
+			} else if value.Valid {
+				_m.LunarLeap = value.Bool
 			}
 		case event.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -271,6 +307,22 @@ func (_m *Event) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("calendar_system=")
+	builder.WriteString(_m.CalendarSystem)
+	builder.WriteString(", ")
+	if v := _m.LunarMonth; v != nil {
+		builder.WriteString("lunar_month=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.LunarDay; v != nil {
+		builder.WriteString("lunar_day=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("lunar_leap=")
+	builder.WriteString(fmt.Sprintf("%v", _m.LunarLeap))
 	builder.WriteByte(')')
 	return builder.String()
 }

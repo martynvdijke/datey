@@ -321,8 +321,23 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 			AvatarColor:   avatarColorIndex(personName),
 		}
 		if e.Type == "birthday" {
-			// Age is derived from the stored birth date, not the occurrence.
-			ev.AgeInfo = age.InfoFor(e.Date, now)
+			// Age counts completed lunar years for lunar birthdays (one per anniversary of the stored lunar month/day).
+			if e.CalendarSystem == "lunar" && e.LunarMonth != nil && e.LunarDay != nil {
+				if e.Date.Year() > 1 {
+					occ, _ := displayDateForEvent(e, now)
+					years := now.Year() - e.Date.Year()
+					nowDay := dateOnly(now, now.Location())
+					occDay := dateOnly(occ, time.UTC)
+					if occDay.After(nowDay) {
+						years--
+					}
+					if years >= 0 {
+						ev.AgeInfo = age.Info{Current: years, Next: years + 1, HasAge: true}
+					}
+				}
+			} else {
+				ev.AgeInfo = age.InfoFor(e.Date, now)
+			}
 		}
 		if ok, label := milestone.IsMilestone(e.Type, e.Date, occ.Date); ok {
 			ev.MilestoneLabel = label

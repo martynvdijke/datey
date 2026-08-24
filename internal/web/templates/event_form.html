@@ -21,10 +21,47 @@
         {{template "fieldError" (dict "Errors" .Errors "Field" "type")}}
       </div>
       <div class="mb-3">
+        <label for="calendar_system" class="form-label">Calendar</label>
+        <select class="form-select" id="calendar_system" name="calendar_system" aria-label="Calendar system">
+          <option value="gregorian"{{if and .FormData (eq .FormData.CalendarSystem "gregorian")}} selected{{end}}>Gregorian</option>
+          <option value="lunar"{{if and .FormData (eq .FormData.CalendarSystem "lunar")}} selected{{end}}>Lunar</option>
+        </select>
+      </div>
+      <div class="mb-3">
         <label for="date" class="form-label">Date {{template "requiredIndicator" .}}</label>
         <input type="date" class="form-control" id="date" name="date" required autocomplete="off" value="{{if .FormData}}{{.FormData.Date}}{{end}}">
         {{template "fieldError" (dict "Errors" .Errors "Field" "date")}}
       </div>
+      <div id="lunar-fields" style="display:none">
+        <div class="mb-3">
+          <label for="lunar_month" class="form-label">Lunar month</label>
+          <select class="form-select" id="lunar_month" name="lunar_month" aria-label="Lunar month">
+            <option value="">Select month</option>
+            {{range $i := seq 1 12}}<option value="{{$i}}"{{if and $.FormData (eq $.FormData.LunarMonth (printf "%d" $i))}} selected{{end}}>{{$i}}</option>{{end}}
+          </select>
+          {{template "fieldError" (dict "Errors" .Errors "Field" "lunar_month")}}
+        </div>
+        <div class="mb-3">
+          <label for="lunar_day" class="form-label">Lunar day</label>
+          <select class="form-select" id="lunar_day" name="lunar_day" aria-label="Lunar day">
+            <option value="">Select day</option>
+            {{range $i := seq 1 30}}<option value="{{$i}}"{{if and $.FormData (eq $.FormData.LunarDay (printf "%d" $i))}} selected{{end}}>{{$i}}</option>{{end}}
+          </select>
+          {{template "fieldError" (dict "Errors" .Errors "Field" "lunar_day")}}
+        </div>
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="lunar_leap" name="lunar_leap" value="on" aria-label="Leap month">
+          <label for="lunar_leap" class="form-check-label">Leap month</label>
+        </div>
+      </div>
+      <script>
+      (function(){
+        var sel=document.getElementById('calendar_system');
+        var lf=document.getElementById('lunar-fields');
+        function upd(){ lf.style.display = sel.value==='lunar' ? 'block' : 'none'; }
+        sel.addEventListener('change', upd); upd();
+      })();
+      </script>
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
         <input type="text" class="form-control" id="description" name="description" autocomplete="off" value="{{if .FormData}}{{.FormData.Description}}{{end}}">

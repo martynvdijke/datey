@@ -5491,6 +5491,12 @@ type EventMutation struct {
 	reminder_days            *[]int
 	appendreminder_days      []int
 	created_at               *time.Time
+	calendar_system          *string
+	lunar_month              *int
+	addlunar_month           *int
+	lunar_day                *int
+	addlunar_day             *int
+	lunar_leap               *bool
 	clearedFields            map[string]struct{}
 	contact                  *int
 	clearedcontact           bool
@@ -5875,6 +5881,218 @@ func (m *EventMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// SetCalendarSystem sets the "calendar_system" field.
+func (m *EventMutation) SetCalendarSystem(s string) {
+	m.calendar_system = &s
+}
+
+// CalendarSystem returns the value of the "calendar_system" field in the mutation.
+func (m *EventMutation) CalendarSystem() (r string, exists bool) {
+	v := m.calendar_system
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalendarSystem returns the old "calendar_system" field's value of the Event entity.
+// If the Event object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventMutation) OldCalendarSystem(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalendarSystem is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalendarSystem requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalendarSystem: %w", err)
+	}
+	return oldValue.CalendarSystem, nil
+}
+
+// ResetCalendarSystem resets all changes to the "calendar_system" field.
+func (m *EventMutation) ResetCalendarSystem() {
+	m.calendar_system = nil
+}
+
+// SetLunarMonth sets the "lunar_month" field.
+func (m *EventMutation) SetLunarMonth(i int) {
+	m.lunar_month = &i
+	m.addlunar_month = nil
+}
+
+// LunarMonth returns the value of the "lunar_month" field in the mutation.
+func (m *EventMutation) LunarMonth() (r int, exists bool) {
+	v := m.lunar_month
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLunarMonth returns the old "lunar_month" field's value of the Event entity.
+// If the Event object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventMutation) OldLunarMonth(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLunarMonth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLunarMonth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLunarMonth: %w", err)
+	}
+	return oldValue.LunarMonth, nil
+}
+
+// AddLunarMonth adds i to the "lunar_month" field.
+func (m *EventMutation) AddLunarMonth(i int) {
+	if m.addlunar_month != nil {
+		*m.addlunar_month += i
+	} else {
+		m.addlunar_month = &i
+	}
+}
+
+// AddedLunarMonth returns the value that was added to the "lunar_month" field in this mutation.
+func (m *EventMutation) AddedLunarMonth() (r int, exists bool) {
+	v := m.addlunar_month
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLunarMonth clears the value of the "lunar_month" field.
+func (m *EventMutation) ClearLunarMonth() {
+	m.lunar_month = nil
+	m.addlunar_month = nil
+	m.clearedFields[event.FieldLunarMonth] = struct{}{}
+}
+
+// LunarMonthCleared returns if the "lunar_month" field was cleared in this mutation.
+func (m *EventMutation) LunarMonthCleared() bool {
+	_, ok := m.clearedFields[event.FieldLunarMonth]
+	return ok
+}
+
+// ResetLunarMonth resets all changes to the "lunar_month" field.
+func (m *EventMutation) ResetLunarMonth() {
+	m.lunar_month = nil
+	m.addlunar_month = nil
+	delete(m.clearedFields, event.FieldLunarMonth)
+}
+
+// SetLunarDay sets the "lunar_day" field.
+func (m *EventMutation) SetLunarDay(i int) {
+	m.lunar_day = &i
+	m.addlunar_day = nil
+}
+
+// LunarDay returns the value of the "lunar_day" field in the mutation.
+func (m *EventMutation) LunarDay() (r int, exists bool) {
+	v := m.lunar_day
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLunarDay returns the old "lunar_day" field's value of the Event entity.
+// If the Event object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventMutation) OldLunarDay(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLunarDay is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLunarDay requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLunarDay: %w", err)
+	}
+	return oldValue.LunarDay, nil
+}
+
+// AddLunarDay adds i to the "lunar_day" field.
+func (m *EventMutation) AddLunarDay(i int) {
+	if m.addlunar_day != nil {
+		*m.addlunar_day += i
+	} else {
+		m.addlunar_day = &i
+	}
+}
+
+// AddedLunarDay returns the value that was added to the "lunar_day" field in this mutation.
+func (m *EventMutation) AddedLunarDay() (r int, exists bool) {
+	v := m.addlunar_day
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLunarDay clears the value of the "lunar_day" field.
+func (m *EventMutation) ClearLunarDay() {
+	m.lunar_day = nil
+	m.addlunar_day = nil
+	m.clearedFields[event.FieldLunarDay] = struct{}{}
+}
+
+// LunarDayCleared returns if the "lunar_day" field was cleared in this mutation.
+func (m *EventMutation) LunarDayCleared() bool {
+	_, ok := m.clearedFields[event.FieldLunarDay]
+	return ok
+}
+
+// ResetLunarDay resets all changes to the "lunar_day" field.
+func (m *EventMutation) ResetLunarDay() {
+	m.lunar_day = nil
+	m.addlunar_day = nil
+	delete(m.clearedFields, event.FieldLunarDay)
+}
+
+// SetLunarLeap sets the "lunar_leap" field.
+func (m *EventMutation) SetLunarLeap(b bool) {
+	m.lunar_leap = &b
+}
+
+// LunarLeap returns the value of the "lunar_leap" field in the mutation.
+func (m *EventMutation) LunarLeap() (r bool, exists bool) {
+	v := m.lunar_leap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLunarLeap returns the old "lunar_leap" field's value of the Event entity.
+// If the Event object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EventMutation) OldLunarLeap(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLunarLeap is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLunarLeap requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLunarLeap: %w", err)
+	}
+	return oldValue.LunarLeap, nil
+}
+
+// ResetLunarLeap resets all changes to the "lunar_leap" field.
+func (m *EventMutation) ResetLunarLeap() {
+	m.lunar_leap = nil
+}
+
 // SetContactID sets the "contact" edge to the Contact entity by id.
 func (m *EventMutation) SetContactID(id int) {
 	m.contact = &id
@@ -6080,7 +6298,7 @@ func (m *EventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EventMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 10)
 	if m._type != nil {
 		fields = append(fields, event.FieldType)
 	}
@@ -6098,6 +6316,18 @@ func (m *EventMutation) Fields() []string {
 	}
 	if m.created_at != nil {
 		fields = append(fields, event.FieldCreatedAt)
+	}
+	if m.calendar_system != nil {
+		fields = append(fields, event.FieldCalendarSystem)
+	}
+	if m.lunar_month != nil {
+		fields = append(fields, event.FieldLunarMonth)
+	}
+	if m.lunar_day != nil {
+		fields = append(fields, event.FieldLunarDay)
+	}
+	if m.lunar_leap != nil {
+		fields = append(fields, event.FieldLunarLeap)
 	}
 	return fields
 }
@@ -6119,6 +6349,14 @@ func (m *EventMutation) Field(name string) (ent.Value, bool) {
 		return m.ReminderDays()
 	case event.FieldCreatedAt:
 		return m.CreatedAt()
+	case event.FieldCalendarSystem:
+		return m.CalendarSystem()
+	case event.FieldLunarMonth:
+		return m.LunarMonth()
+	case event.FieldLunarDay:
+		return m.LunarDay()
+	case event.FieldLunarLeap:
+		return m.LunarLeap()
 	}
 	return nil, false
 }
@@ -6140,6 +6378,14 @@ func (m *EventMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldReminderDays(ctx)
 	case event.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case event.FieldCalendarSystem:
+		return m.OldCalendarSystem(ctx)
+	case event.FieldLunarMonth:
+		return m.OldLunarMonth(ctx)
+	case event.FieldLunarDay:
+		return m.OldLunarDay(ctx)
+	case event.FieldLunarLeap:
+		return m.OldLunarLeap(ctx)
 	}
 	return nil, fmt.Errorf("unknown Event field %s", name)
 }
@@ -6191,6 +6437,34 @@ func (m *EventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
+	case event.FieldCalendarSystem:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalendarSystem(v)
+		return nil
+	case event.FieldLunarMonth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLunarMonth(v)
+		return nil
+	case event.FieldLunarDay:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLunarDay(v)
+		return nil
+	case event.FieldLunarLeap:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLunarLeap(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Event field %s", name)
 }
@@ -6198,13 +6472,26 @@ func (m *EventMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *EventMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addlunar_month != nil {
+		fields = append(fields, event.FieldLunarMonth)
+	}
+	if m.addlunar_day != nil {
+		fields = append(fields, event.FieldLunarDay)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *EventMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case event.FieldLunarMonth:
+		return m.AddedLunarMonth()
+	case event.FieldLunarDay:
+		return m.AddedLunarDay()
+	}
 	return nil, false
 }
 
@@ -6213,6 +6500,20 @@ func (m *EventMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *EventMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case event.FieldLunarMonth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLunarMonth(v)
+		return nil
+	case event.FieldLunarDay:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLunarDay(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Event numeric field %s", name)
 }
@@ -6229,6 +6530,12 @@ func (m *EventMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(event.FieldReminderDays) {
 		fields = append(fields, event.FieldReminderDays)
+	}
+	if m.FieldCleared(event.FieldLunarMonth) {
+		fields = append(fields, event.FieldLunarMonth)
+	}
+	if m.FieldCleared(event.FieldLunarDay) {
+		fields = append(fields, event.FieldLunarDay)
 	}
 	return fields
 }
@@ -6252,6 +6559,12 @@ func (m *EventMutation) ClearField(name string) error {
 		return nil
 	case event.FieldReminderDays:
 		m.ClearReminderDays()
+		return nil
+	case event.FieldLunarMonth:
+		m.ClearLunarMonth()
+		return nil
+	case event.FieldLunarDay:
+		m.ClearLunarDay()
 		return nil
 	}
 	return fmt.Errorf("unknown Event nullable field %s", name)
@@ -6278,6 +6591,18 @@ func (m *EventMutation) ResetField(name string) error {
 		return nil
 	case event.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case event.FieldCalendarSystem:
+		m.ResetCalendarSystem()
+		return nil
+	case event.FieldLunarMonth:
+		m.ResetLunarMonth()
+		return nil
+	case event.FieldLunarDay:
+		m.ResetLunarDay()
+		return nil
+	case event.FieldLunarLeap:
+		m.ResetLunarLeap()
 		return nil
 	}
 	return fmt.Errorf("unknown Event field %s", name)

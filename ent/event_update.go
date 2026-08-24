@@ -133,6 +133,88 @@ func (_u *EventUpdate) SetNillableCreatedAt(v *time.Time) *EventUpdate {
 	return _u
 }
 
+// SetCalendarSystem sets the "calendar_system" field.
+func (_u *EventUpdate) SetCalendarSystem(v string) *EventUpdate {
+	_u.mutation.SetCalendarSystem(v)
+	return _u
+}
+
+// SetNillableCalendarSystem sets the "calendar_system" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableCalendarSystem(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetCalendarSystem(*v)
+	}
+	return _u
+}
+
+// SetLunarMonth sets the "lunar_month" field.
+func (_u *EventUpdate) SetLunarMonth(v int) *EventUpdate {
+	_u.mutation.ResetLunarMonth()
+	_u.mutation.SetLunarMonth(v)
+	return _u
+}
+
+// SetNillableLunarMonth sets the "lunar_month" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableLunarMonth(v *int) *EventUpdate {
+	if v != nil {
+		_u.SetLunarMonth(*v)
+	}
+	return _u
+}
+
+// AddLunarMonth adds value to the "lunar_month" field.
+func (_u *EventUpdate) AddLunarMonth(v int) *EventUpdate {
+	_u.mutation.AddLunarMonth(v)
+	return _u
+}
+
+// ClearLunarMonth clears the value of the "lunar_month" field.
+func (_u *EventUpdate) ClearLunarMonth() *EventUpdate {
+	_u.mutation.ClearLunarMonth()
+	return _u
+}
+
+// SetLunarDay sets the "lunar_day" field.
+func (_u *EventUpdate) SetLunarDay(v int) *EventUpdate {
+	_u.mutation.ResetLunarDay()
+	_u.mutation.SetLunarDay(v)
+	return _u
+}
+
+// SetNillableLunarDay sets the "lunar_day" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableLunarDay(v *int) *EventUpdate {
+	if v != nil {
+		_u.SetLunarDay(*v)
+	}
+	return _u
+}
+
+// AddLunarDay adds value to the "lunar_day" field.
+func (_u *EventUpdate) AddLunarDay(v int) *EventUpdate {
+	_u.mutation.AddLunarDay(v)
+	return _u
+}
+
+// ClearLunarDay clears the value of the "lunar_day" field.
+func (_u *EventUpdate) ClearLunarDay() *EventUpdate {
+	_u.mutation.ClearLunarDay()
+	return _u
+}
+
+// SetLunarLeap sets the "lunar_leap" field.
+func (_u *EventUpdate) SetLunarLeap(v bool) *EventUpdate {
+	_u.mutation.SetLunarLeap(v)
+	return _u
+}
+
+// SetNillableLunarLeap sets the "lunar_leap" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableLunarLeap(v *bool) *EventUpdate {
+	if v != nil {
+		_u.SetLunarLeap(*v)
+	}
+	return _u
+}
+
 // SetContactID sets the "contact" edge to the Contact entity by ID.
 func (_u *EventUpdate) SetContactID(id int) *EventUpdate {
 	_u.mutation.SetContactID(id)
@@ -283,6 +365,16 @@ func (_u *EventUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Event.type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.LunarMonth(); ok {
+		if err := event.LunarMonthValidator(v); err != nil {
+			return &ValidationError{Name: "lunar_month", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_month": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.LunarDay(); ok {
+		if err := event.LunarDayValidator(v); err != nil {
+			return &ValidationError{Name: "lunar_day", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_day": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -329,6 +421,30 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(event.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.CalendarSystem(); ok {
+		_spec.SetField(event.FieldCalendarSystem, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LunarMonth(); ok {
+		_spec.SetField(event.FieldLunarMonth, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedLunarMonth(); ok {
+		_spec.AddField(event.FieldLunarMonth, field.TypeInt, value)
+	}
+	if _u.mutation.LunarMonthCleared() {
+		_spec.ClearField(event.FieldLunarMonth, field.TypeInt)
+	}
+	if value, ok := _u.mutation.LunarDay(); ok {
+		_spec.SetField(event.FieldLunarDay, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedLunarDay(); ok {
+		_spec.AddField(event.FieldLunarDay, field.TypeInt, value)
+	}
+	if _u.mutation.LunarDayCleared() {
+		_spec.ClearField(event.FieldLunarDay, field.TypeInt)
+	}
+	if value, ok := _u.mutation.LunarLeap(); ok {
+		_spec.SetField(event.FieldLunarLeap, field.TypeBool, value)
 	}
 	if _u.mutation.ContactCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -582,6 +698,88 @@ func (_u *EventUpdateOne) SetNillableCreatedAt(v *time.Time) *EventUpdateOne {
 	return _u
 }
 
+// SetCalendarSystem sets the "calendar_system" field.
+func (_u *EventUpdateOne) SetCalendarSystem(v string) *EventUpdateOne {
+	_u.mutation.SetCalendarSystem(v)
+	return _u
+}
+
+// SetNillableCalendarSystem sets the "calendar_system" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableCalendarSystem(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetCalendarSystem(*v)
+	}
+	return _u
+}
+
+// SetLunarMonth sets the "lunar_month" field.
+func (_u *EventUpdateOne) SetLunarMonth(v int) *EventUpdateOne {
+	_u.mutation.ResetLunarMonth()
+	_u.mutation.SetLunarMonth(v)
+	return _u
+}
+
+// SetNillableLunarMonth sets the "lunar_month" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableLunarMonth(v *int) *EventUpdateOne {
+	if v != nil {
+		_u.SetLunarMonth(*v)
+	}
+	return _u
+}
+
+// AddLunarMonth adds value to the "lunar_month" field.
+func (_u *EventUpdateOne) AddLunarMonth(v int) *EventUpdateOne {
+	_u.mutation.AddLunarMonth(v)
+	return _u
+}
+
+// ClearLunarMonth clears the value of the "lunar_month" field.
+func (_u *EventUpdateOne) ClearLunarMonth() *EventUpdateOne {
+	_u.mutation.ClearLunarMonth()
+	return _u
+}
+
+// SetLunarDay sets the "lunar_day" field.
+func (_u *EventUpdateOne) SetLunarDay(v int) *EventUpdateOne {
+	_u.mutation.ResetLunarDay()
+	_u.mutation.SetLunarDay(v)
+	return _u
+}
+
+// SetNillableLunarDay sets the "lunar_day" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableLunarDay(v *int) *EventUpdateOne {
+	if v != nil {
+		_u.SetLunarDay(*v)
+	}
+	return _u
+}
+
+// AddLunarDay adds value to the "lunar_day" field.
+func (_u *EventUpdateOne) AddLunarDay(v int) *EventUpdateOne {
+	_u.mutation.AddLunarDay(v)
+	return _u
+}
+
+// ClearLunarDay clears the value of the "lunar_day" field.
+func (_u *EventUpdateOne) ClearLunarDay() *EventUpdateOne {
+	_u.mutation.ClearLunarDay()
+	return _u
+}
+
+// SetLunarLeap sets the "lunar_leap" field.
+func (_u *EventUpdateOne) SetLunarLeap(v bool) *EventUpdateOne {
+	_u.mutation.SetLunarLeap(v)
+	return _u
+}
+
+// SetNillableLunarLeap sets the "lunar_leap" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableLunarLeap(v *bool) *EventUpdateOne {
+	if v != nil {
+		_u.SetLunarLeap(*v)
+	}
+	return _u
+}
+
 // SetContactID sets the "contact" edge to the Contact entity by ID.
 func (_u *EventUpdateOne) SetContactID(id int) *EventUpdateOne {
 	_u.mutation.SetContactID(id)
@@ -745,6 +943,16 @@ func (_u *EventUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Event.type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.LunarMonth(); ok {
+		if err := event.LunarMonthValidator(v); err != nil {
+			return &ValidationError{Name: "lunar_month", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_month": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.LunarDay(); ok {
+		if err := event.LunarDayValidator(v); err != nil {
+			return &ValidationError{Name: "lunar_day", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_day": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -808,6 +1016,30 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(event.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.CalendarSystem(); ok {
+		_spec.SetField(event.FieldCalendarSystem, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LunarMonth(); ok {
+		_spec.SetField(event.FieldLunarMonth, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedLunarMonth(); ok {
+		_spec.AddField(event.FieldLunarMonth, field.TypeInt, value)
+	}
+	if _u.mutation.LunarMonthCleared() {
+		_spec.ClearField(event.FieldLunarMonth, field.TypeInt)
+	}
+	if value, ok := _u.mutation.LunarDay(); ok {
+		_spec.SetField(event.FieldLunarDay, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedLunarDay(); ok {
+		_spec.AddField(event.FieldLunarDay, field.TypeInt, value)
+	}
+	if _u.mutation.LunarDayCleared() {
+		_spec.ClearField(event.FieldLunarDay, field.TypeInt)
+	}
+	if value, ok := _u.mutation.LunarLeap(); ok {
+		_spec.SetField(event.FieldLunarLeap, field.TypeBool, value)
 	}
 	if _u.mutation.ContactCleared() {
 		edge := &sqlgraph.EdgeSpec{
