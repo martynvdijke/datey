@@ -1,3 +1,12 @@
+# [1.40.0](https://github.com/martynvdijke/datey/compare/v1.39.0...v1.40.0) (2026-08-24)
+
+
+### Features
+
+* **events:** lunar calendar birthdays with leap-month handling ([4aeeb9b](https://github.com/martynvdijke/datey/commit/4aeeb9bd87343c269c28df9913227abcd41b171f))
+* **homeassistant:** calendar entity endpoint for HA calendar discovery ([0d93c52](https://github.com/martynvdijke/datey/commit/0d93c52d15c2e57ce9db74ba163986be1431da7d))
+* **homeassistant:** finish calendar entity — reminder-window default, settings URL, binary sensors ([b2378ad](https://github.com/martynvdijke/datey/commit/b2378adf215666e6f619cd0e1b70b916c9e1c736))
+
 # [1.39.0](https://github.com/martynvdijke/datey/compare/v1.38.1...v1.39.0) (2026-08-23)
 
 
