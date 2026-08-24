@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/martynvdijke/datey/compare/v1.48.0...v1.49.0) (2026-08-24)
+
+
+### Features
+
+* **backup:** validated restore flow staged for apply at next restart ([bed2969](https://github.com/martynvdijke/datey/commit/bed2969aaa8b276ae82d8e124e5b9971bdb10ff0))
+
 # [1.48.0](https://github.com/martynvdijke/datey/compare/v1.47.0...v1.48.0) (2026-08-24)
 
 
