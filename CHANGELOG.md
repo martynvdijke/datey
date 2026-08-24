@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/martynvdijke/datey/compare/v1.46.0...v1.47.0) (2026-08-24)
+
+
+### Features
+
+* **audit:** append-only audit log with admin viewer and retention cap ([dafd5df](https://github.com/martynvdijke/datey/commit/dafd5df97f18aae95967800cbbe9e54a351d80c7))
+
 # [1.46.0](https://github.com/martynvdijke/datey/compare/v1.45.0...v1.46.0) (2026-08-24)
 
 
