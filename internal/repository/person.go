@@ -18,8 +18,18 @@ func NewPersonRepository(client *ent.Client) *PersonRepository {
 }
 
 func (r *PersonRepository) Create(ctx context.Context, name, notes, vcardData string) (*ent.Person, error) {
+	return r.CreateStructured(ctx, name, "", "", "", notes, vcardData)
+}
+
+// CreateStructured persists a person with both the computed display name and
+// its structured components. Empty structured parts are stored as NULL so
+// legacy rows and new display-name-only rows are indistinguishable.
+func (r *PersonRepository) CreateStructured(ctx context.Context, display, first, middle, last, notes, vcardData string) (*ent.Person, error) {
 	mutation := r.client.Person.Create().
-		SetName(name).
+		SetName(display).
+		SetNillableFirstName(nillableStrOrNil(first)).
+		SetNillableMiddleName(nillableStrOrNil(middle)).
+		SetNillableLastName(nillableStrOrNil(last)).
 		SetNotes(notes).
 		SetCreatedAt(time.Now()).
 		SetUpdatedAt(time.Now())
@@ -47,10 +57,31 @@ func (r *PersonRepository) Search(ctx context.Context, q string) ([]*ent.Person,
 }
 
 func (r *PersonRepository) Update(ctx context.Context, id int, name, notes, vcardData string) (*ent.Person, error) {
+	return r.UpdateStructured(ctx, id, name, "", "", "", notes, vcardData)
+}
+
+// UpdateStructured saves the display name and structured name components.
+// Empty parts clear their nullable columns so removing a middle name works;
+// the display name must stay non-empty (unique constraint applies).
+// applyNamePart sets or clears one structured name column on the update
+// builder: empty clears the nullable column (so removing a middle name
+// works), non-empty sets it.
+func applyNamePart[T any](set func(string) *T, clear func() *T, value string) {
+	if value != "" {
+		set(value)
+		return
+	}
+	clear()
+}
+
+func (r *PersonRepository) UpdateStructured(ctx context.Context, id int, display, first, middle, last, notes, vcardData string) (*ent.Person, error) {
 	mutation := r.client.Person.UpdateOneID(id).
-		SetName(name).
+		SetName(display).
 		SetNotes(notes).
 		SetUpdatedAt(time.Now())
+	applyNamePart(mutation.SetFirstName, mutation.ClearFirstName, first)
+	applyNamePart(mutation.SetMiddleName, mutation.ClearMiddleName, middle)
+	applyNamePart(mutation.SetLastName, mutation.ClearLastName, last)
 	if vcardData != "" {
 		mutation = mutation.SetVcardData(vcardData)
 	}
@@ -143,14 +174,22 @@ func (r *PersonRepository) ClearCarddavState(ctx context.Context, id int) (*ent.
 		Save(ctx)
 }
 
-// UpdateCarddavFields applies remote-sourced field changes (name/notes/vCard
-// payload) without marking the person as pending — the remote is authoritative
-// during a pull, so the change must not be echoed back.
 func (r *PersonRepository) UpdateCarddavFields(ctx context.Context, id int, name, notes, vcardData string) (*ent.Person, error) {
+	return r.UpdateCarddavFieldsStructured(ctx, id, name, "", "", "", notes, vcardData)
+}
+
+// UpdateCarddavFieldsStructured applies remote-sourced field changes
+// (structured name/notes/vCard payload) without marking the person as pending
+// — the remote is authoritative during a pull, so the change must not be
+// echoed back.
+func (r *PersonRepository) UpdateCarddavFieldsStructured(ctx context.Context, id int, display, first, middle, last, notes, vcardData string) (*ent.Person, error) {
 	mutation := r.client.Person.UpdateOneID(id).
-		SetName(name).
+		SetName(display).
 		SetNotes(notes).
 		SetUpdatedAt(time.Now())
+	applyNamePart(mutation.SetFirstName, mutation.ClearFirstName, first)
+	applyNamePart(mutation.SetMiddleName, mutation.ClearMiddleName, middle)
+	applyNamePart(mutation.SetLastName, mutation.ClearLastName, last)
 	if vcardData != "" {
 		mutation = mutation.SetVcardData(vcardData)
 	}

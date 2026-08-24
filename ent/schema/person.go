@@ -13,6 +13,12 @@ type Person struct {
 func (Person) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty().Unique(),
+		// Structured name components. `name` remains the computed display
+		// name (first + middle + last joined); these are optional so legacy
+		// rows keep working with `name` alone.
+		field.String("first_name").Optional().Nillable().MaxLen(100),
+		field.String("middle_name").Optional().Nillable().MaxLen(100),
+		field.String("last_name").Optional().Nillable().MaxLen(100),
 		field.Text("notes").Optional().Default(""),
 		field.Text("vcard_data").Optional(),
 		field.Bool("notify_birthdays").Default(true),

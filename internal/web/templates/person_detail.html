@@ -6,6 +6,9 @@
   </div>
   <div class="person-hero-info">
     <h1 class="person-hero-name mb-1">{{.Person.Name}}</h1>
+    {{if .Person.MiddleName}}
+    <p class="person-hero-name-parts text-muted small mb-1">First: {{if .Person.FirstName}}{{.Person.FirstName}}{{else}}—{{end}} · Middle: {{.Person.MiddleName}} · Last: {{if .Person.LastName}}{{.Person.LastName}}{{else}}—{{end}}</p>
+    {{end}}
     <div class="person-hero-meta">
       {{if .Groups}}
         {{range .Groups}}

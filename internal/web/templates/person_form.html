@@ -5,10 +5,22 @@
     <form action="{{if .Person}}/people/{{.Person.ID}}/edit{{else}}/people/new{{end}}" method="POST">
       {{template "csrfField" .}}
       <div class="mb-3">
-        <label for="name" class="form-label">Name {{template "requiredIndicator" .}}</label>
-        <input type="text" class="form-control" id="name" name="name" value="{{if .FormData}}{{.FormData.Name}}{{else if .Person}}{{.Person.Name}}{{end}}" required autocomplete="name">
-        {{template "fieldError" (dict "Errors" .Errors "Field" "name")}}
+        <label for="first_name" class="form-label">First name {{template "requiredIndicator" .}}</label>
+        <input type="text" class="form-control" id="first_name" name="first_name" value="{{if .FormData}}{{.FormData.FirstName}}{{else}}{{.FirstName}}{{end}}" required autocomplete="given-name">
+        {{template "fieldError" (dict "Errors" .Errors "Field" "first_name")}}
       </div>
+      <div class="mb-3">
+        <label for="middle_name" class="form-label">Middle name</label>
+        <input type="text" class="form-control" id="middle_name" name="middle_name" value="{{if .FormData}}{{.FormData.MiddleName}}{{else}}{{.MiddleName}}{{end}}" autocomplete="additional-name">
+        <div class="form-text">Optional.</div>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "middle_name")}}
+      </div>
+      <div class="mb-3">
+        <label for="last_name" class="form-label">Last name</label>
+        <input type="text" class="form-control" id="last_name" name="last_name" value="{{if .FormData}}{{.FormData.LastName}}{{else}}{{.LastName}}{{end}}" autocomplete="family-name">
+        {{template "fieldError" (dict "Errors" .Errors "Field" "last_name")}}
+      </div>
+      <p class="form-text" id="display-name-preview" aria-live="polite"></p>
       {{if .Person}}
       <div class="mb-3">
         <label for="birthday" class="form-label">Birthday</label>
@@ -39,4 +51,19 @@
     </form>
   </div>
 </div>
+<script>
+  (function () {
+    var first = document.getElementById('first_name');
+    var middle = document.getElementById('middle_name');
+    var last = document.getElementById('last_name');
+    var preview = document.getElementById('display-name-preview');
+    if (!first || !middle || !last || !preview) return;
+    function updatePreview() {
+      var parts = [first.value.trim(), middle.value.trim(), last.value.trim()].filter(Boolean);
+      preview.textContent = parts.length > 0 ? 'Will be saved as: ' + parts.join(' ') : '';
+    }
+    [first, middle, last].forEach(function (el) { el.addEventListener('input', updatePreview); });
+    updatePreview();
+  })();
+</script>
 {{end}}

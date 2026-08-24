@@ -31,6 +31,48 @@ func (_c *PersonCreate) SetName(v string) *PersonCreate {
 	return _c
 }
 
+// SetFirstName sets the "first_name" field.
+func (_c *PersonCreate) SetFirstName(v string) *PersonCreate {
+	_c.mutation.SetFirstName(v)
+	return _c
+}
+
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableFirstName(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetFirstName(*v)
+	}
+	return _c
+}
+
+// SetMiddleName sets the "middle_name" field.
+func (_c *PersonCreate) SetMiddleName(v string) *PersonCreate {
+	_c.mutation.SetMiddleName(v)
+	return _c
+}
+
+// SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableMiddleName(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetMiddleName(*v)
+	}
+	return _c
+}
+
+// SetLastName sets the "last_name" field.
+func (_c *PersonCreate) SetLastName(v string) *PersonCreate {
+	_c.mutation.SetLastName(v)
+	return _c
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (_c *PersonCreate) SetNillableLastName(v *string) *PersonCreate {
+	if v != nil {
+		_c.SetLastName(*v)
+	}
+	return _c
+}
+
 // SetNotes sets the "notes" field.
 func (_c *PersonCreate) SetNotes(v string) *PersonCreate {
 	_c.mutation.SetNotes(v)
@@ -415,6 +457,21 @@ func (_c *PersonCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Person.name": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.FirstName(); ok {
+		if err := person.FirstNameValidator(v); err != nil {
+			return &ValidationError{Name: "first_name", err: fmt.Errorf(`ent: validator failed for field "Person.first_name": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.MiddleName(); ok {
+		if err := person.MiddleNameValidator(v); err != nil {
+			return &ValidationError{Name: "middle_name", err: fmt.Errorf(`ent: validator failed for field "Person.middle_name": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.LastName(); ok {
+		if err := person.LastNameValidator(v); err != nil {
+			return &ValidationError{Name: "last_name", err: fmt.Errorf(`ent: validator failed for field "Person.last_name": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.NotifyBirthdays(); !ok {
 		return &ValidationError{Name: "notify_birthdays", err: errors.New(`ent: missing required field "Person.notify_birthdays"`)}
 	}
@@ -459,6 +516,18 @@ func (_c *PersonCreate) createSpec() (*Person, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(person.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.FirstName(); ok {
+		_spec.SetField(person.FieldFirstName, field.TypeString, value)
+		_node.FirstName = &value
+	}
+	if value, ok := _c.mutation.MiddleName(); ok {
+		_spec.SetField(person.FieldMiddleName, field.TypeString, value)
+		_node.MiddleName = &value
+	}
+	if value, ok := _c.mutation.LastName(); ok {
+		_spec.SetField(person.FieldLastName, field.TypeString, value)
+		_node.LastName = &value
 	}
 	if value, ok := _c.mutation.Notes(); ok {
 		_spec.SetField(person.FieldNotes, field.TypeString, value)

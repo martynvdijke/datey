@@ -34,7 +34,7 @@ func postEditForm(t *testing.T, h *Handler, router chi.Router, personID int, for
 // repeated keys.
 func formEncode(form map[string][]string) string {
 	parts := make([]string, 0)
-	for _, key := range []string{"name", "notes", "birthday", "groups"} {
+	for _, key := range []string{"name", "first_name", "middle_name", "last_name", "notes", "birthday", "groups"} {
 		for _, v := range form[key] {
 			parts = append(parts, key+"="+strings.ReplaceAll(v, " ", "+"))
 		}

@@ -19,6 +19,7 @@ type ParsedContact struct {
 	Gender              string
 	FamilyName          string
 	GivenName           string
+	MiddleName          string
 	UID                 string
 	Rev                 string
 	RawData             string
@@ -125,6 +126,7 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 	if name := card.Name(); name != nil {
 		pc.FamilyName = name.FamilyName
 		pc.GivenName = name.GivenName
+		pc.MiddleName = name.AdditionalName
 		if pc.Name == "" {
 			pc.Name = strings.Join(nameFields(name), " ")
 		}
@@ -284,13 +286,17 @@ func EncodeSingle(name, notes string) ([]byte, error) {
 }
 
 // SyncContact describes a contact to be written to a remote CardDAV address
-// book during a sync push.
+// book during a sync push. When structured name parts are present they are
+// emitted as the vCard N property alongside the FN display name.
 type SyncContact struct {
-	Name     string
-	Notes    string
-	Birthday *time.Time
-	UID      string
-	Rev      string
+	Name       string
+	Notes      string
+	Birthday   *time.Time
+	UID        string
+	Rev        string
+	FirstName  string
+	MiddleName string
+	LastName   string
 }
 
 // EncodeContact serialises a single contact to vCard 3.0 format including the
@@ -302,6 +308,15 @@ func EncodeContact(c SyncContact) ([]byte, error) {
 	card.SetValue(govcard.FieldVersion, "3.0")
 	card.SetValue(govcard.FieldFormattedName, c.Name)
 	card.SetValue(govcard.FieldProductID, "-//Datey//EN")
+	// Structured N (family;given;additional;;) so remote address books keep
+	// the first/middle/last split; only emitted when any part is known.
+	if c.FirstName != "" || c.MiddleName != "" || c.LastName != "" {
+		card.SetName(&govcard.Name{
+			FamilyName:     c.LastName,
+			GivenName:      c.FirstName,
+			AdditionalName: c.MiddleName,
+		})
+	}
 	if c.UID != "" {
 		card.SetValue(govcard.FieldUID, c.UID)
 	}

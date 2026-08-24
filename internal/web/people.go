@@ -10,6 +10,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/age"
 	"github.com/datey/datey/internal/milestone"
+	personname "github.com/datey/datey/internal/person"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -216,6 +217,16 @@ func filterPeopleByName(people []*ent.Person, q string) []*ent.Person {
 	return out
 }
 
+// parseNameForm extracts the structured name parts from a form submission.
+// The legacy single `name` field is the fallback display when no structured
+// part is provided (backward compat for API clients).
+func parseNameForm(r *http.Request) (first, middle, last, legacy string) {
+	return strings.TrimSpace(r.FormValue("first_name")),
+		strings.TrimSpace(r.FormValue("middle_name")),
+		strings.TrimSpace(r.FormValue("last_name")),
+		strings.TrimSpace(r.FormValue("name"))
+}
+
 func (h *Handler) newPersonForm(w http.ResponseWriter, r *http.Request) {
 	groups, _ := h.groups.List(r.Context())
 	h.render(w, r, "person_form.html", map[string]any{
@@ -230,13 +241,14 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := r.FormValue("name")
+	first, middle, last, legacy := parseNameForm(r)
 	notes := r.FormValue("notes")
 	groupIDs := r.Form["groups"]
+	displayName := personname.DisplayName(first, middle, last, legacy)
 
 	errors := make(map[string]string)
-	if name == "" {
-		errors["name"] = "Name is required"
+	if displayName == "" {
+		errors["first_name"] = "Name is required"
 	}
 
 	if len(errors) > 0 {
@@ -246,15 +258,18 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 			"Groups": groups,
 			"Errors": errors,
 			"FormData": map[string]any{
-				"Name":     name,
-				"Notes":    notes,
-				"GroupIDs": groupIDs,
+				"FirstName":  first,
+				"MiddleName": middle,
+				"LastName":   last,
+				"Name":       displayName,
+				"Notes":      notes,
+				"GroupIDs":   groupIDs,
 			},
 		})
 		return
 	}
 
-	p, err := h.people.Create(r.Context(), name, notes, "")
+	p, err := h.people.CreateStructured(r.Context(), displayName, first, middle, last, notes, "")
 	if err != nil {
 		slog.Error("create person", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
@@ -307,9 +322,13 @@ func (h *Handler) renderEditPersonForm(w http.ResponseWriter, r *http.Request, p
 	if bd, err := h.events.FindByPersonAndType(r.Context(), person.ID, "birthday"); err == nil && bd.Date.Year() > 1 {
 		birthday = bd.Date.Format("2006-01-02")
 	}
+	first, middle, last := structuredNameForForm(person)
 	data := map[string]any{
 		"Title":          "Datey - Edit Person",
 		"Person":         person,
+		"FirstName":      first,
+		"MiddleName":     middle,
+		"LastName":       last,
 		"Groups":         groups,
 		"MemberGroupIDs": memberIDs,
 		"Birthday":       birthday,
@@ -321,6 +340,25 @@ func (h *Handler) renderEditPersonForm(w http.ResponseWriter, r *http.Request, p
 		data["Errors"] = errors
 	}
 	h.render(w, r, "person_form.html", data)
+}
+
+// structuredNameForForm returns the structured name parts to prefill the edit
+// form: the stored parts when present, otherwise a heuristic split of the
+// legacy display name so nothing is lost before the user edits.
+func structuredNameForForm(p *ent.Person) (first, middle, last string) {
+	if p.FirstName != nil {
+		first = *p.FirstName
+	}
+	if p.MiddleName != nil {
+		middle = *p.MiddleName
+	}
+	if p.LastName != nil {
+		last = *p.LastName
+	}
+	if first == "" && middle == "" && last == "" {
+		first, _, last = personname.SplitDisplayName(p.Name)
+	}
+	return first, middle, last
 }
 
 // updatePerson saves edits to an existing person: name, notes, group
@@ -348,10 +386,11 @@ func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := strings.TrimSpace(r.FormValue("name"))
+	first, middle, last, legacy := parseNameForm(r)
 	notes := r.FormValue("notes")
 	groupIDs := r.Form["groups"]
 	birthdayStr := r.FormValue("birthday")
+	displayName := personname.DisplayName(first, middle, last, legacy)
 
 	errors := make(map[string]string)
 	var birthday time.Time
@@ -365,28 +404,34 @@ func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
 			hasBirthday = true
 		}
 	}
-	if name == "" {
-		errors["name"] = "Name is required"
+	if displayName == "" {
+		errors["first_name"] = "Name is required"
 	}
 
 	if len(errors) > 0 {
 		h.renderEditPersonForm(w, r, person, map[string]any{
-			"Name":     name,
-			"Notes":    notes,
-			"GroupIDs": groupIDs,
-			"Birthday": birthdayStr,
+			"FirstName":  first,
+			"MiddleName": middle,
+			"LastName":   last,
+			"Name":       displayName,
+			"Notes":      notes,
+			"GroupIDs":   groupIDs,
+			"Birthday":   birthdayStr,
 		}, errors)
 		return
 	}
 
-	if _, err := h.people.Update(r.Context(), id, name, notes, ""); err != nil {
+	if _, err := h.people.UpdateStructured(r.Context(), id, displayName, first, middle, last, notes, ""); err != nil {
 		if ent.IsConstraintError(err) {
 			h.renderEditPersonForm(w, r, person, map[string]any{
-				"Name":     name,
-				"Notes":    notes,
-				"GroupIDs": groupIDs,
-				"Birthday": birthdayStr,
-			}, map[string]string{"name": "A person with this name already exists"})
+				"FirstName":  first,
+				"MiddleName": middle,
+				"LastName":   last,
+				"Name":       displayName,
+				"Notes":      notes,
+				"GroupIDs":   groupIDs,
+				"Birthday":   birthdayStr,
+			}, map[string]string{"first_name": "A person with this name already exists"})
 			return
 		}
 		slog.Error("update person", "error", err)

@@ -10807,6 +10807,9 @@ type PersonMutation struct {
 	typ                   string
 	id                    *int
 	name                  *string
+	first_name            *string
+	middle_name           *string
+	last_name             *string
 	notes                 *string
 	vcard_data            *string
 	notify_birthdays      *bool
@@ -10980,6 +10983,153 @@ func (m *PersonMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *PersonMutation) ResetName() {
 	m.name = nil
+}
+
+// SetFirstName sets the "first_name" field.
+func (m *PersonMutation) SetFirstName(s string) {
+	m.first_name = &s
+}
+
+// FirstName returns the value of the "first_name" field in the mutation.
+func (m *PersonMutation) FirstName() (r string, exists bool) {
+	v := m.first_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFirstName returns the old "first_name" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldFirstName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFirstName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFirstName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFirstName: %w", err)
+	}
+	return oldValue.FirstName, nil
+}
+
+// ClearFirstName clears the value of the "first_name" field.
+func (m *PersonMutation) ClearFirstName() {
+	m.first_name = nil
+	m.clearedFields[person.FieldFirstName] = struct{}{}
+}
+
+// FirstNameCleared returns if the "first_name" field was cleared in this mutation.
+func (m *PersonMutation) FirstNameCleared() bool {
+	_, ok := m.clearedFields[person.FieldFirstName]
+	return ok
+}
+
+// ResetFirstName resets all changes to the "first_name" field.
+func (m *PersonMutation) ResetFirstName() {
+	m.first_name = nil
+	delete(m.clearedFields, person.FieldFirstName)
+}
+
+// SetMiddleName sets the "middle_name" field.
+func (m *PersonMutation) SetMiddleName(s string) {
+	m.middle_name = &s
+}
+
+// MiddleName returns the value of the "middle_name" field in the mutation.
+func (m *PersonMutation) MiddleName() (r string, exists bool) {
+	v := m.middle_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMiddleName returns the old "middle_name" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldMiddleName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMiddleName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMiddleName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMiddleName: %w", err)
+	}
+	return oldValue.MiddleName, nil
+}
+
+// ClearMiddleName clears the value of the "middle_name" field.
+func (m *PersonMutation) ClearMiddleName() {
+	m.middle_name = nil
+	m.clearedFields[person.FieldMiddleName] = struct{}{}
+}
+
+// MiddleNameCleared returns if the "middle_name" field was cleared in this mutation.
+func (m *PersonMutation) MiddleNameCleared() bool {
+	_, ok := m.clearedFields[person.FieldMiddleName]
+	return ok
+}
+
+// ResetMiddleName resets all changes to the "middle_name" field.
+func (m *PersonMutation) ResetMiddleName() {
+	m.middle_name = nil
+	delete(m.clearedFields, person.FieldMiddleName)
+}
+
+// SetLastName sets the "last_name" field.
+func (m *PersonMutation) SetLastName(s string) {
+	m.last_name = &s
+}
+
+// LastName returns the value of the "last_name" field in the mutation.
+func (m *PersonMutation) LastName() (r string, exists bool) {
+	v := m.last_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastName returns the old "last_name" field's value of the Person entity.
+// If the Person object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PersonMutation) OldLastName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastName: %w", err)
+	}
+	return oldValue.LastName, nil
+}
+
+// ClearLastName clears the value of the "last_name" field.
+func (m *PersonMutation) ClearLastName() {
+	m.last_name = nil
+	m.clearedFields[person.FieldLastName] = struct{}{}
+}
+
+// LastNameCleared returns if the "last_name" field was cleared in this mutation.
+func (m *PersonMutation) LastNameCleared() bool {
+	_, ok := m.clearedFields[person.FieldLastName]
+	return ok
+}
+
+// ResetLastName resets all changes to the "last_name" field.
+func (m *PersonMutation) ResetLastName() {
+	m.last_name = nil
+	delete(m.clearedFields, person.FieldLastName)
 }
 
 // SetNotes sets the "notes" field.
@@ -12168,9 +12318,18 @@ func (m *PersonMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PersonMutation) Fields() []string {
-	fields := make([]string, 0, 20)
+	fields := make([]string, 0, 23)
 	if m.name != nil {
 		fields = append(fields, person.FieldName)
+	}
+	if m.first_name != nil {
+		fields = append(fields, person.FieldFirstName)
+	}
+	if m.middle_name != nil {
+		fields = append(fields, person.FieldMiddleName)
+	}
+	if m.last_name != nil {
+		fields = append(fields, person.FieldLastName)
 	}
 	if m.notes != nil {
 		fields = append(fields, person.FieldNotes)
@@ -12239,6 +12398,12 @@ func (m *PersonMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case person.FieldName:
 		return m.Name()
+	case person.FieldFirstName:
+		return m.FirstName()
+	case person.FieldMiddleName:
+		return m.MiddleName()
+	case person.FieldLastName:
+		return m.LastName()
 	case person.FieldNotes:
 		return m.Notes()
 	case person.FieldVcardData:
@@ -12288,6 +12453,12 @@ func (m *PersonMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case person.FieldName:
 		return m.OldName(ctx)
+	case person.FieldFirstName:
+		return m.OldFirstName(ctx)
+	case person.FieldMiddleName:
+		return m.OldMiddleName(ctx)
+	case person.FieldLastName:
+		return m.OldLastName(ctx)
 	case person.FieldNotes:
 		return m.OldNotes(ctx)
 	case person.FieldVcardData:
@@ -12341,6 +12512,27 @@ func (m *PersonMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case person.FieldFirstName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFirstName(v)
+		return nil
+	case person.FieldMiddleName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMiddleName(v)
+		return nil
+	case person.FieldLastName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastName(v)
 		return nil
 	case person.FieldNotes:
 		v, ok := value.(string)
@@ -12505,6 +12697,15 @@ func (m *PersonMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *PersonMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(person.FieldFirstName) {
+		fields = append(fields, person.FieldFirstName)
+	}
+	if m.FieldCleared(person.FieldMiddleName) {
+		fields = append(fields, person.FieldMiddleName)
+	}
+	if m.FieldCleared(person.FieldLastName) {
+		fields = append(fields, person.FieldLastName)
+	}
 	if m.FieldCleared(person.FieldNotes) {
 		fields = append(fields, person.FieldNotes)
 	}
@@ -12561,6 +12762,15 @@ func (m *PersonMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *PersonMutation) ClearField(name string) error {
 	switch name {
+	case person.FieldFirstName:
+		m.ClearFirstName()
+		return nil
+	case person.FieldMiddleName:
+		m.ClearMiddleName()
+		return nil
+	case person.FieldLastName:
+		m.ClearLastName()
+		return nil
 	case person.FieldNotes:
 		m.ClearNotes()
 		return nil
@@ -12613,6 +12823,15 @@ func (m *PersonMutation) ResetField(name string) error {
 	switch name {
 	case person.FieldName:
 		m.ResetName()
+		return nil
+	case person.FieldFirstName:
+		m.ResetFirstName()
+		return nil
+	case person.FieldMiddleName:
+		m.ResetMiddleName()
+		return nil
+	case person.FieldLastName:
+		m.ResetLastName()
 		return nil
 	case person.FieldNotes:
 		m.ResetNotes()

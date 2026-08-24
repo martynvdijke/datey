@@ -20,6 +20,12 @@ type Person struct {
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// FirstName holds the value of the "first_name" field.
+	FirstName *string `json:"first_name,omitempty"`
+	// MiddleName holds the value of the "middle_name" field.
+	MiddleName *string `json:"middle_name,omitempty"`
+	// LastName holds the value of the "last_name" field.
+	LastName *string `json:"last_name,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes string `json:"notes,omitempty"`
 	// VcardData holds the value of the "vcard_data" field.
@@ -137,7 +143,7 @@ func (*Person) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case person.FieldID:
 			values[i] = new(sql.NullInt64)
-		case person.FieldName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID, person.FieldPhotoPath, person.FieldPhotoContentType, person.FieldPhotoSource, person.FieldCarddavUID, person.FieldCarddavHref, person.FieldCarddavEtag, person.FieldCarddavRev:
+		case person.FieldName, person.FieldFirstName, person.FieldMiddleName, person.FieldLastName, person.FieldNotes, person.FieldVcardData, person.FieldTimezone, person.FieldImmichPersonID, person.FieldPhotoPath, person.FieldPhotoContentType, person.FieldPhotoSource, person.FieldCarddavUID, person.FieldCarddavHref, person.FieldCarddavEtag, person.FieldCarddavRev:
 			values[i] = new(sql.NullString)
 		case person.FieldPhotoUpdatedAt, person.FieldCarddavLastModified, person.FieldCreatedAt, person.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -167,6 +173,27 @@ func (_m *Person) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case person.FieldFirstName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field first_name", values[i])
+			} else if value.Valid {
+				_m.FirstName = new(string)
+				*_m.FirstName = value.String
+			}
+		case person.FieldMiddleName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field middle_name", values[i])
+			} else if value.Valid {
+				_m.MiddleName = new(string)
+				*_m.MiddleName = value.String
+			}
+		case person.FieldLastName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field last_name", values[i])
+			} else if value.Valid {
+				_m.LastName = new(string)
+				*_m.LastName = value.String
 			}
 		case person.FieldNotes:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -357,6 +384,21 @@ func (_m *Person) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	if v := _m.FirstName; v != nil {
+		builder.WriteString("first_name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MiddleName; v != nil {
+		builder.WriteString("middle_name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.LastName; v != nil {
+		builder.WriteString("last_name=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("notes=")
 	builder.WriteString(_m.Notes)

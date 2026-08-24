@@ -226,7 +226,7 @@ func (s *Syncer) applyRemoteChange(ctx context.Context, href string, res *Result
 
 	if person == nil {
 		// Brand-new remote contact.
-		p, err := s.people.Create(ctx, pc.Name, pc.Notes, string(data))
+		p, err := s.people.CreateStructured(ctx, pc.Name, pc.GivenName, pc.MiddleName, pc.FamilyName, pc.Notes, string(data))
 		if err != nil {
 			return fmt.Errorf("create person %q: %w", pc.Name, err)
 		}
@@ -250,7 +250,7 @@ func (s *Syncer) applyRemoteChange(ctx context.Context, href string, res *Result
 		}
 	}
 
-	if _, err := s.people.UpdateCarddavFields(ctx, person.ID, pc.Name, pc.Notes, string(data)); err != nil {
+	if _, err := s.people.UpdateCarddavFieldsStructured(ctx, person.ID, pc.Name, pc.GivenName, pc.MiddleName, pc.FamilyName, pc.Notes, string(data)); err != nil {
 		return err
 	}
 	if _, err := s.people.SetCarddavState(ctx, person.ID, pc.UID, href, "", pc.Rev, nil, false); err != nil {
@@ -434,10 +434,13 @@ func (s *Syncer) buildPushVCard(ctx context.Context, p *ent.Person, uid string) 
 		return nil, err
 	}
 	return vcard.EncodeContact(vcard.SyncContact{
-		Name:     p.Name,
-		Notes:    p.Notes,
-		Birthday: birthday,
-		UID:      uid,
+		Name:       p.Name,
+		Notes:      p.Notes,
+		Birthday:   birthday,
+		UID:        uid,
+		FirstName:  derefStr(p.FirstName),
+		MiddleName: derefStr(p.MiddleName),
+		LastName:   derefStr(p.LastName),
 	})
 }
 
@@ -514,6 +517,14 @@ func newUID() string {
 		return fmt.Sprintf("%x", time.Now().UnixNano())
 	}
 	return hex.EncodeToString(b)
+}
+
+// derefStr returns the pointed-to string, or "" for nil (nullable columns).
+func derefStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 func nillableString(s string) *string { return &s }

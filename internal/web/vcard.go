@@ -86,7 +86,7 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 			existing, err := h.people.FindByName(r.Context(), pc.Name)
 			if err == nil && existing != nil {
 				if overwrite {
-					person, err := h.people.Update(r.Context(), existing.ID, pc.Name, pc.Notes, pc.RawData)
+					person, err := h.people.UpdateStructured(r.Context(), existing.ID, pc.Name, pc.GivenName, pc.MiddleName, pc.FamilyName, pc.Notes, pc.RawData)
 					if err != nil {
 						slog.Error("import vcard: update person", "name", pc.Name, "error", err)
 						skipped++
@@ -128,7 +128,7 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			person, err := h.people.Create(r.Context(), pc.Name, pc.Notes, pc.RawData)
+			person, err := h.people.CreateStructured(r.Context(), pc.Name, pc.GivenName, pc.MiddleName, pc.FamilyName, pc.Notes, pc.RawData)
 			if err != nil {
 				slog.Error("import vcard: create person", "name", pc.Name, "error", err)
 				skipped++

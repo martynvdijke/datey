@@ -172,24 +172,36 @@ func init() {
 	personDescName := personFields[0].Descriptor()
 	// person.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	person.NameValidator = personDescName.Validators[0].(func(string) error)
+	// personDescFirstName is the schema descriptor for first_name field.
+	personDescFirstName := personFields[1].Descriptor()
+	// person.FirstNameValidator is a validator for the "first_name" field. It is called by the builders before save.
+	person.FirstNameValidator = personDescFirstName.Validators[0].(func(string) error)
+	// personDescMiddleName is the schema descriptor for middle_name field.
+	personDescMiddleName := personFields[2].Descriptor()
+	// person.MiddleNameValidator is a validator for the "middle_name" field. It is called by the builders before save.
+	person.MiddleNameValidator = personDescMiddleName.Validators[0].(func(string) error)
+	// personDescLastName is the schema descriptor for last_name field.
+	personDescLastName := personFields[3].Descriptor()
+	// person.LastNameValidator is a validator for the "last_name" field. It is called by the builders before save.
+	person.LastNameValidator = personDescLastName.Validators[0].(func(string) error)
 	// personDescNotes is the schema descriptor for notes field.
-	personDescNotes := personFields[1].Descriptor()
+	personDescNotes := personFields[4].Descriptor()
 	// person.DefaultNotes holds the default value on creation for the notes field.
 	person.DefaultNotes = personDescNotes.Default.(string)
 	// personDescNotifyBirthdays is the schema descriptor for notify_birthdays field.
-	personDescNotifyBirthdays := personFields[3].Descriptor()
+	personDescNotifyBirthdays := personFields[6].Descriptor()
 	// person.DefaultNotifyBirthdays holds the default value on creation for the notify_birthdays field.
 	person.DefaultNotifyBirthdays = personDescNotifyBirthdays.Default.(bool)
 	// personDescTimezone is the schema descriptor for timezone field.
-	personDescTimezone := personFields[4].Descriptor()
+	personDescTimezone := personFields[7].Descriptor()
 	// person.DefaultTimezone holds the default value on creation for the timezone field.
 	person.DefaultTimezone = personDescTimezone.Default.(string)
 	// personDescImmichPhotoDisabled is the schema descriptor for immich_photo_disabled field.
-	personDescImmichPhotoDisabled := personFields[7].Descriptor()
+	personDescImmichPhotoDisabled := personFields[10].Descriptor()
 	// person.DefaultImmichPhotoDisabled holds the default value on creation for the immich_photo_disabled field.
 	person.DefaultImmichPhotoDisabled = personDescImmichPhotoDisabled.Default.(bool)
 	// personDescCarddavPendingSync is the schema descriptor for carddav_pending_sync field.
-	personDescCarddavPendingSync := personFields[17].Descriptor()
+	personDescCarddavPendingSync := personFields[20].Descriptor()
 	// person.DefaultCarddavPendingSync holds the default value on creation for the carddav_pending_sync field.
 	person.DefaultCarddavPendingSync = personDescCarddavPendingSync.Default.(bool)
 	personnoteFields := schema.PersonNote{}.Fields()

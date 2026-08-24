@@ -2,6 +2,7 @@
 .opencode/*
 openspec/*
 datey
+/backfill-names
 node_modules/
 test-results/
 playwright-report/

@@ -294,6 +294,9 @@ var (
 	PersonsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "first_name", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "middle_name", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "last_name", Type: field.TypeString, Nullable: true, Size: 100},
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "vcard_data", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "notify_birthdays", Type: field.TypeBool, Default: true},
