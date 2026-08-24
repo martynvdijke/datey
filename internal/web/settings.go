@@ -27,6 +27,9 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 		{Name: "telegram", Configured: h.notifReg.IsConfigured("telegram")},
 		{Name: "ntfy", Configured: h.notifReg.IsConfigured("ntfy")},
 		{Name: "webhook", Configured: h.notifReg.IsConfigured("webhook")},
+		{Name: "discord", Configured: h.notifReg.IsConfigured("discord")},
+		{Name: "slack", Configured: h.notifReg.IsConfigured("slack")},
+		{Name: "matrix", Configured: h.notifReg.IsConfigured("matrix")},
 		{Name: "webpush", Configured: h.notifReg.IsConfigured("webpush")},
 	}
 
@@ -193,6 +196,15 @@ func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 		err = n.Send(r.Context(), title, message)
 	case "webhook":
 		n := notifier.NewWebhookNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	case "discord":
+		n := notifier.NewDiscordNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	case "slack":
+		n := notifier.NewSlackNotifier(h.cfg)
+		err = n.Send(r.Context(), title, message)
+	case "matrix":
+		n := notifier.NewMatrixNotifier(h.cfg)
 		err = n.Send(r.Context(), title, message)
 	case "webpush":
 		n := notifier.NewWebPushNotifier(h.cfg, h.pushSubs)

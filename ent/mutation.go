@@ -103,6 +103,11 @@ type AppConfigMutation struct {
 	addntfy_priority         *int
 	webhook_url              *string
 	webhook_secret           *string
+	discord_webhook_url      *string
+	slack_webhook_url        *string
+	matrix_homeserver_url    *string
+	matrix_access_token      *string
+	matrix_room_id           *string
 	umami_url                *string
 	umami_website_id         *string
 	eink_mode                *bool
@@ -1970,6 +1975,251 @@ func (m *AppConfigMutation) ResetWebhookSecret() {
 	delete(m.clearedFields, appconfig.FieldWebhookSecret)
 }
 
+// SetDiscordWebhookURL sets the "discord_webhook_url" field.
+func (m *AppConfigMutation) SetDiscordWebhookURL(s string) {
+	m.discord_webhook_url = &s
+}
+
+// DiscordWebhookURL returns the value of the "discord_webhook_url" field in the mutation.
+func (m *AppConfigMutation) DiscordWebhookURL() (r string, exists bool) {
+	v := m.discord_webhook_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDiscordWebhookURL returns the old "discord_webhook_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldDiscordWebhookURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDiscordWebhookURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDiscordWebhookURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDiscordWebhookURL: %w", err)
+	}
+	return oldValue.DiscordWebhookURL, nil
+}
+
+// ClearDiscordWebhookURL clears the value of the "discord_webhook_url" field.
+func (m *AppConfigMutation) ClearDiscordWebhookURL() {
+	m.discord_webhook_url = nil
+	m.clearedFields[appconfig.FieldDiscordWebhookURL] = struct{}{}
+}
+
+// DiscordWebhookURLCleared returns if the "discord_webhook_url" field was cleared in this mutation.
+func (m *AppConfigMutation) DiscordWebhookURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldDiscordWebhookURL]
+	return ok
+}
+
+// ResetDiscordWebhookURL resets all changes to the "discord_webhook_url" field.
+func (m *AppConfigMutation) ResetDiscordWebhookURL() {
+	m.discord_webhook_url = nil
+	delete(m.clearedFields, appconfig.FieldDiscordWebhookURL)
+}
+
+// SetSlackWebhookURL sets the "slack_webhook_url" field.
+func (m *AppConfigMutation) SetSlackWebhookURL(s string) {
+	m.slack_webhook_url = &s
+}
+
+// SlackWebhookURL returns the value of the "slack_webhook_url" field in the mutation.
+func (m *AppConfigMutation) SlackWebhookURL() (r string, exists bool) {
+	v := m.slack_webhook_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSlackWebhookURL returns the old "slack_webhook_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldSlackWebhookURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSlackWebhookURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSlackWebhookURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSlackWebhookURL: %w", err)
+	}
+	return oldValue.SlackWebhookURL, nil
+}
+
+// ClearSlackWebhookURL clears the value of the "slack_webhook_url" field.
+func (m *AppConfigMutation) ClearSlackWebhookURL() {
+	m.slack_webhook_url = nil
+	m.clearedFields[appconfig.FieldSlackWebhookURL] = struct{}{}
+}
+
+// SlackWebhookURLCleared returns if the "slack_webhook_url" field was cleared in this mutation.
+func (m *AppConfigMutation) SlackWebhookURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldSlackWebhookURL]
+	return ok
+}
+
+// ResetSlackWebhookURL resets all changes to the "slack_webhook_url" field.
+func (m *AppConfigMutation) ResetSlackWebhookURL() {
+	m.slack_webhook_url = nil
+	delete(m.clearedFields, appconfig.FieldSlackWebhookURL)
+}
+
+// SetMatrixHomeserverURL sets the "matrix_homeserver_url" field.
+func (m *AppConfigMutation) SetMatrixHomeserverURL(s string) {
+	m.matrix_homeserver_url = &s
+}
+
+// MatrixHomeserverURL returns the value of the "matrix_homeserver_url" field in the mutation.
+func (m *AppConfigMutation) MatrixHomeserverURL() (r string, exists bool) {
+	v := m.matrix_homeserver_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMatrixHomeserverURL returns the old "matrix_homeserver_url" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldMatrixHomeserverURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMatrixHomeserverURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMatrixHomeserverURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMatrixHomeserverURL: %w", err)
+	}
+	return oldValue.MatrixHomeserverURL, nil
+}
+
+// ClearMatrixHomeserverURL clears the value of the "matrix_homeserver_url" field.
+func (m *AppConfigMutation) ClearMatrixHomeserverURL() {
+	m.matrix_homeserver_url = nil
+	m.clearedFields[appconfig.FieldMatrixHomeserverURL] = struct{}{}
+}
+
+// MatrixHomeserverURLCleared returns if the "matrix_homeserver_url" field was cleared in this mutation.
+func (m *AppConfigMutation) MatrixHomeserverURLCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldMatrixHomeserverURL]
+	return ok
+}
+
+// ResetMatrixHomeserverURL resets all changes to the "matrix_homeserver_url" field.
+func (m *AppConfigMutation) ResetMatrixHomeserverURL() {
+	m.matrix_homeserver_url = nil
+	delete(m.clearedFields, appconfig.FieldMatrixHomeserverURL)
+}
+
+// SetMatrixAccessToken sets the "matrix_access_token" field.
+func (m *AppConfigMutation) SetMatrixAccessToken(s string) {
+	m.matrix_access_token = &s
+}
+
+// MatrixAccessToken returns the value of the "matrix_access_token" field in the mutation.
+func (m *AppConfigMutation) MatrixAccessToken() (r string, exists bool) {
+	v := m.matrix_access_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMatrixAccessToken returns the old "matrix_access_token" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldMatrixAccessToken(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMatrixAccessToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMatrixAccessToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMatrixAccessToken: %w", err)
+	}
+	return oldValue.MatrixAccessToken, nil
+}
+
+// ClearMatrixAccessToken clears the value of the "matrix_access_token" field.
+func (m *AppConfigMutation) ClearMatrixAccessToken() {
+	m.matrix_access_token = nil
+	m.clearedFields[appconfig.FieldMatrixAccessToken] = struct{}{}
+}
+
+// MatrixAccessTokenCleared returns if the "matrix_access_token" field was cleared in this mutation.
+func (m *AppConfigMutation) MatrixAccessTokenCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldMatrixAccessToken]
+	return ok
+}
+
+// ResetMatrixAccessToken resets all changes to the "matrix_access_token" field.
+func (m *AppConfigMutation) ResetMatrixAccessToken() {
+	m.matrix_access_token = nil
+	delete(m.clearedFields, appconfig.FieldMatrixAccessToken)
+}
+
+// SetMatrixRoomID sets the "matrix_room_id" field.
+func (m *AppConfigMutation) SetMatrixRoomID(s string) {
+	m.matrix_room_id = &s
+}
+
+// MatrixRoomID returns the value of the "matrix_room_id" field in the mutation.
+func (m *AppConfigMutation) MatrixRoomID() (r string, exists bool) {
+	v := m.matrix_room_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMatrixRoomID returns the old "matrix_room_id" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldMatrixRoomID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMatrixRoomID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMatrixRoomID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMatrixRoomID: %w", err)
+	}
+	return oldValue.MatrixRoomID, nil
+}
+
+// ClearMatrixRoomID clears the value of the "matrix_room_id" field.
+func (m *AppConfigMutation) ClearMatrixRoomID() {
+	m.matrix_room_id = nil
+	m.clearedFields[appconfig.FieldMatrixRoomID] = struct{}{}
+}
+
+// MatrixRoomIDCleared returns if the "matrix_room_id" field was cleared in this mutation.
+func (m *AppConfigMutation) MatrixRoomIDCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldMatrixRoomID]
+	return ok
+}
+
+// ResetMatrixRoomID resets all changes to the "matrix_room_id" field.
+func (m *AppConfigMutation) ResetMatrixRoomID() {
+	m.matrix_room_id = nil
+	delete(m.clearedFields, appconfig.FieldMatrixRoomID)
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (m *AppConfigMutation) SetUmamiURL(s string) {
 	m.umami_url = &s
@@ -3299,7 +3549,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 58)
+	fields := make([]string, 0, 63)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -3395,6 +3645,21 @@ func (m *AppConfigMutation) Fields() []string {
 	}
 	if m.webhook_secret != nil {
 		fields = append(fields, appconfig.FieldWebhookSecret)
+	}
+	if m.discord_webhook_url != nil {
+		fields = append(fields, appconfig.FieldDiscordWebhookURL)
+	}
+	if m.slack_webhook_url != nil {
+		fields = append(fields, appconfig.FieldSlackWebhookURL)
+	}
+	if m.matrix_homeserver_url != nil {
+		fields = append(fields, appconfig.FieldMatrixHomeserverURL)
+	}
+	if m.matrix_access_token != nil {
+		fields = append(fields, appconfig.FieldMatrixAccessToken)
+	}
+	if m.matrix_room_id != nil {
+		fields = append(fields, appconfig.FieldMatrixRoomID)
 	}
 	if m.umami_url != nil {
 		fields = append(fields, appconfig.FieldUmamiURL)
@@ -3546,6 +3811,16 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.WebhookURL()
 	case appconfig.FieldWebhookSecret:
 		return m.WebhookSecret()
+	case appconfig.FieldDiscordWebhookURL:
+		return m.DiscordWebhookURL()
+	case appconfig.FieldSlackWebhookURL:
+		return m.SlackWebhookURL()
+	case appconfig.FieldMatrixHomeserverURL:
+		return m.MatrixHomeserverURL()
+	case appconfig.FieldMatrixAccessToken:
+		return m.MatrixAccessToken()
+	case appconfig.FieldMatrixRoomID:
+		return m.MatrixRoomID()
 	case appconfig.FieldUmamiURL:
 		return m.UmamiURL()
 	case appconfig.FieldUmamiWebsiteID:
@@ -3671,6 +3946,16 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldWebhookURL(ctx)
 	case appconfig.FieldWebhookSecret:
 		return m.OldWebhookSecret(ctx)
+	case appconfig.FieldDiscordWebhookURL:
+		return m.OldDiscordWebhookURL(ctx)
+	case appconfig.FieldSlackWebhookURL:
+		return m.OldSlackWebhookURL(ctx)
+	case appconfig.FieldMatrixHomeserverURL:
+		return m.OldMatrixHomeserverURL(ctx)
+	case appconfig.FieldMatrixAccessToken:
+		return m.OldMatrixAccessToken(ctx)
+	case appconfig.FieldMatrixRoomID:
+		return m.OldMatrixRoomID(ctx)
 	case appconfig.FieldUmamiURL:
 		return m.OldUmamiURL(ctx)
 	case appconfig.FieldUmamiWebsiteID:
@@ -3955,6 +4240,41 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWebhookSecret(v)
+		return nil
+	case appconfig.FieldDiscordWebhookURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDiscordWebhookURL(v)
+		return nil
+	case appconfig.FieldSlackWebhookURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSlackWebhookURL(v)
+		return nil
+	case appconfig.FieldMatrixHomeserverURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMatrixHomeserverURL(v)
+		return nil
+	case appconfig.FieldMatrixAccessToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMatrixAccessToken(v)
+		return nil
+	case appconfig.FieldMatrixRoomID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMatrixRoomID(v)
 		return nil
 	case appconfig.FieldUmamiURL:
 		v, ok := value.(string)
@@ -4375,6 +4695,21 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldWebhookSecret) {
 		fields = append(fields, appconfig.FieldWebhookSecret)
 	}
+	if m.FieldCleared(appconfig.FieldDiscordWebhookURL) {
+		fields = append(fields, appconfig.FieldDiscordWebhookURL)
+	}
+	if m.FieldCleared(appconfig.FieldSlackWebhookURL) {
+		fields = append(fields, appconfig.FieldSlackWebhookURL)
+	}
+	if m.FieldCleared(appconfig.FieldMatrixHomeserverURL) {
+		fields = append(fields, appconfig.FieldMatrixHomeserverURL)
+	}
+	if m.FieldCleared(appconfig.FieldMatrixAccessToken) {
+		fields = append(fields, appconfig.FieldMatrixAccessToken)
+	}
+	if m.FieldCleared(appconfig.FieldMatrixRoomID) {
+		fields = append(fields, appconfig.FieldMatrixRoomID)
+	}
 	if m.FieldCleared(appconfig.FieldUmamiURL) {
 		fields = append(fields, appconfig.FieldUmamiURL)
 	}
@@ -4563,6 +4898,21 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldWebhookSecret:
 		m.ClearWebhookSecret()
 		return nil
+	case appconfig.FieldDiscordWebhookURL:
+		m.ClearDiscordWebhookURL()
+		return nil
+	case appconfig.FieldSlackWebhookURL:
+		m.ClearSlackWebhookURL()
+		return nil
+	case appconfig.FieldMatrixHomeserverURL:
+		m.ClearMatrixHomeserverURL()
+		return nil
+	case appconfig.FieldMatrixAccessToken:
+		m.ClearMatrixAccessToken()
+		return nil
+	case appconfig.FieldMatrixRoomID:
+		m.ClearMatrixRoomID()
+		return nil
 	case appconfig.FieldUmamiURL:
 		m.ClearUmamiURL()
 		return nil
@@ -4744,6 +5094,21 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldWebhookSecret:
 		m.ResetWebhookSecret()
+		return nil
+	case appconfig.FieldDiscordWebhookURL:
+		m.ResetDiscordWebhookURL()
+		return nil
+	case appconfig.FieldSlackWebhookURL:
+		m.ResetSlackWebhookURL()
+		return nil
+	case appconfig.FieldMatrixHomeserverURL:
+		m.ResetMatrixHomeserverURL()
+		return nil
+	case appconfig.FieldMatrixAccessToken:
+		m.ResetMatrixAccessToken()
+		return nil
+	case appconfig.FieldMatrixRoomID:
+		m.ResetMatrixRoomID()
 		return nil
 	case appconfig.FieldUmamiURL:
 		m.ResetUmamiURL()

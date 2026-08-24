@@ -214,6 +214,31 @@ func WebhookSecret(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldWebhookSecret, v))
 }
 
+// DiscordWebhookURL applies equality check predicate on the "discord_webhook_url" field. It's identical to DiscordWebhookURLEQ.
+func DiscordWebhookURL(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldDiscordWebhookURL, v))
+}
+
+// SlackWebhookURL applies equality check predicate on the "slack_webhook_url" field. It's identical to SlackWebhookURLEQ.
+func SlackWebhookURL(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldSlackWebhookURL, v))
+}
+
+// MatrixHomeserverURL applies equality check predicate on the "matrix_homeserver_url" field. It's identical to MatrixHomeserverURLEQ.
+func MatrixHomeserverURL(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixAccessToken applies equality check predicate on the "matrix_access_token" field. It's identical to MatrixAccessTokenEQ.
+func MatrixAccessToken(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldMatrixAccessToken, v))
+}
+
+// MatrixRoomID applies equality check predicate on the "matrix_room_id" field. It's identical to MatrixRoomIDEQ.
+func MatrixRoomID(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldMatrixRoomID, v))
+}
+
 // UmamiURL applies equality check predicate on the "umami_url" field. It's identical to UmamiURLEQ.
 func UmamiURL(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldUmamiURL, v))
@@ -2352,6 +2377,381 @@ func WebhookSecretEqualFold(v string) predicate.AppConfig {
 // WebhookSecretContainsFold applies the ContainsFold predicate on the "webhook_secret" field.
 func WebhookSecretContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldWebhookSecret, v))
+}
+
+// DiscordWebhookURLEQ applies the EQ predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLNEQ applies the NEQ predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLIn applies the In predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldDiscordWebhookURL, vs...))
+}
+
+// DiscordWebhookURLNotIn applies the NotIn predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldDiscordWebhookURL, vs...))
+}
+
+// DiscordWebhookURLGT applies the GT predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLGTE applies the GTE predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLLT applies the LT predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLLTE applies the LTE predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLContains applies the Contains predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLHasPrefix applies the HasPrefix predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLHasSuffix applies the HasSuffix predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLIsNil applies the IsNil predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldDiscordWebhookURL))
+}
+
+// DiscordWebhookURLNotNil applies the NotNil predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldDiscordWebhookURL))
+}
+
+// DiscordWebhookURLEqualFold applies the EqualFold predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldDiscordWebhookURL, v))
+}
+
+// DiscordWebhookURLContainsFold applies the ContainsFold predicate on the "discord_webhook_url" field.
+func DiscordWebhookURLContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldDiscordWebhookURL, v))
+}
+
+// SlackWebhookURLEQ applies the EQ predicate on the "slack_webhook_url" field.
+func SlackWebhookURLEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLNEQ applies the NEQ predicate on the "slack_webhook_url" field.
+func SlackWebhookURLNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLIn applies the In predicate on the "slack_webhook_url" field.
+func SlackWebhookURLIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldSlackWebhookURL, vs...))
+}
+
+// SlackWebhookURLNotIn applies the NotIn predicate on the "slack_webhook_url" field.
+func SlackWebhookURLNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldSlackWebhookURL, vs...))
+}
+
+// SlackWebhookURLGT applies the GT predicate on the "slack_webhook_url" field.
+func SlackWebhookURLGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLGTE applies the GTE predicate on the "slack_webhook_url" field.
+func SlackWebhookURLGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLLT applies the LT predicate on the "slack_webhook_url" field.
+func SlackWebhookURLLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLLTE applies the LTE predicate on the "slack_webhook_url" field.
+func SlackWebhookURLLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLContains applies the Contains predicate on the "slack_webhook_url" field.
+func SlackWebhookURLContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLHasPrefix applies the HasPrefix predicate on the "slack_webhook_url" field.
+func SlackWebhookURLHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLHasSuffix applies the HasSuffix predicate on the "slack_webhook_url" field.
+func SlackWebhookURLHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLIsNil applies the IsNil predicate on the "slack_webhook_url" field.
+func SlackWebhookURLIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldSlackWebhookURL))
+}
+
+// SlackWebhookURLNotNil applies the NotNil predicate on the "slack_webhook_url" field.
+func SlackWebhookURLNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldSlackWebhookURL))
+}
+
+// SlackWebhookURLEqualFold applies the EqualFold predicate on the "slack_webhook_url" field.
+func SlackWebhookURLEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldSlackWebhookURL, v))
+}
+
+// SlackWebhookURLContainsFold applies the ContainsFold predicate on the "slack_webhook_url" field.
+func SlackWebhookURLContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldSlackWebhookURL, v))
+}
+
+// MatrixHomeserverURLEQ applies the EQ predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLNEQ applies the NEQ predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLIn applies the In predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldMatrixHomeserverURL, vs...))
+}
+
+// MatrixHomeserverURLNotIn applies the NotIn predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldMatrixHomeserverURL, vs...))
+}
+
+// MatrixHomeserverURLGT applies the GT predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLGTE applies the GTE predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLLT applies the LT predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLLTE applies the LTE predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLContains applies the Contains predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLHasPrefix applies the HasPrefix predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLHasSuffix applies the HasSuffix predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLIsNil applies the IsNil predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldMatrixHomeserverURL))
+}
+
+// MatrixHomeserverURLNotNil applies the NotNil predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldMatrixHomeserverURL))
+}
+
+// MatrixHomeserverURLEqualFold applies the EqualFold predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixHomeserverURLContainsFold applies the ContainsFold predicate on the "matrix_homeserver_url" field.
+func MatrixHomeserverURLContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldMatrixHomeserverURL, v))
+}
+
+// MatrixAccessTokenEQ applies the EQ predicate on the "matrix_access_token" field.
+func MatrixAccessTokenEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenNEQ applies the NEQ predicate on the "matrix_access_token" field.
+func MatrixAccessTokenNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenIn applies the In predicate on the "matrix_access_token" field.
+func MatrixAccessTokenIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldMatrixAccessToken, vs...))
+}
+
+// MatrixAccessTokenNotIn applies the NotIn predicate on the "matrix_access_token" field.
+func MatrixAccessTokenNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldMatrixAccessToken, vs...))
+}
+
+// MatrixAccessTokenGT applies the GT predicate on the "matrix_access_token" field.
+func MatrixAccessTokenGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenGTE applies the GTE predicate on the "matrix_access_token" field.
+func MatrixAccessTokenGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenLT applies the LT predicate on the "matrix_access_token" field.
+func MatrixAccessTokenLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenLTE applies the LTE predicate on the "matrix_access_token" field.
+func MatrixAccessTokenLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenContains applies the Contains predicate on the "matrix_access_token" field.
+func MatrixAccessTokenContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenHasPrefix applies the HasPrefix predicate on the "matrix_access_token" field.
+func MatrixAccessTokenHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenHasSuffix applies the HasSuffix predicate on the "matrix_access_token" field.
+func MatrixAccessTokenHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenIsNil applies the IsNil predicate on the "matrix_access_token" field.
+func MatrixAccessTokenIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldMatrixAccessToken))
+}
+
+// MatrixAccessTokenNotNil applies the NotNil predicate on the "matrix_access_token" field.
+func MatrixAccessTokenNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldMatrixAccessToken))
+}
+
+// MatrixAccessTokenEqualFold applies the EqualFold predicate on the "matrix_access_token" field.
+func MatrixAccessTokenEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldMatrixAccessToken, v))
+}
+
+// MatrixAccessTokenContainsFold applies the ContainsFold predicate on the "matrix_access_token" field.
+func MatrixAccessTokenContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldMatrixAccessToken, v))
+}
+
+// MatrixRoomIDEQ applies the EQ predicate on the "matrix_room_id" field.
+func MatrixRoomIDEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDNEQ applies the NEQ predicate on the "matrix_room_id" field.
+func MatrixRoomIDNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDIn applies the In predicate on the "matrix_room_id" field.
+func MatrixRoomIDIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldMatrixRoomID, vs...))
+}
+
+// MatrixRoomIDNotIn applies the NotIn predicate on the "matrix_room_id" field.
+func MatrixRoomIDNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldMatrixRoomID, vs...))
+}
+
+// MatrixRoomIDGT applies the GT predicate on the "matrix_room_id" field.
+func MatrixRoomIDGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDGTE applies the GTE predicate on the "matrix_room_id" field.
+func MatrixRoomIDGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDLT applies the LT predicate on the "matrix_room_id" field.
+func MatrixRoomIDLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDLTE applies the LTE predicate on the "matrix_room_id" field.
+func MatrixRoomIDLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDContains applies the Contains predicate on the "matrix_room_id" field.
+func MatrixRoomIDContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDHasPrefix applies the HasPrefix predicate on the "matrix_room_id" field.
+func MatrixRoomIDHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDHasSuffix applies the HasSuffix predicate on the "matrix_room_id" field.
+func MatrixRoomIDHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDIsNil applies the IsNil predicate on the "matrix_room_id" field.
+func MatrixRoomIDIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldMatrixRoomID))
+}
+
+// MatrixRoomIDNotNil applies the NotNil predicate on the "matrix_room_id" field.
+func MatrixRoomIDNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldMatrixRoomID))
+}
+
+// MatrixRoomIDEqualFold applies the EqualFold predicate on the "matrix_room_id" field.
+func MatrixRoomIDEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldMatrixRoomID, v))
+}
+
+// MatrixRoomIDContainsFold applies the ContainsFold predicate on the "matrix_room_id" field.
+func MatrixRoomIDContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldMatrixRoomID, v))
 }
 
 // UmamiURLEQ applies the EQ predicate on the "umami_url" field.

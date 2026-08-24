@@ -182,6 +182,20 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "WEBHOOK_SECRET", Label: "Webhook Secret", Value: val("WEBHOOK_SECRET", cfg.WebhookSecret), Type: "text", Secret: true, Help: "Optional secret used to sign requests (X-Datey-Signature: sha256=...).", Error: errFor("WEBHOOK_SECRET")},
 	}}
 
+	discord := configGroup{Title: "Discord", TestSection: "discord", Fields: []configField{
+		{Name: "DISCORD_WEBHOOK_URL", Label: "Discord Webhook URL", Value: val("DISCORD_WEBHOOK_URL", cfg.DiscordWebhookURL), Type: "text", Secret: true, Help: "Discord channel webhook URL. Create in Server Settings → Integrations → Webhooks.", Error: errFor("DISCORD_WEBHOOK_URL")},
+	}}
+
+	slack := configGroup{Title: "Slack", TestSection: "slack", Fields: []configField{
+		{Name: "SLACK_WEBHOOK_URL", Label: "Slack Webhook URL", Value: val("SLACK_WEBHOOK_URL", cfg.SlackWebhookURL), Type: "text", Secret: true, Help: "Slack incoming webhook URL. Create in Slack App → Incoming Webhooks.", Error: errFor("SLACK_WEBHOOK_URL")},
+	}}
+
+	matrix := configGroup{Title: "Matrix", TestSection: "matrix", Fields: []configField{
+		{Name: "MATRIX_HOMESERVER_URL", Label: "Homeserver URL", Value: val("MATRIX_HOMESERVER_URL", cfg.MatrixHomeserverURL), Type: "text", Help: "Matrix homeserver URL, e.g. https://matrix.example.com.", Error: errFor("MATRIX_HOMESERVER_URL")},
+		{Name: "MATRIX_ACCESS_TOKEN", Label: "Access Token", Value: val("MATRIX_ACCESS_TOKEN", cfg.MatrixAccessToken), Type: "text", Secret: true, Help: "Matrix access token. Generate in Element → Settings → Help & About → Access Token.", Error: errFor("MATRIX_ACCESS_TOKEN")},
+		{Name: "MATRIX_ROOM_ID", Label: "Room ID", Value: val("MATRIX_ROOM_ID", cfg.MatrixRoomID), Type: "text", Help: "Matrix room ID, e.g. !abc123:example.com.", Error: errFor("MATRIX_ROOM_ID")},
+	}}
+
 	analytics := configGroup{Title: "Analytics", TestSection: "analytics", Fields: []configField{
 		{Name: "UMAMI_URL", Label: "Umami URL", Value: val("UMAMI_URL", cfg.UmamiURL), Type: "text", Error: errFor("UMAMI_URL")},
 		{Name: "UMAMI_WEBSITE_ID", Label: "Umami Website ID", Value: val("UMAMI_WEBSITE_ID", cfg.UmamiWebsiteID), Type: "text", Error: errFor("UMAMI_WEBSITE_ID")},
@@ -261,5 +275,5 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "IMMICH_API_KEY", Label: "Immich API Key", Value: immichKeyValue, Type: "text", Secret: true, Help: "Leave blank to keep the saved key. Used only by the server.", Error: errFor("IMMICH_API_KEY")},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, pushGroup, immichGroup}
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, discord, slack, matrix, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, pushGroup, immichGroup}
 }

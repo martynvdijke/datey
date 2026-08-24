@@ -59,6 +59,12 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("webhook_url").Optional().Nillable(),
 		field.String("webhook_secret").Optional().Nillable(),
 
+		field.String("discord_webhook_url").Optional().Nillable(),
+		field.String("slack_webhook_url").Optional().Nillable(),
+		field.String("matrix_homeserver_url").Optional().Nillable(),
+		field.String("matrix_access_token").Optional().Nillable(),
+		field.String("matrix_room_id").Optional().Nillable(),
+
 		field.String("umami_url").Optional().Nillable(),
 		field.String("umami_website_id").Optional().Nillable(),
 

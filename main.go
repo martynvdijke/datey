@@ -113,6 +113,9 @@ func main() {
 	reg.Register(notifier.NewTelegramNotifier(cfg))
 	reg.Register(notifier.NewNtfyNotifier(cfg))
 	reg.Register(notifier.NewWebhookNotifier(cfg))
+	reg.Register(notifier.NewDiscordNotifier(cfg))
+	reg.Register(notifier.NewSlackNotifier(cfg))
+	reg.Register(notifier.NewMatrixNotifier(cfg))
 	reg.Register(notifier.NewWebPushNotifier(cfg, repository.NewPushSubscriptionRepository(client)))
 
 	r := chi.NewRouter()

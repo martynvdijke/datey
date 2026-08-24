@@ -8,24 +8,24 @@ import (
 )
 
 type Config struct {
-	Port              int
-	DataDir           string
-	SchedulerHour     int
-	ReminderDays      int
-	SchedulerCatchup  bool
-	DateVariant       string
-	LogLevel          string
-	LogBufferSize     int
-	OTLPEndpoint      string
+	Port             int
+	DataDir          string
+	SchedulerHour    int
+	ReminderDays     int
+	SchedulerCatchup bool
+	DateVariant      string
+	LogLevel         string
+	LogBufferSize    int
+	OTLPEndpoint     string
 
 	// AppURL is the externally reachable base URL (e.g. "https://datey.example.com").
 	// Used to build links inside emailed content such as password reset links.
 	// When empty, links are derived from the incoming request instead.
 	AppURL string
 
-	BackupDir                string
-	BackupRetentionDays      int
-	WeeklyBackupDay          int
+	BackupDir                  string
+	BackupRetentionDays        int
+	WeeklyBackupDay            int
 	WeeklyBackupRetentionWeeks int
 
 	SMTPHost    string
@@ -49,6 +49,13 @@ type Config struct {
 
 	WebhookURL    string
 	WebhookSecret string
+
+	DiscordWebhookURL string
+	SlackWebhookURL   string
+
+	MatrixHomeserverURL string
+	MatrixAccessToken   string
+	MatrixRoomID        string
 
 	UmamiURL       string
 	UmamiWebsiteID string
@@ -76,10 +83,10 @@ type Config struct {
 	ImmichURL    string
 	ImmichAPIKey string
 
-	CarddavEnabled    bool
-	CarddavURL        string
-	CarddavUsername   string
-	CarddavPassword   string
+	CarddavEnabled      bool
+	CarddavURL          string
+	CarddavUsername     string
+	CarddavPassword     string
 	CarddavDeletePolicy string
 }
 
@@ -88,10 +95,10 @@ func Load() (*Config, error) {
 		Port:             getEnvInt("PORT", 6270),
 		DataDir:          getEnvExplicit("DATA_DIR", "/db"),
 		SchedulerHour:    getEnvInt("SCHEDULER_HOUR", 8),
-		ReminderDays:  getEnvInt("REMINDER_DAYS", 7),
+		ReminderDays:     getEnvInt("REMINDER_DAYS", 7),
 		SchedulerCatchup: getEnvBool("SCHEDULER_CATCHUP", true),
-		DateVariant:   getEnvExplicit("DATE_VARIANT", "european"),
-		LogLevel:      getEnvExplicit("LOG_LEVEL", "info"),
+		DateVariant:      getEnvExplicit("DATE_VARIANT", "european"),
+		LogLevel:         getEnvExplicit("LOG_LEVEL", "info"),
 		LogBufferSize:    getEnvInt("LOG_BUFFER_SIZE", 10000),
 		OTLPEndpoint:     getEnv("OTEL_ENDPOINT", ""),
 		AppURL:           getEnv("APP_URL", ""),
@@ -113,10 +120,16 @@ func Load() (*Config, error) {
 		WebhookURL:       getEnv("WEBHOOK_URL", ""),
 		WebhookSecret:    getEnv("WEBHOOK_SECRET", ""),
 
-		BackupDir:                   getEnv("BACKUP_DIR", ""),
-		BackupRetentionDays:         getEnvInt("BACKUP_RETENTION_DAYS", 0),
-		WeeklyBackupDay:             getEnvInt("WEEKLY_BACKUP_DAY", 0),
-		WeeklyBackupRetentionWeeks:  getEnvInt("WEEKLY_BACKUP_RETENTION_WEEKS", 52),
+		DiscordWebhookURL:   getEnv("DISCORD_WEBHOOK_URL", ""),
+		SlackWebhookURL:     getEnv("SLACK_WEBHOOK_URL", ""),
+		MatrixHomeserverURL: getEnv("MATRIX_HOMESERVER_URL", ""),
+		MatrixAccessToken:   getEnv("MATRIX_ACCESS_TOKEN", ""),
+		MatrixRoomID:        getEnv("MATRIX_ROOM_ID", ""),
+
+		BackupDir:                  getEnv("BACKUP_DIR", ""),
+		BackupRetentionDays:        getEnvInt("BACKUP_RETENTION_DAYS", 0),
+		WeeklyBackupDay:            getEnvInt("WEEKLY_BACKUP_DAY", 0),
+		WeeklyBackupRetentionWeeks: getEnvInt("WEEKLY_BACKUP_RETENTION_WEEKS", 52),
 
 		UmamiURL:       getEnv("UMAMI_URL", ""),
 		UmamiWebsiteID: getEnv("UMAMI_WEBSITE_ID", ""),
@@ -258,6 +271,24 @@ func (c *Config) Validate() error {
 		u, err := url.ParseRequestURI(c.AppURL)
 		if err != nil || u.Scheme == "" || u.Host == "" {
 			return fmt.Errorf("APP_URL must be an absolute URL, got %q", c.AppURL)
+		}
+	}
+	if c.DiscordWebhookURL != "" {
+		u, err := url.ParseRequestURI(c.DiscordWebhookURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("DISCORD_WEBHOOK_URL must be an absolute URL, got %q", c.DiscordWebhookURL)
+		}
+	}
+	if c.SlackWebhookURL != "" {
+		u, err := url.ParseRequestURI(c.SlackWebhookURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("SLACK_WEBHOOK_URL must be an absolute URL, got %q", c.SlackWebhookURL)
+		}
+	}
+	if c.MatrixHomeserverURL != "" {
+		u, err := url.ParseRequestURI(c.MatrixHomeserverURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("MATRIX_HOMESERVER_URL must be an absolute URL, got %q", c.MatrixHomeserverURL)
 		}
 	}
 	return nil

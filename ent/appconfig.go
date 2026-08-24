@@ -81,6 +81,16 @@ type AppConfig struct {
 	WebhookURL *string `json:"webhook_url,omitempty"`
 	// WebhookSecret holds the value of the "webhook_secret" field.
 	WebhookSecret *string `json:"webhook_secret,omitempty"`
+	// DiscordWebhookURL holds the value of the "discord_webhook_url" field.
+	DiscordWebhookURL *string `json:"discord_webhook_url,omitempty"`
+	// SlackWebhookURL holds the value of the "slack_webhook_url" field.
+	SlackWebhookURL *string `json:"slack_webhook_url,omitempty"`
+	// MatrixHomeserverURL holds the value of the "matrix_homeserver_url" field.
+	MatrixHomeserverURL *string `json:"matrix_homeserver_url,omitempty"`
+	// MatrixAccessToken holds the value of the "matrix_access_token" field.
+	MatrixAccessToken *string `json:"matrix_access_token,omitempty"`
+	// MatrixRoomID holds the value of the "matrix_room_id" field.
+	MatrixRoomID *string `json:"matrix_room_id,omitempty"`
 	// UmamiURL holds the value of the "umami_url" field.
 	UmamiURL *string `json:"umami_url,omitempty"`
 	// UmamiWebsiteID holds the value of the "umami_website_id" field.
@@ -145,7 +155,7 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -393,6 +403,41 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.WebhookSecret = new(string)
 				*_m.WebhookSecret = value.String
+			}
+		case appconfig.FieldDiscordWebhookURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field discord_webhook_url", values[i])
+			} else if value.Valid {
+				_m.DiscordWebhookURL = new(string)
+				*_m.DiscordWebhookURL = value.String
+			}
+		case appconfig.FieldSlackWebhookURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field slack_webhook_url", values[i])
+			} else if value.Valid {
+				_m.SlackWebhookURL = new(string)
+				*_m.SlackWebhookURL = value.String
+			}
+		case appconfig.FieldMatrixHomeserverURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field matrix_homeserver_url", values[i])
+			} else if value.Valid {
+				_m.MatrixHomeserverURL = new(string)
+				*_m.MatrixHomeserverURL = value.String
+			}
+		case appconfig.FieldMatrixAccessToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field matrix_access_token", values[i])
+			} else if value.Valid {
+				_m.MatrixAccessToken = new(string)
+				*_m.MatrixAccessToken = value.String
+			}
+		case appconfig.FieldMatrixRoomID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field matrix_room_id", values[i])
+			} else if value.Valid {
+				_m.MatrixRoomID = new(string)
+				*_m.MatrixRoomID = value.String
 			}
 		case appconfig.FieldUmamiURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -769,6 +814,31 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.WebhookSecret; v != nil {
 		builder.WriteString("webhook_secret=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DiscordWebhookURL; v != nil {
+		builder.WriteString("discord_webhook_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.SlackWebhookURL; v != nil {
+		builder.WriteString("slack_webhook_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MatrixHomeserverURL; v != nil {
+		builder.WriteString("matrix_homeserver_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MatrixAccessToken; v != nil {
+		builder.WriteString("matrix_access_token=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MatrixRoomID; v != nil {
+		builder.WriteString("matrix_room_id=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

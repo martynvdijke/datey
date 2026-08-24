@@ -724,6 +724,106 @@ func (_u *AppConfigUpdate) ClearWebhookSecret() *AppConfigUpdate {
 	return _u
 }
 
+// SetDiscordWebhookURL sets the "discord_webhook_url" field.
+func (_u *AppConfigUpdate) SetDiscordWebhookURL(v string) *AppConfigUpdate {
+	_u.mutation.SetDiscordWebhookURL(v)
+	return _u
+}
+
+// SetNillableDiscordWebhookURL sets the "discord_webhook_url" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableDiscordWebhookURL(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetDiscordWebhookURL(*v)
+	}
+	return _u
+}
+
+// ClearDiscordWebhookURL clears the value of the "discord_webhook_url" field.
+func (_u *AppConfigUpdate) ClearDiscordWebhookURL() *AppConfigUpdate {
+	_u.mutation.ClearDiscordWebhookURL()
+	return _u
+}
+
+// SetSlackWebhookURL sets the "slack_webhook_url" field.
+func (_u *AppConfigUpdate) SetSlackWebhookURL(v string) *AppConfigUpdate {
+	_u.mutation.SetSlackWebhookURL(v)
+	return _u
+}
+
+// SetNillableSlackWebhookURL sets the "slack_webhook_url" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableSlackWebhookURL(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetSlackWebhookURL(*v)
+	}
+	return _u
+}
+
+// ClearSlackWebhookURL clears the value of the "slack_webhook_url" field.
+func (_u *AppConfigUpdate) ClearSlackWebhookURL() *AppConfigUpdate {
+	_u.mutation.ClearSlackWebhookURL()
+	return _u
+}
+
+// SetMatrixHomeserverURL sets the "matrix_homeserver_url" field.
+func (_u *AppConfigUpdate) SetMatrixHomeserverURL(v string) *AppConfigUpdate {
+	_u.mutation.SetMatrixHomeserverURL(v)
+	return _u
+}
+
+// SetNillableMatrixHomeserverURL sets the "matrix_homeserver_url" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableMatrixHomeserverURL(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetMatrixHomeserverURL(*v)
+	}
+	return _u
+}
+
+// ClearMatrixHomeserverURL clears the value of the "matrix_homeserver_url" field.
+func (_u *AppConfigUpdate) ClearMatrixHomeserverURL() *AppConfigUpdate {
+	_u.mutation.ClearMatrixHomeserverURL()
+	return _u
+}
+
+// SetMatrixAccessToken sets the "matrix_access_token" field.
+func (_u *AppConfigUpdate) SetMatrixAccessToken(v string) *AppConfigUpdate {
+	_u.mutation.SetMatrixAccessToken(v)
+	return _u
+}
+
+// SetNillableMatrixAccessToken sets the "matrix_access_token" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableMatrixAccessToken(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetMatrixAccessToken(*v)
+	}
+	return _u
+}
+
+// ClearMatrixAccessToken clears the value of the "matrix_access_token" field.
+func (_u *AppConfigUpdate) ClearMatrixAccessToken() *AppConfigUpdate {
+	_u.mutation.ClearMatrixAccessToken()
+	return _u
+}
+
+// SetMatrixRoomID sets the "matrix_room_id" field.
+func (_u *AppConfigUpdate) SetMatrixRoomID(v string) *AppConfigUpdate {
+	_u.mutation.SetMatrixRoomID(v)
+	return _u
+}
+
+// SetNillableMatrixRoomID sets the "matrix_room_id" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableMatrixRoomID(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetMatrixRoomID(*v)
+	}
+	return _u
+}
+
+// ClearMatrixRoomID clears the value of the "matrix_room_id" field.
+func (_u *AppConfigUpdate) ClearMatrixRoomID() *AppConfigUpdate {
+	_u.mutation.ClearMatrixRoomID()
+	return _u
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_u *AppConfigUpdate) SetUmamiURL(v string) *AppConfigUpdate {
 	_u.mutation.SetUmamiURL(v)
@@ -1507,6 +1607,36 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.WebhookSecretCleared() {
 		_spec.ClearField(appconfig.FieldWebhookSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.DiscordWebhookURL(); ok {
+		_spec.SetField(appconfig.FieldDiscordWebhookURL, field.TypeString, value)
+	}
+	if _u.mutation.DiscordWebhookURLCleared() {
+		_spec.ClearField(appconfig.FieldDiscordWebhookURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.SlackWebhookURL(); ok {
+		_spec.SetField(appconfig.FieldSlackWebhookURL, field.TypeString, value)
+	}
+	if _u.mutation.SlackWebhookURLCleared() {
+		_spec.ClearField(appconfig.FieldSlackWebhookURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.MatrixHomeserverURL(); ok {
+		_spec.SetField(appconfig.FieldMatrixHomeserverURL, field.TypeString, value)
+	}
+	if _u.mutation.MatrixHomeserverURLCleared() {
+		_spec.ClearField(appconfig.FieldMatrixHomeserverURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.MatrixAccessToken(); ok {
+		_spec.SetField(appconfig.FieldMatrixAccessToken, field.TypeString, value)
+	}
+	if _u.mutation.MatrixAccessTokenCleared() {
+		_spec.ClearField(appconfig.FieldMatrixAccessToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.MatrixRoomID(); ok {
+		_spec.SetField(appconfig.FieldMatrixRoomID, field.TypeString, value)
+	}
+	if _u.mutation.MatrixRoomIDCleared() {
+		_spec.ClearField(appconfig.FieldMatrixRoomID, field.TypeString)
 	}
 	if value, ok := _u.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)
@@ -2383,6 +2513,106 @@ func (_u *AppConfigUpdateOne) ClearWebhookSecret() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetDiscordWebhookURL sets the "discord_webhook_url" field.
+func (_u *AppConfigUpdateOne) SetDiscordWebhookURL(v string) *AppConfigUpdateOne {
+	_u.mutation.SetDiscordWebhookURL(v)
+	return _u
+}
+
+// SetNillableDiscordWebhookURL sets the "discord_webhook_url" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableDiscordWebhookURL(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetDiscordWebhookURL(*v)
+	}
+	return _u
+}
+
+// ClearDiscordWebhookURL clears the value of the "discord_webhook_url" field.
+func (_u *AppConfigUpdateOne) ClearDiscordWebhookURL() *AppConfigUpdateOne {
+	_u.mutation.ClearDiscordWebhookURL()
+	return _u
+}
+
+// SetSlackWebhookURL sets the "slack_webhook_url" field.
+func (_u *AppConfigUpdateOne) SetSlackWebhookURL(v string) *AppConfigUpdateOne {
+	_u.mutation.SetSlackWebhookURL(v)
+	return _u
+}
+
+// SetNillableSlackWebhookURL sets the "slack_webhook_url" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableSlackWebhookURL(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetSlackWebhookURL(*v)
+	}
+	return _u
+}
+
+// ClearSlackWebhookURL clears the value of the "slack_webhook_url" field.
+func (_u *AppConfigUpdateOne) ClearSlackWebhookURL() *AppConfigUpdateOne {
+	_u.mutation.ClearSlackWebhookURL()
+	return _u
+}
+
+// SetMatrixHomeserverURL sets the "matrix_homeserver_url" field.
+func (_u *AppConfigUpdateOne) SetMatrixHomeserverURL(v string) *AppConfigUpdateOne {
+	_u.mutation.SetMatrixHomeserverURL(v)
+	return _u
+}
+
+// SetNillableMatrixHomeserverURL sets the "matrix_homeserver_url" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableMatrixHomeserverURL(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetMatrixHomeserverURL(*v)
+	}
+	return _u
+}
+
+// ClearMatrixHomeserverURL clears the value of the "matrix_homeserver_url" field.
+func (_u *AppConfigUpdateOne) ClearMatrixHomeserverURL() *AppConfigUpdateOne {
+	_u.mutation.ClearMatrixHomeserverURL()
+	return _u
+}
+
+// SetMatrixAccessToken sets the "matrix_access_token" field.
+func (_u *AppConfigUpdateOne) SetMatrixAccessToken(v string) *AppConfigUpdateOne {
+	_u.mutation.SetMatrixAccessToken(v)
+	return _u
+}
+
+// SetNillableMatrixAccessToken sets the "matrix_access_token" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableMatrixAccessToken(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetMatrixAccessToken(*v)
+	}
+	return _u
+}
+
+// ClearMatrixAccessToken clears the value of the "matrix_access_token" field.
+func (_u *AppConfigUpdateOne) ClearMatrixAccessToken() *AppConfigUpdateOne {
+	_u.mutation.ClearMatrixAccessToken()
+	return _u
+}
+
+// SetMatrixRoomID sets the "matrix_room_id" field.
+func (_u *AppConfigUpdateOne) SetMatrixRoomID(v string) *AppConfigUpdateOne {
+	_u.mutation.SetMatrixRoomID(v)
+	return _u
+}
+
+// SetNillableMatrixRoomID sets the "matrix_room_id" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableMatrixRoomID(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetMatrixRoomID(*v)
+	}
+	return _u
+}
+
+// ClearMatrixRoomID clears the value of the "matrix_room_id" field.
+func (_u *AppConfigUpdateOne) ClearMatrixRoomID() *AppConfigUpdateOne {
+	_u.mutation.ClearMatrixRoomID()
+	return _u
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_u *AppConfigUpdateOne) SetUmamiURL(v string) *AppConfigUpdateOne {
 	_u.mutation.SetUmamiURL(v)
@@ -3196,6 +3426,36 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.WebhookSecretCleared() {
 		_spec.ClearField(appconfig.FieldWebhookSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.DiscordWebhookURL(); ok {
+		_spec.SetField(appconfig.FieldDiscordWebhookURL, field.TypeString, value)
+	}
+	if _u.mutation.DiscordWebhookURLCleared() {
+		_spec.ClearField(appconfig.FieldDiscordWebhookURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.SlackWebhookURL(); ok {
+		_spec.SetField(appconfig.FieldSlackWebhookURL, field.TypeString, value)
+	}
+	if _u.mutation.SlackWebhookURLCleared() {
+		_spec.ClearField(appconfig.FieldSlackWebhookURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.MatrixHomeserverURL(); ok {
+		_spec.SetField(appconfig.FieldMatrixHomeserverURL, field.TypeString, value)
+	}
+	if _u.mutation.MatrixHomeserverURLCleared() {
+		_spec.ClearField(appconfig.FieldMatrixHomeserverURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.MatrixAccessToken(); ok {
+		_spec.SetField(appconfig.FieldMatrixAccessToken, field.TypeString, value)
+	}
+	if _u.mutation.MatrixAccessTokenCleared() {
+		_spec.ClearField(appconfig.FieldMatrixAccessToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.MatrixRoomID(); ok {
+		_spec.SetField(appconfig.FieldMatrixRoomID, field.TypeString, value)
+	}
+	if _u.mutation.MatrixRoomIDCleared() {
+		_spec.ClearField(appconfig.FieldMatrixRoomID, field.TypeString)
 	}
 	if value, ok := _u.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)

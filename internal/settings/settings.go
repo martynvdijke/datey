@@ -151,6 +151,21 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.WebhookSecret; v != nil {
 		cfg.WebhookSecret = *v
 	}
+	if v := row.DiscordWebhookURL; v != nil {
+		cfg.DiscordWebhookURL = *v
+	}
+	if v := row.SlackWebhookURL; v != nil {
+		cfg.SlackWebhookURL = *v
+	}
+	if v := row.MatrixHomeserverURL; v != nil {
+		cfg.MatrixHomeserverURL = *v
+	}
+	if v := row.MatrixAccessToken; v != nil {
+		cfg.MatrixAccessToken = *v
+	}
+	if v := row.MatrixRoomID; v != nil {
+		cfg.MatrixRoomID = *v
+	}
 	if v := row.UmamiURL; v != nil {
 		cfg.UmamiURL = *v
 	}
@@ -419,6 +434,14 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	ntfyPriority := parseIntPtr(form, "NTFY_PRIORITY", errs)
 	webhookURL := form.Get("WEBHOOK_URL")
 	webhookSecret := form.Get("WEBHOOK_SECRET")
+	discordWebhookURL := form.Get("DISCORD_WEBHOOK_URL")
+	slackWebhookURL := form.Get("SLACK_WEBHOOK_URL")
+	matrixHomeserverURL := form.Get("MATRIX_HOMESERVER_URL")
+	matrixAccessToken := form.Get("MATRIX_ACCESS_TOKEN")
+	matrixRoomID := form.Get("MATRIX_ROOM_ID")
+	if matrixAccessToken == "" {
+		matrixAccessToken = cfg.MatrixAccessToken
+	}
 	umamiURL := form.Get("UMAMI_URL")
 	umamiWebsiteID := form.Get("UMAMI_WEBSITE_ID")
 	einkMode := form.Get("EINK_MODE") == "on"
@@ -495,6 +518,24 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		}
 		if immichAPIKey == "" && cfg.ImmichAPIKey == "" {
 			errs["IMMICH_API_KEY"] = "API key is required when Immich is configured"
+		}
+	}
+	if discordWebhookURL != "" {
+		u, err := url.ParseRequestURI(discordWebhookURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			errs["DISCORD_WEBHOOK_URL"] = "Discord webhook URL must be an absolute URL"
+		}
+	}
+	if slackWebhookURL != "" {
+		u, err := url.ParseRequestURI(slackWebhookURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			errs["SLACK_WEBHOOK_URL"] = "Slack webhook URL must be an absolute URL"
+		}
+	}
+	if matrixHomeserverURL != "" {
+		u, err := url.ParseRequestURI(matrixHomeserverURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			errs["MATRIX_HOMESERVER_URL"] = "Matrix homeserver URL must be an absolute URL"
 		}
 	}
 
@@ -602,6 +643,11 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableNtfyPriority(ntfyPriority).
 		SetNillableWebhookURL(nillableStr(webhookURL)).
 		SetNillableWebhookSecret(nillableStr(webhookSecret)).
+		SetNillableDiscordWebhookURL(nillableStr(discordWebhookURL)).
+		SetNillableSlackWebhookURL(nillableStr(slackWebhookURL)).
+		SetNillableMatrixHomeserverURL(nillableStr(matrixHomeserverURL)).
+		SetNillableMatrixAccessToken(nillableStr(matrixAccessToken)).
+		SetNillableMatrixRoomID(nillableStr(matrixRoomID)).
 		SetNillableUmamiURL(nillableStr(umamiURL)).
 		SetNillableUmamiWebsiteID(nillableStr(umamiWebsiteID)).
 		SetNillableEinkMode(&einkMode).
@@ -656,6 +702,11 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.NtfyPriority = deref(ntfyPriority, cfg.NtfyPriority)
 	cfg.WebhookURL = webhookURL
 	cfg.WebhookSecret = webhookSecret
+	cfg.DiscordWebhookURL = discordWebhookURL
+	cfg.SlackWebhookURL = slackWebhookURL
+	cfg.MatrixHomeserverURL = matrixHomeserverURL
+	cfg.MatrixAccessToken = matrixAccessToken
+	cfg.MatrixRoomID = matrixRoomID
 	cfg.UmamiURL = umamiURL
 	cfg.UmamiWebsiteID = umamiWebsiteID
 	cfg.EinkMode = einkMode

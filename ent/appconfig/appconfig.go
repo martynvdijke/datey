@@ -75,6 +75,16 @@ const (
 	FieldWebhookURL = "webhook_url"
 	// FieldWebhookSecret holds the string denoting the webhook_secret field in the database.
 	FieldWebhookSecret = "webhook_secret"
+	// FieldDiscordWebhookURL holds the string denoting the discord_webhook_url field in the database.
+	FieldDiscordWebhookURL = "discord_webhook_url"
+	// FieldSlackWebhookURL holds the string denoting the slack_webhook_url field in the database.
+	FieldSlackWebhookURL = "slack_webhook_url"
+	// FieldMatrixHomeserverURL holds the string denoting the matrix_homeserver_url field in the database.
+	FieldMatrixHomeserverURL = "matrix_homeserver_url"
+	// FieldMatrixAccessToken holds the string denoting the matrix_access_token field in the database.
+	FieldMatrixAccessToken = "matrix_access_token"
+	// FieldMatrixRoomID holds the string denoting the matrix_room_id field in the database.
+	FieldMatrixRoomID = "matrix_room_id"
 	// FieldUmamiURL holds the string denoting the umami_url field in the database.
 	FieldUmamiURL = "umami_url"
 	// FieldUmamiWebsiteID holds the string denoting the umami_website_id field in the database.
@@ -166,6 +176,11 @@ var Columns = []string{
 	FieldNtfyPriority,
 	FieldWebhookURL,
 	FieldWebhookSecret,
+	FieldDiscordWebhookURL,
+	FieldSlackWebhookURL,
+	FieldMatrixHomeserverURL,
+	FieldMatrixAccessToken,
+	FieldMatrixRoomID,
 	FieldUmamiURL,
 	FieldUmamiWebsiteID,
 	FieldEinkMode,
@@ -370,6 +385,31 @@ func ByWebhookURL(opts ...sql.OrderTermOption) OrderOption {
 // ByWebhookSecret orders the results by the webhook_secret field.
 func ByWebhookSecret(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWebhookSecret, opts...).ToFunc()
+}
+
+// ByDiscordWebhookURL orders the results by the discord_webhook_url field.
+func ByDiscordWebhookURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDiscordWebhookURL, opts...).ToFunc()
+}
+
+// BySlackWebhookURL orders the results by the slack_webhook_url field.
+func BySlackWebhookURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSlackWebhookURL, opts...).ToFunc()
+}
+
+// ByMatrixHomeserverURL orders the results by the matrix_homeserver_url field.
+func ByMatrixHomeserverURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMatrixHomeserverURL, opts...).ToFunc()
+}
+
+// ByMatrixAccessToken orders the results by the matrix_access_token field.
+func ByMatrixAccessToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMatrixAccessToken, opts...).ToFunc()
+}
+
+// ByMatrixRoomID orders the results by the matrix_room_id field.
+func ByMatrixRoomID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMatrixRoomID, opts...).ToFunc()
 }
 
 // ByUmamiURL orders the results by the umami_url field.

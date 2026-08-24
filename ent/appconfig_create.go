@@ -467,6 +467,76 @@ func (_c *AppConfigCreate) SetNillableWebhookSecret(v *string) *AppConfigCreate 
 	return _c
 }
 
+// SetDiscordWebhookURL sets the "discord_webhook_url" field.
+func (_c *AppConfigCreate) SetDiscordWebhookURL(v string) *AppConfigCreate {
+	_c.mutation.SetDiscordWebhookURL(v)
+	return _c
+}
+
+// SetNillableDiscordWebhookURL sets the "discord_webhook_url" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableDiscordWebhookURL(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetDiscordWebhookURL(*v)
+	}
+	return _c
+}
+
+// SetSlackWebhookURL sets the "slack_webhook_url" field.
+func (_c *AppConfigCreate) SetSlackWebhookURL(v string) *AppConfigCreate {
+	_c.mutation.SetSlackWebhookURL(v)
+	return _c
+}
+
+// SetNillableSlackWebhookURL sets the "slack_webhook_url" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableSlackWebhookURL(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetSlackWebhookURL(*v)
+	}
+	return _c
+}
+
+// SetMatrixHomeserverURL sets the "matrix_homeserver_url" field.
+func (_c *AppConfigCreate) SetMatrixHomeserverURL(v string) *AppConfigCreate {
+	_c.mutation.SetMatrixHomeserverURL(v)
+	return _c
+}
+
+// SetNillableMatrixHomeserverURL sets the "matrix_homeserver_url" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableMatrixHomeserverURL(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetMatrixHomeserverURL(*v)
+	}
+	return _c
+}
+
+// SetMatrixAccessToken sets the "matrix_access_token" field.
+func (_c *AppConfigCreate) SetMatrixAccessToken(v string) *AppConfigCreate {
+	_c.mutation.SetMatrixAccessToken(v)
+	return _c
+}
+
+// SetNillableMatrixAccessToken sets the "matrix_access_token" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableMatrixAccessToken(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetMatrixAccessToken(*v)
+	}
+	return _c
+}
+
+// SetMatrixRoomID sets the "matrix_room_id" field.
+func (_c *AppConfigCreate) SetMatrixRoomID(v string) *AppConfigCreate {
+	_c.mutation.SetMatrixRoomID(v)
+	return _c
+}
+
+// SetNillableMatrixRoomID sets the "matrix_room_id" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableMatrixRoomID(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetMatrixRoomID(*v)
+	}
+	return _c
+}
+
 // SetUmamiURL sets the "umami_url" field.
 func (_c *AppConfigCreate) SetUmamiURL(v string) *AppConfigCreate {
 	_c.mutation.SetUmamiURL(v)
@@ -1018,6 +1088,26 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.WebhookSecret(); ok {
 		_spec.SetField(appconfig.FieldWebhookSecret, field.TypeString, value)
 		_node.WebhookSecret = &value
+	}
+	if value, ok := _c.mutation.DiscordWebhookURL(); ok {
+		_spec.SetField(appconfig.FieldDiscordWebhookURL, field.TypeString, value)
+		_node.DiscordWebhookURL = &value
+	}
+	if value, ok := _c.mutation.SlackWebhookURL(); ok {
+		_spec.SetField(appconfig.FieldSlackWebhookURL, field.TypeString, value)
+		_node.SlackWebhookURL = &value
+	}
+	if value, ok := _c.mutation.MatrixHomeserverURL(); ok {
+		_spec.SetField(appconfig.FieldMatrixHomeserverURL, field.TypeString, value)
+		_node.MatrixHomeserverURL = &value
+	}
+	if value, ok := _c.mutation.MatrixAccessToken(); ok {
+		_spec.SetField(appconfig.FieldMatrixAccessToken, field.TypeString, value)
+		_node.MatrixAccessToken = &value
+	}
+	if value, ok := _c.mutation.MatrixRoomID(); ok {
+		_spec.SetField(appconfig.FieldMatrixRoomID, field.TypeString, value)
+		_node.MatrixRoomID = &value
 	}
 	if value, ok := _c.mutation.UmamiURL(); ok {
 		_spec.SetField(appconfig.FieldUmamiURL, field.TypeString, value)

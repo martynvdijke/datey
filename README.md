@@ -117,6 +117,11 @@ See `.env.example` for a template.
 | `TELEGRAM_CHAT_ID` | — | Telegram chat ID |
 | `WEBHOOK_URL` | — | Comma-separated list of URLs that receive a JSON POST per reminder (required to enable webhook) |
 | `WEBHOOK_SECRET` | — | Optional secret used to sign webhook requests (`X-Datey-Signature: sha256=<hmac>`) |
+| `DISCORD_WEBHOOK_URL` | — | Discord channel webhook URL (**enforced**: absolute URL) |
+| `SLACK_WEBHOOK_URL` | — | Slack incoming webhook URL (**enforced**: absolute URL) |
+| `MATRIX_HOMESERVER_URL` | — | Matrix homeserver URL, e.g. `https://matrix.example.com` (**enforced**: absolute URL) |
+| `MATRIX_ACCESS_TOKEN` | — | Matrix access token (masked in UI) |
+| `MATRIX_ROOM_ID` | — | Matrix room ID, e.g. `!abc123:example.com` |
 | `UMAMI_URL` | — | Umami analytics endpoint |
 | `UMAMI_WEBSITE_ID` | — | Umami website ID |
 | `EINK_MODE` | `false` | Force high-contrast E-Ink theme for all users |
@@ -142,6 +147,12 @@ See `.env.example` for a template.
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 
 > **Webhook receivers:** each reminder is POSTed as JSON `{"title": "...", "message": "...", "channel": "webhook", "sent_at": "<RFC3339>"}` to every configured URL. When `WEBHOOK_SECRET` is set, requests carry an `X-Datey-Signature: sha256=<hex>` header — recompute the HMAC-SHA256 of the raw body with your shared secret to verify the request came from datey. Use the "Webhook" test button in Settings → Notifications to confirm delivery before wiring up automation.
+
+### Discord, Slack & Matrix Setup
+
+- **Discord** — In your Discord server go to **Server Settings → Integrations → Webhooks → Create Webhook**, copy the webhook URL and paste it as `DISCORD_WEBHOOK_URL`. Test with the Discord test button in Settings → Configuration.
+- **Slack** — Create an incoming webhook in **Slack App → Incoming Webhooks** (or via https://api.slack.com/messaging/webhooks), copy the URL and set `SLACK_WEBHOOK_URL`. Test with the Slack test button.
+- **Matrix** — In Element go to **Settings → Help & About → Access Token** to copy your access token (`MATRIX_ACCESS_TOKEN`), set the homeserver URL (`MATRIX_HOMESERVER_URL`, e.g. `https://matrix.example.com`) and the room ID (`MATRIX_ROOM_ID`, e.g. `!abc123:example.com` visible in Room Settings → Advanced). Invite your bot user to the room first. Test with the Matrix test button.
 
 ### CardDAV Sync Setup
 
