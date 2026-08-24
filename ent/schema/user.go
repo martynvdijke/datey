@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"regexp"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -16,6 +18,7 @@ func (User) Fields() []ent.Field {
 		field.String("password_hash").NotEmpty(),
 		field.Enum("role").Values("admin", "user").Default("user"),
 		field.Bool("eink_mode").Default(false),
+		field.String("locale").Optional().Nillable().Match(regexp.MustCompile(`^[a-z]{2}(-[A-Z]{2})?$`)),
 		field.Time("created_at"),
 		field.Time("updated_at"),
 	}

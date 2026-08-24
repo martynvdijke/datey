@@ -65,6 +65,22 @@
       </div>
     </div>
 
+    <h2 class="mb-3 mt-4">{{T "settings.language_title"}}</h2>
+    <div class="card mb-4">
+      <div class="card-body">
+        <form hx-post="/settings/locale" hx-swap="none">
+          {{template "csrfField" .}}
+          <label class="form-label" for="locale-select">{{T "settings.language_label"}}</label>
+          <select class="form-select" id="locale-select" name="locale">
+            <option value="en" {{if eq .CurrentLocale "en"}}selected{{end}}>{{T "settings.language_en"}}</option>
+            <option value="de" {{if eq .CurrentLocale "de"}}selected{{end}}>{{T "settings.language_de"}}</option>
+          </select>
+          <div class="form-text">{{T "settings.language_help"}}</div>
+          <button class="btn btn-primary mt-2" type="submit">{{T "settings.language_save"}}</button>
+        </form>
+      </div>
+    </div>
+
     <h2 class="mb-3 mt-4">Tracking</h2>
     <div class="table-responsive">
       <table class="table align-middle">

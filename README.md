@@ -277,6 +277,14 @@ datey/
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |
 
+## Adding a Language
+
+1. Copy `internal/i18n/locales/en.json` to `internal/i18n/locales/<code>.json` (code is two lowercase letters, e.g. `fr`, `es`; region variants like `de-DE` map to `de`).
+2. Translate every value, keep keys identical. Missing keys fall back to English at runtime; unknown keys render the key itself.
+3. Rebuild (`go build -tags fts5` or `docker compose build`) — catalogs are `go:embed`'d, no config change needed.
+4. Verify: set `Accept-Language: <code>` or save the language in Settings → Language and reload pages; dashboard, people, and settings strings should appear in the new language.
+5. Submit the new JSON file — no code changes required.
+
 ## License
 
 MIT

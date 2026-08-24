@@ -267,4 +267,8 @@ func init() {
 	userDescEinkMode := userFields[3].Descriptor()
 	// user.DefaultEinkMode holds the default value on creation for the eink_mode field.
 	user.DefaultEinkMode = userDescEinkMode.Default.(bool)
+	// userDescLocale is the schema descriptor for locale field.
+	userDescLocale := userFields[4].Descriptor()
+	// user.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	user.LocaleValidator = userDescLocale.Validators[0].(func(string) error)
 }

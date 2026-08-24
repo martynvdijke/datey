@@ -8,6 +8,7 @@ import (
 	"math"
 
 	"github.com/datey/datey/internal/age"
+	"github.com/datey/datey/internal/i18n"
 )
 
 //go:embed templates/*.html
@@ -91,6 +92,9 @@ var funcMap = template.FuncMap{
 			return fmt.Sprintf("%drd", n)
 		}
 		return fmt.Sprintf("%dth", n)
+	},
+	"T": func(key string) string {
+		return i18n.T("en", key)
 	},
 }
 

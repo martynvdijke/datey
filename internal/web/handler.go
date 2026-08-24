@@ -17,6 +17,7 @@ import (
 	"github.com/datey/datey/handlers"
 	"github.com/datey/datey/internal/age"
 	"github.com/datey/datey/internal/config"
+	"github.com/datey/datey/internal/i18n"
 	"github.com/datey/datey/internal/immich"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/milestone"
@@ -109,6 +110,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Group(func(r chi.Router) {
 		r.Use(h.SetupRedirect)
 		r.Use(h.CSRF)
+		r.Use(h.Locale)
 
 		r.NotFound(h.notFound)
 
@@ -147,6 +149,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		// Protected routes — require authentication
 		r.Group(func(r chi.Router) {
 			r.Use(h.Auth)
+			r.Use(h.Locale)
 
 			r.Get("/", h.dashboard)
 			// People routes (new path)
@@ -210,6 +213,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 			// E-Ink toggle: requires auth (not admin-only, any user can toggle)
 			r.Post("/settings/eink-toggle", h.settingsEinkToggle)
+			r.Post("/settings/locale", h.settingsLocaleSave)
 
 			// Web Push subscription management (authenticated, CSRF-protected)
 			r.Get("/push/vapid-public-key", h.pushVAPIDPublicKey)
@@ -610,6 +614,7 @@ func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 		"CSRFToken":       csrfTokenFromContext(r.Context()),
 		"PushConfigured":  h.notifReg.IsConfigured("webpush"),
 		"EmailConfigured": h.notifReg.IsConfigured("email"),
+		"Locale":          localeFromRequest(r),
 	}
 	u := UserFromContext(r.Context())
 	if u != nil {
@@ -669,6 +674,10 @@ func hasPrefix(s, prefix string) bool {
 	return len(s) >= len(prefix) && s[:len(prefix)] == prefix
 }
 
+func localeFromRequest(r *http.Request) string {
+	return i18n.LocaleFromContext(r.Context())
+}
+
 func (h *Handler) render(w http.ResponseWriter, r *http.Request, page string, data map[string]any) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl, ok := h.templates[page]
@@ -683,7 +692,18 @@ func (h *Handler) render(w http.ResponseWriter, r *http.Request, page string, da
 	merged := h.baseData(r, title)
 	maps.Copy(merged, data)
 
-	if err := tmpl.ExecuteTemplate(w, "base.html", merged); err != nil {
+	locale := i18n.LocaleFromContext(r.Context())
+	// Clone template to inject per-request T without racing shared funcMap.
+	cloned, err := tmpl.Clone()
+	if err != nil {
+		slog.Error("clone template", "error", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	cloned.Funcs(template.FuncMap{
+		"T": func(key string) string { return i18n.T(locale, key) },
+	})
+	if err := cloned.ExecuteTemplate(w, "base.html", merged); err != nil {
 		slog.Error("render template", "error", err)
 	}
 }

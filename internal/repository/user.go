@@ -81,3 +81,21 @@ func (r *UserRepository) UpdateEinkMode(ctx context.Context, id int) (bool, erro
 	}
 	return newVal, nil
 }
+
+func (r *UserRepository) SetLocale(ctx context.Context, id int, locale string) error {
+	if locale == "" {
+		return r.client.User.UpdateOneID(id).ClearLocale().Exec(ctx)
+	}
+	return r.client.User.UpdateOneID(id).SetLocale(locale).Exec(ctx)
+}
+
+func (r *UserRepository) GetLocale(ctx context.Context, id int) (string, error) {
+	u, err := r.client.User.Get(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	if u.Locale == nil {
+		return "", nil
+	}
+	return *u.Locale, nil
+}

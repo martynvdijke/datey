@@ -22,6 +22,8 @@ const (
 	FieldRole = "role"
 	// FieldEinkMode holds the string denoting the eink_mode field in the database.
 	FieldEinkMode = "eink_mode"
+	// FieldLocale holds the string denoting the locale field in the database.
+	FieldLocale = "locale"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -64,6 +66,7 @@ var Columns = []string{
 	FieldPasswordHash,
 	FieldRole,
 	FieldEinkMode,
+	FieldLocale,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -85,6 +88,8 @@ var (
 	PasswordHashValidator func(string) error
 	// DefaultEinkMode holds the default value on creation for the "eink_mode" field.
 	DefaultEinkMode bool
+	// LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	LocaleValidator func(string) error
 )
 
 // Role defines the type for the "role" enum field.
@@ -139,6 +144,11 @@ func ByRole(opts ...sql.OrderTermOption) OrderOption {
 // ByEinkMode orders the results by the eink_mode field.
 func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEinkMode, opts...).ToFunc()
+}
+
+// ByLocale orders the results by the locale field.
+func ByLocale(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocale, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

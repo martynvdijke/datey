@@ -62,11 +62,16 @@ func (h *Handler) settings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	locale := ""
+	if u := UserFromContext(r.Context()); u != nil && u.Locale != nil {
+		locale = *u.Locale
+	}
 	h.render(w, r, "settings.html", map[string]any{
-		"Title":       "Datey - Settings",
-		"SettingsTab": "notifications",
-		"Channels":    channels,
-		"Carddav":     carddav,
+		"Title":         "Datey - Settings",
+		"SettingsTab":   "notifications",
+		"Channels":      channels,
+		"Carddav":       carddav,
+		"CurrentLocale": locale,
 	})
 }
 
