@@ -289,7 +289,7 @@ func TestHACalendarEmptyState(t *testing.T) {
 		t.Fatalf("expected empty array, got %d", len(events))
 	}
 	// Must be JSON array not null
-	if string(w.Body.Bytes()) == "null\n" {
+	if w.Body.String() == "null\n" {
 		t.Error("expected [] not null")
 	}
 }

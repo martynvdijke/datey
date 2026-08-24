@@ -77,10 +77,8 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 		if dateStr == "" {
 			errors["date"] = "Date is required"
 		}
-	} else {
-		if dateStr == "" {
-			errors["date"] = "Date is required"
-		}
+	} else if dateStr == "" {
+		errors["date"] = "Date is required"
 	}
 
 	if len(errors) > 0 {
