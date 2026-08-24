@@ -47,6 +47,10 @@ type mockMessage struct {
 }
 
 func (m *mockNotifier) Send(ctx context.Context, title, message string) error {
+	return m.SendTo(ctx, title, message, "")
+}
+
+func (m *mockNotifier) SendTo(ctx context.Context, title, message string, target string) error {
 	if m.sendErr != nil {
 		return m.sendErr
 	}

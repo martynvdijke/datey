@@ -51,6 +51,11 @@ func (n *WebPushNotifier) IsConfigured() bool {
 // endpoints that report 404 (gone) or 410 (unsubscribed). Any other failure is
 // returned so the caller can record it (e.g. a failed one-time delivery).
 func (n *WebPushNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *WebPushNotifier) SendTo(ctx context.Context, title, message string, target string) error {
+	_ = target
 	if !n.IsConfigured() {
 		return fmt.Errorf("webpush: not configured")
 	}

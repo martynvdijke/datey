@@ -75,6 +75,11 @@ func Locale(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldLocale, v))
 }
 
+// NotificationScopeGroupIds applies equality check predicate on the "notification_scope_group_ids" field. It's identical to NotificationScopeGroupIdsEQ.
+func NotificationScopeGroupIds(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotificationScopeGroupIds, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -320,6 +325,101 @@ func LocaleContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldLocale, v))
 }
 
+// NotificationScopeModeEQ applies the EQ predicate on the "notification_scope_mode" field.
+func NotificationScopeModeEQ(v NotificationScopeMode) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotificationScopeMode, v))
+}
+
+// NotificationScopeModeNEQ applies the NEQ predicate on the "notification_scope_mode" field.
+func NotificationScopeModeNEQ(v NotificationScopeMode) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotificationScopeMode, v))
+}
+
+// NotificationScopeModeIn applies the In predicate on the "notification_scope_mode" field.
+func NotificationScopeModeIn(vs ...NotificationScopeMode) predicate.User {
+	return predicate.User(sql.FieldIn(FieldNotificationScopeMode, vs...))
+}
+
+// NotificationScopeModeNotIn applies the NotIn predicate on the "notification_scope_mode" field.
+func NotificationScopeModeNotIn(vs ...NotificationScopeMode) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldNotificationScopeMode, vs...))
+}
+
+// NotificationScopeGroupIdsEQ applies the EQ predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsNEQ applies the NEQ predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsIn applies the In predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldNotificationScopeGroupIds, vs...))
+}
+
+// NotificationScopeGroupIdsNotIn applies the NotIn predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldNotificationScopeGroupIds, vs...))
+}
+
+// NotificationScopeGroupIdsGT applies the GT predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsGTE applies the GTE predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsLT applies the LT predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsLTE applies the LTE predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsContains applies the Contains predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsHasPrefix applies the HasPrefix predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsHasSuffix applies the HasSuffix predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsIsNil applies the IsNil predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldNotificationScopeGroupIds))
+}
+
+// NotificationScopeGroupIdsNotNil applies the NotNil predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldNotificationScopeGroupIds))
+}
+
+// NotificationScopeGroupIdsEqualFold applies the EqualFold predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldNotificationScopeGroupIds, v))
+}
+
+// NotificationScopeGroupIdsContainsFold applies the ContainsFold predicate on the "notification_scope_group_ids" field.
+func NotificationScopeGroupIdsContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldNotificationScopeGroupIds, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -461,6 +561,29 @@ func HasPasswordResetTokens() predicate.User {
 func HasPasswordResetTokensWith(preds ...predicate.PasswordResetToken) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newPasswordResetTokensStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNotificationChannels applies the HasEdge predicate on the "notification_channels" edge.
+func HasNotificationChannels() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NotificationChannelsTable, NotificationChannelsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNotificationChannelsWith applies the HasEdge predicate on the "notification_channels" edge with a given conditions (other predicates).
+func HasNotificationChannelsWith(preds ...predicate.UserNotificationChannel) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newNotificationChannelsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -70,6 +70,11 @@ func DateKey(v string) predicate.NotificationLog {
 	return predicate.NotificationLog(sql.FieldEQ(FieldDateKey, v))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldEQ(FieldUserID, v))
+}
+
 // ChannelEQ applies the EQ predicate on the "channel" field.
 func ChannelEQ(v string) predicate.NotificationLog {
 	return predicate.NotificationLog(sql.FieldEQ(FieldChannel, v))
@@ -238,6 +243,56 @@ func DateKeyEqualFold(v string) predicate.NotificationLog {
 // DateKeyContainsFold applies the ContainsFold predicate on the "date_key" field.
 func DateKeyContainsFold(v string) predicate.NotificationLog {
 	return predicate.NotificationLog(sql.FieldContainsFold(FieldDateKey, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// UserIDGT applies the GT predicate on the "user_id" field.
+func UserIDGT(v int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldGT(FieldUserID, v))
+}
+
+// UserIDGTE applies the GTE predicate on the "user_id" field.
+func UserIDGTE(v int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldGTE(FieldUserID, v))
+}
+
+// UserIDLT applies the LT predicate on the "user_id" field.
+func UserIDLT(v int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldLT(FieldUserID, v))
+}
+
+// UserIDLTE applies the LTE predicate on the "user_id" field.
+func UserIDLTE(v int) predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldLTE(FieldUserID, v))
+}
+
+// UserIDIsNil applies the IsNil predicate on the "user_id" field.
+func UserIDIsNil() predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldIsNull(FieldUserID))
+}
+
+// UserIDNotNil applies the NotNil predicate on the "user_id" field.
+func UserIDNotNil() predicate.NotificationLog {
+	return predicate.NotificationLog(sql.FieldNotNull(FieldUserID))
 }
 
 // HasEvent applies the HasEdge predicate on the "event" edge.

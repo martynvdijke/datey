@@ -41,7 +41,15 @@ func (n *EmailNotifier) IsConfigured() bool {
 }
 
 func (n *EmailNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *EmailNotifier) SendTo(ctx context.Context, title, message string, target string) error {
 	addr := fmt.Sprintf("%s:%d", n.cfg.SMTPHost, n.cfg.SMTPPort)
+	recipient := n.cfg.NotifyEmail
+	if target != "" {
+		recipient = target
+	}
 
 	// Render HTML body with plain-text fallback
 	htmlBody, htmlErr := n.renderHTML(title, message)
@@ -58,20 +66,20 @@ func (n *EmailNotifier) Send(ctx context.Context, title, message string) error {
 
 	// Build the full message
 	fullMsg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: %s\r\n\r\n%s",
-		n.cfg.SMTPUser, n.cfg.NotifyEmail, title, contentType, body)
+		n.cfg.SMTPUser, recipient, title, contentType, body)
 
 	// Choose connection mode
 	switch {
 	case n.cfg.SMTPPort == 465:
-		return n.sendDirectTLS(ctx, addr, fullMsg, timeout)
+		return n.sendDirectTLS(ctx, addr, fullMsg, recipient, timeout)
 	case n.cfg.SMTPTLS:
-		return n.sendSTARTTLS(ctx, addr, fullMsg, timeout)
+		return n.sendSTARTTLS(ctx, addr, fullMsg, recipient, timeout)
 	default:
-		return n.sendPlain(ctx, addr, fullMsg, timeout)
+		return n.sendPlain(ctx, addr, fullMsg, recipient, timeout)
 	}
 }
 
-func (n *EmailNotifier) sendDirectTLS(ctx context.Context, addr, msg string, timeout time.Duration) error {
+func (n *EmailNotifier) sendDirectTLS(ctx context.Context, addr, msg string, recipient string, timeout time.Duration) error {
 	tlsCfg := &tls.Config{ServerName: n.cfg.SMTPHost}
 	conn, err := tls.DialWithDialer(&net.Dialer{Timeout: timeout}, "tcp", addr, tlsCfg)
 	if err != nil {
@@ -85,10 +93,10 @@ func (n *EmailNotifier) sendDirectTLS(ctx context.Context, addr, msg string, tim
 	}
 	defer func() { _ = client.Close() }()
 
-	return n.sendWithClient(client, msg)
+	return n.sendWithClient(client, msg, recipient)
 }
 
-func (n *EmailNotifier) sendSTARTTLS(ctx context.Context, addr, msg string, timeout time.Duration) error {
+func (n *EmailNotifier) sendSTARTTLS(ctx context.Context, addr, msg string, recipient string, timeout time.Duration) error {
 	conn, err := net.DialTimeout("tcp", addr, timeout)
 	if err != nil {
 		return fmt.Errorf("dial: %w", err)
@@ -105,12 +113,12 @@ func (n *EmailNotifier) sendSTARTTLS(ctx context.Context, addr, msg string, time
 		return fmt.Errorf("starttls: %w", err)
 	}
 
-	err = n.sendWithClient(client, msg)
+	err = n.sendWithClient(client, msg, recipient)
 	_ = client.Close()
 	return err
 }
 
-func (n *EmailNotifier) sendPlain(ctx context.Context, addr, msg string, timeout time.Duration) error {
+func (n *EmailNotifier) sendPlain(ctx context.Context, addr, msg string, recipient string, timeout time.Duration) error {
 	conn, err := net.DialTimeout("tcp", addr, timeout)
 	if err != nil {
 		return fmt.Errorf("dial: %w", err)
@@ -122,12 +130,12 @@ func (n *EmailNotifier) sendPlain(ctx context.Context, addr, msg string, timeout
 		return fmt.Errorf("smtp client: %w", err)
 	}
 
-	err = n.sendWithClient(client, msg)
+	err = n.sendWithClient(client, msg, recipient)
 	_ = client.Close()
 	return err
 }
 
-func (n *EmailNotifier) sendWithClient(client *smtp.Client, msg string) error {
+func (n *EmailNotifier) sendWithClient(client *smtp.Client, msg string, recipient string) error {
 	// Authenticate if credentials provided
 	if n.cfg.SMTPUser != "" {
 		auth := smtp.PlainAuth("", n.cfg.SMTPUser, n.cfg.SMTPPass, n.cfg.SMTPHost)
@@ -142,7 +150,7 @@ func (n *EmailNotifier) sendWithClient(client *smtp.Client, msg string) error {
 	}
 
 	// Recipient
-	if err := client.Rcpt(n.cfg.NotifyEmail); err != nil {
+	if err := client.Rcpt(recipient); err != nil {
 		return fmt.Errorf("rcpt: %w", err)
 	}
 

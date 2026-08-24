@@ -6,12 +6,16 @@ import (
 )
 
 type mockNotifier struct {
-	name      string
+	name       string
 	configured bool
-	sent      []string
+	sent       []string
 }
 
 func (m *mockNotifier) Send(_ context.Context, title, message string) error {
+	return m.SendTo(context.TODO(), title, message, "")
+}
+
+func (m *mockNotifier) SendTo(_ context.Context, title, message string, _ string) error {
 	m.sent = append(m.sent, title+": "+message)
 	return nil
 }

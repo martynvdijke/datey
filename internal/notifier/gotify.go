@@ -30,9 +30,17 @@ func (n *GotifyNotifier) IsConfigured() bool {
 }
 
 func (n *GotifyNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *GotifyNotifier) SendTo(ctx context.Context, title, message string, target string) error {
+	destURL := n.cfg.GotifyURL
+	if target != "" {
+		destURL = target
+	}
 	payload := map[string]any{
-		"title":   title,
-		"message": message,
+		"title":    title,
+		"message":  message,
 		"priority": 5,
 	}
 
@@ -41,7 +49,7 @@ func (n *GotifyNotifier) Send(ctx context.Context, title, message string) error 
 		return fmt.Errorf("marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", n.cfg.GotifyURL+"/message", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", destURL+"/message", bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}

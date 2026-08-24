@@ -24,6 +24,10 @@ const (
 	FieldEinkMode = "eink_mode"
 	// FieldLocale holds the string denoting the locale field in the database.
 	FieldLocale = "locale"
+	// FieldNotificationScopeMode holds the string denoting the notification_scope_mode field in the database.
+	FieldNotificationScopeMode = "notification_scope_mode"
+	// FieldNotificationScopeGroupIds holds the string denoting the notification_scope_group_ids field in the database.
+	FieldNotificationScopeGroupIds = "notification_scope_group_ids"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -34,6 +38,8 @@ const (
 	EdgePushSubscriptions = "push_subscriptions"
 	// EdgePasswordResetTokens holds the string denoting the password_reset_tokens edge name in mutations.
 	EdgePasswordResetTokens = "password_reset_tokens"
+	// EdgeNotificationChannels holds the string denoting the notification_channels edge name in mutations.
+	EdgeNotificationChannels = "notification_channels"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SessionsTable is the table that holds the sessions relation/edge.
@@ -57,6 +63,13 @@ const (
 	PasswordResetTokensInverseTable = "password_reset_tokens"
 	// PasswordResetTokensColumn is the table column denoting the password_reset_tokens relation/edge.
 	PasswordResetTokensColumn = "user_password_reset_tokens"
+	// NotificationChannelsTable is the table that holds the notification_channels relation/edge.
+	NotificationChannelsTable = "user_notification_channels"
+	// NotificationChannelsInverseTable is the table name for the UserNotificationChannel entity.
+	// It exists in this package in order to avoid circular dependency with the "usernotificationchannel" package.
+	NotificationChannelsInverseTable = "user_notification_channels"
+	// NotificationChannelsColumn is the table column denoting the notification_channels relation/edge.
+	NotificationChannelsColumn = "user_notification_channels"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -67,6 +80,8 @@ var Columns = []string{
 	FieldRole,
 	FieldEinkMode,
 	FieldLocale,
+	FieldNotificationScopeMode,
+	FieldNotificationScopeGroupIds,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -90,6 +105,8 @@ var (
 	DefaultEinkMode bool
 	// LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
 	LocaleValidator func(string) error
+	// DefaultNotificationScopeGroupIds holds the default value on creation for the "notification_scope_group_ids" field.
+	DefaultNotificationScopeGroupIds string
 )
 
 // Role defines the type for the "role" enum field.
@@ -115,6 +132,32 @@ func RoleValidator(r Role) error {
 		return nil
 	default:
 		return fmt.Errorf("user: invalid enum value for role field: %q", r)
+	}
+}
+
+// NotificationScopeMode defines the type for the "notification_scope_mode" enum field.
+type NotificationScopeMode string
+
+// NotificationScopeModeAll is the default value of the NotificationScopeMode enum.
+const DefaultNotificationScopeMode = NotificationScopeModeAll
+
+// NotificationScopeMode values.
+const (
+	NotificationScopeModeAll      NotificationScopeMode = "all"
+	NotificationScopeModeSelected NotificationScopeMode = "selected"
+)
+
+func (nsm NotificationScopeMode) String() string {
+	return string(nsm)
+}
+
+// NotificationScopeModeValidator is a validator for the "notification_scope_mode" field enum values. It is called by the builders before save.
+func NotificationScopeModeValidator(nsm NotificationScopeMode) error {
+	switch nsm {
+	case NotificationScopeModeAll, NotificationScopeModeSelected:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for notification_scope_mode field: %q", nsm)
 	}
 }
 
@@ -149,6 +192,16 @@ func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
 // ByLocale orders the results by the locale field.
 func ByLocale(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLocale, opts...).ToFunc()
+}
+
+// ByNotificationScopeMode orders the results by the notification_scope_mode field.
+func ByNotificationScopeMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotificationScopeMode, opts...).ToFunc()
+}
+
+// ByNotificationScopeGroupIds orders the results by the notification_scope_group_ids field.
+func ByNotificationScopeGroupIds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotificationScopeGroupIds, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -202,6 +255,20 @@ func ByPasswordResetTokens(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newPasswordResetTokensStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByNotificationChannelsCount orders the results by notification_channels count.
+func ByNotificationChannelsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newNotificationChannelsStep(), opts...)
+	}
+}
+
+// ByNotificationChannels orders the results by notification_channels terms.
+func ByNotificationChannels(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNotificationChannelsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSessionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -221,5 +288,12 @@ func newPasswordResetTokensStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PasswordResetTokensInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, PasswordResetTokensTable, PasswordResetTokensColumn),
+	)
+}
+func newNotificationChannelsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NotificationChannelsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, NotificationChannelsTable, NotificationChannelsColumn),
 	)
 }

@@ -16,6 +16,7 @@ func (NotificationLog) Fields() []ent.Field {
 		field.String("channel").NotEmpty(),
 		field.Time("sent_at"),
 		field.String("date_key").NotEmpty(),
+		field.Int("user_id").Optional().Default(0),
 	}
 }
 
@@ -28,5 +29,6 @@ func (NotificationLog) Edges() []ent.Edge {
 func (NotificationLog) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("channel", "date_key"),
+		index.Fields("channel", "date_key", "user_id"),
 	}
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/datey/datey/internal/db"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
+	"github.com/datey/datey/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -170,45 +171,53 @@ func (h *Handler) oldLogsRedirect(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) testNotification(w http.ResponseWriter, r *http.Request) {
 	channel := chi.URLParam(r, "channel")
-
 	if !h.notifReg.IsConfigured(channel) {
 		slog.Warn("test notification: channel not configured", "source", "settings", "channel", channel)
 		http.Error(w, "channel not configured", http.StatusBadRequest)
 		return
 	}
-
 	title := "Datey Test Notification"
 	message := fmt.Sprintf("This is a test notification sent at %s", time.Now().Format(time.RFC3339))
-
+	// Resolve per-user target if exists
+	target := ""
+	if u := UserFromContext(r.Context()); u != nil {
+		if repo := repository.NewUserNotificationChannelRepository(h.client); repo != nil {
+			if m, err2 := repo.MapByUser(r.Context(), u.ID); err2 == nil {
+				if ch, ok := m[channel]; ok && ch.Enabled && ch.Target != "" {
+					target = ch.Target
+				}
+			}
+		}
+	}
 	var err error
 	switch channel {
 	case "email":
 		n := notifier.NewEmailNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "gotify":
 		n := notifier.NewGotifyNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "telegram":
 		n := notifier.NewTelegramNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "ntfy":
 		n := notifier.NewNtfyNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "webhook":
 		n := notifier.NewWebhookNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "discord":
 		n := notifier.NewDiscordNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "slack":
 		n := notifier.NewSlackNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "matrix":
 		n := notifier.NewMatrixNotifier(h.cfg)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	case "webpush":
 		n := notifier.NewWebPushNotifier(h.cfg, h.pushSubs)
-		err = n.Send(r.Context(), title, message)
+		err = n.SendTo(r.Context(), title, message, target)
 	default:
 		slog.Warn("test notification: unknown channel", "source", "settings", "channel", channel)
 		http.Error(w, "unknown channel", http.StatusBadRequest)

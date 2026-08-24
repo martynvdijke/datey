@@ -8,8 +8,8 @@ import (
 )
 
 type Registry struct {
-	mu         sync.RWMutex
-	notifiers  map[string]Notifier
+	mu        sync.RWMutex
+	notifiers map[string]Notifier
 }
 
 func NewRegistry() *Registry {
@@ -41,6 +41,25 @@ func (r *Registry) SendAll(ctx context.Context, title, message string) {
 	}
 }
 
+func (r *Registry) SendToAll(ctx context.Context, title, message string, targets map[string]string) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for name, n := range r.notifiers {
+		if !n.IsConfigured() {
+			continue
+		}
+		target := ""
+		if targets != nil {
+			target = targets[name]
+		}
+		if err := n.SendTo(ctx, title, message, target); err != nil {
+			slog.Error("notification failed", "source", "notifier", "channel", name, "error", err)
+		} else {
+			slog.Info("notification sent", "source", "notifier", "channel", name)
+		}
+	}
+}
+
 func (r *Registry) Send(ctx context.Context, name, title, message string) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -52,6 +71,19 @@ func (r *Registry) Send(ctx context.Context, name, title, message string) error 
 		return fmt.Errorf("notifier %q not configured", name)
 	}
 	return n.Send(ctx, title, message)
+}
+
+func (r *Registry) SendTo(ctx context.Context, name, title, message string, target string) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	n, ok := r.notifiers[name]
+	if !ok {
+		return fmt.Errorf("notifier %q not registered", name)
+	}
+	if !n.IsConfigured() {
+		return fmt.Errorf("notifier %q not configured", name)
+	}
+	return n.SendTo(ctx, title, message, target)
 }
 
 func (r *Registry) IsConfigured(name string) bool {

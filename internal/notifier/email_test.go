@@ -150,7 +150,7 @@ func TestEmailNotifier_TLSModeDirect(t *testing.T) {
 
 	n := NewEmailNotifier(cfg)
 	addr := fmt.Sprintf("%s:%d", cfg.SMTPHost, cfg.SMTPPort)
-	err = n.sendDirectTLS(context.Background(), addr, "test msg", time.Second)
+	err = n.sendDirectTLS(context.Background(), addr, "test msg", "test@example.com", time.Second)
 	<-serverDone
 
 	if err == nil {
@@ -197,7 +197,7 @@ func TestEmailNotifier_TLSModeSTARTTLS(t *testing.T) {
 
 	n := NewEmailNotifier(cfg)
 	addr := fmt.Sprintf("%s:%d", cfg.SMTPHost, cfg.SMTPPort)
-	err = n.sendSTARTTLS(context.Background(), addr, "test msg", time.Second)
+	err = n.sendSTARTTLS(context.Background(), addr, "test msg", "test@example.com", time.Second)
 	<-serverDone
 
 	if err == nil {
@@ -242,7 +242,7 @@ func TestEmailNotifier_TLSModePlain(t *testing.T) {
 
 	n := NewEmailNotifier(cfg)
 	addr := fmt.Sprintf("%s:%d", cfg.SMTPHost, cfg.SMTPPort)
-	err = n.sendPlain(context.Background(), addr, "test msg", time.Second)
+	err = n.sendPlain(context.Background(), addr, "test msg", "test@example.com", time.Second)
 	<-serverDone
 
 	if err == nil {
@@ -453,7 +453,7 @@ func TestEmailNotifier_TLS_Direct(t *testing.T) {
 
 	n := NewEmailNotifier(cfg)
 	addr := fmt.Sprintf("127.0.0.1:%d", port)
-	err = n.sendDirectTLS(context.Background(), addr, "", time.Duration(cfg.SMTPTimeout)*time.Second)
+	err = n.sendDirectTLS(context.Background(), addr, "", "test@example.com", time.Duration(cfg.SMTPTimeout)*time.Second)
 	<-serverDone
 
 	// Expect TLS cert verification error (self-signed cert not trusted)

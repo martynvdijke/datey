@@ -27,6 +27,10 @@ type User struct {
 	EinkMode bool `json:"eink_mode,omitempty"`
 	// Locale holds the value of the "locale" field.
 	Locale *string `json:"locale,omitempty"`
+	// NotificationScopeMode holds the value of the "notification_scope_mode" field.
+	NotificationScopeMode user.NotificationScopeMode `json:"notification_scope_mode,omitempty"`
+	// NotificationScopeGroupIds holds the value of the "notification_scope_group_ids" field.
+	NotificationScopeGroupIds string `json:"notification_scope_group_ids,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -45,9 +49,11 @@ type UserEdges struct {
 	PushSubscriptions []*PushSubscription `json:"push_subscriptions,omitempty"`
 	// PasswordResetTokens holds the value of the password_reset_tokens edge.
 	PasswordResetTokens []*PasswordResetToken `json:"password_reset_tokens,omitempty"`
+	// NotificationChannels holds the value of the notification_channels edge.
+	NotificationChannels []*UserNotificationChannel `json:"notification_channels,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
@@ -77,6 +83,15 @@ func (e UserEdges) PasswordResetTokensOrErr() ([]*PasswordResetToken, error) {
 	return nil, &NotLoadedError{edge: "password_reset_tokens"}
 }
 
+// NotificationChannelsOrErr returns the NotificationChannels value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) NotificationChannelsOrErr() ([]*UserNotificationChannel, error) {
+	if e.loadedTypes[3] {
+		return e.NotificationChannels, nil
+	}
+	return nil, &NotLoadedError{edge: "notification_channels"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -86,7 +101,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldPasswordHash, user.FieldRole, user.FieldLocale:
+		case user.FieldUsername, user.FieldPasswordHash, user.FieldRole, user.FieldLocale, user.FieldNotificationScopeMode, user.FieldNotificationScopeGroupIds:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -142,6 +157,18 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				_m.Locale = new(string)
 				*_m.Locale = value.String
 			}
+		case user.FieldNotificationScopeMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field notification_scope_mode", values[i])
+			} else if value.Valid {
+				_m.NotificationScopeMode = user.NotificationScopeMode(value.String)
+			}
+		case user.FieldNotificationScopeGroupIds:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field notification_scope_group_ids", values[i])
+			} else if value.Valid {
+				_m.NotificationScopeGroupIds = value.String
+			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -180,6 +207,11 @@ func (_m *User) QueryPushSubscriptions() *PushSubscriptionQuery {
 // QueryPasswordResetTokens queries the "password_reset_tokens" edge of the User entity.
 func (_m *User) QueryPasswordResetTokens() *PasswordResetTokenQuery {
 	return NewUserClient(_m.config).QueryPasswordResetTokens(_m)
+}
+
+// QueryNotificationChannels queries the "notification_channels" edge of the User entity.
+func (_m *User) QueryNotificationChannels() *UserNotificationChannelQuery {
+	return NewUserClient(_m.config).QueryNotificationChannels(_m)
 }
 
 // Update returns a builder for updating this User.
@@ -221,6 +253,12 @@ func (_m *User) String() string {
 		builder.WriteString("locale=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("notification_scope_mode=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotificationScopeMode))
+	builder.WriteString(", ")
+	builder.WriteString("notification_scope_group_ids=")
+	builder.WriteString(_m.NotificationScopeGroupIds)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

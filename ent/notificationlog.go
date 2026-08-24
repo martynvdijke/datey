@@ -24,6 +24,8 @@ type NotificationLog struct {
 	SentAt time.Time `json:"sent_at,omitempty"`
 	// DateKey holds the value of the "date_key" field.
 	DateKey string `json:"date_key,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID int `json:"user_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NotificationLogQuery when eager-loading is set.
 	Edges                   NotificationLogEdges `json:"edges"`
@@ -56,7 +58,7 @@ func (*NotificationLog) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case notificationlog.FieldID:
+		case notificationlog.FieldID, notificationlog.FieldUserID:
 			values[i] = new(sql.NullInt64)
 		case notificationlog.FieldChannel, notificationlog.FieldDateKey:
 			values[i] = new(sql.NullString)
@@ -102,6 +104,12 @@ func (_m *NotificationLog) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field date_key", values[i])
 			} else if value.Valid {
 				_m.DateKey = value.String
+			}
+		case notificationlog.FieldUserID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value.Valid {
+				_m.UserID = int(value.Int64)
 			}
 		case notificationlog.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -159,6 +167,9 @@ func (_m *NotificationLog) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("date_key=")
 	builder.WriteString(_m.DateKey)
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteByte(')')
 	return builder.String()
 }

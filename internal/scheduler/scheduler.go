@@ -32,6 +32,8 @@ type Scheduler struct {
 	events   *repository.EventRepository
 	notifLog *repository.NotificationLogRepository
 	settings *settings.Store
+	users    *repository.UserRepository
+	channels *repository.UserNotificationChannelRepository
 }
 
 func New(cfg *config.Config, client *ent.Client, registry *notifier.Registry, settingsStore *settings.Store) *Scheduler {
@@ -42,6 +44,8 @@ func New(cfg *config.Config, client *ent.Client, registry *notifier.Registry, se
 		events:   repository.NewEventRepository(client),
 		notifLog: repository.NewNotificationLogRepository(client),
 		settings: settingsStore,
+		users:    repository.NewUserRepository(client),
+		channels: repository.NewUserNotificationChannelRepository(client),
 	}
 }
 
@@ -147,113 +151,240 @@ func (s *Scheduler) persistRun(ctx context.Context) {
 
 func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 	now := time.Now()
-
-	// The reminder window starts at the beginning of today (midnight UTC,
-	// matching how event dates and annual occurrences are stored). Starting
-	// at time.Now() would exclude events dated today — their midnight-UTC
-	// date is earlier than the pass time — so they would never be reminded.
 	from := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	end := from.AddDate(0, 0, s.cfg.ReminderDays)
-
 	if catchUp {
-		// The catch-up pass looks backwards: occurrences with dates inside
-		// [lastRun - ReminderDays, now] could have been reminded during the
-		// downtime window. Occurrences after now are covered by the next
-		// timed pass, so the catch-up window is capped at now.
 		end = now
 		from = now.AddDate(0, 0, -s.cfg.ReminderDays)
 		if lastRun, err := s.settings.LastSchedulerRun(ctx); err == nil && lastRun != nil {
 			from = lastRun.AddDate(0, 0, -s.cfg.ReminderDays)
 		}
 	}
-
 	occurrences, err := s.events.ListUpcomingOccurrences(ctx, from, end)
 	if err != nil {
 		slog.Error("scheduler: list upcoming events", "source", "scheduler", "error", err)
 		return
 	}
-
 	slog.Info("processing reminders", "source", "scheduler", "event_count", len(occurrences), "catch_up", catchUp)
-
+	users, err := s.users.List(ctx)
+	if err != nil {
+		slog.Error("scheduler: list users", "source", "scheduler", "error", err)
+		return
+	}
+	if len(users) == 0 {
+		// Legacy fallback: no users, deliver globally once per event/channel
+		for _, occ := range occurrences {
+			event := occ.Event
+			if event.Type == "birthday" {
+				if p := event.Edges.Person; p != nil && !p.NotifyBirthdays {
+					continue
+				}
+			}
+			eventKey := fmt.Sprintf("%d-%s", event.ID, occ.Date.Format("2006-01-02"))
+			for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush", "discord", "slack", "matrix"} {
+				if !s.registry.IsConfigured(name) {
+					continue
+				}
+				dateKey := fmt.Sprintf("%s-%s", name, eventKey)
+				exists, err := s.notifLog.ExistsForDate(ctx, name, dateKey)
+				if err != nil {
+					continue
+				}
+				if exists {
+					continue
+				}
+				contactName := ""
+				if contact := event.Edges.Contact; contact != nil {
+					contactName = contact.Name
+				} else if p := event.Edges.Person; p != nil {
+					contactName = p.Name
+				} else if g := event.Edges.Group; g != nil {
+					contactName = g.Name + " (group)"
+				}
+				title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
+				days := daysBetween(now, occ.Date)
+				var message string
+				if catchUp && occ.Date.Before(now) {
+					when := fmt.Sprintf("%d days ago", -days)
+					switch days {
+					case 0:
+						when = "today"
+					case -1:
+						when = "yesterday"
+					}
+					message = fmt.Sprintf("Missed reminder: %s for %s was %s (%s)", event.Type, contactName, occ.Date.Format("January 2"), when)
+				} else {
+					when := fmt.Sprintf("%d days away", days)
+					if days <= 0 {
+						when = "today"
+					} else if days == 1 {
+						when = "tomorrow"
+					}
+					message = fmt.Sprintf("Upcoming %s for %s on %s (%s)", event.Type, contactName, occ.Date.Format("January 2"), when)
+				}
+				_ = s.registry.Send(ctx, name, title, message)
+				_, _ = s.notifLog.Create(ctx, event.ID, name, dateKey, time.Now())
+			}
+		}
+		return
+	}
 	for _, occ := range occurrences {
 		event := occ.Event
-
-		// Per-person opt-out: birthday-type occurrences are skipped for
-		// persons who disabled birthday notifications. Other event types
-		// are unaffected.
 		if event.Type == "birthday" {
 			if p := event.Edges.Person; p != nil && !p.NotifyBirthdays {
 				slog.Debug("scheduler: birthday notifications disabled", "source", "scheduler", "person", p.ID, "event", event.ID)
 				continue
 			}
 		}
-
 		eventKey := fmt.Sprintf("%d-%s", event.ID, occ.Date.Format("2006-01-02"))
-
-		for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush"} {
-			if !s.registry.IsConfigured(name) {
+		for _, u := range users {
+			if !s.userInScope(u, event) {
 				continue
 			}
-
-			dateKey := fmt.Sprintf("%s-%s", name, eventKey)
-			exists, err := s.notifLog.ExistsForDate(ctx, name, dateKey)
-			if err != nil {
-				slog.Error("scheduler: check notification log", "source", "scheduler", "error", err)
-				continue
-			}
-			if exists {
-				slog.Debug("scheduler: notification already sent", "source", "scheduler", "channel", name, "event", event.ID)
-				continue
-			}
-
-			contactName := ""
-			if contact := event.Edges.Contact; contact != nil {
-				contactName = contact.Name
-			} else if p := event.Edges.Person; p != nil {
-				contactName = p.Name
-			} else if g := event.Edges.Group; g != nil {
-				contactName = g.Name + " (group)"
-			}
-
-			title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
-
-			days := daysBetween(now, occ.Date)
-			var message string
-			if catchUp && occ.Date.Before(now) {
-				when := fmt.Sprintf("%d days ago", -days)
-				switch days {
-				case 0:
-					when = "today"
-				case -1:
-					when = "yesterday"
+			for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush", "discord", "slack", "matrix"} {
+				if !s.registry.IsConfigured(name) {
+					continue
 				}
-				message = fmt.Sprintf(
-					"Missed reminder: %s for %s was %s (%s)",
-					event.Type, contactName, occ.Date.Format("January 2"), when,
-				)
-			} else {
-				when := fmt.Sprintf("%d days away", days)
-				if days <= 0 {
-					when = "today"
-				} else if days == 1 {
-					when = "tomorrow"
+				target, hasTarget := s.resolveTarget(ctx, u.ID, name)
+				if !hasTarget && !s.hasGlobalFallback(name) {
+					continue
 				}
-				message = fmt.Sprintf(
-					"Upcoming %s for %s on %s (%s)",
-					event.Type, contactName, occ.Date.Format("January 2"), when,
-				)
-			}
-
-			s.registry.SendAll(ctx, title, message)
-
-			_, err = s.notifLog.Create(ctx, event.ID, name, dateKey, time.Now())
-			if err != nil {
-				slog.Error("scheduler: log notification", "source", "scheduler", "error", err)
-			} else {
-				slog.Info("scheduler: notification logged", "source", "scheduler", "channel", name, "event", event.ID)
+				// If user has no per-user config and global fallback exists, hasTarget is false but we still deliver via global.
+				// If user has per-user channel disabled, skip.
+				if hasTarget {
+					m, _ := s.channels.MapByUser(ctx, u.ID)
+					if ch, ok := m[name]; ok && !ch.Enabled {
+						continue
+					}
+				}
+				var dateKey string
+				var dedupUserID int
+				if hasTarget {
+					dateKey = fmt.Sprintf("%s-%s-%d", name, eventKey, u.ID)
+					dedupUserID = u.ID
+				} else {
+					// Global fallback: deliver once per event/channel (legacy
+					// behavior) no matter how many users share the global target.
+					dateKey = fmt.Sprintf("%s-%s", name, eventKey)
+					dedupUserID = 0
+				}
+				exists, err := s.notifLog.ExistsForUser(ctx, name, dateKey, dedupUserID)
+				if err != nil {
+					slog.Error("scheduler: check notification log", "source", "scheduler", "error", err)
+					continue
+				}
+				if exists {
+					slog.Debug("scheduler: notification already sent", "source", "scheduler", "channel", name, "event", event.ID, "user", u.ID)
+					continue
+				}
+				contactName := ""
+				if contact := event.Edges.Contact; contact != nil {
+					contactName = contact.Name
+				} else if p := event.Edges.Person; p != nil {
+					contactName = p.Name
+				} else if g := event.Edges.Group; g != nil {
+					contactName = g.Name + " (group)"
+				}
+				title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
+				days := daysBetween(now, occ.Date)
+				var message string
+				if catchUp && occ.Date.Before(now) {
+					when := fmt.Sprintf("%d days ago", -days)
+					switch days {
+					case 0:
+						when = "today"
+					case -1:
+						when = "yesterday"
+					}
+					message = fmt.Sprintf("Missed reminder: %s for %s was %s (%s)", event.Type, contactName, occ.Date.Format("January 2"), when)
+				} else {
+					when := fmt.Sprintf("%d days away", days)
+					if days <= 0 {
+						when = "today"
+					} else if days == 1 {
+						when = "tomorrow"
+					}
+					message = fmt.Sprintf("Upcoming %s for %s on %s (%s)", event.Type, contactName, occ.Date.Format("January 2"), when)
+				}
+				if err := s.registry.SendTo(ctx, name, title, message, target); err != nil {
+					slog.Error("notification failed", "source", "scheduler", "channel", name, "user", u.ID, "error", err)
+				}
+				if _, err = s.notifLog.CreateForUser(ctx, event.ID, name, dateKey, dedupUserID, time.Now()); err != nil {
+					slog.Error("scheduler: log notification", "source", "scheduler", "error", err)
+				} else {
+					slog.Info("scheduler: notification logged", "source", "scheduler", "channel", name, "event", event.ID, "user", u.ID)
+				}
 			}
 		}
 	}
+}
+
+func (s *Scheduler) userInScope(u *ent.User, event *ent.Event) bool {
+	if u.NotificationScopeMode == "selected" {
+		gidStr := u.NotificationScopeGroupIds
+		if gidStr == "" {
+			return false
+		}
+		// group-scoped: event must belong to one of selected groups
+		if event.Edges.Group == nil {
+			return false
+		}
+		selected := parseGroupIDs(gidStr)
+		for _, id := range selected {
+			if event.Edges.Group.ID == id {
+				return true
+			}
+		}
+		return false
+	}
+	return true
+}
+
+func parseGroupIDs(s string) []int {
+	var ids []int
+	for _, part := range splitComma(s) {
+		var v int
+		_, _ = fmt.Sscanf(part, "%d", &v)
+		if v != 0 {
+			ids = append(ids, v)
+		}
+	}
+	return ids
+}
+
+func splitComma(s string) []string {
+	var out []string
+	start := 0
+	for i, c := range s {
+		if c == ',' {
+			out = append(out, s[start:i])
+			start = i + 1
+		}
+	}
+	out = append(out, s[start:])
+	return out
+}
+
+func (s *Scheduler) resolveTarget(ctx context.Context, userID int, channel string) (string, bool) {
+	m, err := s.channels.MapByUser(ctx, userID)
+	if err != nil {
+		return "", false
+	}
+	if ch, ok := m[channel]; ok && ch.Enabled && ch.Target != "" {
+		return ch.Target, true
+	}
+	if ch, ok := m[channel]; ok && ch.Enabled {
+		// enabled but no target means fallback to global
+		return "", false
+	}
+	if _, ok := m[channel]; ok {
+		return "", false
+	}
+	return "", false
+}
+
+func (s *Scheduler) hasGlobalFallback(channel string) bool {
+	return s.registry.IsConfigured(channel)
 }
 
 // daysBetween returns the calendar-day difference between now and t: how many

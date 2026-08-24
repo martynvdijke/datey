@@ -16,6 +16,7 @@ import (
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/ent/usernotificationchannel"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -107,6 +108,40 @@ func (_u *UserUpdate) ClearLocale() *UserUpdate {
 	return _u
 }
 
+// SetNotificationScopeMode sets the "notification_scope_mode" field.
+func (_u *UserUpdate) SetNotificationScopeMode(v user.NotificationScopeMode) *UserUpdate {
+	_u.mutation.SetNotificationScopeMode(v)
+	return _u
+}
+
+// SetNillableNotificationScopeMode sets the "notification_scope_mode" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotificationScopeMode(v *user.NotificationScopeMode) *UserUpdate {
+	if v != nil {
+		_u.SetNotificationScopeMode(*v)
+	}
+	return _u
+}
+
+// SetNotificationScopeGroupIds sets the "notification_scope_group_ids" field.
+func (_u *UserUpdate) SetNotificationScopeGroupIds(v string) *UserUpdate {
+	_u.mutation.SetNotificationScopeGroupIds(v)
+	return _u
+}
+
+// SetNillableNotificationScopeGroupIds sets the "notification_scope_group_ids" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotificationScopeGroupIds(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetNotificationScopeGroupIds(*v)
+	}
+	return _u
+}
+
+// ClearNotificationScopeGroupIds clears the value of the "notification_scope_group_ids" field.
+func (_u *UserUpdate) ClearNotificationScopeGroupIds() *UserUpdate {
+	_u.mutation.ClearNotificationScopeGroupIds()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *UserUpdate) SetCreatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -180,6 +215,21 @@ func (_u *UserUpdate) AddPasswordResetTokens(v ...*PasswordResetToken) *UserUpda
 	return _u.AddPasswordResetTokenIDs(ids...)
 }
 
+// AddNotificationChannelIDs adds the "notification_channels" edge to the UserNotificationChannel entity by IDs.
+func (_u *UserUpdate) AddNotificationChannelIDs(ids ...int) *UserUpdate {
+	_u.mutation.AddNotificationChannelIDs(ids...)
+	return _u
+}
+
+// AddNotificationChannels adds the "notification_channels" edges to the UserNotificationChannel entity.
+func (_u *UserUpdate) AddNotificationChannels(v ...*UserNotificationChannel) *UserUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNotificationChannelIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -248,6 +298,27 @@ func (_u *UserUpdate) RemovePasswordResetTokens(v ...*PasswordResetToken) *UserU
 	return _u.RemovePasswordResetTokenIDs(ids...)
 }
 
+// ClearNotificationChannels clears all "notification_channels" edges to the UserNotificationChannel entity.
+func (_u *UserUpdate) ClearNotificationChannels() *UserUpdate {
+	_u.mutation.ClearNotificationChannels()
+	return _u
+}
+
+// RemoveNotificationChannelIDs removes the "notification_channels" edge to UserNotificationChannel entities by IDs.
+func (_u *UserUpdate) RemoveNotificationChannelIDs(ids ...int) *UserUpdate {
+	_u.mutation.RemoveNotificationChannelIDs(ids...)
+	return _u
+}
+
+// RemoveNotificationChannels removes "notification_channels" edges to UserNotificationChannel entities.
+func (_u *UserUpdate) RemoveNotificationChannels(v ...*UserNotificationChannel) *UserUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNotificationChannelIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *UserUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
@@ -297,6 +368,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "locale", err: fmt.Errorf(`ent: validator failed for field "User.locale": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.NotificationScopeMode(); ok {
+		if err := user.NotificationScopeModeValidator(v); err != nil {
+			return &ValidationError{Name: "notification_scope_mode", err: fmt.Errorf(`ent: validator failed for field "User.notification_scope_mode": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -329,6 +405,15 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LocaleCleared() {
 		_spec.ClearField(user.FieldLocale, field.TypeString)
+	}
+	if value, ok := _u.mutation.NotificationScopeMode(); ok {
+		_spec.SetField(user.FieldNotificationScopeMode, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.NotificationScopeGroupIds(); ok {
+		_spec.SetField(user.FieldNotificationScopeGroupIds, field.TypeString, value)
+	}
+	if _u.mutation.NotificationScopeGroupIdsCleared() {
+		_spec.ClearField(user.FieldNotificationScopeGroupIds, field.TypeString)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -464,6 +549,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(passwordresettoken.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NotificationChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.NotificationChannelsTable,
+			Columns: []string{user.NotificationChannelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNotificationChannelsIDs(); len(nodes) > 0 && !_u.mutation.NotificationChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.NotificationChannelsTable,
+			Columns: []string{user.NotificationChannelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NotificationChannelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.NotificationChannelsTable,
+			Columns: []string{user.NotificationChannelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -567,6 +697,40 @@ func (_u *UserUpdateOne) ClearLocale() *UserUpdateOne {
 	return _u
 }
 
+// SetNotificationScopeMode sets the "notification_scope_mode" field.
+func (_u *UserUpdateOne) SetNotificationScopeMode(v user.NotificationScopeMode) *UserUpdateOne {
+	_u.mutation.SetNotificationScopeMode(v)
+	return _u
+}
+
+// SetNillableNotificationScopeMode sets the "notification_scope_mode" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotificationScopeMode(v *user.NotificationScopeMode) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotificationScopeMode(*v)
+	}
+	return _u
+}
+
+// SetNotificationScopeGroupIds sets the "notification_scope_group_ids" field.
+func (_u *UserUpdateOne) SetNotificationScopeGroupIds(v string) *UserUpdateOne {
+	_u.mutation.SetNotificationScopeGroupIds(v)
+	return _u
+}
+
+// SetNillableNotificationScopeGroupIds sets the "notification_scope_group_ids" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotificationScopeGroupIds(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotificationScopeGroupIds(*v)
+	}
+	return _u
+}
+
+// ClearNotificationScopeGroupIds clears the value of the "notification_scope_group_ids" field.
+func (_u *UserUpdateOne) ClearNotificationScopeGroupIds() *UserUpdateOne {
+	_u.mutation.ClearNotificationScopeGroupIds()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *UserUpdateOne) SetCreatedAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -640,6 +804,21 @@ func (_u *UserUpdateOne) AddPasswordResetTokens(v ...*PasswordResetToken) *UserU
 	return _u.AddPasswordResetTokenIDs(ids...)
 }
 
+// AddNotificationChannelIDs adds the "notification_channels" edge to the UserNotificationChannel entity by IDs.
+func (_u *UserUpdateOne) AddNotificationChannelIDs(ids ...int) *UserUpdateOne {
+	_u.mutation.AddNotificationChannelIDs(ids...)
+	return _u
+}
+
+// AddNotificationChannels adds the "notification_channels" edges to the UserNotificationChannel entity.
+func (_u *UserUpdateOne) AddNotificationChannels(v ...*UserNotificationChannel) *UserUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddNotificationChannelIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -708,6 +887,27 @@ func (_u *UserUpdateOne) RemovePasswordResetTokens(v ...*PasswordResetToken) *Us
 	return _u.RemovePasswordResetTokenIDs(ids...)
 }
 
+// ClearNotificationChannels clears all "notification_channels" edges to the UserNotificationChannel entity.
+func (_u *UserUpdateOne) ClearNotificationChannels() *UserUpdateOne {
+	_u.mutation.ClearNotificationChannels()
+	return _u
+}
+
+// RemoveNotificationChannelIDs removes the "notification_channels" edge to UserNotificationChannel entities by IDs.
+func (_u *UserUpdateOne) RemoveNotificationChannelIDs(ids ...int) *UserUpdateOne {
+	_u.mutation.RemoveNotificationChannelIDs(ids...)
+	return _u
+}
+
+// RemoveNotificationChannels removes "notification_channels" edges to UserNotificationChannel entities.
+func (_u *UserUpdateOne) RemoveNotificationChannels(v ...*UserNotificationChannel) *UserUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveNotificationChannelIDs(ids...)
+}
+
 // Where appends a list predicates to the UserUpdate builder.
 func (_u *UserUpdateOne) Where(ps ...predicate.User) *UserUpdateOne {
 	_u.mutation.Where(ps...)
@@ -770,6 +970,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "locale", err: fmt.Errorf(`ent: validator failed for field "User.locale": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.NotificationScopeMode(); ok {
+		if err := user.NotificationScopeModeValidator(v); err != nil {
+			return &ValidationError{Name: "notification_scope_mode", err: fmt.Errorf(`ent: validator failed for field "User.notification_scope_mode": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -819,6 +1024,15 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.LocaleCleared() {
 		_spec.ClearField(user.FieldLocale, field.TypeString)
+	}
+	if value, ok := _u.mutation.NotificationScopeMode(); ok {
+		_spec.SetField(user.FieldNotificationScopeMode, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.NotificationScopeGroupIds(); ok {
+		_spec.SetField(user.FieldNotificationScopeGroupIds, field.TypeString, value)
+	}
+	if _u.mutation.NotificationScopeGroupIdsCleared() {
+		_spec.ClearField(user.FieldNotificationScopeGroupIds, field.TypeString)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -954,6 +1168,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(passwordresettoken.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.NotificationChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.NotificationChannelsTable,
+			Columns: []string{user.NotificationChannelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedNotificationChannelsIDs(); len(nodes) > 0 && !_u.mutation.NotificationChannelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.NotificationChannelsTable,
+			Columns: []string{user.NotificationChannelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.NotificationChannelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.NotificationChannelsTable,
+			Columns: []string{user.NotificationChannelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

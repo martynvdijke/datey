@@ -32,6 +32,14 @@ func (n *SlackNotifier) IsConfigured() bool {
 }
 
 func (n *SlackNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *SlackNotifier) SendTo(ctx context.Context, title, message string, target string) error {
+	dest := n.cfg.SlackWebhookURL
+	if target != "" {
+		dest = target
+	}
 	text := fmt.Sprintf("%s\n%s", title, message)
 	payload := map[string]any{
 		"text": text,
@@ -51,7 +59,7 @@ func (n *SlackNotifier) Send(ctx context.Context, title, message string) error {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, n.cfg.SlackWebhookURL, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, dest, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}

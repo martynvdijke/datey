@@ -30,10 +30,17 @@ func (n *TelegramNotifier) IsConfigured() bool {
 }
 
 func (n *TelegramNotifier) Send(ctx context.Context, title, message string) error {
-	text := fmt.Sprintf("*%s*\n%s", title, message)
+	return n.SendTo(ctx, title, message, "")
+}
 
+func (n *TelegramNotifier) SendTo(ctx context.Context, title, message string, target string) error {
+	text := fmt.Sprintf("*%s*\n%s", title, message)
+	chatID := n.cfg.TelegramChatID
+	if target != "" {
+		chatID = target
+	}
 	payload := map[string]any{
-		"chat_id":    n.cfg.TelegramChatID,
+		"chat_id":    chatID,
 		"text":       text,
 		"parse_mode": "Markdown",
 	}

@@ -53,3 +53,6 @@ type Tag func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// UserNotificationChannel is the predicate function for usernotificationchannel builders.
+type UserNotificationChannel func(*sql.Selector)

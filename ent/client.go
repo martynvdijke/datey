@@ -31,6 +31,7 @@ import (
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/ent/usernotificationchannel"
 )
 
 // Client is the client that holds all ent builders.
@@ -70,6 +71,8 @@ type Client struct {
 	Tag *TagClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserNotificationChannel is the client for interacting with the UserNotificationChannel builders.
+	UserNotificationChannel *UserNotificationChannelClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -97,6 +100,7 @@ func (c *Client) init() {
 	c.Session = NewSessionClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserNotificationChannel = NewUserNotificationChannelClient(c.config)
 }
 
 type (
@@ -187,24 +191,25 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		AppConfig:          NewAppConfigClient(cfg),
-		Contact:            NewContactClient(cfg),
-		Event:              NewEventClient(cfg),
-		GiftIdea:           NewGiftIdeaClient(cfg),
-		Group:              NewGroupClient(cfg),
-		GroupNote:          NewGroupNoteClient(cfg),
-		MigrationLog:       NewMigrationLogClient(cfg),
-		NotificationLog:    NewNotificationLogClient(cfg),
-		PasswordResetToken: NewPasswordResetTokenClient(cfg),
-		Person:             NewPersonClient(cfg),
-		PersonNote:         NewPersonNoteClient(cfg),
-		PushSubscription:   NewPushSubscriptionClient(cfg),
-		RecurringRule:      NewRecurringRuleClient(cfg),
-		Session:            NewSessionClient(cfg),
-		Tag:                NewTagClient(cfg),
-		User:               NewUserClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		AppConfig:               NewAppConfigClient(cfg),
+		Contact:                 NewContactClient(cfg),
+		Event:                   NewEventClient(cfg),
+		GiftIdea:                NewGiftIdeaClient(cfg),
+		Group:                   NewGroupClient(cfg),
+		GroupNote:               NewGroupNoteClient(cfg),
+		MigrationLog:            NewMigrationLogClient(cfg),
+		NotificationLog:         NewNotificationLogClient(cfg),
+		PasswordResetToken:      NewPasswordResetTokenClient(cfg),
+		Person:                  NewPersonClient(cfg),
+		PersonNote:              NewPersonNoteClient(cfg),
+		PushSubscription:        NewPushSubscriptionClient(cfg),
+		RecurringRule:           NewRecurringRuleClient(cfg),
+		Session:                 NewSessionClient(cfg),
+		Tag:                     NewTagClient(cfg),
+		User:                    NewUserClient(cfg),
+		UserNotificationChannel: NewUserNotificationChannelClient(cfg),
 	}, nil
 }
 
@@ -222,24 +227,25 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		AppConfig:          NewAppConfigClient(cfg),
-		Contact:            NewContactClient(cfg),
-		Event:              NewEventClient(cfg),
-		GiftIdea:           NewGiftIdeaClient(cfg),
-		Group:              NewGroupClient(cfg),
-		GroupNote:          NewGroupNoteClient(cfg),
-		MigrationLog:       NewMigrationLogClient(cfg),
-		NotificationLog:    NewNotificationLogClient(cfg),
-		PasswordResetToken: NewPasswordResetTokenClient(cfg),
-		Person:             NewPersonClient(cfg),
-		PersonNote:         NewPersonNoteClient(cfg),
-		PushSubscription:   NewPushSubscriptionClient(cfg),
-		RecurringRule:      NewRecurringRuleClient(cfg),
-		Session:            NewSessionClient(cfg),
-		Tag:                NewTagClient(cfg),
-		User:               NewUserClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		AppConfig:               NewAppConfigClient(cfg),
+		Contact:                 NewContactClient(cfg),
+		Event:                   NewEventClient(cfg),
+		GiftIdea:                NewGiftIdeaClient(cfg),
+		Group:                   NewGroupClient(cfg),
+		GroupNote:               NewGroupNoteClient(cfg),
+		MigrationLog:            NewMigrationLogClient(cfg),
+		NotificationLog:         NewNotificationLogClient(cfg),
+		PasswordResetToken:      NewPasswordResetTokenClient(cfg),
+		Person:                  NewPersonClient(cfg),
+		PersonNote:              NewPersonNoteClient(cfg),
+		PushSubscription:        NewPushSubscriptionClient(cfg),
+		RecurringRule:           NewRecurringRuleClient(cfg),
+		Session:                 NewSessionClient(cfg),
+		Tag:                     NewTagClient(cfg),
+		User:                    NewUserClient(cfg),
+		UserNotificationChannel: NewUserNotificationChannelClient(cfg),
 	}, nil
 }
 
@@ -272,6 +278,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AppConfig, c.Contact, c.Event, c.GiftIdea, c.Group, c.GroupNote,
 		c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
 		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.Tag, c.User,
+		c.UserNotificationChannel,
 	} {
 		n.Use(hooks...)
 	}
@@ -284,6 +291,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AppConfig, c.Contact, c.Event, c.GiftIdea, c.Group, c.GroupNote,
 		c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
 		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Session, c.Tag, c.User,
+		c.UserNotificationChannel,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -324,6 +332,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Tag.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserNotificationChannelMutation:
+		return c.UserNotificationChannel.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -2816,6 +2826,22 @@ func (c *UserClient) QueryPasswordResetTokens(_m *User) *PasswordResetTokenQuery
 	return query
 }
 
+// QueryNotificationChannels queries the notification_channels edge of a User.
+func (c *UserClient) QueryNotificationChannels(_m *User) *UserNotificationChannelQuery {
+	query := (&UserNotificationChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(usernotificationchannel.Table, usernotificationchannel.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.NotificationChannelsTable, user.NotificationChannelsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2841,16 +2867,165 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// UserNotificationChannelClient is a client for the UserNotificationChannel schema.
+type UserNotificationChannelClient struct {
+	config
+}
+
+// NewUserNotificationChannelClient returns a client for the UserNotificationChannel from the given config.
+func NewUserNotificationChannelClient(c config) *UserNotificationChannelClient {
+	return &UserNotificationChannelClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usernotificationchannel.Hooks(f(g(h())))`.
+func (c *UserNotificationChannelClient) Use(hooks ...Hook) {
+	c.hooks.UserNotificationChannel = append(c.hooks.UserNotificationChannel, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usernotificationchannel.Intercept(f(g(h())))`.
+func (c *UserNotificationChannelClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserNotificationChannel = append(c.inters.UserNotificationChannel, interceptors...)
+}
+
+// Create returns a builder for creating a UserNotificationChannel entity.
+func (c *UserNotificationChannelClient) Create() *UserNotificationChannelCreate {
+	mutation := newUserNotificationChannelMutation(c.config, OpCreate)
+	return &UserNotificationChannelCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserNotificationChannel entities.
+func (c *UserNotificationChannelClient) CreateBulk(builders ...*UserNotificationChannelCreate) *UserNotificationChannelCreateBulk {
+	return &UserNotificationChannelCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserNotificationChannelClient) MapCreateBulk(slice any, setFunc func(*UserNotificationChannelCreate, int)) *UserNotificationChannelCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserNotificationChannelCreateBulk{err: fmt.Errorf("calling to UserNotificationChannelClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserNotificationChannelCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserNotificationChannelCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserNotificationChannel.
+func (c *UserNotificationChannelClient) Update() *UserNotificationChannelUpdate {
+	mutation := newUserNotificationChannelMutation(c.config, OpUpdate)
+	return &UserNotificationChannelUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserNotificationChannelClient) UpdateOne(_m *UserNotificationChannel) *UserNotificationChannelUpdateOne {
+	mutation := newUserNotificationChannelMutation(c.config, OpUpdateOne, withUserNotificationChannel(_m))
+	return &UserNotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserNotificationChannelClient) UpdateOneID(id int) *UserNotificationChannelUpdateOne {
+	mutation := newUserNotificationChannelMutation(c.config, OpUpdateOne, withUserNotificationChannelID(id))
+	return &UserNotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserNotificationChannel.
+func (c *UserNotificationChannelClient) Delete() *UserNotificationChannelDelete {
+	mutation := newUserNotificationChannelMutation(c.config, OpDelete)
+	return &UserNotificationChannelDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserNotificationChannelClient) DeleteOne(_m *UserNotificationChannel) *UserNotificationChannelDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserNotificationChannelClient) DeleteOneID(id int) *UserNotificationChannelDeleteOne {
+	builder := c.Delete().Where(usernotificationchannel.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserNotificationChannelDeleteOne{builder}
+}
+
+// Query returns a query builder for UserNotificationChannel.
+func (c *UserNotificationChannelClient) Query() *UserNotificationChannelQuery {
+	return &UserNotificationChannelQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserNotificationChannel},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserNotificationChannel entity by its id.
+func (c *UserNotificationChannelClient) Get(ctx context.Context, id int) (*UserNotificationChannel, error) {
+	return c.Query().Where(usernotificationchannel.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserNotificationChannelClient) GetX(ctx context.Context, id int) *UserNotificationChannel {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a UserNotificationChannel.
+func (c *UserNotificationChannelClient) QueryUser(_m *UserNotificationChannel) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usernotificationchannel.Table, usernotificationchannel.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usernotificationchannel.UserTable, usernotificationchannel.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserNotificationChannelClient) Hooks() []Hook {
+	return c.hooks.UserNotificationChannel
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserNotificationChannelClient) Interceptors() []Interceptor {
+	return c.inters.UserNotificationChannel
+}
+
+func (c *UserNotificationChannelClient) mutate(ctx context.Context, m *UserNotificationChannelMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserNotificationChannelCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserNotificationChannelUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserNotificationChannelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserNotificationChannelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserNotificationChannel mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		AppConfig, Contact, Event, GiftIdea, Group, GroupNote, MigrationLog,
 		NotificationLog, PasswordResetToken, Person, PersonNote, PushSubscription,
-		RecurringRule, Session, Tag, User []ent.Hook
+		RecurringRule, Session, Tag, User, UserNotificationChannel []ent.Hook
 	}
 	inters struct {
 		AppConfig, Contact, Event, GiftIdea, Group, GroupNote, MigrationLog,
 		NotificationLog, PasswordResetToken, Person, PersonNote, PushSubscription,
-		RecurringRule, Session, Tag, User []ent.Interceptor
+		RecurringRule, Session, Tag, User, UserNotificationChannel []ent.Interceptor
 	}
 )

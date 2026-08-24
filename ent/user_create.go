@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/ent/usernotificationchannel"
 )
 
 // UserCreate is the builder for creating a User entity.
@@ -77,6 +78,34 @@ func (_c *UserCreate) SetNillableLocale(v *string) *UserCreate {
 	return _c
 }
 
+// SetNotificationScopeMode sets the "notification_scope_mode" field.
+func (_c *UserCreate) SetNotificationScopeMode(v user.NotificationScopeMode) *UserCreate {
+	_c.mutation.SetNotificationScopeMode(v)
+	return _c
+}
+
+// SetNillableNotificationScopeMode sets the "notification_scope_mode" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotificationScopeMode(v *user.NotificationScopeMode) *UserCreate {
+	if v != nil {
+		_c.SetNotificationScopeMode(*v)
+	}
+	return _c
+}
+
+// SetNotificationScopeGroupIds sets the "notification_scope_group_ids" field.
+func (_c *UserCreate) SetNotificationScopeGroupIds(v string) *UserCreate {
+	_c.mutation.SetNotificationScopeGroupIds(v)
+	return _c
+}
+
+// SetNillableNotificationScopeGroupIds sets the "notification_scope_group_ids" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotificationScopeGroupIds(v *string) *UserCreate {
+	if v != nil {
+		_c.SetNotificationScopeGroupIds(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -134,6 +163,21 @@ func (_c *UserCreate) AddPasswordResetTokens(v ...*PasswordResetToken) *UserCrea
 	return _c.AddPasswordResetTokenIDs(ids...)
 }
 
+// AddNotificationChannelIDs adds the "notification_channels" edge to the UserNotificationChannel entity by IDs.
+func (_c *UserCreate) AddNotificationChannelIDs(ids ...int) *UserCreate {
+	_c.mutation.AddNotificationChannelIDs(ids...)
+	return _c
+}
+
+// AddNotificationChannels adds the "notification_channels" edges to the UserNotificationChannel entity.
+func (_c *UserCreate) AddNotificationChannels(v ...*UserNotificationChannel) *UserCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddNotificationChannelIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_c *UserCreate) Mutation() *UserMutation {
 	return _c.mutation
@@ -177,6 +221,14 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultEinkMode
 		_c.mutation.SetEinkMode(v)
 	}
+	if _, ok := _c.mutation.NotificationScopeMode(); !ok {
+		v := user.DefaultNotificationScopeMode
+		_c.mutation.SetNotificationScopeMode(v)
+	}
+	if _, ok := _c.mutation.NotificationScopeGroupIds(); !ok {
+		v := user.DefaultNotificationScopeGroupIds
+		_c.mutation.SetNotificationScopeGroupIds(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -211,6 +263,14 @@ func (_c *UserCreate) check() error {
 	if v, ok := _c.mutation.Locale(); ok {
 		if err := user.LocaleValidator(v); err != nil {
 			return &ValidationError{Name: "locale", err: fmt.Errorf(`ent: validator failed for field "User.locale": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.NotificationScopeMode(); !ok {
+		return &ValidationError{Name: "notification_scope_mode", err: errors.New(`ent: missing required field "User.notification_scope_mode"`)}
+	}
+	if v, ok := _c.mutation.NotificationScopeMode(); ok {
+		if err := user.NotificationScopeModeValidator(v); err != nil {
+			return &ValidationError{Name: "notification_scope_mode", err: fmt.Errorf(`ent: validator failed for field "User.notification_scope_mode": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
@@ -265,6 +325,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldLocale, field.TypeString, value)
 		_node.Locale = &value
 	}
+	if value, ok := _c.mutation.NotificationScopeMode(); ok {
+		_spec.SetField(user.FieldNotificationScopeMode, field.TypeEnum, value)
+		_node.NotificationScopeMode = value
+	}
+	if value, ok := _c.mutation.NotificationScopeGroupIds(); ok {
+		_spec.SetField(user.FieldNotificationScopeGroupIds, field.TypeString, value)
+		_node.NotificationScopeGroupIds = value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -314,6 +382,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(passwordresettoken.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.NotificationChannelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.NotificationChannelsTable,
+			Columns: []string{user.NotificationChannelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

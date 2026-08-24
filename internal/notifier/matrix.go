@@ -33,8 +33,16 @@ func (n *MatrixNotifier) IsConfigured() bool {
 }
 
 func (n *MatrixNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *MatrixNotifier) SendTo(ctx context.Context, title, message string, target string) error {
 	homeserver := strings.TrimRight(n.cfg.MatrixHomeserverURL, "/")
-	roomID := url.PathEscape(n.cfg.MatrixRoomID)
+	roomID := n.cfg.MatrixRoomID
+	if target != "" {
+		roomID = target
+	}
+	roomID = url.PathEscape(roomID)
 	txnID := fmt.Sprintf("%d", time.Now().UnixNano())
 
 	endpoint := fmt.Sprintf("%s/_matrix/client/v3/rooms/%s/send/m.room.message/%s", homeserver, roomID, txnID)

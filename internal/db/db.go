@@ -327,6 +327,11 @@ func Init(cfg *config.Config) (*ent.Client, error) {
 	}
 
 	ctx := context.Background()
+	// Backfill orphan push subscriptions to the first admin BEFORE the schema
+	// migration tightens the user FK to NOT NULL (task 1.2 of per-user-notifications).
+	if err := BackfillPushSubscriptions(ctx, client); err != nil {
+		return nil, err
+	}
 	if err := client.Schema.Create(ctx); err != nil {
 		return nil, err
 	}

@@ -17,18 +17,20 @@ import (
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/ent/usernotificationchannel"
 )
 
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                     *QueryContext
-	order                   []user.OrderOption
-	inters                  []Interceptor
-	predicates              []predicate.User
-	withSessions            *SessionQuery
-	withPushSubscriptions   *PushSubscriptionQuery
-	withPasswordResetTokens *PasswordResetTokenQuery
+	ctx                      *QueryContext
+	order                    []user.OrderOption
+	inters                   []Interceptor
+	predicates               []predicate.User
+	withSessions             *SessionQuery
+	withPushSubscriptions    *PushSubscriptionQuery
+	withPasswordResetTokens  *PasswordResetTokenQuery
+	withNotificationChannels *UserNotificationChannelQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -124,6 +126,28 @@ func (_q *UserQuery) QueryPasswordResetTokens() *PasswordResetTokenQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(passwordresettoken.Table, passwordresettoken.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.PasswordResetTokensTable, user.PasswordResetTokensColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNotificationChannels chains the current query on the "notification_channels" edge.
+func (_q *UserQuery) QueryNotificationChannels() *UserNotificationChannelQuery {
+	query := (&UserNotificationChannelClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(usernotificationchannel.Table, usernotificationchannel.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.NotificationChannelsTable, user.NotificationChannelsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -318,14 +342,15 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:                  _q.config,
-		ctx:                     _q.ctx.Clone(),
-		order:                   append([]user.OrderOption{}, _q.order...),
-		inters:                  append([]Interceptor{}, _q.inters...),
-		predicates:              append([]predicate.User{}, _q.predicates...),
-		withSessions:            _q.withSessions.Clone(),
-		withPushSubscriptions:   _q.withPushSubscriptions.Clone(),
-		withPasswordResetTokens: _q.withPasswordResetTokens.Clone(),
+		config:                   _q.config,
+		ctx:                      _q.ctx.Clone(),
+		order:                    append([]user.OrderOption{}, _q.order...),
+		inters:                   append([]Interceptor{}, _q.inters...),
+		predicates:               append([]predicate.User{}, _q.predicates...),
+		withSessions:             _q.withSessions.Clone(),
+		withPushSubscriptions:    _q.withPushSubscriptions.Clone(),
+		withPasswordResetTokens:  _q.withPasswordResetTokens.Clone(),
+		withNotificationChannels: _q.withNotificationChannels.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -362,6 +387,17 @@ func (_q *UserQuery) WithPasswordResetTokens(opts ...func(*PasswordResetTokenQue
 		opt(query)
 	}
 	_q.withPasswordResetTokens = query
+	return _q
+}
+
+// WithNotificationChannels tells the query-builder to eager-load the nodes that are connected to
+// the "notification_channels" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithNotificationChannels(opts ...func(*UserNotificationChannelQuery)) *UserQuery {
+	query := (&UserNotificationChannelClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withNotificationChannels = query
 	return _q
 }
 
@@ -443,10 +479,11 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withSessions != nil,
 			_q.withPushSubscriptions != nil,
 			_q.withPasswordResetTokens != nil,
+			_q.withNotificationChannels != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -486,6 +523,15 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			func(n *User) { n.Edges.PasswordResetTokens = []*PasswordResetToken{} },
 			func(n *User, e *PasswordResetToken) {
 				n.Edges.PasswordResetTokens = append(n.Edges.PasswordResetTokens, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withNotificationChannels; query != nil {
+		if err := _q.loadNotificationChannels(ctx, query, nodes,
+			func(n *User) { n.Edges.NotificationChannels = []*UserNotificationChannel{} },
+			func(n *User, e *UserNotificationChannel) {
+				n.Edges.NotificationChannels = append(n.Edges.NotificationChannels, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -581,6 +627,37 @@ func (_q *UserQuery) loadPasswordResetTokens(ctx context.Context, query *Passwor
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_password_reset_tokens" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadNotificationChannels(ctx context.Context, query *UserNotificationChannelQuery, nodes []*User, init func(*User), assign func(*User, *UserNotificationChannel)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.UserNotificationChannel(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.NotificationChannelsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_notification_channels
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_notification_channels" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_notification_channels" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

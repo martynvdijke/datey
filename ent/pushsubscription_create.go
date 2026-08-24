@@ -51,14 +51,6 @@ func (_c *PushSubscriptionCreate) SetUserID(id int) *PushSubscriptionCreate {
 	return _c
 }
 
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (_c *PushSubscriptionCreate) SetNillableUserID(id *int) *PushSubscriptionCreate {
-	if id != nil {
-		_c = _c.SetUserID(*id)
-	}
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *PushSubscriptionCreate) SetUser(v *User) *PushSubscriptionCreate {
 	return _c.SetUserID(v.ID)
@@ -124,6 +116,9 @@ func (_c *PushSubscriptionCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PushSubscription.created_at"`)}
+	}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "PushSubscription.user"`)}
 	}
 	return nil
 }

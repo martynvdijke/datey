@@ -21,6 +21,7 @@ import (
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/ent/usernotificationchannel"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -151,6 +152,10 @@ func init() {
 	notificationlogDescDateKey := notificationlogFields[2].Descriptor()
 	// notificationlog.DateKeyValidator is a validator for the "date_key" field. It is called by the builders before save.
 	notificationlog.DateKeyValidator = notificationlogDescDateKey.Validators[0].(func(string) error)
+	// notificationlogDescUserID is the schema descriptor for user_id field.
+	notificationlogDescUserID := notificationlogFields[3].Descriptor()
+	// notificationlog.DefaultUserID holds the default value on creation for the user_id field.
+	notificationlog.DefaultUserID = notificationlogDescUserID.Default.(int)
 	passwordresettokenFields := schema.PasswordResetToken{}.Fields()
 	_ = passwordresettokenFields
 	// passwordresettokenDescTokenHash is the schema descriptor for token_hash field.
@@ -271,4 +276,22 @@ func init() {
 	userDescLocale := userFields[4].Descriptor()
 	// user.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
 	user.LocaleValidator = userDescLocale.Validators[0].(func(string) error)
+	// userDescNotificationScopeGroupIds is the schema descriptor for notification_scope_group_ids field.
+	userDescNotificationScopeGroupIds := userFields[6].Descriptor()
+	// user.DefaultNotificationScopeGroupIds holds the default value on creation for the notification_scope_group_ids field.
+	user.DefaultNotificationScopeGroupIds = userDescNotificationScopeGroupIds.Default.(string)
+	usernotificationchannelFields := schema.UserNotificationChannel{}.Fields()
+	_ = usernotificationchannelFields
+	// usernotificationchannelDescChannelType is the schema descriptor for channel_type field.
+	usernotificationchannelDescChannelType := usernotificationchannelFields[0].Descriptor()
+	// usernotificationchannel.ChannelTypeValidator is a validator for the "channel_type" field. It is called by the builders before save.
+	usernotificationchannel.ChannelTypeValidator = usernotificationchannelDescChannelType.Validators[0].(func(string) error)
+	// usernotificationchannelDescTarget is the schema descriptor for target field.
+	usernotificationchannelDescTarget := usernotificationchannelFields[1].Descriptor()
+	// usernotificationchannel.DefaultTarget holds the default value on creation for the target field.
+	usernotificationchannel.DefaultTarget = usernotificationchannelDescTarget.Default.(string)
+	// usernotificationchannelDescEnabled is the schema descriptor for enabled field.
+	usernotificationchannelDescEnabled := usernotificationchannelFields[2].Descriptor()
+	// usernotificationchannel.DefaultEnabled holds the default value on creation for the enabled field.
+	usernotificationchannel.DefaultEnabled = usernotificationchannelDescEnabled.Default.(bool)
 }

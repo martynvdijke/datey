@@ -154,6 +154,10 @@ See `.env.example` for a template.
 - **Slack** — Create an incoming webhook in **Slack App → Incoming Webhooks** (or via https://api.slack.com/messaging/webhooks), copy the URL and set `SLACK_WEBHOOK_URL`. Test with the Slack test button.
 - **Matrix** — In Element go to **Settings → Help & About → Access Token** to copy your access token (`MATRIX_ACCESS_TOKEN`), set the homeserver URL (`MATRIX_HOMESERVER_URL`, e.g. `https://matrix.example.com`) and the room ID (`MATRIX_ROOM_ID`, e.g. `!abc123:example.com` visible in Room Settings → Advanced). Invite your bot user to the room first. Test with the Matrix test button.
 
+### Per-User Notifications
+
+Each user configures personal delivery targets under **Settings → Notifications** (email address, Telegram chat ID, etc.) for channels the admin has enabled globally. Users may choose **All events** or **Selected groups** scope; the scheduler expands each event into per-user deliveries and honors the scope (group events outside the selection are skipped). Dedup keys are per-user (`channel-event-date-user`) so two users receiving the same event do not suppress each other. When a user has no personal target for an enabled channel, delivery falls back to the global `app_config` value, preserving single-user behavior byte-identically.
+
 ### CardDAV Sync Setup
 
 CardDAV sync keeps your Datey people and birthday events in two-way sync with an external address book. Enable it in **Settings → Notifications** (or via the env vars above) and press **Sync Now** to run the first sync immediately; afterwards it runs automatically once a day.

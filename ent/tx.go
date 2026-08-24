@@ -44,6 +44,8 @@ type Tx struct {
 	Tag *TagClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserNotificationChannel is the client for interacting with the UserNotificationChannel builders.
+	UserNotificationChannel *UserNotificationChannelClient
 
 	// lazily loaded.
 	client     *Client
@@ -191,6 +193,7 @@ func (tx *Tx) init() {
 	tx.Session = NewSessionClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserNotificationChannel = NewUserNotificationChannelClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

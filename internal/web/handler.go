@@ -219,6 +219,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/push/vapid-public-key", h.pushVAPIDPublicKey)
 			r.Post("/push/subscribe", h.pushSubscribe)
 			r.Post("/push/unsubscribe", h.pushUnsubscribe)
+			r.Get("/settings/notifications", h.settingsNotifications)
+			r.Post("/settings/notifications", h.settingsNotificationsSave)
+			r.Post("/settings/test/{channel}", h.testNotification)
 
 			// Admin-only routes
 			r.Group(func(r chi.Router) {
@@ -232,7 +235,6 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Post("/settings/backup", h.settingsBackupRun)
 				r.Post("/settings/carddav", h.settingsCarddavSave)
 				r.Post("/settings/carddav/sync", h.settingsCarddavSync)
-				r.Post("/settings/test/{channel}", h.testNotification)
 				r.Post("/settings/config/test/{section}", h.testConfig)
 				r.Post("/settings/carddav/test", h.testCarddavConnection)
 				r.Post("/settings/immich/sync", h.immichBulkSync)

@@ -29,6 +29,10 @@ type fakeNotifier struct {
 }
 
 func (f *fakeNotifier) Send(_ context.Context, title, message string) error {
+	return f.SendTo(context.TODO(), title, message, "")
+}
+
+func (f *fakeNotifier) SendTo(_ context.Context, title, message string, _ string) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.sent++
@@ -102,6 +106,36 @@ func TestProcessReminders_AnnualBirthdayFires(t *testing.T) {
 
 	if n := fn.count(); n != 1 {
 		t.Errorf("expected 1 notification, got %d (messages: %v)", n, fn.messages)
+	}
+}
+
+// Legacy fallback semantics (per-user-notification-routing spec): when no
+// user-level targets exist, notifications behave exactly as before — ONE
+// delivery per event/channel via the global target, even with multiple users.
+func TestProcessReminders_GlobalFallbackDeliversOnceForMultipleUsers(t *testing.T) {
+	s, client, fn, people, events := newTestScheduler(t, 7)
+	ctx := context.Background()
+
+	for _, name := range []string{"alice", "bob"} {
+		if err := client.User.Create().SetUsername(name).SetPasswordHash("x").SetRole("admin").SetCreatedAt(time.Now()).SetUpdatedAt(time.Now()).Exec(ctx); err != nil {
+			t.Fatalf("create user %s: %v", name, err)
+		}
+	}
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	target := midnightDaysFromNow(5)
+	birth := time.Date(1990, target.Month(), target.Day(), 0, 0, 0, 0, time.UTC)
+	if _, err := events.CreateForPerson(ctx, person.ID, "birthday", birth, "Birthday of Dana"); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	s.processReminders(ctx, false)
+
+	if n := fn.count(); n != 1 {
+		t.Errorf("expected 1 global-fallback notification, got %d (messages: %v)", n, fn.messages)
 	}
 }
 
@@ -325,7 +359,7 @@ func TestCatchUp_FiresMissedOccurrencesInWindow(t *testing.T) {
 		t.Fatalf("create event: %v", err)
 	}
 	// Last run was 3 days ago: gap > 24h + 30m grace.
-	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72*time.Hour)); err != nil {
 		t.Fatalf("set last run: %v", err)
 	}
 
@@ -355,7 +389,7 @@ func TestCatchUp_SkipsOccurrencesOlderThanWindow(t *testing.T) {
 	if _, err := events.CreateForPerson(ctx, person.ID, "birthday", birth, "Birthday of Dana"); err != nil {
 		t.Fatalf("create event: %v", err)
 	}
-	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72*time.Hour)); err != nil {
 		t.Fatalf("set last run: %v", err)
 	}
 
@@ -380,7 +414,7 @@ func TestCatchUp_DedupPreventsDoubleSend(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create event: %v", err)
 	}
-	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72*time.Hour)); err != nil {
 		t.Fatalf("set last run: %v", err)
 	}
 
@@ -402,7 +436,7 @@ func TestCatchUp_DedupPreventsDoubleSend(t *testing.T) {
 
 	// Force a second catch-up regardless (simulating a large gap) and verify
 	// the notification_log dedup prevents a duplicate send.
-	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72 * time.Hour)); err != nil {
+	if err := store.SetLastSchedulerRun(ctx, time.Now().Add(-72*time.Hour)); err != nil {
 		t.Fatalf("set last run: %v", err)
 	}
 	s.catchUpMissed(ctx)

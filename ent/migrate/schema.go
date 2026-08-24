@@ -238,6 +238,7 @@ var (
 		{Name: "channel", Type: field.TypeString},
 		{Name: "sent_at", Type: field.TypeTime},
 		{Name: "date_key", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeInt, Nullable: true, Default: 0},
 		{Name: "event_notification_logs", Type: field.TypeInt},
 	}
 	// NotificationLogsTable holds the schema information for the "notification_logs" table.
@@ -248,7 +249,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "notification_logs_events_notification_logs",
-				Columns:    []*schema.Column{NotificationLogsColumns[4]},
+				Columns:    []*schema.Column{NotificationLogsColumns[5]},
 				RefColumns: []*schema.Column{EventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -258,6 +259,11 @@ var (
 				Name:    "notificationlog_channel_date_key",
 				Unique:  false,
 				Columns: []*schema.Column{NotificationLogsColumns[1], NotificationLogsColumns[3]},
+			},
+			{
+				Name:    "notificationlog_channel_date_key_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{NotificationLogsColumns[1], NotificationLogsColumns[3], NotificationLogsColumns[4]},
 			},
 		},
 	}
@@ -344,7 +350,7 @@ var (
 		{Name: "p256dh", Type: field.TypeString},
 		{Name: "auth", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "user_push_subscriptions", Type: field.TypeInt, Nullable: true},
+		{Name: "user_push_subscriptions", Type: field.TypeInt},
 	}
 	// PushSubscriptionsTable holds the schema information for the "push_subscriptions" table.
 	PushSubscriptionsTable = &schema.Table{
@@ -356,7 +362,7 @@ var (
 				Symbol:     "push_subscriptions_users_push_subscriptions",
 				Columns:    []*schema.Column{PushSubscriptionsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -420,6 +426,8 @@ var (
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "user"}, Default: "user"},
 		{Name: "eink_mode", Type: field.TypeBool, Default: false},
 		{Name: "locale", Type: field.TypeString, Nullable: true},
+		{Name: "notification_scope_mode", Type: field.TypeEnum, Enums: []string{"all", "selected"}, Default: "all"},
+		{Name: "notification_scope_group_ids", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -428,6 +436,35 @@ var (
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
+	// UserNotificationChannelsColumns holds the columns for the "user_notification_channels" table.
+	UserNotificationChannelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "channel_type", Type: field.TypeString},
+		{Name: "target", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "user_notification_channels", Type: field.TypeInt},
+	}
+	// UserNotificationChannelsTable holds the schema information for the "user_notification_channels" table.
+	UserNotificationChannelsTable = &schema.Table{
+		Name:       "user_notification_channels",
+		Columns:    UserNotificationChannelsColumns,
+		PrimaryKey: []*schema.Column{UserNotificationChannelsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_notification_channels_users_notification_channels",
+				Columns:    []*schema.Column{UserNotificationChannelsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "usernotificationchannel_channel_type_user_notification_channels",
+				Unique:  true,
+				Columns: []*schema.Column{UserNotificationChannelsColumns[1], UserNotificationChannelsColumns[4]},
+			},
+		},
 	}
 	// PersonGroupsColumns holds the columns for the "person_groups" table.
 	PersonGroupsColumns = []*schema.Column{
@@ -497,6 +534,7 @@ var (
 		SessionsTable,
 		TagsTable,
 		UsersTable,
+		UserNotificationChannelsTable,
 		PersonGroupsTable,
 		PersonTagsTable,
 	}
@@ -513,6 +551,7 @@ func init() {
 	PersonNotesTable.ForeignKeys[0].RefTable = PersonsTable
 	PushSubscriptionsTable.ForeignKeys[0].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
+	UserNotificationChannelsTable.ForeignKeys[0].RefTable = UsersTable
 	PersonGroupsTable.ForeignKeys[0].RefTable = PersonsTable
 	PersonGroupsTable.ForeignKeys[1].RefTable = GroupsTable
 	PersonTagsTable.ForeignKeys[0].RefTable = PersonsTable

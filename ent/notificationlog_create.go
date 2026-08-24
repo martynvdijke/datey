@@ -39,6 +39,20 @@ func (_c *NotificationLogCreate) SetDateKey(v string) *NotificationLogCreate {
 	return _c
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *NotificationLogCreate) SetUserID(v int) *NotificationLogCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_c *NotificationLogCreate) SetNillableUserID(v *int) *NotificationLogCreate {
+	if v != nil {
+		_c.SetUserID(*v)
+	}
+	return _c
+}
+
 // SetEventID sets the "event" edge to the Event entity by ID.
 func (_c *NotificationLogCreate) SetEventID(id int) *NotificationLogCreate {
 	_c.mutation.SetEventID(id)
@@ -57,6 +71,7 @@ func (_c *NotificationLogCreate) Mutation() *NotificationLogMutation {
 
 // Save creates the NotificationLog in the database.
 func (_c *NotificationLogCreate) Save(ctx context.Context) (*NotificationLog, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -79,6 +94,14 @@ func (_c *NotificationLogCreate) Exec(ctx context.Context) error {
 func (_c *NotificationLogCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_c *NotificationLogCreate) defaults() {
+	if _, ok := _c.mutation.UserID(); !ok {
+		v := notificationlog.DefaultUserID
+		_c.mutation.SetUserID(v)
 	}
 }
 
@@ -144,6 +167,10 @@ func (_c *NotificationLogCreate) createSpec() (*NotificationLog, *sqlgraph.Creat
 		_spec.SetField(notificationlog.FieldDateKey, field.TypeString, value)
 		_node.DateKey = value
 	}
+	if value, ok := _c.mutation.UserID(); ok {
+		_spec.SetField(notificationlog.FieldUserID, field.TypeInt, value)
+		_node.UserID = value
+	}
 	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -182,6 +209,7 @@ func (_c *NotificationLogCreateBulk) Save(ctx context.Context) ([]*NotificationL
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*NotificationLogMutation)
 				if !ok {

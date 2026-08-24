@@ -18,6 +18,8 @@ const (
 	FieldSentAt = "sent_at"
 	// FieldDateKey holds the string denoting the date_key field in the database.
 	FieldDateKey = "date_key"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
 	// Table holds the table name of the notificationlog in the database.
@@ -37,6 +39,7 @@ var Columns = []string{
 	FieldChannel,
 	FieldSentAt,
 	FieldDateKey,
+	FieldUserID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "notification_logs"
@@ -65,6 +68,8 @@ var (
 	ChannelValidator func(string) error
 	// DateKeyValidator is a validator for the "date_key" field. It is called by the builders before save.
 	DateKeyValidator func(string) error
+	// DefaultUserID holds the default value on creation for the "user_id" field.
+	DefaultUserID int
 )
 
 // OrderOption defines the ordering options for the NotificationLog queries.
@@ -88,6 +93,11 @@ func BySentAt(opts ...sql.OrderTermOption) OrderOption {
 // ByDateKey orders the results by the date_key field.
 func ByDateKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDateKey, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByEventField orders the results by event field.

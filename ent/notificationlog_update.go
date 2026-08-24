@@ -71,6 +71,33 @@ func (_u *NotificationLogUpdate) SetNillableDateKey(v *string) *NotificationLogU
 	return _u
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *NotificationLogUpdate) SetUserID(v int) *NotificationLogUpdate {
+	_u.mutation.ResetUserID()
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *NotificationLogUpdate) SetNillableUserID(v *int) *NotificationLogUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// AddUserID adds value to the "user_id" field.
+func (_u *NotificationLogUpdate) AddUserID(v int) *NotificationLogUpdate {
+	_u.mutation.AddUserID(v)
+	return _u
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (_u *NotificationLogUpdate) ClearUserID() *NotificationLogUpdate {
+	_u.mutation.ClearUserID()
+	return _u
+}
+
 // SetEventID sets the "event" edge to the Event entity by ID.
 func (_u *NotificationLogUpdate) SetEventID(id int) *NotificationLogUpdate {
 	_u.mutation.SetEventID(id)
@@ -158,6 +185,15 @@ func (_u *NotificationLogUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.DateKey(); ok {
 		_spec.SetField(notificationlog.FieldDateKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.UserID(); ok {
+		_spec.SetField(notificationlog.FieldUserID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedUserID(); ok {
+		_spec.AddField(notificationlog.FieldUserID, field.TypeInt, value)
+	}
+	if _u.mutation.UserIDCleared() {
+		_spec.ClearField(notificationlog.FieldUserID, field.TypeInt)
 	}
 	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -247,6 +283,33 @@ func (_u *NotificationLogUpdateOne) SetNillableDateKey(v *string) *NotificationL
 	if v != nil {
 		_u.SetDateKey(*v)
 	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *NotificationLogUpdateOne) SetUserID(v int) *NotificationLogUpdateOne {
+	_u.mutation.ResetUserID()
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *NotificationLogUpdateOne) SetNillableUserID(v *int) *NotificationLogUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// AddUserID adds value to the "user_id" field.
+func (_u *NotificationLogUpdateOne) AddUserID(v int) *NotificationLogUpdateOne {
+	_u.mutation.AddUserID(v)
+	return _u
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (_u *NotificationLogUpdateOne) ClearUserID() *NotificationLogUpdateOne {
+	_u.mutation.ClearUserID()
 	return _u
 }
 
@@ -367,6 +430,15 @@ func (_u *NotificationLogUpdateOne) sqlSave(ctx context.Context) (_node *Notific
 	}
 	if value, ok := _u.mutation.DateKey(); ok {
 		_spec.SetField(notificationlog.FieldDateKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.UserID(); ok {
+		_spec.SetField(notificationlog.FieldUserID, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedUserID(); ok {
+		_spec.AddField(notificationlog.FieldUserID, field.TypeInt, value)
+	}
+	if _u.mutation.UserIDCleared() {
+		_spec.ClearField(notificationlog.FieldUserID, field.TypeInt)
 	}
 	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{

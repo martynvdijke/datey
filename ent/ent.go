@@ -28,6 +28,7 @@ import (
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/ent/usernotificationchannel"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -88,22 +89,23 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			appconfig.Table:          appconfig.ValidColumn,
-			contact.Table:            contact.ValidColumn,
-			event.Table:              event.ValidColumn,
-			giftidea.Table:           giftidea.ValidColumn,
-			group.Table:              group.ValidColumn,
-			groupnote.Table:          groupnote.ValidColumn,
-			migrationlog.Table:       migrationlog.ValidColumn,
-			notificationlog.Table:    notificationlog.ValidColumn,
-			passwordresettoken.Table: passwordresettoken.ValidColumn,
-			person.Table:             person.ValidColumn,
-			personnote.Table:         personnote.ValidColumn,
-			pushsubscription.Table:   pushsubscription.ValidColumn,
-			recurringrule.Table:      recurringrule.ValidColumn,
-			session.Table:            session.ValidColumn,
-			tag.Table:                tag.ValidColumn,
-			user.Table:               user.ValidColumn,
+			appconfig.Table:               appconfig.ValidColumn,
+			contact.Table:                 contact.ValidColumn,
+			event.Table:                   event.ValidColumn,
+			giftidea.Table:                giftidea.ValidColumn,
+			group.Table:                   group.ValidColumn,
+			groupnote.Table:               groupnote.ValidColumn,
+			migrationlog.Table:            migrationlog.ValidColumn,
+			notificationlog.Table:         notificationlog.ValidColumn,
+			passwordresettoken.Table:      passwordresettoken.ValidColumn,
+			person.Table:                  person.ValidColumn,
+			personnote.Table:              personnote.ValidColumn,
+			pushsubscription.Table:        pushsubscription.ValidColumn,
+			recurringrule.Table:           recurringrule.ValidColumn,
+			session.Table:                 session.ValidColumn,
+			tag.Table:                     tag.ValidColumn,
+			user.Table:                    user.ValidColumn,
+			usernotificationchannel.Table: usernotificationchannel.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

@@ -25,6 +25,6 @@ func (PushSubscription) Fields() []ent.Field {
 
 func (PushSubscription) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("user", User.Type).Ref("push_subscriptions").Unique(),
+		edge.From("user", User.Type).Ref("push_subscriptions").Unique().Required(),
 	}
 }

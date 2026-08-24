@@ -30,6 +30,14 @@ func (n *DiscordNotifier) IsConfigured() bool {
 }
 
 func (n *DiscordNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *DiscordNotifier) SendTo(ctx context.Context, title, message string, target string) error {
+	dest := n.cfg.DiscordWebhookURL
+	if target != "" {
+		dest = target
+	}
 	payload := map[string]any{
 		"content": fmt.Sprintf("%s\n%s", title, message),
 		"embeds": []map[string]any{
@@ -46,7 +54,7 @@ func (n *DiscordNotifier) Send(ctx context.Context, title, message string) error
 		return fmt.Errorf("marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, n.cfg.DiscordWebhookURL, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, dest, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}

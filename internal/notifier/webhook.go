@@ -49,6 +49,10 @@ type webhookEnvelope struct {
 // receives its own POST; a failure on any URL fails the channel's delivery
 // status. Sending continues across URLs and the first error is returned.
 func (n *WebhookNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *WebhookNotifier) SendTo(ctx context.Context, title, message string, target string) error {
 	envelope := webhookEnvelope{
 		Title:   title,
 		Message: message,
@@ -60,9 +64,12 @@ func (n *WebhookNotifier) Send(ctx context.Context, title, message string) error
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
-
+	webhookURL := n.cfg.WebhookURL
+	if target != "" {
+		webhookURL = target
+	}
 	var firstErr error
-	for _, rawURL := range strings.Split(n.cfg.WebhookURL, ",") {
+	for _, rawURL := range strings.Split(webhookURL, ",") {
 		u := strings.TrimSpace(rawURL)
 		if u == "" {
 			continue

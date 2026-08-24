@@ -28,6 +28,7 @@ import (
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
+	"github.com/datey/datey/ent/usernotificationchannel"
 )
 
 const (
@@ -39,22 +40,23 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAppConfig          = "AppConfig"
-	TypeContact            = "Contact"
-	TypeEvent              = "Event"
-	TypeGiftIdea           = "GiftIdea"
-	TypeGroup              = "Group"
-	TypeGroupNote          = "GroupNote"
-	TypeMigrationLog       = "MigrationLog"
-	TypeNotificationLog    = "NotificationLog"
-	TypePasswordResetToken = "PasswordResetToken"
-	TypePerson             = "Person"
-	TypePersonNote         = "PersonNote"
-	TypePushSubscription   = "PushSubscription"
-	TypeRecurringRule      = "RecurringRule"
-	TypeSession            = "Session"
-	TypeTag                = "Tag"
-	TypeUser               = "User"
+	TypeAppConfig               = "AppConfig"
+	TypeContact                 = "Contact"
+	TypeEvent                   = "Event"
+	TypeGiftIdea                = "GiftIdea"
+	TypeGroup                   = "Group"
+	TypeGroupNote               = "GroupNote"
+	TypeMigrationLog            = "MigrationLog"
+	TypeNotificationLog         = "NotificationLog"
+	TypePasswordResetToken      = "PasswordResetToken"
+	TypePerson                  = "Person"
+	TypePersonNote              = "PersonNote"
+	TypePushSubscription        = "PushSubscription"
+	TypeRecurringRule           = "RecurringRule"
+	TypeSession                 = "Session"
+	TypeTag                     = "Tag"
+	TypeUser                    = "User"
+	TypeUserNotificationChannel = "UserNotificationChannel"
 )
 
 // AppConfigMutation represents an operation that mutates the AppConfig nodes in the graph.
@@ -9638,6 +9640,8 @@ type NotificationLogMutation struct {
 	channel       *string
 	sent_at       *time.Time
 	date_key      *string
+	user_id       *int
+	adduser_id    *int
 	clearedFields map[string]struct{}
 	event         *int
 	clearedevent  bool
@@ -9852,6 +9856,76 @@ func (m *NotificationLogMutation) ResetDateKey() {
 	m.date_key = nil
 }
 
+// SetUserID sets the "user_id" field.
+func (m *NotificationLogMutation) SetUserID(i int) {
+	m.user_id = &i
+	m.adduser_id = nil
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *NotificationLogMutation) UserID() (r int, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the NotificationLog entity.
+// If the NotificationLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationLogMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// AddUserID adds i to the "user_id" field.
+func (m *NotificationLogMutation) AddUserID(i int) {
+	if m.adduser_id != nil {
+		*m.adduser_id += i
+	} else {
+		m.adduser_id = &i
+	}
+}
+
+// AddedUserID returns the value that was added to the "user_id" field in this mutation.
+func (m *NotificationLogMutation) AddedUserID() (r int, exists bool) {
+	v := m.adduser_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *NotificationLogMutation) ClearUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+	m.clearedFields[notificationlog.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *NotificationLogMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[notificationlog.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *NotificationLogMutation) ResetUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+	delete(m.clearedFields, notificationlog.FieldUserID)
+}
+
 // SetEventID sets the "event" edge to the Event entity by id.
 func (m *NotificationLogMutation) SetEventID(id int) {
 	m.event = &id
@@ -9925,7 +9999,7 @@ func (m *NotificationLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NotificationLogMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.channel != nil {
 		fields = append(fields, notificationlog.FieldChannel)
 	}
@@ -9934,6 +10008,9 @@ func (m *NotificationLogMutation) Fields() []string {
 	}
 	if m.date_key != nil {
 		fields = append(fields, notificationlog.FieldDateKey)
+	}
+	if m.user_id != nil {
+		fields = append(fields, notificationlog.FieldUserID)
 	}
 	return fields
 }
@@ -9949,6 +10026,8 @@ func (m *NotificationLogMutation) Field(name string) (ent.Value, bool) {
 		return m.SentAt()
 	case notificationlog.FieldDateKey:
 		return m.DateKey()
+	case notificationlog.FieldUserID:
+		return m.UserID()
 	}
 	return nil, false
 }
@@ -9964,6 +10043,8 @@ func (m *NotificationLogMutation) OldField(ctx context.Context, name string) (en
 		return m.OldSentAt(ctx)
 	case notificationlog.FieldDateKey:
 		return m.OldDateKey(ctx)
+	case notificationlog.FieldUserID:
+		return m.OldUserID(ctx)
 	}
 	return nil, fmt.Errorf("unknown NotificationLog field %s", name)
 }
@@ -9994,6 +10075,13 @@ func (m *NotificationLogMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDateKey(v)
 		return nil
+	case notificationlog.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown NotificationLog field %s", name)
 }
@@ -10001,13 +10089,21 @@ func (m *NotificationLogMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *NotificationLogMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.adduser_id != nil {
+		fields = append(fields, notificationlog.FieldUserID)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *NotificationLogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case notificationlog.FieldUserID:
+		return m.AddedUserID()
+	}
 	return nil, false
 }
 
@@ -10016,6 +10112,13 @@ func (m *NotificationLogMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *NotificationLogMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case notificationlog.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUserID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown NotificationLog numeric field %s", name)
 }
@@ -10023,7 +10126,11 @@ func (m *NotificationLogMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *NotificationLogMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(notificationlog.FieldUserID) {
+		fields = append(fields, notificationlog.FieldUserID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -10036,6 +10143,11 @@ func (m *NotificationLogMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *NotificationLogMutation) ClearField(name string) error {
+	switch name {
+	case notificationlog.FieldUserID:
+		m.ClearUserID()
+		return nil
+	}
 	return fmt.Errorf("unknown NotificationLog nullable field %s", name)
 }
 
@@ -10051,6 +10163,9 @@ func (m *NotificationLogMutation) ResetField(name string) error {
 		return nil
 	case notificationlog.FieldDateKey:
 		m.ResetDateKey()
+		return nil
+	case notificationlog.FieldUserID:
+		m.ResetUserID()
 		return nil
 	}
 	return fmt.Errorf("unknown NotificationLog field %s", name)
@@ -15765,6 +15880,8 @@ type UserMutation struct {
 	role                         *user.Role
 	eink_mode                    *bool
 	locale                       *string
+	notification_scope_mode      *user.NotificationScopeMode
+	notification_scope_group_ids *string
 	created_at                   *time.Time
 	updated_at                   *time.Time
 	clearedFields                map[string]struct{}
@@ -15777,6 +15894,9 @@ type UserMutation struct {
 	password_reset_tokens        map[int]struct{}
 	removedpassword_reset_tokens map[int]struct{}
 	clearedpassword_reset_tokens bool
+	notification_channels        map[int]struct{}
+	removednotification_channels map[int]struct{}
+	clearednotification_channels bool
 	done                         bool
 	oldValue                     func(context.Context) (*User, error)
 	predicates                   []predicate.User
@@ -16073,6 +16193,91 @@ func (m *UserMutation) ResetLocale() {
 	delete(m.clearedFields, user.FieldLocale)
 }
 
+// SetNotificationScopeMode sets the "notification_scope_mode" field.
+func (m *UserMutation) SetNotificationScopeMode(usm user.NotificationScopeMode) {
+	m.notification_scope_mode = &usm
+}
+
+// NotificationScopeMode returns the value of the "notification_scope_mode" field in the mutation.
+func (m *UserMutation) NotificationScopeMode() (r user.NotificationScopeMode, exists bool) {
+	v := m.notification_scope_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotificationScopeMode returns the old "notification_scope_mode" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotificationScopeMode(ctx context.Context) (v user.NotificationScopeMode, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotificationScopeMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotificationScopeMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotificationScopeMode: %w", err)
+	}
+	return oldValue.NotificationScopeMode, nil
+}
+
+// ResetNotificationScopeMode resets all changes to the "notification_scope_mode" field.
+func (m *UserMutation) ResetNotificationScopeMode() {
+	m.notification_scope_mode = nil
+}
+
+// SetNotificationScopeGroupIds sets the "notification_scope_group_ids" field.
+func (m *UserMutation) SetNotificationScopeGroupIds(s string) {
+	m.notification_scope_group_ids = &s
+}
+
+// NotificationScopeGroupIds returns the value of the "notification_scope_group_ids" field in the mutation.
+func (m *UserMutation) NotificationScopeGroupIds() (r string, exists bool) {
+	v := m.notification_scope_group_ids
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotificationScopeGroupIds returns the old "notification_scope_group_ids" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotificationScopeGroupIds(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotificationScopeGroupIds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotificationScopeGroupIds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotificationScopeGroupIds: %w", err)
+	}
+	return oldValue.NotificationScopeGroupIds, nil
+}
+
+// ClearNotificationScopeGroupIds clears the value of the "notification_scope_group_ids" field.
+func (m *UserMutation) ClearNotificationScopeGroupIds() {
+	m.notification_scope_group_ids = nil
+	m.clearedFields[user.FieldNotificationScopeGroupIds] = struct{}{}
+}
+
+// NotificationScopeGroupIdsCleared returns if the "notification_scope_group_ids" field was cleared in this mutation.
+func (m *UserMutation) NotificationScopeGroupIdsCleared() bool {
+	_, ok := m.clearedFields[user.FieldNotificationScopeGroupIds]
+	return ok
+}
+
+// ResetNotificationScopeGroupIds resets all changes to the "notification_scope_group_ids" field.
+func (m *UserMutation) ResetNotificationScopeGroupIds() {
+	m.notification_scope_group_ids = nil
+	delete(m.clearedFields, user.FieldNotificationScopeGroupIds)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -16307,6 +16512,60 @@ func (m *UserMutation) ResetPasswordResetTokens() {
 	m.removedpassword_reset_tokens = nil
 }
 
+// AddNotificationChannelIDs adds the "notification_channels" edge to the UserNotificationChannel entity by ids.
+func (m *UserMutation) AddNotificationChannelIDs(ids ...int) {
+	if m.notification_channels == nil {
+		m.notification_channels = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.notification_channels[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNotificationChannels clears the "notification_channels" edge to the UserNotificationChannel entity.
+func (m *UserMutation) ClearNotificationChannels() {
+	m.clearednotification_channels = true
+}
+
+// NotificationChannelsCleared reports if the "notification_channels" edge to the UserNotificationChannel entity was cleared.
+func (m *UserMutation) NotificationChannelsCleared() bool {
+	return m.clearednotification_channels
+}
+
+// RemoveNotificationChannelIDs removes the "notification_channels" edge to the UserNotificationChannel entity by IDs.
+func (m *UserMutation) RemoveNotificationChannelIDs(ids ...int) {
+	if m.removednotification_channels == nil {
+		m.removednotification_channels = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.notification_channels, ids[i])
+		m.removednotification_channels[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNotificationChannels returns the removed IDs of the "notification_channels" edge to the UserNotificationChannel entity.
+func (m *UserMutation) RemovedNotificationChannelsIDs() (ids []int) {
+	for id := range m.removednotification_channels {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NotificationChannelsIDs returns the "notification_channels" edge IDs in the mutation.
+func (m *UserMutation) NotificationChannelsIDs() (ids []int) {
+	for id := range m.notification_channels {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNotificationChannels resets all changes to the "notification_channels" edge.
+func (m *UserMutation) ResetNotificationChannels() {
+	m.notification_channels = nil
+	m.clearednotification_channels = false
+	m.removednotification_channels = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -16341,7 +16600,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
@@ -16356,6 +16615,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.locale != nil {
 		fields = append(fields, user.FieldLocale)
+	}
+	if m.notification_scope_mode != nil {
+		fields = append(fields, user.FieldNotificationScopeMode)
+	}
+	if m.notification_scope_group_ids != nil {
+		fields = append(fields, user.FieldNotificationScopeGroupIds)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -16381,6 +16646,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.EinkMode()
 	case user.FieldLocale:
 		return m.Locale()
+	case user.FieldNotificationScopeMode:
+		return m.NotificationScopeMode()
+	case user.FieldNotificationScopeGroupIds:
+		return m.NotificationScopeGroupIds()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
@@ -16404,6 +16673,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEinkMode(ctx)
 	case user.FieldLocale:
 		return m.OldLocale(ctx)
+	case user.FieldNotificationScopeMode:
+		return m.OldNotificationScopeMode(ctx)
+	case user.FieldNotificationScopeGroupIds:
+		return m.OldNotificationScopeGroupIds(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
@@ -16452,6 +16725,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLocale(v)
 		return nil
+	case user.FieldNotificationScopeMode:
+		v, ok := value.(user.NotificationScopeMode)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotificationScopeMode(v)
+		return nil
+	case user.FieldNotificationScopeGroupIds:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotificationScopeGroupIds(v)
+		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -16499,6 +16786,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldLocale) {
 		fields = append(fields, user.FieldLocale)
 	}
+	if m.FieldCleared(user.FieldNotificationScopeGroupIds) {
+		fields = append(fields, user.FieldNotificationScopeGroupIds)
+	}
 	return fields
 }
 
@@ -16515,6 +16805,9 @@ func (m *UserMutation) ClearField(name string) error {
 	switch name {
 	case user.FieldLocale:
 		m.ClearLocale()
+		return nil
+	case user.FieldNotificationScopeGroupIds:
+		m.ClearNotificationScopeGroupIds()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -16539,6 +16832,12 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldLocale:
 		m.ResetLocale()
 		return nil
+	case user.FieldNotificationScopeMode:
+		m.ResetNotificationScopeMode()
+		return nil
+	case user.FieldNotificationScopeGroupIds:
+		m.ResetNotificationScopeGroupIds()
+		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -16551,7 +16850,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.sessions != nil {
 		edges = append(edges, user.EdgeSessions)
 	}
@@ -16560,6 +16859,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.password_reset_tokens != nil {
 		edges = append(edges, user.EdgePasswordResetTokens)
+	}
+	if m.notification_channels != nil {
+		edges = append(edges, user.EdgeNotificationChannels)
 	}
 	return edges
 }
@@ -16586,13 +16888,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeNotificationChannels:
+		ids := make([]ent.Value, 0, len(m.notification_channels))
+		for id := range m.notification_channels {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedsessions != nil {
 		edges = append(edges, user.EdgeSessions)
 	}
@@ -16601,6 +16909,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedpassword_reset_tokens != nil {
 		edges = append(edges, user.EdgePasswordResetTokens)
+	}
+	if m.removednotification_channels != nil {
+		edges = append(edges, user.EdgeNotificationChannels)
 	}
 	return edges
 }
@@ -16627,13 +16938,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeNotificationChannels:
+		ids := make([]ent.Value, 0, len(m.removednotification_channels))
+		for id := range m.removednotification_channels {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedsessions {
 		edges = append(edges, user.EdgeSessions)
 	}
@@ -16642,6 +16959,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedpassword_reset_tokens {
 		edges = append(edges, user.EdgePasswordResetTokens)
+	}
+	if m.clearednotification_channels {
+		edges = append(edges, user.EdgeNotificationChannels)
 	}
 	return edges
 }
@@ -16656,6 +16976,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedpush_subscriptions
 	case user.EdgePasswordResetTokens:
 		return m.clearedpassword_reset_tokens
+	case user.EdgeNotificationChannels:
+		return m.clearednotification_channels
 	}
 	return false
 }
@@ -16681,6 +17003,532 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgePasswordResetTokens:
 		m.ResetPasswordResetTokens()
 		return nil
+	case user.EdgeNotificationChannels:
+		m.ResetNotificationChannels()
+		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
+}
+
+// UserNotificationChannelMutation represents an operation that mutates the UserNotificationChannel nodes in the graph.
+type UserNotificationChannelMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	channel_type  *string
+	target        *string
+	enabled       *bool
+	clearedFields map[string]struct{}
+	user          *int
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*UserNotificationChannel, error)
+	predicates    []predicate.UserNotificationChannel
+}
+
+var _ ent.Mutation = (*UserNotificationChannelMutation)(nil)
+
+// usernotificationchannelOption allows management of the mutation configuration using functional options.
+type usernotificationchannelOption func(*UserNotificationChannelMutation)
+
+// newUserNotificationChannelMutation creates new mutation for the UserNotificationChannel entity.
+func newUserNotificationChannelMutation(c config, op Op, opts ...usernotificationchannelOption) *UserNotificationChannelMutation {
+	m := &UserNotificationChannelMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUserNotificationChannel,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUserNotificationChannelID sets the ID field of the mutation.
+func withUserNotificationChannelID(id int) usernotificationchannelOption {
+	return func(m *UserNotificationChannelMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UserNotificationChannel
+		)
+		m.oldValue = func(ctx context.Context) (*UserNotificationChannel, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UserNotificationChannel.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUserNotificationChannel sets the old UserNotificationChannel of the mutation.
+func withUserNotificationChannel(node *UserNotificationChannel) usernotificationchannelOption {
+	return func(m *UserNotificationChannelMutation) {
+		m.oldValue = func(context.Context) (*UserNotificationChannel, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UserNotificationChannelMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UserNotificationChannelMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UserNotificationChannelMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UserNotificationChannelMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UserNotificationChannel.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetChannelType sets the "channel_type" field.
+func (m *UserNotificationChannelMutation) SetChannelType(s string) {
+	m.channel_type = &s
+}
+
+// ChannelType returns the value of the "channel_type" field in the mutation.
+func (m *UserNotificationChannelMutation) ChannelType() (r string, exists bool) {
+	v := m.channel_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelType returns the old "channel_type" field's value of the UserNotificationChannel entity.
+// If the UserNotificationChannel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserNotificationChannelMutation) OldChannelType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelType: %w", err)
+	}
+	return oldValue.ChannelType, nil
+}
+
+// ResetChannelType resets all changes to the "channel_type" field.
+func (m *UserNotificationChannelMutation) ResetChannelType() {
+	m.channel_type = nil
+}
+
+// SetTarget sets the "target" field.
+func (m *UserNotificationChannelMutation) SetTarget(s string) {
+	m.target = &s
+}
+
+// Target returns the value of the "target" field in the mutation.
+func (m *UserNotificationChannelMutation) Target() (r string, exists bool) {
+	v := m.target
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTarget returns the old "target" field's value of the UserNotificationChannel entity.
+// If the UserNotificationChannel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserNotificationChannelMutation) OldTarget(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTarget is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTarget requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTarget: %w", err)
+	}
+	return oldValue.Target, nil
+}
+
+// ClearTarget clears the value of the "target" field.
+func (m *UserNotificationChannelMutation) ClearTarget() {
+	m.target = nil
+	m.clearedFields[usernotificationchannel.FieldTarget] = struct{}{}
+}
+
+// TargetCleared returns if the "target" field was cleared in this mutation.
+func (m *UserNotificationChannelMutation) TargetCleared() bool {
+	_, ok := m.clearedFields[usernotificationchannel.FieldTarget]
+	return ok
+}
+
+// ResetTarget resets all changes to the "target" field.
+func (m *UserNotificationChannelMutation) ResetTarget() {
+	m.target = nil
+	delete(m.clearedFields, usernotificationchannel.FieldTarget)
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *UserNotificationChannelMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *UserNotificationChannelMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the UserNotificationChannel entity.
+// If the UserNotificationChannel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserNotificationChannelMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *UserNotificationChannelMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *UserNotificationChannelMutation) SetUserID(id int) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *UserNotificationChannelMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *UserNotificationChannelMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *UserNotificationChannelMutation) UserID() (id int, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *UserNotificationChannelMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *UserNotificationChannelMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the UserNotificationChannelMutation builder.
+func (m *UserNotificationChannelMutation) Where(ps ...predicate.UserNotificationChannel) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UserNotificationChannelMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UserNotificationChannelMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UserNotificationChannel, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UserNotificationChannelMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UserNotificationChannelMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UserNotificationChannel).
+func (m *UserNotificationChannelMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UserNotificationChannelMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.channel_type != nil {
+		fields = append(fields, usernotificationchannel.FieldChannelType)
+	}
+	if m.target != nil {
+		fields = append(fields, usernotificationchannel.FieldTarget)
+	}
+	if m.enabled != nil {
+		fields = append(fields, usernotificationchannel.FieldEnabled)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UserNotificationChannelMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case usernotificationchannel.FieldChannelType:
+		return m.ChannelType()
+	case usernotificationchannel.FieldTarget:
+		return m.Target()
+	case usernotificationchannel.FieldEnabled:
+		return m.Enabled()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UserNotificationChannelMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case usernotificationchannel.FieldChannelType:
+		return m.OldChannelType(ctx)
+	case usernotificationchannel.FieldTarget:
+		return m.OldTarget(ctx)
+	case usernotificationchannel.FieldEnabled:
+		return m.OldEnabled(ctx)
+	}
+	return nil, fmt.Errorf("unknown UserNotificationChannel field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserNotificationChannelMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case usernotificationchannel.FieldChannelType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelType(v)
+		return nil
+	case usernotificationchannel.FieldTarget:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTarget(v)
+		return nil
+	case usernotificationchannel.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UserNotificationChannel field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UserNotificationChannelMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UserNotificationChannelMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserNotificationChannelMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown UserNotificationChannel numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UserNotificationChannelMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(usernotificationchannel.FieldTarget) {
+		fields = append(fields, usernotificationchannel.FieldTarget)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UserNotificationChannelMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UserNotificationChannelMutation) ClearField(name string) error {
+	switch name {
+	case usernotificationchannel.FieldTarget:
+		m.ClearTarget()
+		return nil
+	}
+	return fmt.Errorf("unknown UserNotificationChannel nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UserNotificationChannelMutation) ResetField(name string) error {
+	switch name {
+	case usernotificationchannel.FieldChannelType:
+		m.ResetChannelType()
+		return nil
+	case usernotificationchannel.FieldTarget:
+		m.ResetTarget()
+		return nil
+	case usernotificationchannel.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	}
+	return fmt.Errorf("unknown UserNotificationChannel field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UserNotificationChannelMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, usernotificationchannel.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UserNotificationChannelMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case usernotificationchannel.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UserNotificationChannelMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UserNotificationChannelMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UserNotificationChannelMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, usernotificationchannel.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UserNotificationChannelMutation) EdgeCleared(name string) bool {
+	switch name {
+	case usernotificationchannel.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UserNotificationChannelMutation) ClearEdge(name string) error {
+	switch name {
+	case usernotificationchannel.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserNotificationChannel unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UserNotificationChannelMutation) ResetEdge(name string) error {
+	switch name {
+	case usernotificationchannel.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserNotificationChannel edge %s", name)
 }

@@ -91,14 +91,6 @@ func (_u *PushSubscriptionUpdate) SetUserID(id int) *PushSubscriptionUpdate {
 	return _u
 }
 
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (_u *PushSubscriptionUpdate) SetNillableUserID(id *int) *PushSubscriptionUpdate {
-	if id != nil {
-		_u = _u.SetUserID(*id)
-	}
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *PushSubscriptionUpdate) SetUser(v *User) *PushSubscriptionUpdate {
 	return _u.SetUserID(v.ID)
@@ -158,6 +150,9 @@ func (_u *PushSubscriptionUpdate) check() error {
 		if err := pushsubscription.AuthValidator(v); err != nil {
 			return &ValidationError{Name: "auth", err: fmt.Errorf(`ent: validator failed for field "PushSubscription.auth": %w`, err)}
 		}
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "PushSubscription.user"`)
 	}
 	return nil
 }
@@ -297,14 +292,6 @@ func (_u *PushSubscriptionUpdateOne) SetUserID(id int) *PushSubscriptionUpdateOn
 	return _u
 }
 
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (_u *PushSubscriptionUpdateOne) SetNillableUserID(id *int) *PushSubscriptionUpdateOne {
-	if id != nil {
-		_u = _u.SetUserID(*id)
-	}
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *PushSubscriptionUpdateOne) SetUser(v *User) *PushSubscriptionUpdateOne {
 	return _u.SetUserID(v.ID)
@@ -377,6 +364,9 @@ func (_u *PushSubscriptionUpdateOne) check() error {
 		if err := pushsubscription.AuthValidator(v); err != nil {
 			return &ValidationError{Name: "auth", err: fmt.Errorf(`ent: validator failed for field "PushSubscription.auth": %w`, err)}
 		}
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "PushSubscription.user"`)
 	}
 	return nil
 }

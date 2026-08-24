@@ -33,18 +33,24 @@ func (n *NtfyNotifier) IsConfigured() bool {
 }
 
 func (n *NtfyNotifier) Send(ctx context.Context, title, message string) error {
+	return n.SendTo(ctx, title, message, "")
+}
+
+func (n *NtfyNotifier) SendTo(ctx context.Context, title, message string, target string) error {
 	baseURL := n.cfg.NtfyURL
 	if baseURL == "" {
 		baseURL = "https://ntfy.sh"
 	}
-
+	topic := n.cfg.NtfyTopic
+	if target != "" {
+		topic = target
+	}
 	priority := n.cfg.NtfyPriority
 	if priority < 1 || priority > 5 {
 		priority = 3
 	}
-
 	payload := map[string]any{
-		"topic":    n.cfg.NtfyTopic,
+		"topic":    topic,
 		"title":    title,
 		"message":  message,
 		"priority": priority,
@@ -55,7 +61,7 @@ func (n *NtfyNotifier) Send(ctx context.Context, title, message string) error {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+"/"+n.cfg.NtfyTopic, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+"/"+topic, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}
