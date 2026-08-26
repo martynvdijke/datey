@@ -1,3 +1,10 @@
+## [1.49.1](https://github.com/martynvdijke/datey/compare/v1.49.0...v1.49.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#42](https://github.com/martynvdijke/datey/issues/42)) ([aadc415](https://github.com/martynvdijke/datey/commit/aadc415cf9283527e60393a387c0e960781f6df2))
+
 # [1.49.0](https://github.com/martynvdijke/datey/compare/v1.48.0...v1.49.0) (2026-08-24)
 
 
