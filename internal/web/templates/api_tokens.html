@@ -1,0 +1,101 @@
+{{define "content"}}
+<h1 class="mb-4">API Tokens</h1>
+
+{{if .Error}}
+  <div class="alert alert-danger">{{.Error}}</div>
+{{end}}
+
+{{if .NewToken}}
+  <div class="alert alert-warning" role="alert">
+    <h5 class="alert-heading">Your new API token</h5>
+    <p class="mb-2">Copy it now — <strong>it will not be shown again</strong>. Only a hash is stored server-side.</p>
+    <div class="input-group">
+      <input type="text" class="form-control font-monospace" id="new-api-token" value="{{.NewToken}}" readonly aria-label="New API token">
+      <button type="button" class="btn btn-outline-secondary"
+              onclick="navigator.clipboard.writeText(document.getElementById('new-api-token').value).then(function(){ this.textContent='Copied'; }.bind(this))">Copy</button>
+    </div>
+    <p class="mt-2 mb-0 small">Send it as a header on API requests: <code>Authorization: Bearer &lt;token&gt;</code></p>
+  </div>
+{{end}}
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Your tokens</h5>
+        {{if .Tokens}}
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Expires</th>
+                <th>Last used</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {{$now := now}}
+              {{range .Tokens}}
+                <tr>
+                  <td>{{.Name}}</td>
+                  <td>
+                    {{if .RevokedAt}}
+                      <span class="badge bg-secondary">Revoked</span>
+                    {{else if and .ExpiresAt (.ExpiresAt.Before $now)}}
+                      <span class="badge bg-secondary">Expired</span>
+                    {{else}}
+                      <span class="badge bg-success">Active</span>
+                    {{end}}
+                  </td>
+                  <td>{{.CreatedAt.Format "Jan 2, 2006"}}</td>
+                  <td>{{if .ExpiresAt}}{{.ExpiresAt.Format "Jan 2, 2006"}}{{else}}Never{{end}}</td>
+                  <td>{{if .LastUsedAt}}{{.LastUsedAt.Format "Jan 2, 2006"}}{{else}}Never{{end}}</td>
+                  <td class="text-end">
+                    {{if not .RevokedAt}}
+                      <form method="POST" action="/settings/api-tokens/{{.ID}}/rotate" style="display:inline">
+                        {{template "csrfField" $}}
+                        <button type="submit" class="btn btn-sm btn-outline-primary"
+                                hx-confirm="Rotate token '{{.Name}}'? The old secret stops working immediately and a new secret is shown once.">Rotate</button>
+                      </form>
+                      <form method="POST" action="/settings/api-tokens/{{.ID}}/revoke" style="display:inline">
+                        {{template "csrfField" $}}
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                hx-confirm="Revoke token '{{.Name}}'? Clients using it will stop working immediately.">Revoke</button>
+                      </form>
+                    {{end}}
+                  </td>
+                </tr>
+              {{end}}
+            </tbody>
+          </table>
+        {{else}}
+          {{template "emptyState" (dict "Message" "No API tokens yet. Create one to let scripts and integrations call Datey on your behalf.")}}
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Create token</h5>
+        <p class="text-muted small">Authenticates requests as you via <code>Authorization: Bearer</code>. Browser sessions keep using CSRF protection.</p>
+        <form method="POST" action="/settings/api-tokens">
+          {{template "csrfField" .}}
+          <div class="mb-3">
+            <label for="token-name" class="form-label">Name {{template "requiredIndicator" .}}</label>
+            <input type="text" class="form-control" id="token-name" name="name" maxlength="100" placeholder="e.g. home-automation" required>
+          </div>
+          <div class="mb-3">
+            <label for="token-expiry" class="form-label">Expiry (days)</label>
+            <input type="number" class="form-control" id="token-expiry" name="expiry_days" min="1" max="3650" placeholder="Leave empty for no expiry">
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Create Token</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -32,5 +32,6 @@ func (User) Edges() []ent.Edge {
 		edge.To("push_subscriptions", PushSubscription.Type),
 		edge.To("password_reset_tokens", PasswordResetToken.Type),
 		edge.To("notification_channels", UserNotificationChannel.Type),
+		edge.To("api_tokens", ApiToken.Type),
 	}
 }

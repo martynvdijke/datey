@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/auditentry"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
@@ -30,6 +31,18 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	apitokenFields := schema.ApiToken{}.Fields()
+	_ = apitokenFields
+	// apitokenDescTokenHash is the schema descriptor for token_hash field.
+	apitokenDescTokenHash := apitokenFields[0].Descriptor()
+	// apitoken.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
+	apitoken.TokenHashValidator = apitokenDescTokenHash.Validators[0].(func(string) error)
+	// apitokenDescName is the schema descriptor for name field.
+	apitokenDescName := apitokenFields[1].Descriptor()
+	// apitoken.DefaultName holds the default value on creation for the name field.
+	apitoken.DefaultName = apitokenDescName.Default.(string)
+	// apitoken.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	apitoken.NameValidator = apitokenDescName.Validators[0].(func(string) error)
 	auditentryFields := schema.AuditEntry{}.Fields()
 	_ = auditentryFields
 	// auditentryDescActorUsername is the schema descriptor for actor_username field.

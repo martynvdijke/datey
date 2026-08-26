@@ -49,9 +49,10 @@ func (h *Handler) settingsConfig(w http.ResponseWriter, r *http.Request) {
 	errs, _ := r.Context().Value(configFormErrorsKey{}).(map[string]string)
 
 	h.render(w, r, "settings.html", map[string]any{
-		"Title":        "Datey - Settings",
-		"SettingsTab":  "config",
-		"ConfigGroups": buildConfigGroups(cfg, submitted, errs),
+		"Title":         "Datey - Settings",
+		"SettingsTab":   "config",
+		"ConfigGroups":  buildConfigGroups(cfg, submitted, errs),
+		"ImmichEnabled": h.immich.Enabled(),
 	})
 }
 

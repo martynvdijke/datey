@@ -15,6 +15,9 @@
   <li class="nav-item">
     <a class="nav-link {{if eq .SettingsTab "backup"}}active{{end}}" href="/settings/backup">Backups</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="/settings/api-tokens">API Tokens</a>
+  </li>
 </ul>
 
 <div class="tab-content mt-3">
@@ -281,8 +284,8 @@
                       hx-post="/settings/immich/sync"
                       hx-target="#immich-sync-result"
                       hx-swap="innerHTML"
-                      hx-disabled-elt="this">Sync with Immich</button>
-              <span class="form-text text-muted">Matches every person against Immich and imports profile pictures for matches. Uploaded photos are kept.</span>
+                      hx-disabled-elt="this"{{if not $.ImmichEnabled}} disabled{{end}}>Sync with Immich</button>
+              {{if $.ImmichEnabled}}<span class="form-text text-muted">Matches every person against Immich and imports profile pictures for matches. Uploaded photos are kept.</span>{{else}}<span class="form-text text-muted">Configure Immich URL and API key first</span>{{end}}
             </div>
             <div id="immich-sync-result" class="mt-2" aria-live="polite"></div>
           {{end}}

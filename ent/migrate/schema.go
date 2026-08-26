@@ -8,6 +8,43 @@ import (
 )
 
 var (
+	// APITokensColumns holds the columns for the "api_tokens" table.
+	APITokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString, Default: "api token"},
+		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_api_tokens", Type: field.TypeInt},
+	}
+	// APITokensTable holds the schema information for the "api_tokens" table.
+	APITokensTable = &schema.Table{
+		Name:       "api_tokens",
+		Columns:    APITokensColumns,
+		PrimaryKey: []*schema.Column{APITokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "api_tokens_users_api_tokens",
+				Columns:    []*schema.Column{APITokensColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "apitoken_token_hash",
+				Unique:  false,
+				Columns: []*schema.Column{APITokensColumns[1]},
+			},
+			{
+				Name:    "apitoken_user_api_tokens",
+				Unique:  false,
+				Columns: []*schema.Column{APITokensColumns[7]},
+			},
+		},
+	}
 	// AppConfigsColumns holds the columns for the "app_configs" table.
 	AppConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -603,6 +640,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		APITokensTable,
 		AppConfigsTable,
 		AuditEntriesTable,
 		ContactsTable,
@@ -628,6 +666,7 @@ var (
 )
 
 func init() {
+	APITokensTable.ForeignKeys[0].RefTable = UsersTable
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
 	EventsTable.ForeignKeys[1].RefTable = GroupsTable
 	EventsTable.ForeignKeys[2].RefTable = PersonsTable

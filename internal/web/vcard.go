@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/vcard"
@@ -106,6 +107,8 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 					if h.maybeCreateBirthdayEvent(r.Context(), person.ID, pc, &ir) {
 						birthdays++
 					}
+					// Sync group membership from CATEGORIES (create missing groups, degrade gracefully on error).
+					h.syncCategoriesToGroups(r.Context(), person.ID, pc.Categories)
 					results = append(results, ir)
 				} else {
 					skipped++
@@ -149,6 +152,7 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 			if h.maybeCreateBirthdayEvent(r.Context(), person.ID, pc, &ir) {
 				birthdays++
 			}
+			h.syncCategoriesToGroups(r.Context(), person.ID, pc.Categories)
 			results = append(results, ir)
 		}
 	}
@@ -210,6 +214,28 @@ func (h *Handler) handleImportVCard(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/people?success="+msg, http.StatusSeeOther)
 }
 
+// syncCategoriesToGroups maps CATEGORIES to group membership, creating missing
+// groups by name. Where full fidelity isn't possible (e.g. empty name, DB error),
+// it degrades gracefully: errors are logged and the import continues without
+// failing the person creation.
+func (h *Handler) syncCategoriesToGroups(ctx context.Context, personID int, categories []string) {
+	for _, name := range categories {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		g, err := h.groups.GetOrCreateByName(ctx, name)
+		if err != nil {
+			slog.Warn("import vcard: ensure group for category", "category", name, "error", err)
+			continue
+		}
+		if err := h.groups.AddPerson(ctx, g.ID, personID); err != nil {
+			// AddPerson is idempotent via ent edge; log but don't fail.
+			slog.Warn("import vcard: add person to group", "group", name, "error", err)
+		}
+	}
+}
+
 // maybeCreateBirthdayEvent creates a birthday event from the parsed contact when
 // it has a BDAY and the person does not already have a birthday event. It fills
 // ir.HasBirthdayBday and reports whether a new event was created.
@@ -259,7 +285,14 @@ func (h *Handler) handleExportSingleVCard(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	data, err := vcard.EncodeSingle(person.Name, person.Notes)
+	// Include group membership as CATEGORIES.
+	var cats []string
+	if groups, err2 := h.groups.ListByPerson(r.Context(), id); err2 == nil {
+		for _, g := range groups {
+			cats = append(cats, g.Name)
+		}
+	}
+	data, err := vcard.EncodeSingleWithCategories(person.Name, person.Notes, cats)
 	if err != nil {
 		slog.Error("export vcard: encode single", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -284,7 +317,13 @@ func (h *Handler) handleExportAllVCard(w http.ResponseWriter, r *http.Request) {
 
 	items := make([]vcard.NameNotes, len(people))
 	for i, p := range people {
-		items[i] = vcard.NameNotes{Name: p.Name, Notes: p.Notes}
+		var cats []string
+		if groups, err2 := h.groups.ListByPerson(r.Context(), p.ID); err2 == nil {
+			for _, g := range groups {
+				cats = append(cats, g.Name)
+			}
+		}
+		items[i] = vcard.NameNotes{Name: p.Name, Notes: p.Notes, Categories: cats}
 	}
 	data, err := vcard.Encode(items)
 	if err != nil {

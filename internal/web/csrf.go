@@ -56,8 +56,11 @@ func (h *Handler) CSRF(next http.Handler) http.Handler {
 			})
 		}
 
-		// Validate token on state-changing requests.
-		if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
+		// Validate token on state-changing requests. Bearer-authenticated API
+		// clients do not authenticate via cookies, so the double-submit check
+		// does not apply to them (spec: secure-api-mutations).
+		isStateChanging := r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete
+		if isStateChanging && !IsBearerAuth(r.Context()) {
 			submitted := r.Header.Get(csrfHeaderName)
 			if submitted == "" {
 				// Only parse the form if the header was not sent (traditional form POST).

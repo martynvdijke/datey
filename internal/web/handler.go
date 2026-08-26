@@ -51,6 +51,7 @@ type Handler struct {
 	loginLimiter        *rateLimiter
 	forgotLimiter       *rateLimiter
 	passwordResetTokens *repository.PasswordResetTokenRepository
+	apiTokens           *repository.ApiTokenRepository
 	immich              *immich.Client
 	photoStore          *photos.Store
 	audit               auditRecorder
@@ -95,6 +96,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		loginLimiter:        newRateLimiter(5, 60*time.Second),
 		forgotLimiter:       newRateLimiter(5, 15*time.Minute),
 		passwordResetTokens: repository.NewPasswordResetTokenRepository(client),
+		apiTokens:           repository.NewApiTokenRepository(client),
 		immich:              immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
 		photoStore:          photos.NewStore(cfg.DataDir),
 	}
@@ -126,6 +128,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	// All other routes with middleware applied via group
 	r.Group(func(r chi.Router) {
 		r.Use(h.SetupRedirect)
+		r.Use(h.BearerAuth) // must run before CSRF so bearer requests are marked
 		r.Use(h.CSRF)
 		r.Use(h.Locale)
 
@@ -209,7 +212,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			// Group routes (admin-only)
 			r.Get("/groups", h.listGroups)
 			r.Post("/groups/create", h.createGroup)
+			r.Get("/groups/export", h.handleExportGroups)
 			r.Get("/groups/{id}", h.viewGroup)
+			r.Get("/groups/{id}/export", h.handleExportSingleGroup)
 			r.Post("/groups/{id}/delete", h.deleteGroup)
 			r.Post("/groups/{id}/members", h.setGroupMembers)
 			r.Post("/groups/{id}/members/add", h.addGroupMember)
@@ -241,6 +246,13 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/settings/notifications", h.settingsNotifications)
 			r.Post("/settings/notifications", h.settingsNotificationsSave)
 			r.Post("/settings/test/{channel}", h.testNotification)
+
+			// API token management — owner-scoped, any authenticated user.
+			// Secrets are shown exactly once at creation/rotation time.
+			r.Get("/settings/api-tokens", h.apiTokensPage)
+			r.Post("/settings/api-tokens", h.apiTokenCreate)
+			r.Post("/settings/api-tokens/{id}/revoke", h.apiTokenRevoke)
+			r.Post("/settings/api-tokens/{id}/rotate", h.apiTokenRotate)
 
 			// Admin-only routes
 			r.Group(func(r chi.Router) {

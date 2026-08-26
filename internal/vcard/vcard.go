@@ -23,6 +23,7 @@ type ParsedContact struct {
 	UID                 string
 	Rev                 string
 	RawData             string
+	Categories          []string
 }
 
 // Parse reads a .vcf file and returns all parsed contacts.
@@ -136,6 +137,25 @@ func ToContact(card govcard.Card, rawData string) ParsedContact {
 	// as contact notes; they are persisted as sync state instead.
 	pc.UID = card.Value(govcard.FieldUID)
 	pc.Rev = card.Value(govcard.FieldRevision)
+
+	// Extract CATEGORIES as group membership. Prefer parsing from rawData
+	// to correctly handle escaped commas (\,) per vCard spec; fall back to
+	// card.Categories() if raw is unavailable.
+	if rawData != "" {
+		pc.Categories = categoriesFromRaw(rawData)
+	} else if cats := card.Categories(); len(cats) == 1 && cats[0] == "" {
+		pc.Categories = nil
+	} else {
+		cats := card.Categories()
+		// Filter empty entries (library returns [""] for missing)
+		var out []string
+		for _, c := range cats {
+			if t := strings.TrimSpace(c); t != "" {
+				out = append(out, t)
+			}
+		}
+		pc.Categories = out
+	}
 
 	// Build human-readable notes from structured contact fields. Provider
 	// bookkeeping (UID, REV, SOURCE, etc.) remains available in RawData but is
@@ -261,8 +281,124 @@ func ToCard(name, notes string) govcard.Card {
 
 // NameNotes holds a name and notes pair for vCard encoding.
 type NameNotes struct {
-	Name  string
-	Notes string
+	Name       string
+	Notes      string
+	Categories []string
+}
+
+// encodeCategoriesValue joins categories with proper vCard TEXT escaping:
+// backslash, newline, and comma are escaped; comma is the list separator.
+func encodeCategoriesValue(cats []string) string {
+	escaped := make([]string, 0, len(cats))
+	for _, c := range cats {
+		c = strings.ReplaceAll(c, "\\", "\\\\")
+		c = strings.ReplaceAll(c, "\n", "\\n")
+		c = strings.ReplaceAll(c, ",", "\\,")
+		escaped = append(escaped, c)
+	}
+	return strings.Join(escaped, ",")
+}
+
+// categoriesFromRaw extracts CATEGORIES from raw vCard text, handling
+// escaped commas correctly (split on unescaped commas, unescape per part).
+func categoriesFromRaw(raw string) []string {
+	// Find CATEGORIES line (case-insensitive, may have params).
+	var line string
+	for _, l := range strings.Split(strings.ReplaceAll(raw, "\r\n", "\n"), "\n") {
+		// Handle folded lines already unfolded by extractRawBlocks? Keep simple.
+		upper := strings.ToUpper(strings.TrimSpace(l))
+		// Extract key before : or ;
+		sep := strings.Index(l, ":")
+		semi := strings.Index(l, ";")
+		keyEnd := sep
+		if semi >= 0 && semi < sep {
+			keyEnd = semi
+		}
+		if keyEnd < 0 {
+			continue
+		}
+		key := strings.ToUpper(strings.TrimSpace(l[:keyEnd]))
+		if key == "CATEGORIES" {
+			colon := strings.Index(l, ":")
+			if colon >= 0 {
+				line = l[colon+1:]
+				break
+			}
+		}
+		_ = upper
+	}
+	if line == "" {
+		return nil
+	}
+	// Split on commas not preceded by backslash.
+	var out []string
+	var cur strings.Builder
+	escaped := false
+	for _, r := range line {
+		if escaped {
+			// Preserve escaped char for later unescaping; just add r
+			// Backslash escape is handled by writing r directly after previous
+			// backslash was already written.
+			cur.WriteRune(r)
+			escaped = false
+			continue
+		}
+		if r == '\\' {
+			escaped = true
+			cur.WriteRune(r)
+			continue
+		}
+		if r == ',' {
+			part := cur.String()
+			// Unescape: \ -> \, \n -> newline, \, -> comma
+			part = strings.ReplaceAll(part, "\\\\", "\\")
+			part = strings.ReplaceAll(part, "\\n", "\n")
+			part = strings.ReplaceAll(part, "\\,", ",")
+			part = strings.TrimSpace(part)
+			if part != "" {
+				out = append(out, part)
+			}
+			cur.Reset()
+			continue
+		}
+		cur.WriteRune(r)
+	}
+	if cur.Len() > 0 {
+		part := cur.String()
+		part = strings.ReplaceAll(part, "\\\\", "\\")
+		part = strings.ReplaceAll(part, "\\n", "\n")
+		part = strings.ReplaceAll(part, "\\,", ",")
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
+}
+
+// injectCategories replaces or adds a CATEGORIES line in an encoded vCard
+// buffer with a correctly escaped categories value, avoiding double-escaping
+// from the generic formatValue.
+func injectCategories(encoded []byte, cats []string) []byte {
+	if len(cats) == 0 {
+		return encoded
+	}
+	val := encodeCategoriesValue(cats)
+	line := "CATEGORIES:" + val + "\r\n"
+	s := string(encoded)
+	// Replace existing CATEGORIES line if present, otherwise insert before END:VCARD
+	if idx := strings.Index(s, "CATEGORIES:"); idx >= 0 {
+		end := strings.Index(s[idx:], "\r\n")
+		if end >= 0 {
+			s = s[:idx] + line + s[idx+end+2:]
+			return []byte(s)
+		}
+	}
+	// Insert before END:VCARD
+	if idx := strings.Index(s, "END:VCARD"); idx >= 0 {
+		s = s[:idx] + line + s[idx:]
+	}
+	return []byte(s)
 }
 
 // Encode serialises one or more name/notes pairs to vCard 3.0 format.
@@ -271,10 +407,16 @@ func Encode(items []NameNotes) ([]byte, error) {
 
 	for _, it := range items {
 		card := ToCard(it.Name, it.Notes)
-		enc := govcard.NewEncoder(&buf)
+		var tmp bytes.Buffer
+		enc := govcard.NewEncoder(&tmp)
 		if err := enc.Encode(card); err != nil {
 			return nil, fmt.Errorf("encode vCard for %q: %w", it.Name, err)
 		}
+		data := tmp.Bytes()
+		if len(it.Categories) > 0 {
+			data = injectCategories(data, it.Categories)
+		}
+		buf.Write(data)
 	}
 
 	return buf.Bytes(), nil
@@ -283,6 +425,11 @@ func Encode(items []NameNotes) ([]byte, error) {
 // EncodeSingle serialises a single name/notes pair to vCard 3.0 format.
 func EncodeSingle(name, notes string) ([]byte, error) {
 	return Encode([]NameNotes{{Name: name, Notes: notes}})
+}
+
+// EncodeSingleWithCategories serialises a single person with categories.
+func EncodeSingleWithCategories(name, notes string, categories []string) ([]byte, error) {
+	return Encode([]NameNotes{{Name: name, Notes: notes, Categories: categories}})
 }
 
 // SyncContact describes a contact to be written to a remote CardDAV address
@@ -297,6 +444,7 @@ type SyncContact struct {
 	FirstName  string
 	MiddleName string
 	LastName   string
+	Categories []string
 }
 
 // EncodeContact serialises a single contact to vCard 3.0 format including the
@@ -335,7 +483,11 @@ func EncodeContact(c SyncContact) ([]byte, error) {
 	if err := enc.Encode(card); err != nil {
 		return nil, fmt.Errorf("encode vCard for %q: %w", c.Name, err)
 	}
-	return buf.Bytes(), nil
+	data := buf.Bytes()
+	if len(c.Categories) > 0 {
+		data = injectCategories(data, c.Categories)
+	}
+	return data, nil
 }
 
 // FormatBDAY renders a parsed birthday back to vCard BDAY syntax. Year-less

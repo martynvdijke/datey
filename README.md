@@ -51,6 +51,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **📲 PWA Offline Support** — installable Progressive Web App (`/manifest.json`, `/sw.js` caches the app shell and shows a generic offline page when offline; versioned cache busts on deploy). Add to Home Screen from your browser menu and enjoy instant loads.
 - **🔔 Web Push Notifications** — browser push notifications via VAPID + service worker (`/sw.js`); enabled from Settings → Configuration, requires HTTPS (or localhost).
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
+ - **🔑 API Tokens** — Bearer-token authentication for scripts and automations (`Authorization: Bearer ...`). Create, rotate, and revoke personal tokens from Settings → API Tokens; secrets are shown once and stored only as SHA-256 hashes.
 - **📜 Audit Log** — Append-only, retention-capped record of security-relevant mutations (login success/failure, user create/delete, config saves, person/event/group deletes, backup run/restore, feed-key regeneration) with admin-only filterable viewer at `/settings/audit`. Retention via `AUDIT_RETENTION_MAX` (default 10000, min 100).
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets. One-time password-reset links are emailed via the configured email channel (see `APP_URL`); reset requests are rate-limited per IP and responses never reveal whether a username exists.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
@@ -320,6 +321,29 @@ datey/
 | `GET` | `/health` | Health check |
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |
+| `GET` | `/settings/api-tokens` | API token management (own tokens only) |
+| `POST` | `/settings/api-tokens` | Create an API token (secret shown once) |
+| `POST` | `/settings/api-tokens/{id}/revoke` | Revoke an owned API token |
+| `POST` | `/settings/api-tokens/{id}/rotate` | Rotate an owned API token (new secret shown once) |
+
+## API Tokens
+
+Scripts and automations can authenticate with a personal API token instead of a session cookie. Create one under **Settings → API Tokens** (optionally with an expiry in days). The raw secret is displayed **once** at creation/rotation — only its SHA-256 hash is stored, so a lost secret must be rotated.
+
+Send the token on every request:
+
+```bash
+curl -H "Authorization: Bearer <token>" \
+     -F "name=Ada" -F "date=1995-11-20" \
+     https://your-datey.example/people/new
+```
+
+Behavior:
+
+- Requests with a valid bearer token act as the owning user; invalid, expired, or revoked tokens are rejected with `401` (no information about resource state is leaked).
+- Bearer requests bypass CSRF double-submit checks (they carry no browser credentials); browser sessions keep full CSRF protection.
+- Every state-changing route still requires an authenticated user — anonymous writes (e.g. `POST /calendar/import`) are rejected and leave data untouched.
+- Public read-only feeds (`/api/trmnl/stats`, `/api/trmnl/birthdays`) remain open for devices that cannot log in; key-protected feeds (iCal, RSS, Upcoming, Home Assistant) are unchanged.
 
 ## Adding a Language
 

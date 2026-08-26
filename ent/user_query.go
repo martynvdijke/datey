@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/passwordresettoken"
 	"github.com/datey/datey/ent/predicate"
 	"github.com/datey/datey/ent/pushsubscription"
@@ -31,6 +32,7 @@ type UserQuery struct {
 	withPushSubscriptions    *PushSubscriptionQuery
 	withPasswordResetTokens  *PasswordResetTokenQuery
 	withNotificationChannels *UserNotificationChannelQuery
+	withAPITokens            *ApiTokenQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -148,6 +150,28 @@ func (_q *UserQuery) QueryNotificationChannels() *UserNotificationChannelQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(usernotificationchannel.Table, usernotificationchannel.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.NotificationChannelsTable, user.NotificationChannelsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAPITokens chains the current query on the "api_tokens" edge.
+func (_q *UserQuery) QueryAPITokens() *ApiTokenQuery {
+	query := (&ApiTokenClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(apitoken.Table, apitoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.APITokensTable, user.APITokensColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -351,6 +375,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withPushSubscriptions:    _q.withPushSubscriptions.Clone(),
 		withPasswordResetTokens:  _q.withPasswordResetTokens.Clone(),
 		withNotificationChannels: _q.withNotificationChannels.Clone(),
+		withAPITokens:            _q.withAPITokens.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -398,6 +423,17 @@ func (_q *UserQuery) WithNotificationChannels(opts ...func(*UserNotificationChan
 		opt(query)
 	}
 	_q.withNotificationChannels = query
+	return _q
+}
+
+// WithAPITokens tells the query-builder to eager-load the nodes that are connected to
+// the "api_tokens" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithAPITokens(opts ...func(*ApiTokenQuery)) *UserQuery {
+	query := (&ApiTokenClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAPITokens = query
 	return _q
 }
 
@@ -479,11 +515,12 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withSessions != nil,
 			_q.withPushSubscriptions != nil,
 			_q.withPasswordResetTokens != nil,
 			_q.withNotificationChannels != nil,
+			_q.withAPITokens != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -533,6 +570,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			func(n *User, e *UserNotificationChannel) {
 				n.Edges.NotificationChannels = append(n.Edges.NotificationChannels, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAPITokens; query != nil {
+		if err := _q.loadAPITokens(ctx, query, nodes,
+			func(n *User) { n.Edges.APITokens = []*ApiToken{} },
+			func(n *User, e *ApiToken) { n.Edges.APITokens = append(n.Edges.APITokens, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -658,6 +702,37 @@ func (_q *UserQuery) loadNotificationChannels(ctx context.Context, query *UserNo
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_notification_channels" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadAPITokens(ctx context.Context, query *ApiTokenQuery, nodes []*User, init func(*User), assign func(*User, *ApiToken)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ApiToken(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.APITokensColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_api_tokens
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_api_tokens" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_api_tokens" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

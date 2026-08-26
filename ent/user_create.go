@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/passwordresettoken"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/session"
@@ -176,6 +177,21 @@ func (_c *UserCreate) AddNotificationChannels(v ...*UserNotificationChannel) *Us
 		ids[i] = v[i].ID
 	}
 	return _c.AddNotificationChannelIDs(ids...)
+}
+
+// AddAPITokenIDs adds the "api_tokens" edge to the ApiToken entity by IDs.
+func (_c *UserCreate) AddAPITokenIDs(ids ...int) *UserCreate {
+	_c.mutation.AddAPITokenIDs(ids...)
+	return _c
+}
+
+// AddAPITokens adds the "api_tokens" edges to the ApiToken entity.
+func (_c *UserCreate) AddAPITokens(v ...*ApiToken) *UserCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAPITokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -398,6 +414,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(usernotificationchannel.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.APITokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.APITokensTable,
+			Columns: []string{user.APITokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apitoken.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

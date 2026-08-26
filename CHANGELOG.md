@@ -1,3 +1,12 @@
+<# Unreleased
+
+### Features
+
+* **immich:** bulk profile-picture sync from Settings with per-person matching, upload precedence, and disabled-person skip
+* **people:** import Immich profile pictures as local files (additive nullable `photo_*` columns, atomic photo store, no auto-import on creation)
+* **groups:** group categories round-trip via vCard `CATEGORIES`, plus portable JSON export of groups (notes, events, member IDs)
+* **api:** bearer token auth with scoped API tokens and management UI
+
 ## [1.49.1](https://github.com/martynvdijke/datey/compare/v1.49.0...v1.49.1) (2026-08-26)
 
 

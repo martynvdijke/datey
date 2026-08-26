@@ -30,6 +30,25 @@ func (r *GroupRepository) GetByID(ctx context.Context, id int) (*ent.Group, erro
 	return r.client.Group.Get(ctx, id)
 }
 
+func (r *GroupRepository) FindByName(ctx context.Context, name string) (*ent.Group, error) {
+	return r.client.Group.Query().
+		Where(group.NameEQ(name)).
+		Only(ctx)
+}
+
+// GetOrCreateByName finds a group by name or creates it if missing.
+// Returns the existing or newly created group.
+func (r *GroupRepository) GetOrCreateByName(ctx context.Context, name string) (*ent.Group, error) {
+	g, err := r.FindByName(ctx, name)
+	if err == nil {
+		return g, nil
+	}
+	if !ent.IsNotFound(err) {
+		return nil, err
+	}
+	return r.Create(ctx, name, "")
+}
+
 func (r *GroupRepository) List(ctx context.Context) ([]*ent.Group, error) {
 	return r.client.Group.Query().
 		Order(ent.Asc(group.FieldName)).

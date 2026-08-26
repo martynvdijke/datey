@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/ent/auditentry"
 	"github.com/datey/datey/ent/contact"
@@ -91,6 +92,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			apitoken.Table:                apitoken.ValidColumn,
 			appconfig.Table:               appconfig.ValidColumn,
 			auditentry.Table:              auditentry.ValidColumn,
 			contact.Table:                 contact.ValidColumn,

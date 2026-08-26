@@ -16,7 +16,15 @@ import (
 
 type contextKey string
 
-const userContextKey contextKey = "user"
+const (
+	userContextKey contextKey = "user"
+	// bearerPrefix is the expected Authorization header scheme for API tokens.
+	bearerPrefix = "Bearer "
+)
+
+// bearerAuthedContextKey marks requests authenticated via an API token
+// (as opposed to a browser session cookie).
+var bearerAuthedContextKey contextKey = "bearer_authed"
 
 // UserFromContext returns the User from the request context.
 func UserFromContext(ctx context.Context) *ent.User {
@@ -36,9 +44,23 @@ func IsAdmin(ctx context.Context) bool {
 	return u.Role == user.RoleAdmin
 }
 
-// Auth middleware checks for a valid session cookie and injects the user into the request context.
+// IsBearerAuth reports whether the request was authenticated via a bearer
+// API token rather than a browser session cookie.
+func IsBearerAuth(ctx context.Context) bool {
+	v, ok := ctx.Value(bearerAuthedContextKey).(bool)
+	return ok && v
+}
+
+// Auth middleware checks for a valid session cookie and injects the user into
+// the request context. Requests already authenticated upstream via a bearer
+// API token (see BearerAuth) pass straight through.
 func (h *Handler) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if UserFromContext(r.Context()) != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		token, err := session.ReadCookie(r)
 		if err != nil {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -64,6 +86,59 @@ func (h *Handler) Auth(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, "user", u) //nolint:staticcheck
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// BearerAuth authenticates requests that carry an
+// "Authorization: Bearer <secret>" header using a stored API token.
+//
+// Requests without the header pass through untouched and fall back to the
+// regular session-cookie flow. Requests with a malformed or invalid token are
+// rejected with 401 so automation clients get a clear signal instead of an
+// HTML login redirect. Valid tokens inject the owning user into the request
+// context (same keys as session auth) and mark the request as bearer-authed,
+// which downstream CSRF handling uses to skip cookie-based checks.
+func (h *Handler) BearerAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authz := r.Header.Get("Authorization")
+		if authz == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		if !strings.HasPrefix(authz, bearerPrefix) {
+			rejectBearer(w)
+			return
+		}
+		raw := strings.TrimSpace(strings.TrimPrefix(authz, bearerPrefix))
+		if raw == "" {
+			rejectBearer(w)
+			return
+		}
+
+		tok, err := h.apiTokens.GetByToken(r.Context(), raw)
+		if err != nil || tok.Edges.User == nil {
+			rejectBearer(w)
+			return
+		}
+		u, err := h.users.GetByID(r.Context(), tok.Edges.User.ID)
+		if err != nil {
+			rejectBearer(w)
+			return
+		}
+		h.apiTokens.UpdateLastUsed(r.Context(), tok.ID)
+
+		ctx := context.WithValue(r.Context(), userContextKey, u)
+		// Also store under plain string key for auditlog recorder (which uses a different typed key).
+		ctx = context.WithValue(ctx, "user", u) //nolint:staticcheck
+		ctx = context.WithValue(ctx, bearerAuthedContextKey, true)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// rejectBearer answers with 401 and a WWW-Authenticate challenge without
+// revealing whether the supplied token was malformed, unknown, expired, or revoked.
+func rejectBearer(w http.ResponseWriter) {
+	w.Header().Set("WWW-Authenticate", `Bearer realm="datey"`)
+	http.Error(w, "Unauthorized", http.StatusUnauthorized)
 }
 
 // Admin middleware checks that the authenticated user has the admin role.

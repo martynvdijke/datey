@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"math"
+	"time"
 
 	"github.com/datey/datey/internal/age"
 	"github.com/datey/datey/internal/i18n"
@@ -18,6 +19,7 @@ var templateFS embed.FS
 var staticFS embed.FS
 
 var funcMap = template.FuncMap{
+	"now": func() time.Time { return time.Now() },
 	"seq": func(start, end int) []int {
 		var out []int
 		for i := start; i <= end; i++ {
@@ -120,6 +122,7 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"login.html",
 		"setup.html",
 		"users.html",
+		"api_tokens.html",
 		"forgot_password.html",
 		"reset_password.html",
 		"recurring_rule_form.html",
