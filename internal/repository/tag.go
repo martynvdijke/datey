@@ -111,5 +111,5 @@ func (r *TagRepository) ListPeopleByTags(ctx context.Context, tagNames []string)
 	for _, n := range names {
 		q = q.Where(person.HasTagsWith(tag.Name(n)))
 	}
-	return q.Order(ent.Asc(person.FieldName)).All(ctx)
+	return q.Order(ent.Asc(person.FieldName)).WithEvents().WithGroups().WithTags().All(ctx)
 }

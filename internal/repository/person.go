@@ -6,6 +6,7 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/giftidea"
+	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/relationship"
 )
@@ -47,6 +48,9 @@ func (r *PersonRepository) Get(ctx context.Context, id int) (*ent.Person, error)
 func (r *PersonRepository) List(ctx context.Context) ([]*ent.Person, error) {
 	return r.client.Person.Query().
 		Order(ent.Asc(person.FieldName)).
+		WithEvents().
+		WithGroups().
+		WithTags().
 		All(ctx)
 }
 
@@ -54,6 +58,24 @@ func (r *PersonRepository) Search(ctx context.Context, q string) ([]*ent.Person,
 	return r.client.Person.Query().
 		Where(person.NameContainsFold(q)).
 		Order(ent.Asc(person.FieldName)).
+		WithEvents().
+		WithGroups().
+		WithTags().
+		All(ctx)
+}
+
+// ListByGroupIDs returns the de-duplicated union of members of the given
+// group IDs in a single query.
+func (r *PersonRepository) ListByGroupIDs(ctx context.Context, groupIDs []int) ([]*ent.Person, error) {
+	if len(groupIDs) == 0 {
+		return nil, nil
+	}
+	return r.client.Person.Query().
+		Where(person.HasGroupsWith(group.IDIn(groupIDs...))).
+		Order(ent.Asc(person.FieldName)).
+		WithEvents().
+		WithGroups().
+		WithTags().
 		All(ctx)
 }
 

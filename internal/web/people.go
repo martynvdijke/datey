@@ -9,6 +9,7 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/age"
+	"github.com/datey/datey/internal/immich"
 	"github.com/datey/datey/internal/milestone"
 	personname "github.com/datey/datey/internal/person"
 	"github.com/go-chi/chi/v5"
@@ -32,24 +33,9 @@ type personCard struct {
 }
 
 // listPeopleInGroups returns the de-duplicated union of the members of all
-// given group IDs.
+// given group IDs in a single query (avoids N+1).
 func (h *Handler) listPeopleInGroups(r *http.Request, ids []int) ([]*ent.Person, error) {
-	seen := make(map[int]bool)
-	var out []*ent.Person
-	for _, id := range ids {
-		members, err := h.groups.ListPeopleInGroup(r.Context(), id)
-		if err != nil {
-			return nil, err
-		}
-		for _, m := range members {
-			if seen[m.ID] {
-				continue
-			}
-			seen[m.ID] = true
-			out = append(out, m)
-		}
-	}
-	return out, nil
+	return h.people.ListByGroupIDs(r.Context(), ids)
 }
 
 func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
@@ -140,15 +126,50 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load events and build enriched card data
+	// photoURL previously called immich.People() per card (N HTTP calls).
+	// Fetch once per request and reuse.
+	var cachedImmichPeople []immich.Person
+	var immichFetched bool
+	var immichFetchErr bool
+	photoURLCached := func(p *ent.Person) string {
+		if p.ImmichPhotoDisabled {
+			return ""
+		}
+		if h.hasLocalPhoto(p) {
+			return "/people/" + strconv.Itoa(p.ID) + "/photo"
+		}
+		if h.immich == nil || !h.immich.Enabled() {
+			return ""
+		}
+		if p.ImmichPersonID != nil && *p.ImmichPersonID != "" {
+			return "/people/" + strconv.Itoa(p.ID) + "/photo"
+		}
+		if !immichFetched {
+			immichFetched = true
+			if people, err := h.immich.People(r.Context()); err == nil {
+				cachedImmichPeople = people
+			} else {
+				immichFetchErr = true
+			}
+		}
+		if immichFetchErr {
+			return ""
+		}
+		if immich.ExactMatch(p.Name, cachedImmichPeople) == nil {
+			return ""
+		}
+		return "/people/" + strconv.Itoa(p.ID) + "/photo"
+	}
+
 	now := time.Now()
 	cards := make([]personCard, 0, len(people))
 	for _, p := range people {
-		events, err := h.events.ListByPerson(r.Context(), p.ID)
-		eventCount := 0
+		// Eager-loaded via WithEvents/WithGroups/WithTags — avoids 3*N queries.
+		events := p.Edges.Events
+		eventCount := len(events)
 		var nextEventType, nextEventDate string
 		cardAge, hasAge := birthdayAgeForEvents(events, now)
-		if err == nil {
-			eventCount = len(events)
+		if eventCount > 0 {
 			// Find the next upcoming event
 			var nearest *ent.Event
 			for _, e := range events {
@@ -163,17 +184,13 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 				nextEventDate = shortDate(h.cfg.DateVariant, nearest.Date)
 			}
 		}
-		var groupNames []string
-		if memberGroups, e := h.groups.ListByPerson(r.Context(), p.ID); e == nil {
-			for _, g := range memberGroups {
-				groupNames = append(groupNames, g.Name)
-			}
+		groupNames := make([]string, 0, len(p.Edges.Groups))
+		for _, g := range p.Edges.Groups {
+			groupNames = append(groupNames, g.Name)
 		}
-		var tagNames []string
-		if personTags, e := h.tags.ListByPerson(r.Context(), p.ID); e == nil {
-			for _, t := range personTags {
-				tagNames = append(tagNames, t.Name)
-			}
+		tagNames := make([]string, 0, len(p.Edges.Tags))
+		for _, t := range p.Edges.Tags {
+			tagNames = append(tagNames, t.Name)
 		}
 		cards = append(cards, personCard{
 			ID:            p.ID,
@@ -186,7 +203,7 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			AvatarColor:   avatarColorIndex(p.Name),
 			Age:           cardAge,
 			HasAge:        hasAge,
-			PhotoURL:      h.photoURL(r, p),
+			PhotoURL:      photoURLCached(p),
 			Groups:        groupNames,
 			Tags:          tagNames,
 		})
