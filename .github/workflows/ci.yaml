@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version-file: go.mod
 
@@ -31,7 +31,7 @@ jobs:
         run: go mod download
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
           cache: 'npm'
@@ -46,7 +46,7 @@ jobs:
         run: CGO_ENABLED=1 go build -tags fts5 ./...
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9
         with:
           version: latest
           args: --timeout 5m
@@ -59,7 +59,7 @@ jobs:
           CGO_ENABLED=1 go test -tags "fts5" -v -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Upload Coverage
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ !cancelled() }}
         with:
           name: coverage-report
@@ -74,7 +74,7 @@ jobs:
         env:
           CI: true
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -88,7 +88,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -116,7 +116,7 @@ jobs:
     needs: [ci, trml]
     steps:
       - name: Export workflow
-        uses: corentinmusard/otel-cicd-action@v4
+        uses: corentinmusard/otel-cicd-action@895874bfae14f840e3032f1a14c3f2b45c93f4af # v4
         continue-on-error: true
         with:
           otlpEndpoint: ${{ secrets.OTLP_ENDPOINT }}
