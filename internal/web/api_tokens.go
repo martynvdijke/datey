@@ -42,7 +42,7 @@ func (h *Handler) apiTokensPage(w http.ResponseWriter, r *http.Request) {
 
 // renderApiTokensPage lists the current user's tokens, optionally surfacing a
 // one-time secret and/or an error message.
-func (h *Handler) renderApiTokensPage(w http.ResponseWriter, r *http.Request, newSecret *string, errMsg string) {
+func (h *Handler) renderApiTokensPage(w http.ResponseWriter, r *http.Request, newSecret *string, errMsg string) { //nolint:staticcheck // ST1003: consistent with ApiToken naming
 	tokens, err := h.apiTokens.ListByUser(r.Context(), getUserID(r))
 	if err != nil {
 		slog.Error("api tokens: list", "error", err)

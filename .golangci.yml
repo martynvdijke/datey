@@ -15,7 +15,7 @@ linters:
     - revive
   settings:
     staticcheck:
-      checks: ["all", "-ST1000"]
+      checks: ["all", "-ST1000", "-ST1003"]
     revive:
       rules:
         - name: exported

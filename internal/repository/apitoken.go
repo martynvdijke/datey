@@ -37,11 +37,11 @@ func HashToken(raw string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-type ApiTokenRepository struct {
+type ApiTokenRepository struct { //nolint:staticcheck // ST1003: matches ent type ApiToken
 	client *ent.Client
 }
 
-func NewApiTokenRepository(client *ent.Client) *ApiTokenRepository {
+func NewApiTokenRepository(client *ent.Client) *ApiTokenRepository { //nolint:staticcheck // ST1003: matches ent type ApiToken
 	return &ApiTokenRepository{client: client}
 }
 

@@ -12,7 +12,7 @@ import (
 //
 // Only the SHA-256 hash of the token secret is stored; the raw secret is
 // shown to the owner exactly once at creation/rotation time.
-type ApiToken struct {
+type ApiToken struct { //nolint:staticcheck // ST1003: ent naming convention is ApiToken, not APIToken
 	ent.Schema
 }
 

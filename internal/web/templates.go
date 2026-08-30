@@ -19,7 +19,7 @@ var templateFS embed.FS
 var staticFS embed.FS
 
 var funcMap = template.FuncMap{
-	"now": func() time.Time { return time.Now() },
+	"now": time.Now,
 	"seq": func(start, end int) []int {
 		var out []int
 		for i := start; i <= end; i++ {
