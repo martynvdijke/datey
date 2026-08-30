@@ -187,6 +187,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/people/{id}/relationships", h.addRelationship)
 			r.Post("/people/{id}/relationships/{relID}/delete", h.removeRelationship)
 			r.Get("/api/tags", h.autocompleteTags)
+			r.Get("/api/immich/people", h.immichPeopleSearch)
 			r.Get("/people/{id}/photo", h.personPhoto)
 			r.Post("/people/{id}/immich", h.setImmichPhoto)
 			r.Post("/people/{id}/photo/upload", h.uploadPersonPhoto)

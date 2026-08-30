@@ -667,6 +667,22 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	}
 	// Check for inline relationship error from query param or passed via context
 	relErr := r.URL.Query().Get("rel_error")
+	immichPersonName := ""
+	if person.ImmichPersonID != nil && *person.ImmichPersonID != "" && h.immich != nil && h.immich.Enabled() {
+		if ip, err := h.immich.People(r.Context()); err == nil {
+			for _, p := range ip {
+				if p.ID == *person.ImmichPersonID {
+					immichPersonName = p.Name
+					break
+				}
+			}
+			if immichPersonName == "" {
+				immichPersonName = *person.ImmichPersonID
+			}
+		} else {
+			immichPersonName = *person.ImmichPersonID
+		}
+	}
 	h.render(w, r, "person_detail.html", map[string]any{
 		"Title":             "Datey - " + person.Name,
 		"Person":            person,
@@ -683,6 +699,8 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		"GroupedRelations":  grouped,
 		"PickerPeople":      pickerPeople,
 		"RelationshipError": relErr,
+		"ImmichEnabled":     h.immich != nil && h.immich.Enabled(),
+		"ImmichPersonName":  immichPersonName,
 	})
 }
 

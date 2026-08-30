@@ -1,11 +1,13 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/immich"
@@ -198,6 +200,42 @@ func (h *Handler) removePersonPhoto(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	http.Redirect(w, r, fmt.Sprintf("/people/%d?success=Photo+removed", id), http.StatusSeeOther)
+}
+
+// immichPeopleSearch returns Immich people as JSON, filtered by ?q= substring
+// (case-insensitive). When q is empty all people are returned. Used by the
+// per-person settings modal to search and link an Immich person.
+func (h *Handler) immichPeopleSearch(w http.ResponseWriter, r *http.Request) {
+	if h.immich == nil || !h.immich.Enabled() {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`[]`))
+		return
+	}
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	people, err := h.immich.People(r.Context())
+	if err != nil {
+		slog.Error("immich people search", "error", err)
+		http.Error(w, "failed to fetch Immich people", http.StatusBadGateway)
+		return
+	}
+	var out []immich.Person
+	if q == "" {
+		out = people
+	} else {
+		lq := strings.ToLower(q)
+		nq := immich.NormalizeName(q)
+		for _, p := range people {
+			if strings.Contains(strings.ToLower(p.Name), lq) || (nq != "" && strings.Contains(immich.NormalizeName(p.Name), nq)) {
+				out = append(out, p)
+			}
+		}
+	}
+	if out == nil {
+		out = []immich.Person{}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(out)
 }
 
 // urlErrText makes an error message safe for a query-param redirect.

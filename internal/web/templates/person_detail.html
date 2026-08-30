@@ -327,12 +327,127 @@
         </form>
         {{end}}
         <hr>
+        <h2 class="h6">Immich link</h2>
+        {{if .ImmichEnabled}}
+        <form action="/people/{{.Person.ID}}/immich" method="POST" id="immich-link-form">
+          {{template "csrfField" .}}
+          <input type="hidden" name="immich_person_id" id="immich-person-id" value="{{if .Person.ImmichPersonID}}{{.Person.ImmichPersonID}}{{end}}">
+          <div class="mb-2">
+            <span id="immich-linked-badge" class="{{if .Person.ImmichPersonID}}badge bg-primary-subtle text-primary-emphasis border border-primary-subtle{{else}}small text-muted{{end}}">{{if .Person.ImmichPersonID}}Linked: {{.ImmichPersonName}}{{else}}Not linked — auto-matched by name if possible.{{end}}</span>
+            {{if .Person.ImmichPersonID}}<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="immich-unlink-btn">Unlink</button>{{else}}<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="immich-unlink-btn" style="display:none;">Unlink</button>{{end}}
+          </div>
+          <label class="form-label" for="immich-search">Search Immich people <span class="text-muted fw-normal">(pick to link)</span></label>
+          <div class="input-group">
+            <input type="text" id="immich-search" class="form-control" placeholder="Type name to search..." autocomplete="off">
+            <button class="btn btn-outline-secondary" type="button" id="immich-search-clear" title="Clear search">&times;</button>
+          </div>
+          <div id="immich-search-results" class="list-group mt-1" style="max-height:220px; overflow-y:auto; display:none;"></div>
+          <div id="immich-search-status" class="small text-muted mt-1"></div>
+          <div class="row g-2 align-items-end mt-2">
+            <div class="col-auto"><div class="form-check"><input class="form-check-input" type="checkbox" name="disable_photo" id="disable-photo"{{if .Person.ImmichPhotoDisabled}} checked{{end}}><label class="form-check-label" for="disable-photo">Disable photo</label></div></div>
+            <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Save photo settings</button></div>
+          </div>
+        </form>
+        <script>
+        (function(){
+          var searchInput=document.getElementById('immich-search');
+          var hiddenInput=document.getElementById('immich-person-id');
+          var resultsDiv=document.getElementById('immich-search-results');
+          var statusDiv=document.getElementById('immich-search-status');
+          var badge=document.getElementById('immich-linked-badge');
+          var unlinkBtn=document.getElementById('immich-unlink-btn');
+          var clearBtn=document.getElementById('immich-search-clear');
+          if(!searchInput||!hiddenInput||!resultsDiv) return;
+          var debounce;
+          function setLinked(id,name,pending){
+            hiddenInput.value=id||'';
+            if(id){
+              badge.textContent='Linked: '+name+(pending?' (click Save)':'');
+              badge.className='badge bg-primary-subtle text-primary-emphasis border border-primary-subtle';
+              unlinkBtn.style.display='';
+            } else {
+              badge.textContent='Not linked — auto-matched by name if possible.';
+              badge.className='small text-muted';
+              unlinkBtn.style.display='none';
+            }
+          }
+          if(unlinkBtn){
+            unlinkBtn.addEventListener('click',function(){ setLinked('','',false); searchInput.value=''; resultsDiv.style.display='none'; statusDiv.textContent='Unlinked — click Save to confirm.'; });
+          }
+          if(clearBtn){
+            clearBtn.addEventListener('click',function(){ searchInput.value=''; resultsDiv.style.display='none'; resultsDiv.innerHTML=''; statusDiv.textContent=''; searchInput.focus(); });
+          }
+          function render(list){
+            resultsDiv.innerHTML='';
+            if(!list||list.length===0){
+              resultsDiv.style.display='none';
+              statusDiv.textContent='No matches.';
+              return;
+            }
+            list.forEach(function(p){
+              var btn=document.createElement('button');
+              btn.type='button';
+              btn.className='list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+              var left=document.createElement('span');
+              left.textContent=p.name;
+              var right=document.createElement('small');
+              right.className='text-muted text-truncate ms-2';
+              right.style.maxWidth='140px';
+              right.textContent=p.id;
+              if(hiddenInput.value===p.id){
+                btn.classList.add('active');
+                right.classList.add('text-white');
+              }
+              btn.appendChild(left);
+              btn.appendChild(right);
+              btn.addEventListener('click',function(){
+                setLinked(p.id,p.name,true);
+                resultsDiv.style.display='none';
+                statusDiv.textContent='Selected "'+p.name+'" — click Save to link.';
+              });
+              resultsDiv.appendChild(btn);
+            });
+            resultsDiv.style.display='';
+            statusDiv.textContent=list.length+' result'+(list.length===1?'':'s')+'. Pick one to link.';
+          }
+          function doSearch(){
+            var q=searchInput.value.trim();
+            if(q.length===0){
+              resultsDiv.style.display='none';
+              resultsDiv.innerHTML='';
+              statusDiv.textContent='Type to search Immich people.';
+              return;
+            }
+            statusDiv.textContent='Searching…';
+            fetch('/api/immich/people?q='+encodeURIComponent(q),{headers:{'Accept':'application/json'}})
+              .then(function(r){ if(!r.ok) throw new Error('search failed'); return r.json(); })
+              .then(function(data){ render(data); })
+              .catch(function(){ statusDiv.textContent='Search failed — check Immich connection.'; });
+          }
+          searchInput.addEventListener('input',function(){
+            clearTimeout(debounce);
+            debounce=setTimeout(doSearch,250);
+          });
+          searchInput.addEventListener('keydown',function(e){
+            if(e.key==='Escape'){ resultsDiv.style.display='none'; }
+          });
+          // close results when clicking outside
+          document.addEventListener('click',function(e){
+            if(!resultsDiv.contains(e.target)&&e.target!==searchInput){
+              // keep visible unless explicitly closed; no-op
+            }
+          });
+        })();
+        </script>
+        {{else}}
+        <p class="small text-muted mb-2">Immich is not configured. Set <code>IMMICH_URL</code> and <code>IMMICH_API_KEY</code> in Settings → Configuration to enable linking.</p>
         <form action="/people/{{.Person.ID}}/immich" method="POST" class="row g-2 align-items-end">
           {{template "csrfField" .}}
-          <div class="col-md-7"><label class="form-label" for="immich-person-id">Immich person ID <span class="text-muted fw-normal">(optional manual override)</span></label><input id="immich-person-id" name="immich_person_id" class="form-control" value="{{if .Person.ImmichPersonID}}{{.Person.ImmichPersonID}}{{end}}"></div>
-          <div class="col-md-auto"><div class="form-check"><input class="form-check-input" type="checkbox" name="disable_photo" id="disable-photo"{{if .Person.ImmichPhotoDisabled}} checked{{end}}><label class="form-check-label" for="disable-photo">Disable photo</label></div></div>
-          <div class="col-md-auto"><button class="btn btn-outline-primary" type="submit">Save photo settings</button></div>
+          <input type="hidden" name="immich_person_id" value="{{if .Person.ImmichPersonID}}{{.Person.ImmichPersonID}}{{end}}">
+          <div class="col-auto"><div class="form-check"><input class="form-check-input" type="checkbox" name="disable_photo" id="disable-photo"{{if .Person.ImmichPhotoDisabled}} checked{{end}}><label class="form-check-label" for="disable-photo">Disable photo</label></div></div>
+          <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Save photo settings</button></div>
         </form>
+        {{end}}
         <p class="small text-muted mb-0 mt-2">Bulk import happens from Settings → Immich ("Sync with Immich"). Uploaded photos are never overwritten by sync.</p>
       </div>
       <div class="modal-footer">
