@@ -1,3 +1,26 @@
+# [1.50.0](https://github.com/martynvdijke/datey/compare/v1.49.1...v1.50.0) (2026-08-30)
+
+
+### Bug Fixes
+
+* **ci:** correct actionlint pin ([b81abe3](https://github.com/martynvdijke/datey/commit/b81abe3dcbb803afabe05bff10db214ae04f8d92))
+* **ci:** make pinact check non-blocking ([4fcfdf3](https://github.com/martynvdijke/datey/commit/4fcfdf3121f5983ef55ce96f70acf869f46be6bd))
+* **ci:** remove unsupported --diff flag from pinact ([f3680a7](https://github.com/martynvdijke/datey/commit/f3680a706b5eabb24ae6e173b84755d8118b9e4d))
+* **ci:** setup Go before pinact in workflow-lint ([f6837b3](https://github.com/martynvdijke/datey/commit/f6837b3a722be90a213db4e582388ef0b97d7d2a))
+* **ci:** suppress ST1003 for ApiToken names and fix gocritic unlambda ([9cddd0b](https://github.com/martynvdijke/datey/commit/9cddd0b6df7c16d46a4cd5abf82529df01be236b))
+* **ci:** update actionlint to v1.7.12 (v1 tag removed upstream) ([6dbae0d](https://github.com/martynvdijke/datey/commit/6dbae0d243f5e29b0dc6bdc6caf7e057ef1a171e))
+
+
+### Features
+
+* **api:** bearer token auth with scoped API tokens and management UI ([a357cfa](https://github.com/martynvdijke/datey/commit/a357cfafc7fd7bbb40ea905c8a9c3416c1ff313a))
+* **people:** searchable Immich person link in per-person settings ([4ae1373](https://github.com/martynvdijke/datey/commit/4ae1373f51b6e34c08ef6b82cab2322f2fa25e56))
+
+
+### Performance Improvements
+
+* **people:** eliminate N+1 queries and cache Immich lookup ([883956d](https://github.com/martynvdijke/datey/commit/883956d48d72685ad3137d0ad91585d6423de0f7))
+
 <# Unreleased
 
 ### Features
