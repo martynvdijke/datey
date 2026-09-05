@@ -9,7 +9,7 @@ require (
 	github.com/arran4/golang-ical v0.3.6
 	github.com/emersion/go-vcard v0.1.0
 	github.com/go-chi/chi/v5 v5.3.2
-	github.com/mattn/go-sqlite3 v1.14.50
+	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/riandyrn/otelchi v0.12.3
 	go.opentelemetry.io/contrib/bridges/otelslog v0.20.1
 	go.opentelemetry.io/otel v1.46.0
