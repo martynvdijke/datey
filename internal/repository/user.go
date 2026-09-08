@@ -36,6 +36,58 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*e
 		Only(ctx)
 }
 
+// GetByEmail finds a user by verified OIDC email.
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*ent.User, error) {
+	return r.client.User.Query().
+		Where(user.EmailEQ(email)).
+		Only(ctx)
+}
+
+// GetByOIDCSub finds a user by provider subject.
+func (r *UserRepository) GetByOIDCSub(ctx context.Context, sub string) (*ent.User, error) {
+	return r.client.User.Query().
+		Where(user.OidcSubEQ(sub)).
+		Only(ctx)
+}
+
+// CreateOIDC provisions a user from OIDC claims. passwordHash must be an
+// unusable random value — OIDC users never log in with a password.
+func (r *UserRepository) CreateOIDC(ctx context.Context, username, email, oidcSub, passwordHash string, role user.Role) (*ent.User, error) {
+	q := r.client.User.Create().
+		SetUsername(username).
+		SetPasswordHash(passwordHash).
+		SetRole(role).
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now())
+	if email != "" {
+		q.SetEmail(email)
+	}
+	if oidcSub != "" {
+		q.SetOidcSub(oidcSub)
+	}
+	return q.Save(ctx)
+}
+
+// LinkOIDCSub attaches a provider subject + email to an existing user.
+func (r *UserRepository) LinkOIDCSub(ctx context.Context, id int, email, oidcSub string) error {
+	q := r.client.User.UpdateOneID(id).SetUpdatedAt(time.Now())
+	if email != "" {
+		q.SetEmail(email)
+	}
+	if oidcSub != "" {
+		q.SetOidcSub(oidcSub)
+	}
+	return q.Exec(ctx)
+}
+
+// SetRole updates the admin flag (used for groups->admin sync).
+func (r *UserRepository) SetRole(ctx context.Context, id int, role user.Role) error {
+	return r.client.User.UpdateOneID(id).
+		SetRole(role).
+		SetUpdatedAt(time.Now()).
+		Exec(ctx)
+}
+
 func (r *UserRepository) List(ctx context.Context) ([]*ent.User, error) {
 	return r.client.User.Query().
 		Order(ent.Asc(user.FieldUsername)).

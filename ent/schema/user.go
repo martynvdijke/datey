@@ -16,6 +16,8 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").Unique().NotEmpty(),
 		field.String("password_hash").NotEmpty(),
+		field.String("email").Optional().Nillable().Unique(),
+		field.String("oidc_sub").Optional().Nillable().Unique(),
 		field.Enum("role").Values("admin", "user").Default("user"),
 		field.Bool("eink_mode").Default(false),
 		field.String("locale").Optional().Nillable().Match(regexp.MustCompile(`^[a-z]{2}(-[A-Z]{2})?$`)),

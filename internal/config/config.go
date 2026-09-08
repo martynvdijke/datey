@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -96,6 +97,14 @@ type Config struct {
 	GoogleSyncToken       string
 	GoogleDeletePolicy    string
 
+	OIDCEnabled          bool
+	OIDCIssuerURL        string
+	OIDCClientID         string
+	OIDCClientSecret     string
+	OIDCClientSecretFile string
+	OIDCRedirectURL      string
+	OIDCScopes           string
+
 	AuditRetentionMax int
 }
 
@@ -178,7 +187,26 @@ func Load() (*Config, error) {
 		GoogleSyncToken:       getEnv("GOOGLE_SYNC_TOKEN", ""),
 		GoogleDeletePolicy:    getEnv("GOOGLE_DELETE_POLICY", "keep"),
 
+		OIDCEnabled:          getEnv("OIDC_ENABLED", "") == "true",
+		OIDCIssuerURL:        getEnv("OIDC_ISSUER_URL", ""),
+		OIDCClientID:         getEnv("OIDC_CLIENT_ID", ""),
+		OIDCClientSecret:     getEnv("OIDC_CLIENT_SECRET", ""),
+		OIDCClientSecretFile: getEnv("OIDC_CLIENT_SECRET_FILE", ""),
+		OIDCRedirectURL:      getEnv("OIDC_REDIRECT_URL", ""),
+		OIDCScopes:           getEnv("OIDC_SCOPES", "openid email profile groups"),
+
 		AuditRetentionMax: getEnvInt("AUDIT_RETENTION_MAX", 10000),
+	}
+	// Secret file wins over env value so Docker secrets work without leaking
+	// the value into the process environment (file content is trimmed).
+	if cfg.OIDCClientSecretFile != "" {
+		if b, err := os.ReadFile(cfg.OIDCClientSecretFile); err == nil {
+			if s := string(b); s != "" {
+				cfg.OIDCClientSecret = trimSpaceNewline(s)
+			}
+		} else if cfg.OIDCEnabled {
+			return nil, fmt.Errorf("OIDC_CLIENT_SECRET_FILE unreadable: %w", err)
+		}
 	}
 	if cfg.AuditRetentionMax < 100 {
 		cfg.AuditRetentionMax = 100
@@ -318,6 +346,25 @@ func (c *Config) Validate() error {
 			return fmt.Errorf("MATRIX_HOMESERVER_URL must be an absolute URL, got %q", c.MatrixHomeserverURL)
 		}
 	}
+	if c.OIDCEnabled {
+		if c.OIDCIssuerURL == "" {
+			return fmt.Errorf("OIDC_ISSUER_URL must be set when OIDC_ENABLED is true")
+		}
+		if u, err := url.ParseRequestURI(c.OIDCIssuerURL); err != nil || u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("OIDC_ISSUER_URL must be an absolute URL, got %q", c.OIDCIssuerURL)
+		}
+		if c.OIDCClientID == "" {
+			return fmt.Errorf("OIDC_CLIENT_ID must be set when OIDC_ENABLED is true")
+		}
+		if c.OIDCClientSecret == "" {
+			return fmt.Errorf("OIDC_CLIENT_SECRET or OIDC_CLIENT_SECRET_FILE must be set when OIDC_ENABLED is true")
+		}
+		if c.OIDCRedirectURL != "" {
+			if u, err := url.ParseRequestURI(c.OIDCRedirectURL); err != nil || u.Scheme == "" || u.Host == "" {
+				return fmt.Errorf("OIDC_REDIRECT_URL must be an absolute URL, got %q", c.OIDCRedirectURL)
+			}
+		}
+	}
 	return nil
 }
 
@@ -375,4 +422,10 @@ func getEnvBool(key string, fallback bool) bool {
 		return fallback
 	}
 	return b
+}
+
+// trimSpaceNewline trims surrounding whitespace including trailing newlines
+// (Docker secrets often end with a newline).
+func trimSpaceNewline(s string) string {
+	return strings.TrimSpace(s)
 }

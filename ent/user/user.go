@@ -18,6 +18,10 @@ const (
 	FieldUsername = "username"
 	// FieldPasswordHash holds the string denoting the password_hash field in the database.
 	FieldPasswordHash = "password_hash"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldOidcSub holds the string denoting the oidc_sub field in the database.
+	FieldOidcSub = "oidc_sub"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldEinkMode holds the string denoting the eink_mode field in the database.
@@ -86,6 +90,8 @@ var Columns = []string{
 	FieldID,
 	FieldUsername,
 	FieldPasswordHash,
+	FieldEmail,
+	FieldOidcSub,
 	FieldRole,
 	FieldEinkMode,
 	FieldLocale,
@@ -186,6 +192,16 @@ func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 // ByPasswordHash orders the results by the password_hash field.
 func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPasswordHash, opts...).ToFunc()
+}
+
+// ByEmail orders the results by the email field.
+func ByEmail(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmail, opts...).ToFunc()
+}
+
+// ByOidcSub orders the results by the oidc_sub field.
+func ByOidcSub(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOidcSub, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

@@ -38,6 +38,15 @@ services:
       # Umami Analytics
       - UMAMI_URL=
       - UMAMI_WEBSITE_ID=
+      # OIDC login via Authelia (see openspec/changes/add-authelia-oidc).
+      # Secret via file (Docker secret) or env — never commit the value.
+      - OIDC_ENABLED=false
+      - OIDC_ISSUER_URL=
+      - OIDC_CLIENT_ID=
+      - OIDC_CLIENT_SECRET=
+      - OIDC_CLIENT_SECRET_FILE=
+      - OIDC_REDIRECT_URL=
+      - OIDC_SCOPES=openid email profile groups
       # Database Backup
       - BACKUP_DIR=/db/backups
       - BACKUP_RETENTION_DAYS=30

@@ -322,15 +322,15 @@ func init() {
 	// user.PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
 	user.PasswordHashValidator = userDescPasswordHash.Validators[0].(func(string) error)
 	// userDescEinkMode is the schema descriptor for eink_mode field.
-	userDescEinkMode := userFields[3].Descriptor()
+	userDescEinkMode := userFields[5].Descriptor()
 	// user.DefaultEinkMode holds the default value on creation for the eink_mode field.
 	user.DefaultEinkMode = userDescEinkMode.Default.(bool)
 	// userDescLocale is the schema descriptor for locale field.
-	userDescLocale := userFields[4].Descriptor()
+	userDescLocale := userFields[6].Descriptor()
 	// user.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
 	user.LocaleValidator = userDescLocale.Validators[0].(func(string) error)
 	// userDescNotificationScopeGroupIds is the schema descriptor for notification_scope_group_ids field.
-	userDescNotificationScopeGroupIds := userFields[6].Descriptor()
+	userDescNotificationScopeGroupIds := userFields[8].Descriptor()
 	// user.DefaultNotificationScopeGroupIds holds the default value on creation for the notification_scope_group_ids field.
 	user.DefaultNotificationScopeGroupIds = userDescNotificationScopeGroupIds.Default.(string)
 	usernotificationchannelFields := schema.UserNotificationChannel{}.Fields()

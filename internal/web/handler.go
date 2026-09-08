@@ -140,6 +140,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/login", h.loginPage)
 		r.Post("/login", h.loginPost)
 		r.Get("/logout", h.logout)
+		// OIDC login via Authelia (public; disabled → 404 inside handlers).
+		r.Get("/api/auth/oidc/login", h.oidcLogin)
+		r.Get("/api/auth/oidc/callback", h.oidcCallback)
+		r.Get("/api/auth/oidc/logout", h.oidcLogout)
 		r.Get("/forgot-password", h.forgotPasswordPage)
 		r.Post("/forgot-password", h.forgotPasswordPost)
 		r.Get("/reset-password", h.resetPasswordPage)
@@ -662,6 +666,7 @@ func (h *Handler) baseData(r *http.Request, title string) map[string]any {
 		"CSRFToken":       csrfTokenFromContext(r.Context()),
 		"PushConfigured":  h.notifReg.IsConfigured("webpush"),
 		"EmailConfigured": h.notifReg.IsConfigured("email"),
+		"OIDCEnabled":     h.oidcEnabled(),
 		"Locale":          localeFromRequest(r),
 	}
 	u := UserFromContext(r.Context())

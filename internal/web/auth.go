@@ -156,10 +156,10 @@ func (h *Handler) Admin(next http.Handler) http.Handler {
 // If no users exist and the request is not for /setup or /login, redirects to /setup.
 func (h *Handler) SetupRedirect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Skip for setup, login, logout, health endpoints, and the public
+		// Skip for setup, login, logout, health endpoints, OIDC round-trip, and the public
 		// iCal feeds (which are key-protected and may be configured purely
 		// via environment variables before any user exists).
-		if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/logout" || r.URL.Path == "/health" || strings.HasPrefix(r.URL.Path, "/ical") {
+		if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/logout" || r.URL.Path == "/health" || strings.HasPrefix(r.URL.Path, "/api/auth/oidc") || strings.HasPrefix(r.URL.Path, "/ical") {
 			next.ServeHTTP(w, r)
 			return
 		}

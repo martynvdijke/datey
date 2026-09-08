@@ -37,6 +37,34 @@ func (_c *UserCreate) SetPasswordHash(v string) *UserCreate {
 	return _c
 }
 
+// SetEmail sets the "email" field.
+func (_c *UserCreate) SetEmail(v string) *UserCreate {
+	_c.mutation.SetEmail(v)
+	return _c
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (_c *UserCreate) SetNillableEmail(v *string) *UserCreate {
+	if v != nil {
+		_c.SetEmail(*v)
+	}
+	return _c
+}
+
+// SetOidcSub sets the "oidc_sub" field.
+func (_c *UserCreate) SetOidcSub(v string) *UserCreate {
+	_c.mutation.SetOidcSub(v)
+	return _c
+}
+
+// SetNillableOidcSub sets the "oidc_sub" field if the given value is not nil.
+func (_c *UserCreate) SetNillableOidcSub(v *string) *UserCreate {
+	if v != nil {
+		_c.SetOidcSub(*v)
+	}
+	return _c
+}
+
 // SetRole sets the "role" field.
 func (_c *UserCreate) SetRole(v user.Role) *UserCreate {
 	_c.mutation.SetRole(v)
@@ -328,6 +356,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
 		_node.PasswordHash = value
+	}
+	if value, ok := _c.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+		_node.Email = &value
+	}
+	if value, ok := _c.mutation.OidcSub(); ok {
+		_spec.SetField(user.FieldOidcSub, field.TypeString, value)
+		_node.OidcSub = &value
 	}
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)

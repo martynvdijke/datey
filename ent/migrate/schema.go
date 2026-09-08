@@ -545,6 +545,8 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "username", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "oidc_sub", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "user"}, Default: "user"},
 		{Name: "eink_mode", Type: field.TypeBool, Default: false},
 		{Name: "locale", Type: field.TypeString, Nullable: true},
