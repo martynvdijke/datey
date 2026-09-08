@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/martynvdijke/datey/compare/v1.50.6...v1.51.0) (2026-09-08)
+
+
+### Features
+
+* **auth:** OIDC login via Authelia (PKCE, email link, groups->admin) ([375a1e3](https://github.com/martynvdijke/datey/commit/375a1e3e7e6b43e7e91948b2df491e199aaf973d))
+
 ## [1.50.6](https://github.com/martynvdijke/datey/compare/v1.50.5...v1.50.6) (2026-09-07)
 
 ## [1.50.5](https://github.com/martynvdijke/datey/compare/v1.50.4...v1.50.5) (2026-09-05)
