@@ -1,3 +1,10 @@
+## [1.51.2](https://github.com/martynvdijke/datey/compare/v1.51.1...v1.51.2) (2026-09-09)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#50](https://github.com/martynvdijke/datey/issues/50)) ([a2d0c12](https://github.com/martynvdijke/datey/commit/a2d0c12d2af94deaa376af7c77db8dcfb98c30e9))
+
 ## [1.51.1](https://github.com/martynvdijke/datey/compare/v1.51.0...v1.51.1) (2026-09-08)
 
 
