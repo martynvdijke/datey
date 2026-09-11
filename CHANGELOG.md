@@ -1,3 +1,10 @@
+## [1.51.4](https://github.com/martynvdijke/datey/compare/v1.51.3...v1.51.4) (2026-09-11)
+
+
+### Bug Fixes
+
+* **otel:** restore trace propagation and wire DB spans ([55bf097](https://github.com/martynvdijke/datey/commit/55bf097fe210e3a0c63b1b954f7f1a42f193686d))
+
 ## [1.51.3](https://github.com/martynvdijke/datey/compare/v1.51.2...v1.51.3) (2026-09-11)
 
 ## [1.51.2](https://github.com/martynvdijke/datey/compare/v1.51.1...v1.51.2) (2026-09-09)
