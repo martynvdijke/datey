@@ -96,7 +96,7 @@ func main() {
 	hasOTel := cfg.OTLPEndpoint != "" || os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != ""
 	if hasOTel {
 		var err error
-		telemetry, err = logstore.InitTelemetry(context.Background())
+		telemetry, err = logstore.InitTelemetry(context.Background(), cfg.OTLPEndpoint, Version)
 		if err != nil {
 			slog.Warn("failed to initialise OTel telemetry, continuing without OTel", "error", err)
 		} else if telemetry != nil {

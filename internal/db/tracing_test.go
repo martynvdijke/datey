@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"testing"
+
+	ented "entgo.io/ent"
+	"github.com/datey/datey/ent"
 )
 
 func TestTraceDBQuery_Success(t *testing.T) {
@@ -65,3 +68,37 @@ func TestTraceDBQuery_ContextPropagation(t *testing.T) {
 
 // contextKey avoids collisions with other context keys in tests.
 type contextKey string
+
+func TestEntQueryInterceptor_PassesThrough(t *testing.T) {
+	called := false
+	next := ent.QuerierFunc(func(ctx context.Context, q ent.Query) (ent.Value, error) {
+		called = true
+		return "ok", nil
+	})
+
+	got, err := EntQueryInterceptor(next).Query(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("intercepted query: unexpected error: %v", err)
+	}
+	if !called {
+		t.Error("expected next querier to be called")
+	}
+	if got != "ok" {
+		t.Errorf("query result = %v, want %q", got, "ok")
+	}
+}
+
+func TestEntQueryInterceptor_ReadsQueryContext(t *testing.T) {
+	ctx := ented.NewQueryContext(context.Background(), &ent.QueryContext{Type: "Person", Op: "Query"})
+	next := ent.QuerierFunc(func(ctx context.Context, q ent.Query) (ent.Value, error) {
+		return 1, nil
+	})
+
+	got, err := EntQueryInterceptor(next).Query(ctx, nil)
+	if err != nil {
+		t.Fatalf("intercepted query: unexpected error: %v", err)
+	}
+	if got != 1 {
+		t.Errorf("query result = %v, want 1", got)
+	}
+}

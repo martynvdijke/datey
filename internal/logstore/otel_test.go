@@ -48,7 +48,7 @@ func TestInitTelemetry_NoEndpoint(t *testing.T) {
 	restore2 := unsetEnv(t, "OTEL_ENDPOINT")
 	defer restore2()
 
-	telemetry, err := InitTelemetry(context.Background())
+	telemetry, err := InitTelemetry(context.Background(), "", "")
 	if err != nil {
 		t.Fatalf("InitTelemetry with no endpoint: unexpected error: %v", err)
 	}
@@ -57,18 +57,17 @@ func TestInitTelemetry_NoEndpoint(t *testing.T) {
 	}
 }
 
-func TestInitTelemetry_OTEL_ENDPOINT_Fallback(t *testing.T) {
+func TestInitTelemetry_EndpointFallback(t *testing.T) {
 	restore := unsetEnv(t, "OTEL_EXPORTER_OTLP_ENDPOINT")
 	defer restore()
-	restore2 := setEnv(t, "OTEL_ENDPOINT", "http://localhost:99999")
-	defer restore2()
 
-	telemetry, err := InitTelemetry(context.Background())
+	// The fallback carries the DB-stored admin setting (config.OTLPEndpoint).
+	telemetry, err := InitTelemetry(context.Background(), "http://localhost:99999", "test")
 	if err != nil {
-		t.Fatalf("InitTelemetry with legacy OTEL_ENDPOINT: unexpected error: %v", err)
+		t.Fatalf("InitTelemetry with fallback endpoint: unexpected error: %v", err)
 	}
 	if telemetry == nil {
-		t.Fatal("InitTelemetry with OTEL_ENDPOINT: expected non-nil Telemetry")
+		t.Fatal("InitTelemetry with fallback endpoint: expected non-nil Telemetry")
 	}
 	defer telemetry.Shutdown(context.Background())
 
@@ -152,9 +151,9 @@ func TestParseSamplerArg(t *testing.T) {
 
 func TestSamplerFromEnv(t *testing.T) {
 	tests := []struct {
-		name   string
+		name    string
 		sampler string
-		arg    string
+		arg     string
 	}{
 		{"default empty", "", ""},
 		{"parentbased_always_on", "parentbased_always_on", ""},

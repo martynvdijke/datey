@@ -19,6 +19,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/propagation"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -71,19 +72,22 @@ func otelProtocol() string {
 
 // InitTelemetry initialises tracer, meter, and logger providers with OTLP
 // export. It reads standard OTel environment variables for configuration:
-//   - OTEL_EXPORTER_OTLP_ENDPOINT (or OTEL_ENDPOINT as legacy fallback)
+//   - OTEL_EXPORTER_OTLP_ENDPOINT (highest priority)
 //   - OTEL_EXPORTER_OTLP_PROTOCOL ("grpc" or "http/protobuf", default "grpc")
 //   - OTEL_TRACES_SAMPLER (always_on, always_off, traceidratio, parentbased_*)
 //   - OTEL_TRACES_SAMPLER_ARG (float for traceidratio)
 //   - OTEL_SERVICE_NAME (default "datey")
 //   - OTEL_RESOURCE_ATTRIBUTES (comma-separated key=value pairs)
 //
-// If no OTLP endpoint is configured, it returns nil (noop).
-func InitTelemetry(ctx context.Context) (*Telemetry, error) {
-	// Determine the OTLP endpoint, preferring the new standard env var.
+// endpoint is the fallback used when OTEL_EXPORTER_OTLP_ENDPOINT is unset; it
+// carries the DB-stored admin setting (or the legacy OTEL_ENDPOINT value, which
+// config.Load folds into the same field). version is reported as service.version
+// in the OTel resource. If no endpoint is configured, it returns nil (noop).
+func InitTelemetry(ctx context.Context, fallbackEndpoint, version string) (*Telemetry, error) {
+	// Prefer the standard env var over the caller-supplied fallback.
 	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if endpoint == "" {
-		endpoint = os.Getenv("OTEL_ENDPOINT")
+		endpoint = fallbackEndpoint
 	}
 	if endpoint == "" {
 		// No endpoint → noop (graceful degradation: no OTel without config).
@@ -98,11 +102,15 @@ func InitTelemetry(ctx context.Context) (*Telemetry, error) {
 	}
 
 	// ── Resource detection ──────────────────────────────────────────────
+	resAttrs := []attribute.KeyValue{
+		semconv.ServiceName(serviceName()),
+	}
+	if version != "" {
+		resAttrs = append(resAttrs, semconv.ServiceVersion(version))
+	}
 	res, err := resource.New(ctx,
 		resource.WithFromEnv(), // reads OTEL_RESOURCE_ATTRIBUTES
-		resource.WithAttributes(
-			semconv.ServiceName(serviceName()),
-		),
+		resource.WithAttributes(resAttrs...),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("create OTel resource: %w", err)
@@ -124,6 +132,15 @@ func InitTelemetry(ctx context.Context) (*Telemetry, error) {
 		sdktrace.WithSampler(sampler),
 	)
 	otel.SetTracerProvider(tp)
+
+	// Install the W3C Trace Context + Baggage propagators as the global
+	// propagator. otelchi reads otel.GetTextMapPropagator() to extract incoming
+	// traceparent/tracestate headers; the process default is a composite no-op,
+	// so without this distributed trace context is silently dropped.
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
 
 	// ── Meter provider ──────────────────────────────────────────────────
 	metricExporter, err := newMetricExporter(ctx, proto)

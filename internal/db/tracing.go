@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	ented "entgo.io/ent"
+	"github.com/datey/datey/ent"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -38,4 +40,26 @@ func TraceDBQuery[T any](ctx context.Context, operation string, dbFunc func(cont
 		span.RecordError(err)
 	}
 	return result, err
+}
+
+// EntQueryInterceptor instruments every ent query with an OTel span by reusing
+// TraceDBQuery. Register it with client.Intercept in Init. The operation name
+// is derived from the ent.QueryContext that ent's generated code attaches to
+// the context (e.g. "Person.Query" / "Query"). Note ent interceptors only wrap
+// queries, not mutations.
+func EntQueryInterceptor(next ent.Querier) ent.Querier {
+	return ent.QuerierFunc(func(ctx context.Context, q ent.Query) (ent.Value, error) {
+		op := "query"
+		if qc := ented.QueryFromContext(ctx); qc != nil {
+			switch {
+			case qc.Type != "" && qc.Op != "":
+				op = qc.Type + "." + qc.Op
+			case qc.Op != "":
+				op = qc.Op
+			}
+		}
+		return TraceDBQuery(ctx, op, func(ctx context.Context) (ent.Value, error) {
+			return next.Query(ctx, q)
+		})
+	})
 }

@@ -327,6 +327,10 @@ func Init(cfg *config.Config) (*ent.Client, error) {
 		return nil, err
 	}
 
+	// Instrument all ent queries with OTel spans. Noop until an OTel tracer
+	// provider is installed, so this is safe when telemetry is disabled.
+	client.Intercept(ent.InterceptFunc(EntQueryInterceptor))
+
 	ctx := context.Background()
 	// Backfill orphan push subscriptions to the first admin BEFORE the schema
 	// migration tightens the user FK to NOT NULL (task 1.2 of per-user-notifications).
