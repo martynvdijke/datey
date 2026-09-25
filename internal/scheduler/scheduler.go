@@ -208,12 +208,20 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 				}
 			}
 			eventKey := fmt.Sprintf("%d-%s", event.ID, occ.Date.Format("2006-01-02"))
+			days := daysBetween(now, occ.Date)
+			dayOf := days == 0
 			for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush", "discord", "slack", "matrix"} {
 				if !s.registry.IsConfigured(name) {
 					continue
 				}
-				dateKey := fmt.Sprintf("%s-%s", name, eventKey)
-				exists, err := s.notifLog.ExistsForDate(ctx, name, dateKey)
+				dateKey := reminderLogKey(name, eventKey, dayOf && !catchUp, 0)
+				var exists bool
+				var err error
+				if catchUp {
+					exists, err = s.occurrenceAnnounced(ctx, name, eventKey, 0)
+				} else {
+					exists, err = s.notifLog.ExistsForDate(ctx, name, dateKey)
+				}
 				if err != nil {
 					continue
 				}
@@ -229,7 +237,6 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 					contactName = g.Name + " (group)"
 				}
 				title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
-				days := daysBetween(now, occ.Date)
 				var message string
 				if catchUp && occ.Date.Before(now) {
 					when := fmt.Sprintf("%d days ago", -days)
@@ -264,6 +271,8 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 			}
 		}
 		eventKey := fmt.Sprintf("%d-%s", event.ID, occ.Date.Format("2006-01-02"))
+		days := daysBetween(now, occ.Date)
+		dayOf := days == 0
 		for _, u := range users {
 			if !s.userInScope(u, event) {
 				continue
@@ -287,15 +296,16 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 				var dateKey string
 				var dedupUserID int
 				if hasTarget {
-					dateKey = fmt.Sprintf("%s-%s-%d", name, eventKey, u.ID)
 					dedupUserID = u.ID
-				} else {
-					// Global fallback: deliver once per event/channel (legacy
-					// behavior) no matter how many users share the global target.
-					dateKey = fmt.Sprintf("%s-%s", name, eventKey)
-					dedupUserID = 0
 				}
-				exists, err := s.notifLog.ExistsForUser(ctx, name, dateKey, dedupUserID)
+				dateKey = reminderLogKey(name, eventKey, dayOf && !catchUp, dedupUserID)
+				var exists bool
+				var err error
+				if catchUp {
+					exists, err = s.occurrenceAnnounced(ctx, name, eventKey, dedupUserID)
+				} else {
+					exists, err = s.notifLog.ExistsForUser(ctx, name, dateKey, dedupUserID)
+				}
 				if err != nil {
 					slog.Error("scheduler: check notification log", "source", "scheduler", "error", err)
 					continue
@@ -313,7 +323,6 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 					contactName = g.Name + " (group)"
 				}
 				title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
-				days := daysBetween(now, occ.Date)
 				var message string
 				if catchUp && occ.Date.Before(now) {
 					when := fmt.Sprintf("%d days ago", -days)
@@ -412,6 +421,32 @@ func (s *Scheduler) resolveTarget(ctx context.Context, userID int, channel strin
 
 func (s *Scheduler) hasGlobalFallback(channel string) bool {
 	return s.registry.IsConfigured(channel)
+}
+
+// reminderLogKey builds a notification_log date key. base is
+// "<eventID>-<occurrenceDate>". A reminder that falls on the occurrence day
+// itself carries a "-dayof" suffix so it still fires when the advance (entry)
+// reminder already went out days earlier; both keys share the occurrence base
+// so a catch-up pass can tell the occurrence was already announced. userID 0
+// is the legacy global scope and adds no suffix.
+func reminderLogKey(channel, base string, dayOf bool, userID int) string {
+	key := fmt.Sprintf("%s-%s", channel, base)
+	if dayOf {
+		key += "-dayof"
+	}
+	if userID != 0 {
+		key = fmt.Sprintf("%s-%d", key, userID)
+	}
+	return key
+}
+
+// occurrenceAnnounced reports whether any reminder (entry or day-of) was ever
+// logged for an occurrence, so a catch-up pass does not repeat it.
+func (s *Scheduler) occurrenceAnnounced(ctx context.Context, channel, base string, userID int) (bool, error) {
+	if ok, err := s.notifLog.ExistsForUser(ctx, channel, reminderLogKey(channel, base, false, userID), userID); err != nil || ok {
+		return ok, err
+	}
+	return s.notifLog.ExistsForUser(ctx, channel, reminderLogKey(channel, base, true, userID), userID)
 }
 
 // daysBetween returns the calendar-day difference between now and t: how many

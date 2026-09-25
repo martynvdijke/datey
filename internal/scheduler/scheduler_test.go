@@ -280,6 +280,44 @@ func TestProcessReminders_EventDatedTodayFires(t *testing.T) {
 	}
 }
 
+// Regression: the advance reminder is sent once when the event enters the
+// window, deduped by occurrence date. The day-of reminder must still fire even
+// though that occurrence was already logged.
+func TestProcessReminders_DayOfFiresAfterEntryReminder(t *testing.T) {
+	s, _, fn, people, events := newTestScheduler(t, 7)
+	ctx := context.Background()
+
+	person, err := people.Create(ctx, "Dana", "", "")
+	if err != nil {
+		t.Fatalf("create person: %v", err)
+	}
+	today := midnightDaysFromNow(0)
+	ev, err := events.CreateForPerson(ctx, person.ID, "birthday", time.Date(1990, today.Month(), today.Day(), 0, 0, 0, 0, time.UTC), "Birthday of Dana")
+	if err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	// Simulate the entry reminder having fired when the birthday entered the
+	// window (logged under the plain occurrence key).
+	base := fmt.Sprintf("%d-%s", ev.ID, today.Format("2006-01-02"))
+	logRepo := repository.NewNotificationLogRepository(s.client)
+	if _, err := logRepo.CreateForUser(ctx, ev.ID, "email", "email-"+base, 0, time.Now().Add(-24*time.Hour)); err != nil {
+		t.Fatalf("seed entry log: %v", err)
+	}
+
+	s.processReminders(ctx, false)
+
+	if n := fn.count(); n != 1 {
+		t.Fatalf("expected 1 day-of notification despite entry log, got %d (messages: %v)", n, fn.messages)
+	}
+	if !strings.Contains(fn.messages[0], "today") {
+		t.Errorf("expected 'today' phrasing, got %q", fn.messages[0])
+	}
+	if ok, err := logRepo.ExistsForDate(ctx, "email", "email-"+base+"-dayof"); err != nil || !ok {
+		t.Errorf("expected day-of key logged, ok=%v err=%v", ok, err)
+	}
+}
+
 func TestProcessReminders_CustomEventRecursAnnually(t *testing.T) {
 	s, _, fn, people, events := newTestScheduler(t, 365)
 	ctx := context.Background()
