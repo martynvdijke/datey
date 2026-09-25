@@ -1,3 +1,10 @@
+## [1.51.14](https://github.com/martynvdijke/datey/compare/v1.51.13...v1.51.14) (2026-09-25)
+
+
+### Bug Fixes
+
+* **scheduler:** send reminder on the occurrence day itself ([8d0f376](https://github.com/martynvdijke/datey/commit/8d0f376468c275f9d608292ec3580a25df394cc0))
+
 ## [1.51.13](https://github.com/martynvdijke/datey/compare/v1.51.12...v1.51.13) (2026-09-23)
 
 ## [1.51.12](https://github.com/martynvdijke/datey/compare/v1.51.11...v1.51.12) (2026-09-22)
