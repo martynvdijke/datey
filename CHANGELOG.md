@@ -1,3 +1,10 @@
+## [1.51.18](https://github.com/martynvdijke/datey/compare/v1.51.17...v1.51.18) (2026-09-30)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/arran4/golang-ical to v0.3.7 ([#63](https://github.com/martynvdijke/datey/issues/63)) ([41897b8](https://github.com/martynvdijke/datey/commit/41897b83983fc88ca8e64f03d3da5d1e0db100f3))
+
 ## [1.51.17](https://github.com/martynvdijke/datey/compare/v1.51.16...v1.51.17) (2026-09-29)
 
 ## [1.51.16](https://github.com/martynvdijke/datey/compare/v1.51.15...v1.51.16) (2026-09-28)
