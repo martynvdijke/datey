@@ -1,3 +1,10 @@
+## [1.51.19](https://github.com/martynvdijke/datey/compare/v1.51.18...v1.51.19) (2026-10-02)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#64](https://github.com/martynvdijke/datey/issues/64)) ([d22b320](https://github.com/martynvdijke/datey/commit/d22b3204a3879e45c8fe0b567f39eaa057ff2b86))
+
 ## [1.51.18](https://github.com/martynvdijke/datey/compare/v1.51.17...v1.51.18) (2026-09-30)
 
 
