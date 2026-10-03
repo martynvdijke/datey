@@ -1,3 +1,10 @@
+## [1.51.20](https://github.com/martynvdijke/datey/compare/v1.51.19...v1.51.20) (2026-10-03)
+
+
+### Bug Fixes
+
+* **deps:** update module go.opentelemetry.io/contrib/bridges/otelslog to v0.21.0 ([#66](https://github.com/martynvdijke/datey/issues/66)) ([ed3bb09](https://github.com/martynvdijke/datey/commit/ed3bb091a1c0245545a917a73ee24c8381fb7118))
+
 ## [1.51.19](https://github.com/martynvdijke/datey/compare/v1.51.18...v1.51.19) (2026-10-02)
 
 
