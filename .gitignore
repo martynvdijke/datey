@@ -12,3 +12,6 @@ openspec/
 
 # trmnlp build output
 trmnl/*/_build/
+
+# Zensical build output
+site/
