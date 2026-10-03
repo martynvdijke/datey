@@ -12,7 +12,7 @@ require (
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/riandyrn/otelchi v0.12.3
-	go.opentelemetry.io/contrib/bridges/otelslog v0.20.1
+	go.opentelemetry.io/contrib/bridges/otelslog v0.21.0
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.23.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.23.0
