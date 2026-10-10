@@ -10,14 +10,14 @@
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">{{ next_birthday.date }} ({% if next_birthday.relative %}{{ next_birthday.relative }}{% else %}in {{ next_birthday.days_remaining }} days{% endif %})</span>
+          <span class="value">{{ next_birthday.date }} ({% if next_birthday.relative %}{{ next_birthday.relative }}{% else %}in {{ next_birthday.days_remaining }} days{% endif %})</span>
         </div>
       </div>
     {% else %}
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">No upcoming birthdays</span>
+          <span class="value">No upcoming birthdays</span>
         </div>
       </div>
     {% endif %}
