@@ -1,3 +1,10 @@
+## [1.51.26](https://github.com/martynvdijke/datey/compare/v1.51.25...v1.51.26) (2026-10-10)
+
+
+### Bug Fixes
+
+* **trmnl:** replace invalid value--medium framework class ([#75](https://github.com/martynvdijke/datey/issues/75)) ([966944d](https://github.com/martynvdijke/datey/commit/966944dcf4747c03004405a229d10eb54b124657))
+
 ## [1.51.25](https://github.com/martynvdijke/datey/compare/v1.51.24...v1.51.25) (2026-10-08)
 
 ## [1.51.24](https://github.com/martynvdijke/datey/compare/v1.51.23...v1.51.24) (2026-10-07)
