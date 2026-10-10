@@ -10,14 +10,14 @@
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">{% if next_event.relative %}{{ next_event.relative }}{% else %}In {{ next_event.days_remaining }} days{% endif %}</span>
+          <span class="value">{% if next_event.relative %}{{ next_event.relative }}{% else %}In {{ next_event.days_remaining }} days{% endif %}</span>
         </div>
       </div>
     {% else %}
       <div class="item">
         <div class="meta"></div>
         <div class="content">
-          <span class="value value--medium">No upcoming dates</span>
+          <span class="value">No upcoming dates</span>
         </div>
       </div>
     {% endif %}
