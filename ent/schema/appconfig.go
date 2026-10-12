@@ -50,6 +50,7 @@ func (AppConfig) Fields() []ent.Field {
 
 		field.String("telegram_bot_token").Optional().Nillable(),
 		field.String("telegram_chat_id").Optional().Nillable(),
+		field.String("telegram_webhook_secret").Optional().Nillable(),
 
 		field.String("ntfy_url").Optional().Nillable(),
 		field.String("ntfy_topic").Optional().Nillable(),

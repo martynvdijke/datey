@@ -40,8 +40,9 @@ type Config struct {
 	GotifyURL   string
 	GotifyToken string
 
-	TelegramBotToken string
-	TelegramChatID   string
+	TelegramBotToken      string
+	TelegramChatID        string
+	TelegramWebhookSecret string
 
 	NtfyURL      string
 	NtfyTopic    string
@@ -110,33 +111,34 @@ type Config struct {
 
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:             getEnvInt("PORT", 6270),
-		DataDir:          getEnvExplicit("DATA_DIR", "/db"),
-		SchedulerHour:    getEnvInt("SCHEDULER_HOUR", 8),
-		ReminderDays:     getEnvInt("REMINDER_DAYS", 7),
-		SchedulerCatchup: getEnvBool("SCHEDULER_CATCHUP", true),
-		DateVariant:      getEnvExplicit("DATE_VARIANT", "european"),
-		LogLevel:         getEnvExplicit("LOG_LEVEL", "info"),
-		LogBufferSize:    getEnvInt("LOG_BUFFER_SIZE", 10000),
-		OTLPEndpoint:     getEnv("OTEL_ENDPOINT", ""),
-		AppURL:           getEnv("APP_URL", ""),
-		SMTPHost:         getEnv("SMTP_HOST", ""),
-		SMTPPort:         getEnvInt("SMTP_PORT", 587),
-		SMTPUser:         getEnv("SMTP_USER", ""),
-		SMTPPass:         getEnv("SMTP_PASS", ""),
-		SMTPTLS:          getEnv("SMTP_TLS", "true") == "true",
-		SMTPTimeout:      getEnvInt("SMTP_TIMEOUT", 10),
-		NotifyEmail:      getEnv("NOTIFICATION_EMAIL", ""),
-		GotifyURL:        getEnv("GOTIFY_URL", ""),
-		GotifyToken:      getEnv("GOTIFY_TOKEN", ""),
-		TelegramBotToken: getEnv("TELEGRAM_BOT_TOKEN", ""),
-		TelegramChatID:   getEnv("TELEGRAM_CHAT_ID", ""),
-		NtfyURL:          getEnv("NTFY_URL", "https://ntfy.sh"),
-		NtfyTopic:        getEnv("NTFY_TOPIC", ""),
-		NtfyToken:        getEnv("NTFY_TOKEN", ""),
-		NtfyPriority:     getEnvInt("NTFY_PRIORITY", 3),
-		WebhookURL:       getEnv("WEBHOOK_URL", ""),
-		WebhookSecret:    getEnv("WEBHOOK_SECRET", ""),
+		Port:                  getEnvInt("PORT", 6270),
+		DataDir:               getEnvExplicit("DATA_DIR", "/db"),
+		SchedulerHour:         getEnvInt("SCHEDULER_HOUR", 8),
+		ReminderDays:          getEnvInt("REMINDER_DAYS", 7),
+		SchedulerCatchup:      getEnvBool("SCHEDULER_CATCHUP", true),
+		DateVariant:           getEnvExplicit("DATE_VARIANT", "european"),
+		LogLevel:              getEnvExplicit("LOG_LEVEL", "info"),
+		LogBufferSize:         getEnvInt("LOG_BUFFER_SIZE", 10000),
+		OTLPEndpoint:          getEnv("OTEL_ENDPOINT", ""),
+		AppURL:                getEnv("APP_URL", ""),
+		SMTPHost:              getEnv("SMTP_HOST", ""),
+		SMTPPort:              getEnvInt("SMTP_PORT", 587),
+		SMTPUser:              getEnv("SMTP_USER", ""),
+		SMTPPass:              getEnv("SMTP_PASS", ""),
+		SMTPTLS:               getEnv("SMTP_TLS", "true") == "true",
+		SMTPTimeout:           getEnvInt("SMTP_TIMEOUT", 10),
+		NotifyEmail:           getEnv("NOTIFICATION_EMAIL", ""),
+		GotifyURL:             getEnv("GOTIFY_URL", ""),
+		GotifyToken:           getEnv("GOTIFY_TOKEN", ""),
+		TelegramBotToken:      getEnv("TELEGRAM_BOT_TOKEN", ""),
+		TelegramChatID:        getEnv("TELEGRAM_CHAT_ID", ""),
+		TelegramWebhookSecret: getEnv("TELEGRAM_WEBHOOK_SECRET", ""),
+		NtfyURL:               getEnv("NTFY_URL", "https://ntfy.sh"),
+		NtfyTopic:             getEnv("NTFY_TOPIC", ""),
+		NtfyToken:             getEnv("NTFY_TOKEN", ""),
+		NtfyPriority:          getEnvInt("NTFY_PRIORITY", 3),
+		WebhookURL:            getEnv("WEBHOOK_URL", ""),
+		WebhookSecret:         getEnv("WEBHOOK_SECRET", ""),
 
 		DiscordWebhookURL:   getEnv("DISCORD_WEBHOOK_URL", ""),
 		SlackWebhookURL:     getEnv("SLACK_WEBHOOK_URL", ""),

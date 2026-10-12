@@ -406,6 +406,7 @@ func applyFormToConfig(cfg *config.Config, form url.Values) {
 	// Telegram
 	setStr("TELEGRAM_BOT_TOKEN", &cfg.TelegramBotToken)
 	setStr("TELEGRAM_CHAT_ID", &cfg.TelegramChatID)
+	setStr("TELEGRAM_WEBHOOK_SECRET", &cfg.TelegramWebhookSecret)
 
 	// ntfy
 	setStr("NTFY_URL", &cfg.NtfyURL)

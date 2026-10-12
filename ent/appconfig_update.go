@@ -597,6 +597,26 @@ func (_u *AppConfigUpdate) ClearTelegramChatID() *AppConfigUpdate {
 	return _u
 }
 
+// SetTelegramWebhookSecret sets the "telegram_webhook_secret" field.
+func (_u *AppConfigUpdate) SetTelegramWebhookSecret(v string) *AppConfigUpdate {
+	_u.mutation.SetTelegramWebhookSecret(v)
+	return _u
+}
+
+// SetNillableTelegramWebhookSecret sets the "telegram_webhook_secret" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableTelegramWebhookSecret(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetTelegramWebhookSecret(*v)
+	}
+	return _u
+}
+
+// ClearTelegramWebhookSecret clears the value of the "telegram_webhook_secret" field.
+func (_u *AppConfigUpdate) ClearTelegramWebhookSecret() *AppConfigUpdate {
+	_u.mutation.ClearTelegramWebhookSecret()
+	return _u
+}
+
 // SetNtfyURL sets the "ntfy_url" field.
 func (_u *AppConfigUpdate) SetNtfyURL(v string) *AppConfigUpdate {
 	_u.mutation.SetNtfyURL(v)
@@ -1756,6 +1776,12 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.TelegramChatIDCleared() {
 		_spec.ClearField(appconfig.FieldTelegramChatID, field.TypeString)
 	}
+	if value, ok := _u.mutation.TelegramWebhookSecret(); ok {
+		_spec.SetField(appconfig.FieldTelegramWebhookSecret, field.TypeString, value)
+	}
+	if _u.mutation.TelegramWebhookSecretCleared() {
+		_spec.ClearField(appconfig.FieldTelegramWebhookSecret, field.TypeString)
+	}
 	if value, ok := _u.mutation.NtfyURL(); ok {
 		_spec.SetField(appconfig.FieldNtfyURL, field.TypeString, value)
 	}
@@ -2627,6 +2653,26 @@ func (_u *AppConfigUpdateOne) SetNillableTelegramChatID(v *string) *AppConfigUpd
 // ClearTelegramChatID clears the value of the "telegram_chat_id" field.
 func (_u *AppConfigUpdateOne) ClearTelegramChatID() *AppConfigUpdateOne {
 	_u.mutation.ClearTelegramChatID()
+	return _u
+}
+
+// SetTelegramWebhookSecret sets the "telegram_webhook_secret" field.
+func (_u *AppConfigUpdateOne) SetTelegramWebhookSecret(v string) *AppConfigUpdateOne {
+	_u.mutation.SetTelegramWebhookSecret(v)
+	return _u
+}
+
+// SetNillableTelegramWebhookSecret sets the "telegram_webhook_secret" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableTelegramWebhookSecret(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetTelegramWebhookSecret(*v)
+	}
+	return _u
+}
+
+// ClearTelegramWebhookSecret clears the value of the "telegram_webhook_secret" field.
+func (_u *AppConfigUpdateOne) ClearTelegramWebhookSecret() *AppConfigUpdateOne {
+	_u.mutation.ClearTelegramWebhookSecret()
 	return _u
 }
 
@@ -3818,6 +3864,12 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.TelegramChatIDCleared() {
 		_spec.ClearField(appconfig.FieldTelegramChatID, field.TypeString)
+	}
+	if value, ok := _u.mutation.TelegramWebhookSecret(); ok {
+		_spec.SetField(appconfig.FieldTelegramWebhookSecret, field.TypeString, value)
+	}
+	if _u.mutation.TelegramWebhookSecretCleared() {
+		_spec.ClearField(appconfig.FieldTelegramWebhookSecret, field.TypeString)
 	}
 	if value, ok := _u.mutation.NtfyURL(); ok {
 		_spec.SetField(appconfig.FieldNtfyURL, field.TypeString, value)

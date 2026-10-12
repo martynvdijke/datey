@@ -120,6 +120,7 @@ See `.env.example` for a template.
 | `GOTIFY_TOKEN` | — | Gotify application token |
 | `TELEGRAM_BOT_TOKEN` | — | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | — | Telegram chat ID |
+| `TELEGRAM_WEBHOOK_SECRET` | — | Secret required in Telegram's `X-Telegram-Bot-Api-Secret-Token` header to authenticate inbound bot updates (set the same value as `secret_token` in `setWebhook`) |
 | `WEBHOOK_URL` | — | Comma-separated list of URLs that receive a JSON POST per reminder (required to enable webhook) |
 | `WEBHOOK_SECRET` | — | Optional secret used to sign webhook requests (`X-Datey-Signature: sha256=<hmac>`) |
 | `DISCORD_WEBHOOK_URL` | — | Discord channel webhook URL (**enforced**: absolute URL) |
@@ -163,6 +164,26 @@ See `.env.example` for a template.
 - **Discord** — In your Discord server go to **Server Settings → Integrations → Webhooks → Create Webhook**, copy the webhook URL and paste it as `DISCORD_WEBHOOK_URL`. Test with the Discord test button in Settings → Configuration.
 - **Slack** — Create an incoming webhook in **Slack App → Incoming Webhooks** (or via https://api.slack.com/messaging/webhooks), copy the URL and set `SLACK_WEBHOOK_URL`. Test with the Slack test button.
 - **Matrix** — In Element go to **Settings → Help & About → Access Token** to copy your access token (`MATRIX_ACCESS_TOKEN`), set the homeserver URL (`MATRIX_HOMESERVER_URL`, e.g. `https://matrix.example.com`) and the room ID (`MATRIX_ROOM_ID`, e.g. `!abc123:example.com` visible in Room Settings → Advanced). Invite your bot user to the room first. Test with the Matrix test button.
+
+### Telegram Bot Setup
+
+Datey can both **send** reminders via Telegram and answer **interactive commands** in a chat. The interactive bot receives updates through a webhook, so it needs a publicly reachable HTTPS URL for your datey instance.
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token into `TELEGRAM_BOT_TOKEN`.
+2. Generate a random secret and set it as `TELEGRAM_WEBHOOK_SECRET`. This authenticates incoming updates; without it the webhook is disabled (returns `404`).
+3. Point Telegram at your instance, passing the same secret as `secret_token`:
+
+   ```bash
+   curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+     -d "url=https://your-datey-host/api/telegram/webhook" \
+     -d "secret_token=${TELEGRAM_WEBHOOK_SECRET}"
+   ```
+
+   Telegram then delivers each update to `POST /api/telegram/webhook` with an `X-Telegram-Bot-Api-Secret-Token` header that datey verifies (constant-time); a mismatched header returns `401`.
+
+4. Chat with the bot and try `/help`, `/upcoming`, `/today`, `/person <name>`, `/search <query>`. Use `/upcoming [days]` to widen the window (defaults to `REMINDER_DAYS`, capped at 365).
+
+Verify the registration with `curl "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"`.
 
 ### Per-User Notifications
 

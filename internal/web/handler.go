@@ -27,6 +27,7 @@ import (
 	"github.com/datey/datey/internal/repository"
 	"github.com/datey/datey/internal/session"
 	"github.com/datey/datey/internal/settings"
+	"github.com/datey/datey/internal/telegram"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -55,6 +56,7 @@ type Handler struct {
 	immich              *immich.Client
 	photoStore          *photos.Store
 	audit               auditRecorder
+	telegram            telegramUpdateHandler
 }
 
 type auditRecorder interface {
@@ -75,16 +77,19 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 	if err != nil {
 		panic(err)
 	}
+	events := repository.NewEventRepository(client)
+	people := repository.NewPersonRepository(client)
 	return &Handler{
 		cfg:                 cfg,
 		client:              client,
 		templates:           templates,
 		users:               repository.NewUserRepository(client),
 		sessions:            session.NewStore(client),
-		people:              repository.NewPersonRepository(client),
+		people:              people,
 		groups:              repository.NewGroupRepository(client),
 		tags:                repository.NewTagRepository(client),
-		events:              repository.NewEventRepository(client),
+		events:              events,
+		telegram:            telegram.New(cfg, events, people),
 		groupNotes:          repository.NewGroupNoteRepository(client),
 		giftIdeas:           repository.NewGiftIdeaRepository(client),
 		relationships:       repository.NewRelationshipRepository(client),
@@ -124,6 +129,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	// Database health check (includes DB connectivity test)
 	r.Get("/health/db", handlers.DBHealthCheck(h.client))
+
+	r.Post("/api/telegram/webhook", h.telegramWebhook)
 
 	// All other routes with middleware applied via group
 	r.Group(func(r chi.Router) {

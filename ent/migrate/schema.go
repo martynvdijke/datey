@@ -74,6 +74,7 @@ var (
 		{Name: "gotify_token", Type: field.TypeString, Nullable: true},
 		{Name: "telegram_bot_token", Type: field.TypeString, Nullable: true},
 		{Name: "telegram_chat_id", Type: field.TypeString, Nullable: true},
+		{Name: "telegram_webhook_secret", Type: field.TypeString, Nullable: true},
 		{Name: "ntfy_url", Type: field.TypeString, Nullable: true},
 		{Name: "ntfy_topic", Type: field.TypeString, Nullable: true},
 		{Name: "ntfy_token", Type: field.TypeString, Nullable: true},

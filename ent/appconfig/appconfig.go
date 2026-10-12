@@ -63,6 +63,8 @@ const (
 	FieldTelegramBotToken = "telegram_bot_token"
 	// FieldTelegramChatID holds the string denoting the telegram_chat_id field in the database.
 	FieldTelegramChatID = "telegram_chat_id"
+	// FieldTelegramWebhookSecret holds the string denoting the telegram_webhook_secret field in the database.
+	FieldTelegramWebhookSecret = "telegram_webhook_secret"
 	// FieldNtfyURL holds the string denoting the ntfy_url field in the database.
 	FieldNtfyURL = "ntfy_url"
 	// FieldNtfyTopic holds the string denoting the ntfy_topic field in the database.
@@ -188,6 +190,7 @@ var Columns = []string{
 	FieldGotifyToken,
 	FieldTelegramBotToken,
 	FieldTelegramChatID,
+	FieldTelegramWebhookSecret,
 	FieldNtfyURL,
 	FieldNtfyTopic,
 	FieldNtfyToken,
@@ -382,6 +385,11 @@ func ByTelegramBotToken(opts ...sql.OrderTermOption) OrderOption {
 // ByTelegramChatID orders the results by the telegram_chat_id field.
 func ByTelegramChatID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTelegramChatID, opts...).ToFunc()
+}
+
+// ByTelegramWebhookSecret orders the results by the telegram_webhook_secret field.
+func ByTelegramWebhookSecret(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTelegramWebhookSecret, opts...).ToFunc()
 }
 
 // ByNtfyURL orders the results by the ntfy_url field.

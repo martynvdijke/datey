@@ -184,6 +184,11 @@ func TelegramChatID(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldTelegramChatID, v))
 }
 
+// TelegramWebhookSecret applies equality check predicate on the "telegram_webhook_secret" field. It's identical to TelegramWebhookSecretEQ.
+func TelegramWebhookSecret(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTelegramWebhookSecret, v))
+}
+
 // NtfyURL applies equality check predicate on the "ntfy_url" field. It's identical to NtfyURLEQ.
 func NtfyURL(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldNtfyURL, v))
@@ -1997,6 +2002,81 @@ func TelegramChatIDEqualFold(v string) predicate.AppConfig {
 // TelegramChatIDContainsFold applies the ContainsFold predicate on the "telegram_chat_id" field.
 func TelegramChatIDContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldTelegramChatID, v))
+}
+
+// TelegramWebhookSecretEQ applies the EQ predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretNEQ applies the NEQ predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretIn applies the In predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldTelegramWebhookSecret, vs...))
+}
+
+// TelegramWebhookSecretNotIn applies the NotIn predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldTelegramWebhookSecret, vs...))
+}
+
+// TelegramWebhookSecretGT applies the GT predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretGTE applies the GTE predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretLT applies the LT predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretLTE applies the LTE predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretContains applies the Contains predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretHasPrefix applies the HasPrefix predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretHasSuffix applies the HasSuffix predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretIsNil applies the IsNil predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldTelegramWebhookSecret))
+}
+
+// TelegramWebhookSecretNotNil applies the NotNil predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldTelegramWebhookSecret))
+}
+
+// TelegramWebhookSecretEqualFold applies the EqualFold predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldTelegramWebhookSecret, v))
+}
+
+// TelegramWebhookSecretContainsFold applies the ContainsFold predicate on the "telegram_webhook_secret" field.
+func TelegramWebhookSecretContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldTelegramWebhookSecret, v))
 }
 
 // NtfyURLEQ applies the EQ predicate on the "ntfy_url" field.

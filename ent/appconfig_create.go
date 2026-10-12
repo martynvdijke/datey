@@ -383,6 +383,20 @@ func (_c *AppConfigCreate) SetNillableTelegramChatID(v *string) *AppConfigCreate
 	return _c
 }
 
+// SetTelegramWebhookSecret sets the "telegram_webhook_secret" field.
+func (_c *AppConfigCreate) SetTelegramWebhookSecret(v string) *AppConfigCreate {
+	_c.mutation.SetTelegramWebhookSecret(v)
+	return _c
+}
+
+// SetNillableTelegramWebhookSecret sets the "telegram_webhook_secret" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableTelegramWebhookSecret(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetTelegramWebhookSecret(*v)
+	}
+	return _c
+}
+
 // SetNtfyURL sets the "ntfy_url" field.
 func (_c *AppConfigCreate) SetNtfyURL(v string) *AppConfigCreate {
 	_c.mutation.SetNtfyURL(v)
@@ -1190,6 +1204,10 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TelegramChatID(); ok {
 		_spec.SetField(appconfig.FieldTelegramChatID, field.TypeString, value)
 		_node.TelegramChatID = &value
+	}
+	if value, ok := _c.mutation.TelegramWebhookSecret(); ok {
+		_spec.SetField(appconfig.FieldTelegramWebhookSecret, field.TypeString, value)
+		_node.TelegramWebhookSecret = &value
 	}
 	if value, ok := _c.mutation.NtfyURL(); ok {
 		_spec.SetField(appconfig.FieldNtfyURL, field.TypeString, value)

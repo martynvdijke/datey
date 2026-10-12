@@ -170,6 +170,7 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 	telegram := configGroup{Title: "Telegram", TestSection: "telegram", Fields: []configField{
 		{Name: "TELEGRAM_BOT_TOKEN", Label: "Bot Token", Value: val("TELEGRAM_BOT_TOKEN", cfg.TelegramBotToken), Type: "text", Secret: true, Error: errFor("TELEGRAM_BOT_TOKEN")},
 		{Name: "TELEGRAM_CHAT_ID", Label: "Chat ID", Value: val("TELEGRAM_CHAT_ID", cfg.TelegramChatID), Type: "text", Error: errFor("TELEGRAM_CHAT_ID")},
+		{Name: "TELEGRAM_WEBHOOK_SECRET", Label: "Webhook Secret", Value: val("TELEGRAM_WEBHOOK_SECRET", cfg.TelegramWebhookSecret), Type: "text", Secret: true, Error: errFor("TELEGRAM_WEBHOOK_SECRET")},
 	}}
 
 	ntfy := configGroup{Title: "ntfy", TestSection: "ntfy", Fields: []configField{

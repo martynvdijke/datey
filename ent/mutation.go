@@ -827,6 +827,7 @@ type AppConfigMutation struct {
 	gotify_token             *string
 	telegram_bot_token       *string
 	telegram_chat_id         *string
+	telegram_webhook_secret  *string
 	ntfy_url                 *string
 	ntfy_topic               *string
 	ntfy_token               *string
@@ -2399,6 +2400,55 @@ func (m *AppConfigMutation) TelegramChatIDCleared() bool {
 func (m *AppConfigMutation) ResetTelegramChatID() {
 	m.telegram_chat_id = nil
 	delete(m.clearedFields, appconfig.FieldTelegramChatID)
+}
+
+// SetTelegramWebhookSecret sets the "telegram_webhook_secret" field.
+func (m *AppConfigMutation) SetTelegramWebhookSecret(s string) {
+	m.telegram_webhook_secret = &s
+}
+
+// TelegramWebhookSecret returns the value of the "telegram_webhook_secret" field in the mutation.
+func (m *AppConfigMutation) TelegramWebhookSecret() (r string, exists bool) {
+	v := m.telegram_webhook_secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTelegramWebhookSecret returns the old "telegram_webhook_secret" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldTelegramWebhookSecret(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTelegramWebhookSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTelegramWebhookSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTelegramWebhookSecret: %w", err)
+	}
+	return oldValue.TelegramWebhookSecret, nil
+}
+
+// ClearTelegramWebhookSecret clears the value of the "telegram_webhook_secret" field.
+func (m *AppConfigMutation) ClearTelegramWebhookSecret() {
+	m.telegram_webhook_secret = nil
+	m.clearedFields[appconfig.FieldTelegramWebhookSecret] = struct{}{}
+}
+
+// TelegramWebhookSecretCleared returns if the "telegram_webhook_secret" field was cleared in this mutation.
+func (m *AppConfigMutation) TelegramWebhookSecretCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldTelegramWebhookSecret]
+	return ok
+}
+
+// ResetTelegramWebhookSecret resets all changes to the "telegram_webhook_secret" field.
+func (m *AppConfigMutation) ResetTelegramWebhookSecret() {
+	m.telegram_webhook_secret = nil
+	delete(m.clearedFields, appconfig.FieldTelegramWebhookSecret)
 }
 
 // SetNtfyURL sets the "ntfy_url" field.
@@ -4752,7 +4802,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 72)
+	fields := make([]string, 0, 73)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -4830,6 +4880,9 @@ func (m *AppConfigMutation) Fields() []string {
 	}
 	if m.telegram_chat_id != nil {
 		fields = append(fields, appconfig.FieldTelegramChatID)
+	}
+	if m.telegram_webhook_secret != nil {
+		fields = append(fields, appconfig.FieldTelegramWebhookSecret)
 	}
 	if m.ntfy_url != nil {
 		fields = append(fields, appconfig.FieldNtfyURL)
@@ -5029,6 +5082,8 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.TelegramBotToken()
 	case appconfig.FieldTelegramChatID:
 		return m.TelegramChatID()
+	case appconfig.FieldTelegramWebhookSecret:
+		return m.TelegramWebhookSecret()
 	case appconfig.FieldNtfyURL:
 		return m.NtfyURL()
 	case appconfig.FieldNtfyTopic:
@@ -5182,6 +5237,8 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldTelegramBotToken(ctx)
 	case appconfig.FieldTelegramChatID:
 		return m.OldTelegramChatID(ctx)
+	case appconfig.FieldTelegramWebhookSecret:
+		return m.OldTelegramWebhookSecret(ctx)
 	case appconfig.FieldNtfyURL:
 		return m.OldNtfyURL(ctx)
 	case appconfig.FieldNtfyTopic:
@@ -5464,6 +5521,13 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTelegramChatID(v)
+		return nil
+	case appconfig.FieldTelegramWebhookSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTelegramWebhookSecret(v)
 		return nil
 	case appconfig.FieldNtfyURL:
 		v, ok := value.(string)
@@ -6018,6 +6082,9 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldTelegramChatID) {
 		fields = append(fields, appconfig.FieldTelegramChatID)
 	}
+	if m.FieldCleared(appconfig.FieldTelegramWebhookSecret) {
+		fields = append(fields, appconfig.FieldTelegramWebhookSecret)
+	}
 	if m.FieldCleared(appconfig.FieldNtfyURL) {
 		fields = append(fields, appconfig.FieldNtfyURL)
 	}
@@ -6248,6 +6315,9 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldTelegramChatID:
 		m.ClearTelegramChatID()
 		return nil
+	case appconfig.FieldTelegramWebhookSecret:
+		m.ClearTelegramWebhookSecret()
+		return nil
 	case appconfig.FieldNtfyURL:
 		m.ClearNtfyURL()
 		return nil
@@ -6471,6 +6541,9 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldTelegramChatID:
 		m.ResetTelegramChatID()
+		return nil
+	case appconfig.FieldTelegramWebhookSecret:
+		m.ResetTelegramWebhookSecret()
 		return nil
 	case appconfig.FieldNtfyURL:
 		m.ResetNtfyURL()

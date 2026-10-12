@@ -69,6 +69,8 @@ type AppConfig struct {
 	TelegramBotToken *string `json:"telegram_bot_token,omitempty"`
 	// TelegramChatID holds the value of the "telegram_chat_id" field.
 	TelegramChatID *string `json:"telegram_chat_id,omitempty"`
+	// TelegramWebhookSecret holds the value of the "telegram_webhook_secret" field.
+	TelegramWebhookSecret *string `json:"telegram_webhook_secret,omitempty"`
 	// NtfyURL holds the value of the "ntfy_url" field.
 	NtfyURL *string `json:"ntfy_url,omitempty"`
 	// NtfyTopic holds the value of the "ntfy_topic" field.
@@ -173,7 +175,7 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes, appconfig.FieldAuditRetentionMax:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldTelegramWebhookSecret, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldGoogleLastSync, appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -379,6 +381,13 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TelegramChatID = new(string)
 				*_m.TelegramChatID = value.String
+			}
+		case appconfig.FieldTelegramWebhookSecret:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field telegram_webhook_secret", values[i])
+			} else if value.Valid {
+				_m.TelegramWebhookSecret = new(string)
+				*_m.TelegramWebhookSecret = value.String
 			}
 		case appconfig.FieldNtfyURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -865,6 +874,11 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.TelegramChatID; v != nil {
 		builder.WriteString("telegram_chat_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.TelegramWebhookSecret; v != nil {
+		builder.WriteString("telegram_webhook_secret=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

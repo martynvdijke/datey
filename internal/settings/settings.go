@@ -133,6 +133,9 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.TelegramChatID; v != nil {
 		cfg.TelegramChatID = *v
 	}
+	if v := row.TelegramWebhookSecret; v != nil {
+		cfg.TelegramWebhookSecret = *v
+	}
 	if v := row.NtfyURL; v != nil {
 		cfg.NtfyURL = *v
 	}
@@ -589,6 +592,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	gotifyToken := form.Get("GOTIFY_TOKEN")
 	telegramBotToken := form.Get("TELEGRAM_BOT_TOKEN")
 	telegramChatID := form.Get("TELEGRAM_CHAT_ID")
+	telegramWebhookSecret := form.Get("TELEGRAM_WEBHOOK_SECRET")
 	ntfyURL := form.Get("NTFY_URL")
 	ntfyTopic := form.Get("NTFY_TOPIC")
 	ntfyToken := form.Get("NTFY_TOKEN")
@@ -802,6 +806,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableGotifyToken(nillableStr(gotifyToken)).
 		SetNillableTelegramBotToken(nillableStr(telegramBotToken)).
 		SetNillableTelegramChatID(nillableStr(telegramChatID)).
+		SetNillableTelegramWebhookSecret(nillableStr(telegramWebhookSecret)).
 		SetNillableNtfyURL(nillableStr(ntfyURL)).
 		SetNillableNtfyTopic(nillableStr(ntfyTopic)).
 		SetNillableNtfyToken(nillableStr(ntfyToken)).
@@ -862,6 +867,7 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.GotifyToken = gotifyToken
 	cfg.TelegramBotToken = telegramBotToken
 	cfg.TelegramChatID = telegramChatID
+	cfg.TelegramWebhookSecret = telegramWebhookSecret
 	cfg.NtfyURL = ntfyURL
 	cfg.NtfyTopic = ntfyTopic
 	cfg.NtfyToken = ntfyToken
