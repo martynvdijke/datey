@@ -1,3 +1,15 @@
+# [1.52.0](https://github.com/martynvdijke/datey/compare/v1.51.26...v1.52.0) (2026-10-12)
+
+
+### Bug Fixes
+
+* **telegram:** resolve ineffassign lint failure in milestone test ([a4b42b8](https://github.com/martynvdijke/datey/commit/a4b42b801f2fdf4e61e1ae052d6802cb92711adb))
+
+
+### Features
+
+* add interactive Telegram bot webhook ([3e3daaf](https://github.com/martynvdijke/datey/commit/3e3daaffc2657abce2971fc3007f432045ee102f))
+
 ## [1.51.26](https://github.com/martynvdijke/datey/compare/v1.51.25...v1.51.26) (2026-10-10)
 
 
