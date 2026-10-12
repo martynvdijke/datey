@@ -279,12 +279,10 @@ func TestSearch(t *testing.T) {
 }
 
 func TestFormatLine_Milestone(t *testing.T) {
-	today := todayUTC()
 	// 30th birthday milestone
 	e := mkEvent("Ann", "birthday", time.Date(1996, 1, 1, 0, 0, 0, 0, time.UTC))
-	occDate := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, time.UTC)
-	// set occ to 30 years after birth: 2026 if born 1996
-	occDate = time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC)
+	// occurrence 30 years after birth: 2026 if born 1996
+	occDate := time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC)
 	todayStart := time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC)
 	line := formatLine(e, occDate, todayStart)
 	if !strings.Contains(line, "30th birthday") {
