@@ -196,19 +196,20 @@ func (h *Handler) dashboardJSON(w http.ResponseWriter, r *http.Request) {
 		if dto.CalendarSystem == "" {
 			dto.CalendarSystem = "gregorian"
 		}
-		if e.Edges.Person != nil {
+		switch {
+		case e.Edges.Person != nil:
 			pid := e.Edges.Person.ID
 			dto.PersonID = &pid
 			dto.PersonName = e.Edges.Person.Name
 			if url := h.photoURL(r, e.Edges.Person); url != "" {
 				dto.PersonPhotoURL = &url
 			}
-		} else if e.Edges.Group != nil {
+		case e.Edges.Group != nil:
 			gid := e.Edges.Group.ID
 			gname := e.Edges.Group.Name
 			dto.GroupID = &gid
 			dto.GroupName = &gname
-		} else {
+		default:
 			dto.PersonName = eventOwnerName(e)
 		}
 		if e.Type == "birthday" && e.Date.Year() > 1 {

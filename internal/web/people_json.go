@@ -157,8 +157,6 @@ func (h *Handler) viewPersonJSON(w http.ResponseWriter, r *http.Request) {
 		dir := "from"
 		if e.Direction == "incoming" {
 			dir = "to"
-		} else if e.Direction == "outgoing" {
-			dir = "from"
 		}
 		var label *string
 		if e.RawLabel != nil && *e.RawLabel != "" {
