@@ -1,3 +1,15 @@
+# [1.53.0](https://github.com/martynvdijke/datey/compare/v1.52.1...v1.53.0) (2026-10-17)
+
+
+### Bug Fixes
+
+* resolve golangci-lint issues in JSON API handlers ([e35c736](https://github.com/martynvdijke/datey/commit/e35c73657eb91109f3536ab3d0087b394c8ab348))
+
+
+### Features
+
+* **mobile:** add Flutter Android app with JSON API and Android CI/CD ([e92f706](https://github.com/martynvdijke/datey/commit/e92f70696b8e55b30723e297939a7361b5ada59a))
+
 ## [1.52.1](https://github.com/martynvdijke/datey/compare/v1.52.0...v1.52.1) (2026-10-12)
 
 # [1.52.0](https://github.com/martynvdijke/datey/compare/v1.51.26...v1.52.0) (2026-10-12)
