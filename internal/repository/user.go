@@ -151,3 +151,13 @@ func (r *UserRepository) GetLocale(ctx context.Context, id int) (string, error) 
 	}
 	return *u.Locale, nil
 }
+
+func (r *UserRepository) SetLinkedPerson(ctx context.Context, id int, personID *int) (*ent.User, error) {
+	upd := r.client.User.UpdateOneID(id).SetUpdatedAt(time.Now())
+	if personID == nil {
+		upd = upd.ClearLinkedPersonID().ClearLinkedPerson()
+	} else {
+		upd = upd.SetLinkedPersonID(*personID)
+	}
+	return upd.Save(ctx)
+}

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/passwordresettoken"
+	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/session"
@@ -30,6 +31,26 @@ type UserUpdate struct {
 // Where appends a list predicates to the UserUpdate builder.
 func (_u *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetLinkedPersonID sets the "linked_person_id" field.
+func (_u *UserUpdate) SetLinkedPersonID(v int) *UserUpdate {
+	_u.mutation.SetLinkedPersonID(v)
+	return _u
+}
+
+// SetNillableLinkedPersonID sets the "linked_person_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableLinkedPersonID(v *int) *UserUpdate {
+	if v != nil {
+		_u.SetLinkedPersonID(*v)
+	}
+	return _u
+}
+
+// ClearLinkedPersonID clears the value of the "linked_person_id" field.
+func (_u *UserUpdate) ClearLinkedPersonID() *UserUpdate {
+	_u.mutation.ClearLinkedPersonID()
 	return _u
 }
 
@@ -286,6 +307,11 @@ func (_u *UserUpdate) AddAPITokens(v ...*ApiToken) *UserUpdate {
 	return _u.AddAPITokenIDs(ids...)
 }
 
+// SetLinkedPerson sets the "linked_person" edge to the Person entity.
+func (_u *UserUpdate) SetLinkedPerson(v *Person) *UserUpdate {
+	return _u.SetLinkedPersonID(v.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -394,6 +420,12 @@ func (_u *UserUpdate) RemoveAPITokens(v ...*ApiToken) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAPITokenIDs(ids...)
+}
+
+// ClearLinkedPerson clears the "linked_person" edge to the Person entity.
+func (_u *UserUpdate) ClearLinkedPerson() *UserUpdate {
+	_u.mutation.ClearLinkedPerson()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -735,6 +767,35 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.LinkedPersonCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.LinkedPersonTable,
+			Columns: []string{user.LinkedPersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinkedPersonIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.LinkedPersonTable,
+			Columns: []string{user.LinkedPersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -753,6 +814,26 @@ type UserUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *UserMutation
+}
+
+// SetLinkedPersonID sets the "linked_person_id" field.
+func (_u *UserUpdateOne) SetLinkedPersonID(v int) *UserUpdateOne {
+	_u.mutation.SetLinkedPersonID(v)
+	return _u
+}
+
+// SetNillableLinkedPersonID sets the "linked_person_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableLinkedPersonID(v *int) *UserUpdateOne {
+	if v != nil {
+		_u.SetLinkedPersonID(*v)
+	}
+	return _u
+}
+
+// ClearLinkedPersonID clears the value of the "linked_person_id" field.
+func (_u *UserUpdateOne) ClearLinkedPersonID() *UserUpdateOne {
+	_u.mutation.ClearLinkedPersonID()
+	return _u
 }
 
 // SetUsername sets the "username" field.
@@ -1008,6 +1089,11 @@ func (_u *UserUpdateOne) AddAPITokens(v ...*ApiToken) *UserUpdateOne {
 	return _u.AddAPITokenIDs(ids...)
 }
 
+// SetLinkedPerson sets the "linked_person" edge to the Person entity.
+func (_u *UserUpdateOne) SetLinkedPerson(v *Person) *UserUpdateOne {
+	return _u.SetLinkedPersonID(v.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -1116,6 +1202,12 @@ func (_u *UserUpdateOne) RemoveAPITokens(v ...*ApiToken) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAPITokenIDs(ids...)
+}
+
+// ClearLinkedPerson clears the "linked_person" edge to the Person entity.
+func (_u *UserUpdateOne) ClearLinkedPerson() *UserUpdateOne {
+	_u.mutation.ClearLinkedPerson()
+	return _u
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1480,6 +1572,35 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(apitoken.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LinkedPersonCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.LinkedPersonTable,
+			Columns: []string{user.LinkedPersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinkedPersonIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.LinkedPersonTable,
+			Columns: []string{user.LinkedPersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

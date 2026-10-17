@@ -15,14 +15,14 @@ plugins:
   - [
       "@semantic-release/exec",
       {
-        prepareCmd: "sed -i 's/\"version\": \".*\"/\"version\": \"${nextRelease.version}\"/' package.json && sed -i 's/const Version = \".*\"/const Version = \"${nextRelease.version}\"/' main.go && sed -i 's/\"version\": \".*\"/\"version\": \"${nextRelease.version}\"/' handlers/health.go"
+        prepareCmd: "sed -i 's/\"version\": \".*\"/\"version\": \"${nextRelease.version}\"/' package.json && sed -i 's/const Version = \".*\"/const Version = \"${nextRelease.version}\"/' main.go && sed -i 's/\"version\": \".*\"/\"version\": \"${nextRelease.version}\"/' handlers/health.go && sed -i 's/^version: .*/version: ${nextRelease.version}/' mobile/pubspec.yaml"
       }
     ]
   - [
       "@semantic-release/git",
       {
         message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
-        assets: ["CHANGELOG.md", "package.json", "main.go", "handlers/health.go"],
+        assets: ["CHANGELOG.md", "package.json", "main.go", "handlers/health.go", "mobile/pubspec.yaml"],
       },
     ]
   - "@semantic-release/github"

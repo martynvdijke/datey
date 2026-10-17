@@ -555,12 +555,21 @@ var (
 		{Name: "notification_scope_group_ids", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "linked_person_id", Type: field.TypeInt, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "users_persons_linked_person",
+				Columns:    []*schema.Column{UsersColumns[12]},
+				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// UserNotificationChannelsColumns holds the columns for the "user_notification_channels" table.
 	UserNotificationChannelsColumns = []*schema.Column{
@@ -682,6 +691,7 @@ func init() {
 	RelationshipsTable.ForeignKeys[0].RefTable = PersonsTable
 	RelationshipsTable.ForeignKeys[1].RefTable = PersonsTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
+	UsersTable.ForeignKeys[0].RefTable = PersonsTable
 	UserNotificationChannelsTable.ForeignKeys[0].RefTable = UsersTable
 	PersonGroupsTable.ForeignKeys[0].RefTable = PersonsTable
 	PersonGroupsTable.ForeignKeys[1].RefTable = GroupsTable

@@ -62,3 +62,18 @@ func (r *GiftIdeaRepository) Delete(ctx context.Context, id int) error {
 func (r *GiftIdeaRepository) Get(ctx context.Context, id int) (*ent.GiftIdea, error) {
 	return r.client.GiftIdea.Get(ctx, id)
 }
+
+func (r *GiftIdeaRepository) Update(ctx context.Context, id int, title, notes string, priceCents *int, url string, status giftidea.Status) (*ent.GiftIdea, error) {
+	upd := r.client.GiftIdea.UpdateOneID(id).
+		SetTitle(title).
+		SetNotes(notes).
+		SetURL(url).
+		SetStatus(status).
+		SetUpdatedAt(time.Now())
+	if priceCents != nil {
+		upd = upd.SetPriceCents(*priceCents)
+	} else {
+		upd = upd.ClearPriceCents()
+	}
+	return upd.Save(ctx)
+}

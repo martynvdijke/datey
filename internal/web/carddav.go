@@ -58,6 +58,26 @@ func (h *Handler) settingsCarddavSave(w http.ResponseWriter, r *http.Request) {
 // target; the syncer also logs every error and the summary via slog, which the
 // logstore captures for the Settings → Logs viewer.
 func (h *Handler) settingsCarddavSync(w http.ResponseWriter, r *http.Request) {
+	if wantsJSON(r) {
+		if !h.cfg.CarddavEnabled || h.cfg.CarddavURL == "" {
+			writeAPIJSON(w, http.StatusOK, map[string]any{"pulled": 0, "pushed": 0, "errors": []string{}})
+			return
+		}
+		syncer := carddav.NewSyncer(h.cfg, h.client, h.settingsStore)
+		res, err := syncer.Sync(r.Context(), carddav.SyncFull, true)
+		if err != nil {
+			writeAPIError(w, http.StatusInternalServerError, "sync_failed", err.Error())
+			return
+		}
+		pulled := res.PulledCreated + res.PulledUpdated
+		pushed := res.PushedCreated + res.PushedUpdated
+		errs := res.Errors
+		if errs == nil {
+			errs = []string{}
+		}
+		writeAPIJSON(w, http.StatusOK, map[string]any{"pulled": pulled, "pushed": pushed, "errors": errs})
+		return
+	}
 	if !h.cfg.CarddavEnabled || h.cfg.CarddavURL == "" {
 		if _, err := w.Write([]byte(`<div class="alert alert-warning">CardDAV sync is not enabled. Enable and configure it in the form above first.</div>`)); err != nil {
 			slog.Error("write response", "error", err)

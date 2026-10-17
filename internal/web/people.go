@@ -38,13 +38,10 @@ func (h *Handler) listPeopleInGroups(r *http.Request, ids []int) ([]*ent.Person,
 	return h.people.ListByGroupIDs(r.Context(), ids)
 }
 
-func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
-	q := strings.TrimSpace(r.URL.Query().Get("q"))
-	groupIDStr := r.URL.Query().Get("group")
-	tagParam := strings.TrimSpace(r.URL.Query().Get("tag"))
-
-	// "group:Family rest of query" resolves the prefix to a group filter;
-	// any remaining text searches within that group's members.
+func (h *Handler) resolvePeopleFilter(r *http.Request) (people []*ent.Person, q, groupIDStr, tagParam string, err error) {
+	q = strings.TrimSpace(r.URL.Query().Get("q"))
+	groupIDStr = r.URL.Query().Get("group")
+	tagParam = strings.TrimSpace(r.URL.Query().Get("tag"))
 	searchText := ""
 	if strings.HasPrefix(q, "group:") {
 		groupName := strings.TrimSpace(strings.TrimPrefix(q, "group:"))
@@ -63,10 +60,6 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	} else {
 		searchText = q
 	}
-
-	var people []*ent.Person
-	var err error
-
 	switch {
 	case groupIDStr != "":
 		var ids []int
@@ -88,14 +81,9 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 	default:
 		people, err = h.people.List(r.Context())
 	}
-
 	if err != nil {
-		slog.Error("list people", "error", err)
-		h.renderError(w, r, http.StatusInternalServerError)
-		return
+		return nil, q, groupIDStr, tagParam, err
 	}
-
-	// Apply tag filter (comma-separated AND semantics), composing with q/group.
 	if tagParam != "" {
 		var tagNames []string
 		for _, part := range strings.Split(tagParam, ",") {
@@ -106,11 +94,8 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 		if len(tagNames) > 0 {
 			tagPeople, tagErr := h.tags.ListPeopleByTags(r.Context(), tagNames)
 			if tagErr != nil {
-				slog.Error("list people by tags", "error", tagErr)
-				h.renderError(w, r, http.StatusInternalServerError)
-				return
+				return nil, q, groupIDStr, tagParam, tagErr
 			}
-			// Intersect with already-filtered people
 			tagSet := make(map[int]bool, len(tagPeople))
 			for _, tp := range tagPeople {
 				tagSet[tp.ID] = true
@@ -123,6 +108,20 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			}
 			people = filtered
 		}
+	}
+	return people, q, groupIDStr, tagParam, nil
+}
+
+func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
+	if wantsJSON(r) {
+		h.listPeopleJSON(w, r)
+		return
+	}
+	people, q, groupIDStr, tagParam, err := h.resolvePeopleFilter(r)
+	if err != nil {
+		slog.Error("list people", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
 	}
 
 	// Load events and build enriched card data
@@ -508,6 +507,10 @@ func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
+	if wantsJSON(r) {
+		h.viewPersonJSON(w, r)
+		return
+	}
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
@@ -604,6 +607,9 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	tags, _ := h.tags.ListByPerson(r.Context(), id)
 	showPurchased := r.URL.Query().Get("show_purchased") == "1"
 	giftIdeas, _ := h.giftIdeas.ListByPersonFiltered(r.Context(), id, showPurchased)
+	if u := UserFromContext(r.Context()); u != nil && u.LinkedPersonID != nil && *u.LinkedPersonID == id {
+		giftIdeas = nil
+	}
 	relEntries, _ := h.relationships.ListForPerson(r.Context(), id)
 	// Group relationships by EffectiveTypeLabel
 	// Build related people upcoming info

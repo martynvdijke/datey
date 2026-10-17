@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/user"
 )
 
@@ -17,6 +18,8 @@ type User struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// LinkedPersonID holds the value of the "linked_person_id" field.
+	LinkedPersonID *int `json:"linked_person_id,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
 	// PasswordHash holds the value of the "password_hash" field.
@@ -57,9 +60,11 @@ type UserEdges struct {
 	NotificationChannels []*UserNotificationChannel `json:"notification_channels,omitempty"`
 	// APITokens holds the value of the api_tokens edge.
 	APITokens []*ApiToken `json:"api_tokens,omitempty"`
+	// LinkedPerson holds the value of the linked_person edge.
+	LinkedPerson *Person `json:"linked_person,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
@@ -107,6 +112,17 @@ func (e UserEdges) APITokensOrErr() ([]*ApiToken, error) {
 	return nil, &NotLoadedError{edge: "api_tokens"}
 }
 
+// LinkedPersonOrErr returns the LinkedPerson value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) LinkedPersonOrErr() (*Person, error) {
+	if e.LinkedPerson != nil {
+		return e.LinkedPerson, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: person.Label}
+	}
+	return nil, &NotLoadedError{edge: "linked_person"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -114,7 +130,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldEinkMode:
 			values[i] = new(sql.NullBool)
-		case user.FieldID:
+		case user.FieldID, user.FieldLinkedPersonID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldUsername, user.FieldPasswordHash, user.FieldEmail, user.FieldOidcSub, user.FieldRole, user.FieldLocale, user.FieldNotificationScopeMode, user.FieldNotificationScopeGroupIds:
 			values[i] = new(sql.NullString)
@@ -141,6 +157,13 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			_m.ID = int(value.Int64)
+		case user.FieldLinkedPersonID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field linked_person_id", values[i])
+			} else if value.Valid {
+				_m.LinkedPersonID = new(int)
+				*_m.LinkedPersonID = int(value.Int64)
+			}
 		case user.FieldUsername:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field username", values[i])
@@ -248,6 +271,11 @@ func (_m *User) QueryAPITokens() *ApiTokenQuery {
 	return NewUserClient(_m.config).QueryAPITokens(_m)
 }
 
+// QueryLinkedPerson queries the "linked_person" edge of the User entity.
+func (_m *User) QueryLinkedPerson() *PersonQuery {
+	return NewUserClient(_m.config).QueryLinkedPerson(_m)
+}
+
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -271,6 +299,11 @@ func (_m *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	if v := _m.LinkedPersonID; v != nil {
+		builder.WriteString("linked_person_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("username=")
 	builder.WriteString(_m.Username)
 	builder.WriteString(", ")

@@ -12,6 +12,22 @@ import (
 )
 
 func (h *Handler) listGroups(w http.ResponseWriter, r *http.Request) {
+	if wantsJSON(r) {
+		groups, err := h.groups.ListWithCounts(r.Context())
+		if err != nil {
+			writeAPIError(w, http.StatusInternalServerError, "internal", "failed")
+			return
+		}
+		out := []map[string]any{}
+		for _, g := range groups {
+			out = append(out, map[string]any{"id": g.ID, "name": g.Name, "description": g.Description, "member_count": len(g.Edges.People)})
+		}
+		if out == nil {
+			out = []map[string]any{}
+		}
+		writeAPIJSON(w, http.StatusOK, map[string]any{"groups": out})
+		return
+	}
 	groups, err := h.groups.ListWithCounts(r.Context())
 	if err != nil {
 		slog.Error("list groups", "error", err)
@@ -133,6 +149,39 @@ func (h *Handler) loadGroupNoteRows(r *http.Request, groupID int) []groupNoteRow
 
 // viewGroup renders the group detail page: members, events and notes.
 func (h *Handler) viewGroup(w http.ResponseWriter, r *http.Request) {
+	if wantsJSON(r) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			writeAPIError(w, http.StatusBadRequest, "bad_request", "invalid id")
+			return
+		}
+		g, err := h.groups.GetWithRelations(r.Context(), id)
+		if err != nil {
+			writeAPIError(w, http.StatusNotFound, "not_found", "Group not found")
+			return
+		}
+		members := []PersonCardDTO{}
+		for _, p := range g.Edges.People {
+			var pu *string
+			if url := h.photoURL(r, p); url != "" {
+				pu = &url
+			}
+			members = append(members, PersonCardDTO{ID: p.ID, Name: p.Name, PhotoURL: pu, Tags: []string{}, Groups: []GroupRefDTO{}})
+		}
+		if members == nil {
+			members = []PersonCardDTO{}
+		}
+		events := h.loadGroupEventRows(r, id)
+		evOut := []map[string]any{}
+		for _, e := range events {
+			evOut = append(evOut, map[string]any{"id": e.ID, "type": e.Type, "date": e.Date, "description": e.Description})
+		}
+		if evOut == nil {
+			evOut = []map[string]any{}
+		}
+		writeAPIJSON(w, http.StatusOK, map[string]any{"id": g.ID, "name": g.Name, "description": g.Description, "members": members, "events": evOut})
+		return
+	}
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)

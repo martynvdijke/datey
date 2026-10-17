@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/passwordresettoken"
+	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/pushsubscription"
 	"github.com/datey/datey/ent/session"
 	"github.com/datey/datey/ent/user"
@@ -23,6 +24,20 @@ type UserCreate struct {
 	config
 	mutation *UserMutation
 	hooks    []Hook
+}
+
+// SetLinkedPersonID sets the "linked_person_id" field.
+func (_c *UserCreate) SetLinkedPersonID(v int) *UserCreate {
+	_c.mutation.SetLinkedPersonID(v)
+	return _c
+}
+
+// SetNillableLinkedPersonID sets the "linked_person_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableLinkedPersonID(v *int) *UserCreate {
+	if v != nil {
+		_c.SetLinkedPersonID(*v)
+	}
+	return _c
 }
 
 // SetUsername sets the "username" field.
@@ -220,6 +235,11 @@ func (_c *UserCreate) AddAPITokens(v ...*ApiToken) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddAPITokenIDs(ids...)
+}
+
+// SetLinkedPerson sets the "linked_person" edge to the Person entity.
+func (_c *UserCreate) SetLinkedPerson(v *Person) *UserCreate {
+	return _c.SetLinkedPersonID(v.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -471,6 +491,23 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LinkedPersonIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.LinkedPersonTable,
+			Columns: []string{user.LinkedPersonColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(person.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.LinkedPersonID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

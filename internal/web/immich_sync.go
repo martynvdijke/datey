@@ -97,6 +97,49 @@ func (h *Handler) importImmichPhoto(ctx context.Context, p *ent.Person, ip *immi
 // run and imports thumbnails for matched, non-disabled people. The result is
 // read-only: overrides happen on each person's settings page.
 func (h *Handler) immichBulkSync(w http.ResponseWriter, r *http.Request) {
+	if wantsJSON(r) {
+		if !h.immich.Enabled() {
+			writeAPIJSON(w, http.StatusOK, map[string]any{"scanned": 0, "updated": 0, "errors": []string{}})
+			return
+		}
+		allPeople, err := h.people.List(r.Context())
+		if err != nil {
+			writeAPIError(w, http.StatusInternalServerError, "internal", "failed")
+			return
+		}
+		immichPeople, err := h.immich.People(r.Context())
+		if err != nil {
+			writeAPIJSON(w, http.StatusOK, map[string]any{"scanned": len(allPeople), "updated": 0, "errors": []string{err.Error()}})
+			return
+		}
+		updated := 0
+		errs := []string{}
+		for _, p := range allPeople {
+			if p.ImmichPhotoDisabled {
+				continue
+			}
+			ip, reason := resolveImmichPerson(p, immichPeople)
+			if ip == nil {
+				if reason != "" {
+					_ = reason
+				}
+				continue
+			}
+			if p.PhotoSource != nil && *p.PhotoSource == "upload" {
+				continue
+			}
+			if err := h.importImmichPhoto(r.Context(), p, ip); err != nil {
+				errs = append(errs, err.Error())
+				continue
+			}
+			updated++
+		}
+		if errs == nil {
+			errs = []string{}
+		}
+		writeAPIJSON(w, http.StatusOK, map[string]any{"scanned": len(allPeople), "updated": updated, "errors": errs})
+		return
+	}
 	if !h.immich.Enabled() {
 		toastHeader(w, "Immich is not configured", "error")
 		w.WriteHeader(http.StatusOK)

@@ -55,6 +55,11 @@ func IDLTE(id int) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldID, id))
 }
 
+// LinkedPersonID applies equality check predicate on the "linked_person_id" field. It's identical to LinkedPersonIDEQ.
+func LinkedPersonID(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLinkedPersonID, v))
+}
+
 // Username applies equality check predicate on the "username" field. It's identical to UsernameEQ.
 func Username(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUsername, v))
@@ -98,6 +103,36 @@ func CreatedAt(v time.Time) predicate.User {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// LinkedPersonIDEQ applies the EQ predicate on the "linked_person_id" field.
+func LinkedPersonIDEQ(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLinkedPersonID, v))
+}
+
+// LinkedPersonIDNEQ applies the NEQ predicate on the "linked_person_id" field.
+func LinkedPersonIDNEQ(v int) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldLinkedPersonID, v))
+}
+
+// LinkedPersonIDIn applies the In predicate on the "linked_person_id" field.
+func LinkedPersonIDIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldIn(FieldLinkedPersonID, vs...))
+}
+
+// LinkedPersonIDNotIn applies the NotIn predicate on the "linked_person_id" field.
+func LinkedPersonIDNotIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldLinkedPersonID, vs...))
+}
+
+// LinkedPersonIDIsNil applies the IsNil predicate on the "linked_person_id" field.
+func LinkedPersonIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldLinkedPersonID))
+}
+
+// LinkedPersonIDNotNil applies the NotNil predicate on the "linked_person_id" field.
+func LinkedPersonIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldLinkedPersonID))
 }
 
 // UsernameEQ applies the EQ predicate on the "username" field.
@@ -767,6 +802,29 @@ func HasAPITokens() predicate.User {
 func HasAPITokensWith(preds ...predicate.ApiToken) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newAPITokensStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLinkedPerson applies the HasEdge predicate on the "linked_person" edge.
+func HasLinkedPerson() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, LinkedPersonTable, LinkedPersonColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLinkedPersonWith applies the HasEdge predicate on the "linked_person" edge with a given conditions (other predicates).
+func HasLinkedPersonWith(preds ...predicate.Person) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newLinkedPersonStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

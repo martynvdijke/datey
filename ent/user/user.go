@@ -14,6 +14,8 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldLinkedPersonID holds the string denoting the linked_person_id field in the database.
+	FieldLinkedPersonID = "linked_person_id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
 	// FieldPasswordHash holds the string denoting the password_hash field in the database.
@@ -46,6 +48,8 @@ const (
 	EdgeNotificationChannels = "notification_channels"
 	// EdgeAPITokens holds the string denoting the api_tokens edge name in mutations.
 	EdgeAPITokens = "api_tokens"
+	// EdgeLinkedPerson holds the string denoting the linked_person edge name in mutations.
+	EdgeLinkedPerson = "linked_person"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SessionsTable is the table that holds the sessions relation/edge.
@@ -83,11 +87,19 @@ const (
 	APITokensInverseTable = "api_tokens"
 	// APITokensColumn is the table column denoting the api_tokens relation/edge.
 	APITokensColumn = "user_api_tokens"
+	// LinkedPersonTable is the table that holds the linked_person relation/edge.
+	LinkedPersonTable = "users"
+	// LinkedPersonInverseTable is the table name for the Person entity.
+	// It exists in this package in order to avoid circular dependency with the "person" package.
+	LinkedPersonInverseTable = "persons"
+	// LinkedPersonColumn is the table column denoting the linked_person relation/edge.
+	LinkedPersonColumn = "linked_person_id"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
+	FieldLinkedPersonID,
 	FieldUsername,
 	FieldPasswordHash,
 	FieldEmail,
@@ -182,6 +194,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByLinkedPersonID orders the results by the linked_person_id field.
+func ByLinkedPersonID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLinkedPersonID, opts...).ToFunc()
 }
 
 // ByUsername orders the results by the username field.
@@ -308,6 +325,13 @@ func ByAPITokens(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAPITokensStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByLinkedPersonField orders the results by linked_person field.
+func ByLinkedPersonField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLinkedPersonStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newSessionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -341,5 +365,12 @@ func newAPITokensStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(APITokensInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, APITokensTable, APITokensColumn),
+	)
+}
+func newLinkedPersonStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LinkedPersonInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, LinkedPersonTable, LinkedPersonColumn),
 	)
 }

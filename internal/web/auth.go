@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -194,15 +195,33 @@ func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "bad request", http.StatusBadRequest)
-		return
+	isJSON := wantsJSON(r) || strings.Contains(r.Header.Get("Content-Type"), "application/json")
+	var username, password string
+	if isJSON {
+		var body struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			writeAPIError(w, http.StatusBadRequest, "bad_request", "Invalid JSON")
+			return
+		}
+		username = body.Username
+		password = body.Password
+	} else {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		username = r.FormValue("username")
+		password = r.FormValue("password")
 	}
 
-	username := r.FormValue("username")
-	password := r.FormValue("password")
-
 	if username == "" || password == "" {
+		if isJSON {
+			writeAPIError(w, http.StatusBadRequest, "validation", "Username and password are required")
+			return
+		}
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Username and password are required",
@@ -217,6 +236,11 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 	rlKey := rateLimitKey(r, username)
 	allowed, retryAfter := h.loginLimiter.allow(rlKey)
 	if !allowed {
+		if isJSON {
+			w.Header().Set("Retry-After", strconv.Itoa(int(retryAfter.Seconds())+1))
+			writeAPIError(w, http.StatusTooManyRequests, "rate_limited", "Too many login attempts")
+			return
+		}
 		w.Header().Set("Retry-After", strconv.Itoa(int(retryAfter.Seconds())+1))
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
@@ -232,6 +256,10 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 	u, err := h.users.GetByUsername(r.Context(), username)
 	if err != nil {
 		h.auditRecord(r, "auth.login_failure", username)
+		if isJSON {
+			writeAPIError(w, http.StatusUnauthorized, "invalid_credentials", "Invalid username or password")
+			return
+		}
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
@@ -244,6 +272,10 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
 		h.auditRecord(r, "auth.login_failure", username)
+		if isJSON {
+			writeAPIError(w, http.StatusUnauthorized, "invalid_credentials", "Invalid username or password")
+			return
+		}
 		h.render(w, r, "login.html", map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
@@ -266,6 +298,10 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 
 	session.SetCookie(w, token, r.TLS != nil)
 	h.auditRecord(r, "auth.login_success", username)
+	if isJSON {
+		writeAPIJSON(w, http.StatusOK, UserDTO{ID: u.ID, Username: u.Username, Role: string(u.Role), LinkedPersonID: u.LinkedPersonID})
+		return
+	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

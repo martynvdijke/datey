@@ -147,6 +147,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/login", h.loginPage)
 		r.Post("/login", h.loginPost)
 		r.Get("/logout", h.logout)
+		r.Get("/api/auth/oidc/status", h.oidcStatus)
 		// OIDC login via Authelia (public; disabled → 404 inside handlers).
 		r.Get("/api/auth/oidc/login", h.oidcLogin)
 		r.Get("/api/auth/oidc/callback", h.oidcCallback)
@@ -182,6 +183,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Use(h.Auth)
 			r.Use(h.Locale)
 
+			r.Get("/api/me", h.apiMe)
+			r.Post("/api/me/linked-person", h.setLinkedPerson)
 			r.Get("/", h.dashboard)
 			// People routes (new path)
 			r.Get("/people", h.listPeople)
@@ -204,6 +207,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/people/{id}/photo/upload", h.uploadPersonPhoto)
 			r.Post("/people/{id}/photo/remove", h.removePersonPhoto)
 			r.Post("/people/{id}/gift-ideas", h.createGiftIdea)
+			r.Post("/people/{id}/gift-ideas/{giftID}", h.updateGiftIdea)
 			r.Post("/people/{id}/gift-ideas/{giftID}/status", h.updateGiftIdeaStatus)
 			r.Post("/people/{id}/gift-ideas/{giftID}/delete", h.deleteGiftIdea)
 			r.Post("/people/import", h.handleImportVCard)
@@ -320,6 +324,10 @@ func todayStartUTC() time.Time {
 }
 
 func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
+	if wantsJSON(r) {
+		h.dashboardJSON(w, r)
+		return
+	}
 	now := time.Now()
 	reminderDays := h.cfg.ReminderDays
 

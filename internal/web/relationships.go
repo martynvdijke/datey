@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +14,43 @@ func (h *Handler) addRelationship(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	if wantsJSON(r) {
+		var body struct {
+			ToID  int     `json:"to_id"`
+			Type  string  `json:"type"`
+			Label *string `json:"label"`
+		}
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		lbl := ""
+		if body.Label != nil {
+			lbl = strings.TrimSpace(*body.Label)
+		}
+		relType := strings.TrimSpace(body.Type)
+		allowed := map[string]bool{"partner": true, "parent": true, "sibling": true, "custom": true}
+		if body.ToID == 0 || relType == "" || !allowed[relType] {
+			writeAPIError(w, http.StatusBadRequest, "validation", "Missing fields")
+			return
+		}
+		rel, err := h.relationships.Add(r.Context(), id, body.ToID, relType, lbl)
+		if err != nil {
+			writeAPIError(w, http.StatusBadRequest, "validation", err.Error())
+			return
+		}
+		other, _ := h.people.Get(r.Context(), body.ToID)
+		otherName := ""
+		if other != nil {
+			otherName = other.Name
+		}
+		var labelPtr *string
+		if lbl != "" {
+			labelPtr = &lbl
+		}
+		if rel.Label != nil && *rel.Label != "" {
+			labelPtr = rel.Label
+		}
+		writeAPIJSON(w, http.StatusCreated, RelationshipDTO{ID: rel.ID, Type: string(rel.Type), Label: labelPtr, OtherPersonID: body.ToID, OtherPersonName: otherName, Direction: "from"})
 		return
 	}
 	if err := r.ParseForm(); err != nil {
@@ -63,6 +101,11 @@ func (h *Handler) removeRelationship(w http.ResponseWriter, r *http.Request) {
 	relID, err := strconv.Atoi(chi.URLParam(r, "relID"))
 	if err != nil {
 		http.Error(w, "invalid relationship id", http.StatusBadRequest)
+		return
+	}
+	if wantsJSON(r) {
+		_ = h.relationships.Remove(r.Context(), relID)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	_ = h.relationships.Remove(r.Context(), relID)

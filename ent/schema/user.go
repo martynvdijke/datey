@@ -14,6 +14,7 @@ type User struct {
 
 func (User) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int("linked_person_id").Optional().Nillable(),
 		field.String("username").Unique().NotEmpty(),
 		field.String("password_hash").NotEmpty(),
 		field.String("email").Optional().Nillable().Unique(),
@@ -35,5 +36,6 @@ func (User) Edges() []ent.Edge {
 		edge.To("password_reset_tokens", PasswordResetToken.Type),
 		edge.To("notification_channels", UserNotificationChannel.Type),
 		edge.To("api_tokens", ApiToken.Type),
+		edge.To("linked_person", Person.Type).Unique().Field("linked_person_id"),
 	}
 }

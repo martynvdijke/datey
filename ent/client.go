@@ -3361,6 +3361,22 @@ func (c *UserClient) QueryAPITokens(_m *User) *ApiTokenQuery {
 	return query
 }
 
+// QueryLinkedPerson queries the linked_person edge of a User.
+func (c *UserClient) QueryLinkedPerson(_m *User) *PersonQuery {
+	query := (&PersonClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(person.Table, person.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.LinkedPersonTable, user.LinkedPersonColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
