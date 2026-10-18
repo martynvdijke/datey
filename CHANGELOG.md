@@ -1,3 +1,10 @@
+## [1.53.1](https://github.com/martynvdijke/datey/compare/v1.53.0...v1.53.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* **deps:** update dependency cached_network_image to v4 ([#78](https://github.com/martynvdijke/datey/issues/78)) ([92fbc21](https://github.com/martynvdijke/datey/commit/92fbc21c674027900226adcd2568d0250c02967f))
+
 # [1.53.0](https://github.com/martynvdijke/datey/compare/v1.52.1...v1.53.0) (2026-10-17)
 
 
