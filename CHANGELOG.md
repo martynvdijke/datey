@@ -1,3 +1,11 @@
+## [1.53.2](https://github.com/martynvdijke/datey/compare/v1.53.1...v1.53.2) (2026-10-18)
+
+
+### Bug Fixes
+
+* **deps:** update dependency flutter_secure_storage to v11 ([#80](https://github.com/martynvdijke/datey/issues/80)) ([f38cb7a](https://github.com/martynvdijke/datey/commit/f38cb7a40ad6fea208293d1ac6864bcfd6581551))
+* **deps:** update dependency go_router to v18 ([#81](https://github.com/martynvdijke/datey/issues/81)) ([f9f114a](https://github.com/martynvdijke/datey/commit/f9f114a879f67cef6e4eb0e0b0d284bec5db7530))
+
 ## [1.53.1](https://github.com/martynvdijke/datey/compare/v1.53.0...v1.53.1) (2026-10-18)
 
 
