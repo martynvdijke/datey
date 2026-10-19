@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,8 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+
+	entuser "github.com/datey/datey/ent/user"
 )
 
 func setupTRMNLRouter(h *Handler) chi.Router {
@@ -19,8 +22,12 @@ func setupTRMNLRouter(h *Handler) chi.Router {
 
 func getTRMNLStats(t *testing.T, h *Handler) (int, http.Header, trmnlStats) {
 	t.Helper()
+	h.cfg.TRMNLEnabled = true
+	if h.cfg.TRMNLKey == "" {
+		h.cfg.TRMNLKey = "testkey"
+	}
 	router := setupTRMNLRouter(h)
-	req := httptest.NewRequest("GET", "/api/trmnl/stats", nil)
+	req := httptest.NewRequest("GET", "/api/trmnl/stats?key="+h.cfg.TRMNLKey, nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -35,8 +42,12 @@ func getTRMNLStats(t *testing.T, h *Handler) (int, http.Header, trmnlStats) {
 
 func getTRMNLBirthdays(t *testing.T, h *Handler) (int, http.Header, trmnlBirthdaysResponse) {
 	t.Helper()
+	h.cfg.TRMNLEnabled = true
+	if h.cfg.TRMNLKey == "" {
+		h.cfg.TRMNLKey = "testkey"
+	}
 	router := setupTRMNLRouter(h)
-	req := httptest.NewRequest("GET", "/api/trmnl/birthdays", nil)
+	req := httptest.NewRequest("GET", "/api/trmnl/birthdays?key="+h.cfg.TRMNLKey, nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -49,15 +60,93 @@ func getTRMNLBirthdays(t *testing.T, h *Handler) (int, http.Header, trmnlBirthda
 	return w.Code, w.Header(), resp
 }
 
-func TestTRMNLBirthdaysUnauthenticated(t *testing.T) {
+func TestTRMNLBirthdaysRequiresKey(t *testing.T) {
 	h := newTestWebHandler(t)
-	code, header, _ := getTRMNLBirthdays(t, h)
+	h.cfg.TRMNLEnabled = true
+	h.cfg.TRMNLKey = "secret"
+	router := setupTRMNLRouter(h)
 
-	if code != http.StatusOK {
-		t.Fatalf("expected 200 without auth, got %d", code)
+	for _, target := range []string{"/api/trmnl/birthdays", "/api/trmnl/birthdays?key=wrong"} {
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, httptest.NewRequest("GET", target, nil))
+		if w.Code != http.StatusNotFound {
+			t.Errorf("%s = %d, want 404", target, w.Code)
+		}
 	}
-	if ct := header.Get("Content-Type"); ct != "application/json" {
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest("GET", "/api/trmnl/birthdays?key=secret", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("valid key = %d, want 200", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); ct != "application/json" {
 		t.Errorf("expected application/json content type, got %q", ct)
+	}
+}
+
+func TestTRMNLPerDeviceTokenLifecycle(t *testing.T) {
+	h := newTestWebHandler(t)
+	h.cfg.TRMNLEnabled = true
+	router := setupTRMNLRouter(h)
+	ctx := context.Background()
+
+	u, err := h.users.Create(ctx, "owner", "unused-hash", entuser.RoleAdmin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, tok, err := h.apiTokens.Create(ctx, u.ID, "TRMNL living room", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	get := func(key, bearer string) int {
+		req := httptest.NewRequest("GET", "/api/trmnl/stats?key="+key, nil)
+		if bearer != "" {
+			req.Header.Set("Authorization", "Bearer "+bearer)
+		}
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		return w.Code
+	}
+
+	// A per-device token works from both the legacy ?key= URL shape and the
+	// plugin's Authorization header.
+	if code := get(raw, ""); code != http.StatusOK {
+		t.Errorf("query token = %d, want 200", code)
+	}
+	if code := get("", raw); code != http.StatusOK {
+		t.Errorf("bearer token = %d, want 200", code)
+	}
+
+	// Rotation replaces the secret for that device only; the old secret dies.
+	rotated, err := h.apiTokens.Rotate(ctx, tok.ID, u.ID, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if code := get(raw, ""); code != http.StatusNotFound {
+		t.Errorf("pre-rotation token = %d, want 404", code)
+	}
+	if code := get(rotated, ""); code != http.StatusOK {
+		t.Errorf("rotated token = %d, want 200", code)
+	}
+
+	// Revocation is immediate.
+	if err := h.apiTokens.Revoke(ctx, tok.ID, u.ID); err != nil {
+		t.Fatal(err)
+	}
+	if code := get(rotated, ""); code != http.StatusNotFound {
+		t.Errorf("revoked token = %d, want 404", code)
+	}
+
+	// The legacy shared key remains usable for already-configured devices.
+	h.cfg.TRMNLKey = "legacy-key"
+	if code := get("legacy-key", ""); code != http.StatusOK {
+		t.Errorf("legacy key = %d, want 200", code)
+	}
+
+	// Disabling the feed closes it even for otherwise-valid tokens.
+	h.cfg.TRMNLEnabled = false
+	if code := get("legacy-key", ""); code != http.StatusNotFound {
+		t.Errorf("disabled feed = %d, want 404", code)
 	}
 }
 
@@ -159,14 +248,25 @@ func TestTRMNLBirthdaysRelativeAndReminderWindow(t *testing.T) {
 	}
 }
 
-func TestTRMNLStatsUnauthenticated(t *testing.T) {
+func TestTRMNLStatsRequiresKey(t *testing.T) {
 	h := newTestWebHandler(t)
-	code, header, _ := getTRMNLStats(t, h)
+	h.cfg.TRMNLEnabled = true
+	h.cfg.TRMNLKey = "secret"
+	router := setupTRMNLRouter(h)
 
-	if code != http.StatusOK {
-		t.Fatalf("expected 200 without auth, got %d", code)
+	for _, target := range []string{"/api/trmnl/stats", "/api/trmnl/stats?key=wrong"} {
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, httptest.NewRequest("GET", target, nil))
+		if w.Code != http.StatusNotFound {
+			t.Errorf("%s = %d, want 404", target, w.Code)
+		}
 	}
-	if ct := header.Get("Content-Type"); ct != "application/json" {
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest("GET", "/api/trmnl/stats?key=secret", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("valid key = %d, want 200", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); ct != "application/json" {
 		t.Errorf("expected application/json content type, got %q", ct)
 	}
 }

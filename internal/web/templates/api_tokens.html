@@ -81,7 +81,7 @@
     <div class="card shadow-sm">
       <div class="card-body">
         <h5 class="card-title">Create token</h5>
-        <p class="text-muted small">Authenticates requests as you via <code>Authorization: Bearer</code>. Browser sessions keep using CSRF protection.</p>
+        <p class="text-muted small">Authenticates requests as you via <code>Authorization: Bearer</code>. Browser sessions keep using CSRF protection. Create one token per TRMNL display and paste it into the plugin's “Device token” field; rotating that token only affects that device.</p>
         <form method="POST" action="/settings/api-tokens">
           {{template "csrfField" .}}
           <div class="mb-3">

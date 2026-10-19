@@ -309,6 +309,16 @@ func HomeassistantKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldHomeassistantKey, v))
 }
 
+// TrmnlEnabled applies equality check predicate on the "trmnl_enabled" field. It's identical to TrmnlEnabledEQ.
+func TrmnlEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTrmnlEnabled, v))
+}
+
+// TrmnlKey applies equality check predicate on the "trmnl_key" field. It's identical to TrmnlKeyEQ.
+func TrmnlKey(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTrmnlKey, v))
+}
+
 // PushEnabled applies equality check predicate on the "push_enabled" field. It's identical to PushEnabledEQ.
 func PushEnabled(v bool) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldPushEnabled, v))
@@ -3552,6 +3562,101 @@ func HomeassistantKeyEqualFold(v string) predicate.AppConfig {
 // HomeassistantKeyContainsFold applies the ContainsFold predicate on the "homeassistant_key" field.
 func HomeassistantKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldHomeassistantKey, v))
+}
+
+// TrmnlEnabledEQ applies the EQ predicate on the "trmnl_enabled" field.
+func TrmnlEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTrmnlEnabled, v))
+}
+
+// TrmnlEnabledNEQ applies the NEQ predicate on the "trmnl_enabled" field.
+func TrmnlEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldTrmnlEnabled, v))
+}
+
+// TrmnlEnabledIsNil applies the IsNil predicate on the "trmnl_enabled" field.
+func TrmnlEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldTrmnlEnabled))
+}
+
+// TrmnlEnabledNotNil applies the NotNil predicate on the "trmnl_enabled" field.
+func TrmnlEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldTrmnlEnabled))
+}
+
+// TrmnlKeyEQ applies the EQ predicate on the "trmnl_key" field.
+func TrmnlKeyEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyNEQ applies the NEQ predicate on the "trmnl_key" field.
+func TrmnlKeyNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyIn applies the In predicate on the "trmnl_key" field.
+func TrmnlKeyIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldTrmnlKey, vs...))
+}
+
+// TrmnlKeyNotIn applies the NotIn predicate on the "trmnl_key" field.
+func TrmnlKeyNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldTrmnlKey, vs...))
+}
+
+// TrmnlKeyGT applies the GT predicate on the "trmnl_key" field.
+func TrmnlKeyGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyGTE applies the GTE predicate on the "trmnl_key" field.
+func TrmnlKeyGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyLT applies the LT predicate on the "trmnl_key" field.
+func TrmnlKeyLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyLTE applies the LTE predicate on the "trmnl_key" field.
+func TrmnlKeyLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyContains applies the Contains predicate on the "trmnl_key" field.
+func TrmnlKeyContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyHasPrefix applies the HasPrefix predicate on the "trmnl_key" field.
+func TrmnlKeyHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyHasSuffix applies the HasSuffix predicate on the "trmnl_key" field.
+func TrmnlKeyHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyIsNil applies the IsNil predicate on the "trmnl_key" field.
+func TrmnlKeyIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldTrmnlKey))
+}
+
+// TrmnlKeyNotNil applies the NotNil predicate on the "trmnl_key" field.
+func TrmnlKeyNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldTrmnlKey))
+}
+
+// TrmnlKeyEqualFold applies the EqualFold predicate on the "trmnl_key" field.
+func TrmnlKeyEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldTrmnlKey, v))
+}
+
+// TrmnlKeyContainsFold applies the ContainsFold predicate on the "trmnl_key" field.
+func TrmnlKeyContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldTrmnlKey, v))
 }
 
 // PushEnabledEQ applies the EQ predicate on the "push_enabled" field.

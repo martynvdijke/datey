@@ -485,3 +485,41 @@ func TestApplyForm_EmptyNumericFallsBackToEnv(t *testing.T) {
 		t.Errorf("empty form should leave Port NULL in DB, got %+v", row.Port)
 	}
 }
+
+func TestApplyForm_TrmnlKeyGeneratedOnEnable(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	if err := s.EnsureSeeded(ctx); err != nil {
+		t.Fatal(err)
+	}
+	cfg := baseCfg()
+	cfg.TRMNLKey = ""
+	form := url.Values{"TRMNL_ENABLED": {"on"}}
+	if errs, err := s.ApplyForm(ctx, cfg, form); err != nil || len(errs) > 0 {
+		t.Fatalf("apply: err=%v errs=%v", err, errs)
+	}
+	if !cfg.TRMNLEnabled {
+		t.Error("TRMNLEnabled not applied")
+	}
+	if cfg.TRMNLKey == "" {
+		t.Fatal("expected a generated TRMNL key on first enable")
+	}
+	key := cfg.TRMNLKey
+
+	// A later save with a blank key keeps the existing key.
+	if errs, err := s.ApplyForm(ctx, cfg, url.Values{"TRMNL_ENABLED": {"on"}}); err != nil || len(errs) > 0 {
+		t.Fatalf("second apply: err=%v errs=%v", err, errs)
+	}
+	if cfg.TRMNLKey != key {
+		t.Errorf("key changed on blank save: %q -> %q", key, cfg.TRMNLKey)
+	}
+
+	// And the key survives a reload from the database.
+	loaded := baseCfg()
+	if err := s.Overlay(ctx, loaded); err != nil {
+		t.Fatal(err)
+	}
+	if loaded.TRMNLKey != key || !loaded.TRMNLEnabled {
+		t.Errorf("overlay trmnl = %q enabled=%v", loaded.TRMNLKey, loaded.TRMNLEnabled)
+	}
+}

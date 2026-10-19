@@ -44,7 +44,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **💾 Database Backup** — Automatic nightly SQLite backups plus a weekly backup on a configurable weekday, with on-demand backup and configurable retention.
 - **♻️ Database Restore** — Validated, confirmation-guarded restore from any backup file in `BACKUP_DIR` or an uploaded `.db` file. Candidate is checked for SQLite header and `PRAGMA integrity_check`, staged as `restore-pending.db` with sentinel, and swapped at next restart. Download current database as safety copy before restoring; restore replaces ALL data.
 - **🎨 Theme Selector** — Light, Dark, and E-Ink themes via an accessible select control.
- - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder + public `/api/trmnl/stats` feed to display upcoming dates and stats on a TRMNL e-ink display.
+ - **🖥️ TRMNL E-Ink Plugin** — `trmnl/` plugin folder plus per-device-token-protected `/api/trmnl/stats` and `/api/trmnl/birthdays` feeds to display upcoming dates and stats on a TRMNL e-ink display. Create one API token per display in Settings → API Tokens; rotate/revoke it without affecting other devices.
  - **📡 RSS Feed** — Public, key-protected RSS 2.0 feed of upcoming events (`/rss.xml`) for feed readers and aggregators.
  - **🔌 Upcoming Events API** — Public, key-protected JSON API (`/api/upcoming`) for scripts, dashboards and automations.
   - **🏠 Home Assistant Plugin** — `homeassistant/` plugin folder with key-protected `/api/homeassistant/stats` (RESTful sensor) and `/api/homeassistant/calendar` (calendar entity, all-day `start.date`/`end.date`) feeds plus `sensor.yaml`/`calendar.yaml` snippets for Home Assistant dashboards.
@@ -330,7 +330,7 @@ datey/
 | `GET` | `/ical/{personID}.ics` | Public iCal feed — single person's dates (`?key=...` required; 404 when disabled) |
 
 > **iCal feed setup:** how to enable the feed, understand the secret key, subscribe from Google Calendar, and bypass an Authelia/SSO reverse proxy — see [docs/ical-feed.md](docs/ical-feed.md).
-| `GET` | `/api/trmnl/stats` | Public JSON stats feed for the TRMNL e-ink plugin |
+| `GET` | `/api/trmnl/stats` | TRMNL JSON stats feed (`Authorization: Bearer <token>` or `?key=...`; 404 when disabled) |
 | `GET` | `/rss.xml` | Public RSS 2.0 feed of upcoming events (`?key=...` required; 404 when disabled) |
 | `GET` | `/api/upcoming` | Public JSON API of upcoming events (`?key=...` required; `days` optional, max 365; 404 when disabled) |
 | `GET` | `/api/homeassistant/stats` | Public JSON stats feed for the Home Assistant plugin (`?key=...` required; 404 when disabled) |
@@ -364,7 +364,7 @@ Behavior:
 - Requests with a valid bearer token act as the owning user; invalid, expired, or revoked tokens are rejected with `401` (no information about resource state is leaked).
 - Bearer requests bypass CSRF double-submit checks (they carry no browser credentials); browser sessions keep full CSRF protection.
 - Every state-changing route still requires an authenticated user — anonymous writes (e.g. `POST /calendar/import`) are rejected and leave data untouched.
-- Public read-only feeds (`/api/trmnl/stats`, `/api/trmnl/birthdays`) remain open for devices that cannot log in; key-protected feeds (iCal, RSS, Upcoming, Home Assistant) are unchanged.
+- All read-only feeds are key-protected, including the TRMNL feeds (`/api/trmnl/stats`, `/api/trmnl/birthdays`). TRMNL devices use a per-device API token (created/rotated/revoked under Settings → API Tokens) sent as an `Authorization: Bearer` header; a legacy shared `TRMNL_KEY` / `?key=` URL remains supported for existing devices.
 
 ## Adding a Language
 

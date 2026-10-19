@@ -32,7 +32,7 @@ func (h *Handler) regenerateFeedKey(kind string, auditAction string) http.Handle
 			h.cfg.HomeAssistantKey = key
 			_ = h.settingsStore.SetFeedKey(ctx, "homeassistant", key)
 		case "trmnl":
-			// TRMNL uses same stats feed; regenerate a generic key if tracked elsewhere
+			h.cfg.TRMNLKey = key
 			_ = h.settingsStore.SetFeedKey(ctx, "trmnl", key)
 		}
 		h.auditRecord(r, auditAction, "")

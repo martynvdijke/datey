@@ -1,10 +1,12 @@
 package web
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/datey/datey/ent"
@@ -34,9 +36,55 @@ type trmnlSummary struct {
 	EventsNext30Days int `json:"events_next_30_days"`
 }
 
+// trmnlRequestKey extracts the device secret from either the ?key= query
+// parameter (legacy URL-based setup) or an Authorization: Bearer header (the
+// TRMNL plugin's polling_headers field). Header auth keeps the token out of
+// URLs and proxy logs.
+func trmnlRequestKey(r *http.Request) string {
+	if key := r.URL.Query().Get("key"); key != "" {
+		return key
+	}
+	authz := r.Header.Get("Authorization")
+	if len(authz) > len(bearerPrefix) && strings.EqualFold(authz[:len(bearerPrefix)], bearerPrefix) {
+		return strings.TrimSpace(authz[len(bearerPrefix):])
+	}
+	return ""
+}
+
+// trmnlAccessOK protects the TRMNL feeds with per-device credentials.
+//
+// Devices authenticate with either a personal API token (create one per
+// device under Settings → API Tokens; rotate/revoke it there) or the legacy
+// shared TRMNL_KEY so deployments that already configured a key keep working.
+// Any valid, unrevoked, unexpired API token is accepted; the token owner is
+// irrelevant because the feeds are read-only. The endpoint is only reachable
+// while TRMNL_ENABLED is on.
+func (h *Handler) trmnlAccessOK(r *http.Request) bool {
+	if !h.cfg.TRMNLEnabled {
+		return false
+	}
+	got := trmnlRequestKey(r)
+	if got == "" {
+		return false
+	}
+	if h.cfg.TRMNLKey != "" && subtle.ConstantTimeCompare([]byte(got), []byte(h.cfg.TRMNLKey)) == 1 {
+		return true
+	}
+	if h.apiTokens == nil {
+		return false
+	}
+	if _, err := h.apiTokens.GetByToken(r.Context(), got); err != nil {
+		return false
+	}
+	return true
+}
+
 // trmnlStats renders the stats feed for the TRMNL e-ink display plugin.
-// Public endpoint: TRMNL devices poll it without authentication.
 func (h *Handler) trmnlStats(w http.ResponseWriter, r *http.Request) {
+	if !h.trmnlAccessOK(r) {
+		h.renderError(w, r, http.StatusNotFound)
+		return
+	}
 	now := time.Now()
 
 	// The summary counts need a 30-day horizon; the upcoming list/next event
@@ -134,9 +182,12 @@ type trmnlBirthdaysResponse struct {
 }
 
 // trmnlBirthdays renders the upcoming-birthdays feed for the TRMNL e-ink
-// display plugin. Public endpoint: TRMNL devices poll it without
-// authentication.
+// display plugin.
 func (h *Handler) trmnlBirthdays(w http.ResponseWriter, r *http.Request) {
+	if !h.trmnlAccessOK(r) {
+		h.renderError(w, r, http.StatusNotFound)
+		return
+	}
 	now := time.Now()
 	windowEnd := now.AddDate(0, 0, h.cfg.ReminderDays)
 

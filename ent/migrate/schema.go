@@ -99,6 +99,8 @@ var (
 		{Name: "upcoming_api_key", Type: field.TypeString, Nullable: true},
 		{Name: "homeassistant_enabled", Type: field.TypeBool, Nullable: true},
 		{Name: "homeassistant_key", Type: field.TypeString, Nullable: true},
+		{Name: "trmnl_enabled", Type: field.TypeBool, Nullable: true},
+		{Name: "trmnl_key", Type: field.TypeString, Nullable: true},
 		{Name: "push_enabled", Type: field.TypeBool, Nullable: true},
 		{Name: "push_vapid_public_key", Type: field.TypeString, Nullable: true},
 		{Name: "push_vapid_private_key", Type: field.TypeString, Nullable: true},

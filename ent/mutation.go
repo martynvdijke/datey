@@ -854,6 +854,8 @@ type AppConfigMutation struct {
 	upcoming_api_key         *string
 	homeassistant_enabled    *bool
 	homeassistant_key        *string
+	trmnl_enabled            *bool
+	trmnl_key                *string
 	push_enabled             *bool
 	push_vapid_public_key    *string
 	push_vapid_private_key   *string
@@ -3669,6 +3671,104 @@ func (m *AppConfigMutation) ResetHomeassistantKey() {
 	delete(m.clearedFields, appconfig.FieldHomeassistantKey)
 }
 
+// SetTrmnlEnabled sets the "trmnl_enabled" field.
+func (m *AppConfigMutation) SetTrmnlEnabled(b bool) {
+	m.trmnl_enabled = &b
+}
+
+// TrmnlEnabled returns the value of the "trmnl_enabled" field in the mutation.
+func (m *AppConfigMutation) TrmnlEnabled() (r bool, exists bool) {
+	v := m.trmnl_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTrmnlEnabled returns the old "trmnl_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldTrmnlEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTrmnlEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTrmnlEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTrmnlEnabled: %w", err)
+	}
+	return oldValue.TrmnlEnabled, nil
+}
+
+// ClearTrmnlEnabled clears the value of the "trmnl_enabled" field.
+func (m *AppConfigMutation) ClearTrmnlEnabled() {
+	m.trmnl_enabled = nil
+	m.clearedFields[appconfig.FieldTrmnlEnabled] = struct{}{}
+}
+
+// TrmnlEnabledCleared returns if the "trmnl_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) TrmnlEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldTrmnlEnabled]
+	return ok
+}
+
+// ResetTrmnlEnabled resets all changes to the "trmnl_enabled" field.
+func (m *AppConfigMutation) ResetTrmnlEnabled() {
+	m.trmnl_enabled = nil
+	delete(m.clearedFields, appconfig.FieldTrmnlEnabled)
+}
+
+// SetTrmnlKey sets the "trmnl_key" field.
+func (m *AppConfigMutation) SetTrmnlKey(s string) {
+	m.trmnl_key = &s
+}
+
+// TrmnlKey returns the value of the "trmnl_key" field in the mutation.
+func (m *AppConfigMutation) TrmnlKey() (r string, exists bool) {
+	v := m.trmnl_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTrmnlKey returns the old "trmnl_key" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldTrmnlKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTrmnlKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTrmnlKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTrmnlKey: %w", err)
+	}
+	return oldValue.TrmnlKey, nil
+}
+
+// ClearTrmnlKey clears the value of the "trmnl_key" field.
+func (m *AppConfigMutation) ClearTrmnlKey() {
+	m.trmnl_key = nil
+	m.clearedFields[appconfig.FieldTrmnlKey] = struct{}{}
+}
+
+// TrmnlKeyCleared returns if the "trmnl_key" field was cleared in this mutation.
+func (m *AppConfigMutation) TrmnlKeyCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldTrmnlKey]
+	return ok
+}
+
+// ResetTrmnlKey resets all changes to the "trmnl_key" field.
+func (m *AppConfigMutation) ResetTrmnlKey() {
+	m.trmnl_key = nil
+	delete(m.clearedFields, appconfig.FieldTrmnlKey)
+}
+
 // SetPushEnabled sets the "push_enabled" field.
 func (m *AppConfigMutation) SetPushEnabled(b bool) {
 	m.push_enabled = &b
@@ -4802,7 +4902,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 73)
+	fields := make([]string, 0, 75)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -4955,6 +5055,12 @@ func (m *AppConfigMutation) Fields() []string {
 	}
 	if m.homeassistant_key != nil {
 		fields = append(fields, appconfig.FieldHomeassistantKey)
+	}
+	if m.trmnl_enabled != nil {
+		fields = append(fields, appconfig.FieldTrmnlEnabled)
+	}
+	if m.trmnl_key != nil {
+		fields = append(fields, appconfig.FieldTrmnlKey)
 	}
 	if m.push_enabled != nil {
 		fields = append(fields, appconfig.FieldPushEnabled)
@@ -5132,6 +5238,10 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.HomeassistantEnabled()
 	case appconfig.FieldHomeassistantKey:
 		return m.HomeassistantKey()
+	case appconfig.FieldTrmnlEnabled:
+		return m.TrmnlEnabled()
+	case appconfig.FieldTrmnlKey:
+		return m.TrmnlKey()
 	case appconfig.FieldPushEnabled:
 		return m.PushEnabled()
 	case appconfig.FieldPushVapidPublicKey:
@@ -5287,6 +5397,10 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldHomeassistantEnabled(ctx)
 	case appconfig.FieldHomeassistantKey:
 		return m.OldHomeassistantKey(ctx)
+	case appconfig.FieldTrmnlEnabled:
+		return m.OldTrmnlEnabled(ctx)
+	case appconfig.FieldTrmnlKey:
+		return m.OldTrmnlKey(ctx)
 	case appconfig.FieldPushEnabled:
 		return m.OldPushEnabled(ctx)
 	case appconfig.FieldPushVapidPublicKey:
@@ -5696,6 +5810,20 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHomeassistantKey(v)
+		return nil
+	case appconfig.FieldTrmnlEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTrmnlEnabled(v)
+		return nil
+	case appconfig.FieldTrmnlKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTrmnlKey(v)
 		return nil
 	case appconfig.FieldPushEnabled:
 		v, ok := value.(bool)
@@ -6157,6 +6285,12 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldHomeassistantKey) {
 		fields = append(fields, appconfig.FieldHomeassistantKey)
 	}
+	if m.FieldCleared(appconfig.FieldTrmnlEnabled) {
+		fields = append(fields, appconfig.FieldTrmnlEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldTrmnlKey) {
+		fields = append(fields, appconfig.FieldTrmnlKey)
+	}
 	if m.FieldCleared(appconfig.FieldPushEnabled) {
 		fields = append(fields, appconfig.FieldPushEnabled)
 	}
@@ -6390,6 +6524,12 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldHomeassistantKey:
 		m.ClearHomeassistantKey()
 		return nil
+	case appconfig.FieldTrmnlEnabled:
+		m.ClearTrmnlEnabled()
+		return nil
+	case appconfig.FieldTrmnlKey:
+		m.ClearTrmnlKey()
+		return nil
 	case appconfig.FieldPushEnabled:
 		m.ClearPushEnabled()
 		return nil
@@ -6616,6 +6756,12 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldHomeassistantKey:
 		m.ResetHomeassistantKey()
+		return nil
+	case appconfig.FieldTrmnlEnabled:
+		m.ResetTrmnlEnabled()
+		return nil
+	case appconfig.FieldTrmnlKey:
+		m.ResetTrmnlKey()
 		return nil
 	case appconfig.FieldPushEnabled:
 		m.ResetPushEnabled()

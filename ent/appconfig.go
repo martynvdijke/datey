@@ -119,6 +119,10 @@ type AppConfig struct {
 	HomeassistantEnabled *bool `json:"homeassistant_enabled,omitempty"`
 	// HomeassistantKey holds the value of the "homeassistant_key" field.
 	HomeassistantKey *string `json:"homeassistant_key,omitempty"`
+	// TrmnlEnabled holds the value of the "trmnl_enabled" field.
+	TrmnlEnabled *bool `json:"trmnl_enabled,omitempty"`
+	// TrmnlKey holds the value of the "trmnl_key" field.
+	TrmnlKey *string `json:"trmnl_key,omitempty"`
 	// PushEnabled holds the value of the "push_enabled" field.
 	PushEnabled *bool `json:"push_enabled,omitempty"`
 	// PushVapidPublicKey holds the value of the "push_vapid_public_key" field.
@@ -171,11 +175,11 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled, appconfig.FieldGoogleContactsEnabled:
+		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldTrmnlEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled, appconfig.FieldGoogleContactsEnabled:
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes, appconfig.FieldAuditRetentionMax:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldTelegramWebhookSecret, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldTelegramWebhookSecret, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldTrmnlKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldGoogleLastSync, appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -556,6 +560,20 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.HomeassistantKey = new(string)
 				*_m.HomeassistantKey = value.String
+			}
+		case appconfig.FieldTrmnlEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field trmnl_enabled", values[i])
+			} else if value.Valid {
+				_m.TrmnlEnabled = new(bool)
+				*_m.TrmnlEnabled = value.Bool
+			}
+		case appconfig.FieldTrmnlKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field trmnl_key", values[i])
+			} else if value.Valid {
+				_m.TrmnlKey = new(string)
+				*_m.TrmnlKey = value.String
 			}
 		case appconfig.FieldPushEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -999,6 +1017,16 @@ func (_m *AppConfig) String() string {
 	builder.WriteString(", ")
 	if v := _m.HomeassistantKey; v != nil {
 		builder.WriteString("homeassistant_key=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.TrmnlEnabled; v != nil {
+		builder.WriteString("trmnl_enabled=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.TrmnlKey; v != nil {
+		builder.WriteString("trmnl_key=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

@@ -7,7 +7,7 @@ polling_verb: get
 framework_version: latest
 serverless_language:
 polling_url: "{{url}}/api/trmnl/stats"
-polling_headers: ''
+polling_headers: "Authorization: Bearer {{key}}"
 polling_body: ''
 id: 443905
 oauth_enabled: 'false'
@@ -37,6 +37,12 @@ custom_fields:
   description: The base URL of your Datey instance
   placeholder: https://datey.example.com
   help_text: Please include http:// or https:// — the plugin polls <url>/api/trmnl/stats
+- keyname: key
+  field_type: password
+  name: TRMNL device token
+  description: Per-device API token created in Datey under Settings → API Tokens
+  placeholder: Paste the token shown once at creation
+  help_text: Create one token per display, then rotate or revoke it in Datey without affecting other devices. Legacy shared keys also work.
 - keyname: bio
   name: About This Plugin
   category: entertainment

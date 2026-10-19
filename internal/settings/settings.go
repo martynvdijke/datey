@@ -208,6 +208,12 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.HomeassistantKey; v != nil {
 		cfg.HomeAssistantKey = *v
 	}
+	if v := row.TrmnlEnabled; v != nil {
+		cfg.TRMNLEnabled = *v
+	}
+	if v := row.TrmnlKey; v != nil {
+		cfg.TRMNLKey = *v
+	}
 	if v := row.PushEnabled; v != nil {
 		cfg.PushEnabled = *v
 	}
@@ -280,6 +286,8 @@ func (s *Store) SetFeedKey(ctx context.Context, kind, key string) error {
 		upd = upd.SetNillableUpcomingAPIKey(&key)
 	case "homeassistant":
 		upd = upd.SetNillableHomeassistantKey(&key)
+	case "trmnl":
+		upd = upd.SetNillableTrmnlKey(&key)
 	default:
 		return nil
 	}
@@ -620,6 +628,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	upcomingAPIKey := form.Get("UPCOMING_API_KEY")
 	homeAssistantEnabled := form.Get("HOMEASSISTANT_ENABLED") == "on"
 	homeAssistantKey := form.Get("HOMEASSISTANT_KEY")
+	trmnlEnabled := form.Get("TRMNL_ENABLED") == "on"
+	trmnlKey := form.Get("TRMNL_KEY")
 	pushEnabled := form.Get("PUSH_ENABLED") == "on"
 	pushVAPIDPublicKey := form.Get("PUSH_VAPID_PUBLIC_KEY")
 	pushVAPIDPrivateKey := form.Get("PUSH_VAPID_PRIVATE_KEY")
@@ -763,6 +773,15 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		effectiveHomeAssistantKey = generateFeedKey()
 	}
 
+	// Same key semantics for the TRMNL e-ink feeds.
+	effectiveTRMNLKey := trmnlKey
+	if effectiveTRMNLKey == "" {
+		effectiveTRMNLKey = cfg.TRMNLKey
+	}
+	if trmnlEnabled && effectiveTRMNLKey == "" {
+		effectiveTRMNLKey = generateFeedKey()
+	}
+
 	// VAPID key semantics: keep the existing keys unless the admin supplies new
 	// ones (the private key is never rendered in the form, so an empty
 	// submission means "keep the current one"); generate a fresh keypair on
@@ -831,6 +850,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableUpcomingAPIKey(nillableStr(effectiveUpcomingAPIKey)).
 		SetNillableHomeassistantEnabled(&homeAssistantEnabled).
 		SetNillableHomeassistantKey(nillableStr(effectiveHomeAssistantKey)).
+		SetNillableTrmnlEnabled(&trmnlEnabled).
+		SetNillableTrmnlKey(nillableStr(effectiveTRMNLKey)).
 		SetNillablePushEnabled(&pushEnabled).
 		SetNillablePushVapidPublicKey(nillableStr(effectivePushPublicKey)).
 		SetNillablePushVapidPrivateKey(nillableStr(effectivePushPrivateKey)).
@@ -892,6 +913,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.UpcomingAPIKey = effectiveUpcomingAPIKey
 	cfg.HomeAssistantEnabled = homeAssistantEnabled
 	cfg.HomeAssistantKey = effectiveHomeAssistantKey
+	cfg.TRMNLEnabled = trmnlEnabled
+	cfg.TRMNLKey = effectiveTRMNLKey
 	cfg.PushEnabled = pushEnabled
 	cfg.PushVAPIDPublicKey = effectivePushPublicKey
 	cfg.PushVAPIDPrivateKey = effectivePushPrivateKey

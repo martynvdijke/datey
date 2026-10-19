@@ -9,6 +9,7 @@ watch:
 # values of custom fields (defined in src/settings.yml)
 custom_fields:
   url: "https://datey.vandijke.xyz"
+  key: ""
 
 # override variables
 variables:

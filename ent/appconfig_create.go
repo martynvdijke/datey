@@ -733,6 +733,34 @@ func (_c *AppConfigCreate) SetNillableHomeassistantKey(v *string) *AppConfigCrea
 	return _c
 }
 
+// SetTrmnlEnabled sets the "trmnl_enabled" field.
+func (_c *AppConfigCreate) SetTrmnlEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetTrmnlEnabled(v)
+	return _c
+}
+
+// SetNillableTrmnlEnabled sets the "trmnl_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableTrmnlEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetTrmnlEnabled(*v)
+	}
+	return _c
+}
+
+// SetTrmnlKey sets the "trmnl_key" field.
+func (_c *AppConfigCreate) SetTrmnlKey(v string) *AppConfigCreate {
+	_c.mutation.SetTrmnlKey(v)
+	return _c
+}
+
+// SetNillableTrmnlKey sets the "trmnl_key" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableTrmnlKey(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetTrmnlKey(*v)
+	}
+	return _c
+}
+
 // SetPushEnabled sets the "push_enabled" field.
 func (_c *AppConfigCreate) SetPushEnabled(v bool) *AppConfigCreate {
 	_c.mutation.SetPushEnabled(v)
@@ -1304,6 +1332,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.HomeassistantKey(); ok {
 		_spec.SetField(appconfig.FieldHomeassistantKey, field.TypeString, value)
 		_node.HomeassistantKey = &value
+	}
+	if value, ok := _c.mutation.TrmnlEnabled(); ok {
+		_spec.SetField(appconfig.FieldTrmnlEnabled, field.TypeBool, value)
+		_node.TrmnlEnabled = &value
+	}
+	if value, ok := _c.mutation.TrmnlKey(); ok {
+		_spec.SetField(appconfig.FieldTrmnlKey, field.TypeString, value)
+		_node.TrmnlKey = &value
 	}
 	if value, ok := _c.mutation.PushEnabled(); ok {
 		_spec.SetField(appconfig.FieldPushEnabled, field.TypeBool, value)

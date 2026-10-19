@@ -257,6 +257,20 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		}
 	}
 
+	trmnlKey := cfg.TRMNLKey
+	if submitted != nil {
+		if v, ok := submitted["TRMNL_KEY"]; ok && len(v) > 0 {
+			trmnlKey = v[0]
+		}
+	}
+
+	trmnlGroup := configGroup{Title: "TRMNL E-ink Display", TestSection: "trmnl", Fields: []configField{
+		{Name: "TRMNL_ENABLED", Label: "Enable TRMNL Feeds", Type: "checkbox", Checked: checked("TRMNL_ENABLED", cfg.TRMNLEnabled), Help: "Exposes the stats and birthday JSON feeds used by the TRMNL e-ink plugin. Disabled by default; dates are personal data."},
+		{Name: "TRMNL_KEY", Label: "Legacy Shared Feed Key", Value: val("TRMNL_KEY", trmnlKey), Type: "text", Secret: true, Help: "Optional shared key for ?key=... URLs. Auto-generated on first enable and kept for compatibility; prefer one API token per device via Settings → API Tokens below."},
+		{Name: "TRMNL_STATS_URL", Label: "Stats Feed URL (legacy key)", Value: "/api/trmnl/stats?key=" + trmnlKey, Type: "readonly", ReadOnly: true, Help: "Legacy URL shape. Prepend your server origin (e.g. https://datey.example.com), or configure the plugin with a per-device token instead."},
+		{Name: "TRMNL_BIRTHDAYS_URL", Label: "Birthdays Feed URL (legacy key)", Value: "/api/trmnl/birthdays?key=" + trmnlKey, Type: "readonly", ReadOnly: true, Help: "Legacy URL shape. Prepend your server origin, or configure the plugin with a per-device token instead."},
+	}}
+
 	homeAssistantGroup := configGroup{Title: "Home Assistant", TestSection: "homeassistant", Fields: []configField{
 		{Name: "HOMEASSISTANT_ENABLED", Label: "Enable Home Assistant Feed", Type: "checkbox", Checked: checked("HOMEASSISTANT_ENABLED", cfg.HomeAssistantEnabled), Help: "Exposes upcoming events as a JSON stats feed for a Home Assistant RESTful sensor. Disabled by default; dates are personal data."},
 		{Name: "HOMEASSISTANT_KEY", Label: "Feed Secret Key", Value: val("HOMEASSISTANT_KEY", homeAssistantKey), Type: "text", Help: "Required as ?key=... in the feed URL. Auto-generated on first enable; change it here to rotate."},
@@ -278,5 +292,5 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "IMMICH_API_KEY", Label: "Immich API Key", Value: immichKeyValue, Type: "text", Secret: true, Help: "Leave blank to keep the saved key. Used only by the server.", Error: errFor("IMMICH_API_KEY")},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, discord, slack, matrix, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, pushGroup, immichGroup}
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, discord, slack, matrix, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, trmnlGroup, pushGroup, immichGroup}
 }

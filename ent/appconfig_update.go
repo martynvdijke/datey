@@ -1111,6 +1111,46 @@ func (_u *AppConfigUpdate) ClearHomeassistantKey() *AppConfigUpdate {
 	return _u
 }
 
+// SetTrmnlEnabled sets the "trmnl_enabled" field.
+func (_u *AppConfigUpdate) SetTrmnlEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetTrmnlEnabled(v)
+	return _u
+}
+
+// SetNillableTrmnlEnabled sets the "trmnl_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableTrmnlEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetTrmnlEnabled(*v)
+	}
+	return _u
+}
+
+// ClearTrmnlEnabled clears the value of the "trmnl_enabled" field.
+func (_u *AppConfigUpdate) ClearTrmnlEnabled() *AppConfigUpdate {
+	_u.mutation.ClearTrmnlEnabled()
+	return _u
+}
+
+// SetTrmnlKey sets the "trmnl_key" field.
+func (_u *AppConfigUpdate) SetTrmnlKey(v string) *AppConfigUpdate {
+	_u.mutation.SetTrmnlKey(v)
+	return _u
+}
+
+// SetNillableTrmnlKey sets the "trmnl_key" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableTrmnlKey(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetTrmnlKey(*v)
+	}
+	return _u
+}
+
+// ClearTrmnlKey clears the value of the "trmnl_key" field.
+func (_u *AppConfigUpdate) ClearTrmnlKey() *AppConfigUpdate {
+	_u.mutation.ClearTrmnlKey()
+	return _u
+}
+
 // SetPushEnabled sets the "push_enabled" field.
 func (_u *AppConfigUpdate) SetPushEnabled(v bool) *AppConfigUpdate {
 	_u.mutation.SetPushEnabled(v)
@@ -1931,6 +1971,18 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.HomeassistantKeyCleared() {
 		_spec.ClearField(appconfig.FieldHomeassistantKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.TrmnlEnabled(); ok {
+		_spec.SetField(appconfig.FieldTrmnlEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.TrmnlEnabledCleared() {
+		_spec.ClearField(appconfig.FieldTrmnlEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.TrmnlKey(); ok {
+		_spec.SetField(appconfig.FieldTrmnlKey, field.TypeString, value)
+	}
+	if _u.mutation.TrmnlKeyCleared() {
+		_spec.ClearField(appconfig.FieldTrmnlKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.PushEnabled(); ok {
 		_spec.SetField(appconfig.FieldPushEnabled, field.TypeBool, value)
@@ -3170,6 +3222,46 @@ func (_u *AppConfigUpdateOne) ClearHomeassistantKey() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetTrmnlEnabled sets the "trmnl_enabled" field.
+func (_u *AppConfigUpdateOne) SetTrmnlEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetTrmnlEnabled(v)
+	return _u
+}
+
+// SetNillableTrmnlEnabled sets the "trmnl_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableTrmnlEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetTrmnlEnabled(*v)
+	}
+	return _u
+}
+
+// ClearTrmnlEnabled clears the value of the "trmnl_enabled" field.
+func (_u *AppConfigUpdateOne) ClearTrmnlEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearTrmnlEnabled()
+	return _u
+}
+
+// SetTrmnlKey sets the "trmnl_key" field.
+func (_u *AppConfigUpdateOne) SetTrmnlKey(v string) *AppConfigUpdateOne {
+	_u.mutation.SetTrmnlKey(v)
+	return _u
+}
+
+// SetNillableTrmnlKey sets the "trmnl_key" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableTrmnlKey(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetTrmnlKey(*v)
+	}
+	return _u
+}
+
+// ClearTrmnlKey clears the value of the "trmnl_key" field.
+func (_u *AppConfigUpdateOne) ClearTrmnlKey() *AppConfigUpdateOne {
+	_u.mutation.ClearTrmnlKey()
+	return _u
+}
+
 // SetPushEnabled sets the "push_enabled" field.
 func (_u *AppConfigUpdateOne) SetPushEnabled(v bool) *AppConfigUpdateOne {
 	_u.mutation.SetPushEnabled(v)
@@ -4020,6 +4112,18 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.HomeassistantKeyCleared() {
 		_spec.ClearField(appconfig.FieldHomeassistantKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.TrmnlEnabled(); ok {
+		_spec.SetField(appconfig.FieldTrmnlEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.TrmnlEnabledCleared() {
+		_spec.ClearField(appconfig.FieldTrmnlEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.TrmnlKey(); ok {
+		_spec.SetField(appconfig.FieldTrmnlKey, field.TypeString, value)
+	}
+	if _u.mutation.TrmnlKeyCleared() {
+		_spec.ClearField(appconfig.FieldTrmnlKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.PushEnabled(); ok {
 		_spec.SetField(appconfig.FieldPushEnabled, field.TypeBool, value)

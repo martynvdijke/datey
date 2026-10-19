@@ -117,16 +117,22 @@ func getReq(r chi.Router, path string, headers map[string]string) *httptest.Resp
 	return w
 }
 
-// --- Public reads (spec scenario: unauthenticated TRMNL access stays open) ---
+// --- Key-protected reads stay usable by TRMNL devices without a session ---
 
-func TestPublicTRMNLReads_RemainAccessible(t *testing.T) {
+func TestPublicTRMNLReads_RequireFeedKey(t *testing.T) {
 	h := newTestWebHandler(t)
+	h.cfg.TRMNLEnabled = true
+	h.cfg.TRMNLKey = "device-key"
 	r := setupSecureRouter(h)
 
 	for _, path := range []string{"/api/trmnl/stats", "/api/trmnl/birthdays"} {
 		w := getReq(r, path, nil)
+		if w.Code != http.StatusNotFound {
+			t.Errorf("%s without key = %d, want 404", path, w.Code)
+		}
+		w = getReq(r, path+"?key=device-key", nil)
 		if w.Code != http.StatusOK {
-			t.Errorf("%s without credentials = %d, want 200", path, w.Code)
+			t.Errorf("%s with key = %d, want 200", path, w.Code)
 		}
 	}
 }

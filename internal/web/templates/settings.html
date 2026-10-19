@@ -278,6 +278,14 @@
             <div id="config-test-result-{{.TestSection}}" class="mt-2" aria-live="polite"></div>
           {{end}}
 
+          {{if eq .TestSection "trmnl"}}
+            <p class="form-text text-muted mb-0">
+              Per-device secrets: create one API token per TRMNL display in
+              <a href="/settings/api-tokens">Settings → API Tokens</a>, then paste it into the
+              plugin's “Device token” field. Rotating or revoking a token only affects that device.
+            </p>
+          {{end}}
+
           {{if eq .TestSection "immich"}}
             <div class="d-flex gap-2 align-items-center flex-wrap mt-3">
               <button type="button" class="btn btn-sm btn-outline-primary"

@@ -78,6 +78,9 @@ type Config struct {
 	HomeAssistantEnabled bool
 	HomeAssistantKey     string
 
+	TRMNLEnabled bool
+	TRMNLKey     string
+
 	PushEnabled         bool
 	PushVAPIDPublicKey  string
 	PushVAPIDPrivateKey string
@@ -169,6 +172,8 @@ func Load() (*Config, error) {
 
 		HomeAssistantEnabled: getEnv("HOMEASSISTANT_ENABLED", "") == "true",
 		HomeAssistantKey:     getEnv("HOMEASSISTANT_KEY", ""),
+		TRMNLEnabled:         getEnv("TRMNL_ENABLED", "") == "true",
+		TRMNLKey:             getEnv("TRMNL_KEY", ""),
 
 		PushEnabled:         getEnv("PUSH_ENABLED", "") == "true",
 		PushVAPIDPublicKey:  getEnv("PUSH_VAPID_PUBLIC_KEY", ""),
@@ -296,6 +301,9 @@ func (c *Config) Validate() error {
 	}
 	if c.HomeAssistantEnabled && c.HomeAssistantKey == "" {
 		return fmt.Errorf("HOMEASSISTANT_KEY must be set when HOMEASSISTANT_ENABLED is true")
+	}
+	if c.TRMNLEnabled && c.TRMNLKey == "" {
+		return fmt.Errorf("TRMNL_KEY must be set when TRMNL_ENABLED is true")
 	}
 	if c.PushEnabled && (c.PushVAPIDPublicKey == "" || c.PushVAPIDPrivateKey == "") {
 		return fmt.Errorf("PUSH_VAPID_PUBLIC_KEY and PUSH_VAPID_PRIVATE_KEY must be set when PUSH_ENABLED is true")

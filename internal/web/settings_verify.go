@@ -74,6 +74,8 @@ func (h *Handler) testConfig(w http.ResponseWriter, r *http.Request) {
 		ok, msg = testFeed("Upcoming API", tmp.UpcomingAPIEnabled, tmp.UpcomingAPIKey, "", &tmp)
 	case "homeassistant":
 		ok, msg = testFeed("Home Assistant", tmp.HomeAssistantEnabled, tmp.HomeAssistantKey, "", &tmp)
+	case "trmnl":
+		ok, msg = testFeed("TRMNL", tmp.TRMNLEnabled, tmp.TRMNLKey, "", &tmp)
 	case "database":
 		ok, msg = h.testDatabase(ctx)
 	case "all":
@@ -452,6 +454,12 @@ func applyFormToConfig(cfg *config.Config, form url.Values) {
 		cfg.HomeAssistantEnabled = form.Get("HOMEASSISTANT_ENABLED") == "on"
 	}
 	setStr("HOMEASSISTANT_KEY", &cfg.HomeAssistantKey)
+
+	// TRMNL
+	if hasKey("TRMNL_ENABLED") {
+		cfg.TRMNLEnabled = form.Get("TRMNL_ENABLED") == "on"
+	}
+	setStr("TRMNL_KEY", &cfg.TRMNLKey)
 
 	// Web Push
 	if hasKey("PUSH_ENABLED") {

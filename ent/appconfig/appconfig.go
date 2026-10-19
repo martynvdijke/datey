@@ -113,6 +113,10 @@ const (
 	FieldHomeassistantEnabled = "homeassistant_enabled"
 	// FieldHomeassistantKey holds the string denoting the homeassistant_key field in the database.
 	FieldHomeassistantKey = "homeassistant_key"
+	// FieldTrmnlEnabled holds the string denoting the trmnl_enabled field in the database.
+	FieldTrmnlEnabled = "trmnl_enabled"
+	// FieldTrmnlKey holds the string denoting the trmnl_key field in the database.
+	FieldTrmnlKey = "trmnl_key"
 	// FieldPushEnabled holds the string denoting the push_enabled field in the database.
 	FieldPushEnabled = "push_enabled"
 	// FieldPushVapidPublicKey holds the string denoting the push_vapid_public_key field in the database.
@@ -215,6 +219,8 @@ var Columns = []string{
 	FieldUpcomingAPIKey,
 	FieldHomeassistantEnabled,
 	FieldHomeassistantKey,
+	FieldTrmnlEnabled,
+	FieldTrmnlKey,
 	FieldPushEnabled,
 	FieldPushVapidPublicKey,
 	FieldPushVapidPrivateKey,
@@ -510,6 +516,16 @@ func ByHomeassistantEnabled(opts ...sql.OrderTermOption) OrderOption {
 // ByHomeassistantKey orders the results by the homeassistant_key field.
 func ByHomeassistantKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHomeassistantKey, opts...).ToFunc()
+}
+
+// ByTrmnlEnabled orders the results by the trmnl_enabled field.
+func ByTrmnlEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTrmnlEnabled, opts...).ToFunc()
+}
+
+// ByTrmnlKey orders the results by the trmnl_key field.
+func ByTrmnlKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTrmnlKey, opts...).ToFunc()
 }
 
 // ByPushEnabled orders the results by the push_enabled field.
