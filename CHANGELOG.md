@@ -1,3 +1,10 @@
+## [1.53.3](https://github.com/martynvdijke/datey/compare/v1.53.2...v1.53.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* **android:** allow self-hosted HTTP, sign releases and fix OIDC login ([17602e5](https://github.com/martynvdijke/datey/commit/17602e510e49019b116575a94f3b36fdcebfd781))
+
 ## [1.53.2](https://github.com/martynvdijke/datey/compare/v1.53.1...v1.53.2) (2026-10-18)
 
 
