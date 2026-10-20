@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_client.dart';
 import '../services/storage_service.dart';
 import '../utils/validators.dart';
+import 'oidc_webview_screen.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -107,23 +107,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _oidcLogin() async {
     final baseUrl = normalizeServerUrl(_urlCtrl.text.trim());
-    final uri = Uri.parse('$baseUrl/api/auth/oidc/login');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('After signing in, return here and tap “I’ve signed in”'), behavior: SnackBarBehavior.floating),
-    );
-  }
-
-  Future<void> _checkAfterOidc() async {
-    final baseUrl = normalizeServerUrl(_urlCtrl.text.trim());
-    // Persist baseUrl if not yet
     final storage = StorageService();
     await storage.setBaseUrl(baseUrl);
-    final ok = await ref.read(authStateProvider.notifier).validateSession();
     if (!mounted) return;
-    if (!ok) {
-      setState(() => _loginError = 'No session found. Try signing in again.');
+    final session = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => OidcWebViewScreen(baseUrl: baseUrl),
+      ),
+    );
+    if (session == null || session.isEmpty) return;
+    await storage.persistCookies(['session=$session; Path=/']);
+    await ref.read(authStateProvider.notifier).validateSession();
+    if (!mounted) return;
+    final st = ref.read(authStateProvider);
+    if (st.value == null) {
+      setState(() => _loginError = 'Sign-in did not complete. Try again.');
     }
   }
 
@@ -274,14 +272,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           onPressed: _oidcLogin,
                           icon: const Icon(Icons.open_in_new, size: 18),
                           label: const Text('Sign in with OIDC'),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: TextButton(
-                          onPressed: _checkAfterOidc,
-                          child: const Text('I’ve signed in — continue'),
                         ),
                       ),
                     ],
