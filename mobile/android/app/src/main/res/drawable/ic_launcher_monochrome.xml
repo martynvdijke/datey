@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Datey launcher artwork. Generated from the same geometry as the legacy rasters. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M39.5,31 H68.5 A11.5,11.5 0 0 1 80,42.5 V65.5 A11.5,11.5 0 0 1 68.5,77 H39.5 A11.5,11.5 0 0 1 28,65.5 V42.5 A11.5,11.5 0 0 1 39.5,31 Z M42.3,43.05 H48.97 A16.73,11.5 0 0 1 48.97,66.05 H42.3 Z M48.97,48.8 H54.05 A5.51,5.51 0 0 1 54.05,60.3 H48.97 Z"
+        android:fillColor="#FF000000"
+        android:fillType="evenOdd" />
+    <path
+        android:pathData="M45.47,27.34 H45.47 A3.33,3.33 0 0 1 48.8,30.67 V33.9 A3.33,3.33 0 0 1 45.47,37.23 H45.47 A3.33,3.33 0 0 1 42.14,33.9 V30.67 A3.33,3.33 0 0 1 45.47,27.34 Z"
+        android:fillColor="#FF000000" />
+    <path
+        android:pathData="M62.53,27.34 H62.53 A3.33,3.33 0 0 1 65.86,30.67 V33.9 A3.33,3.33 0 0 1 62.53,37.23 H62.53 A3.33,3.33 0 0 1 59.2,33.9 V30.67 A3.33,3.33 0 0 1 62.53,27.34 Z"
+        android:fillColor="#FF000000" />
+</vector>

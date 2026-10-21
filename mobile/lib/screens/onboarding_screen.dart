@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -25,6 +27,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _urlValid = false;
   bool _oidcEnabled = false;
   bool _checkingOidc = false;
+  Timer? _oidcDebounce;
+  String? _oidcForUrl;
+  // Incremented on every URL edit and every OIDC status request so a slow
+  // response for an older URL can never overwrite the current result.
+  int _oidcRequestGen = 0;
 
   @override
   void initState() {
@@ -35,21 +42,59 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _loadExisting() async {
     final storage = StorageService();
     final url = await storage.getBaseUrl();
-    if (url != null && mounted) setState(() => _urlCtrl.text = url);
-    if (url != null) _checkOidc(url);
+    if (!mounted) return;
+    // Only a URL the user previously entered is ever prefilled; there is no
+    // built-in default server address.
+    if (url == null || url.isEmpty) return;
+    setState(() => _urlCtrl.text = url);
+    _checkOidc(normalizeServerUrl(url));
   }
 
   Future<void> _checkOidc(String baseUrl) async {
-    setState(() => _checkingOidc = true);
-    try {
-      final storage = StorageService();
-      final client = ApiClient(storage: storage, baseUrl: baseUrl);
-      final resp = await client.getOidcStatus();
-      if (resp.statusCode == 200 && resp.data is Map) {
-        if (mounted) setState(() => _oidcEnabled = resp.data['enabled'] == true);
+    final generation = ++_oidcRequestGen;
+    if (mounted) setState(() => _checkingOidc = true);
+    // Probe without the stored session so a mistyped host never receives it.
+    final enabled = await ApiClient.oidcEnabledAt(baseUrl);
+    if (!mounted || generation != _oidcRequestGen) return;
+    setState(() {
+      _oidcEnabled = enabled;
+      _oidcForUrl = baseUrl;
+      _checkingOidc = false;
+    });
+  }
+
+  /// Detect OIDC support while the user types, so single sign-on is available
+  /// without first tapping "Test connection".
+  void _onUrlChanged(String value) {
+    _oidcDebounce?.cancel();
+    // Invalidate any in-flight status request for the previous URL.
+    _oidcRequestGen++;
+    final normalized = normalizeServerUrl(value);
+    setState(() {
+      _urlValid = false;
+      _urlError = null;
+      _checkingOidc = false;
+      if (_oidcForUrl != normalized) {
+        _oidcEnabled = false;
+        _oidcForUrl = null;
       }
-    } catch (_) {}
-    if (mounted) setState(() => _checkingOidc = false);
+    });
+    final raw = value.trim();
+    if (validateServerUrl(raw) != null) return;
+    _oidcDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      _checkOidc(normalized);
+    });
+  }
+
+  /// Best-effort removal of stale WebView cookies (including any previous
+  /// Datey session) before a new OIDC flow starts.
+  Future<void> _clearWebViewCookies() async {
+    try {
+      await OidcWebViewScreen.cookieChannel.invokeMethod<void>('clearCookies');
+    } catch (_) {
+      // Older hosts may not implement the channel; the flow can still work.
+    }
   }
 
   Future<void> _testConnection() async {
@@ -106,27 +151,46 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _oidcLogin() async {
-    final baseUrl = normalizeServerUrl(_urlCtrl.text.trim());
+    final raw = _urlCtrl.text.trim();
+    final err = validateServerUrl(raw);
+    if (err != null) {
+      setState(() => _urlError = err);
+      return;
+    }
+    final baseUrl = normalizeServerUrl(raw);
+    setState(() {
+      _loggingIn = true;
+      _loginError = null;
+      _urlError = null;
+    });
     final storage = StorageService();
-    await storage.setBaseUrl(baseUrl);
+    String? session;
+    try {
+      await storage.setBaseUrl(baseUrl);
+      await _clearWebViewCookies();
+      if (!mounted) return;
+      session = await Navigator.of(context).push<String>(
+        MaterialPageRoute(
+          builder: (_) => OidcWebViewScreen(baseUrl: baseUrl),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _loggingIn = false);
+    }
     if (!mounted) return;
-    final session = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (_) => OidcWebViewScreen(baseUrl: baseUrl),
-      ),
-    );
+    // The user backed out of the WebView: return to the form silently.
     if (session == null || session.isEmpty) return;
-    await storage.persistCookies(['session=$session; Path=/']);
-    await ref.read(authStateProvider.notifier).validateSession();
+    await storage.saveSession(session);
+    final ok = await ref.read(authStateProvider.notifier).validateSession();
     if (!mounted) return;
-    final st = ref.read(authStateProvider);
-    if (st.value == null) {
+    if (!ok) {
       setState(() => _loginError = 'Sign-in did not complete. Try again.');
     }
   }
 
   @override
   void dispose() {
+    _oidcDebounce?.cancel();
     _urlCtrl.dispose();
     _userCtrl.dispose();
     _passCtrl.dispose();
@@ -174,15 +238,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     TextFormField(
                       controller: _urlCtrl,
                       decoration: InputDecoration(
-                        hintText: 'https://datey.example.com',
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.link),
+                        helperText: 'Enter the address of your self-hosted Datey server.',
                         errorText: _urlError,
                         suffixIcon: _urlValid ? Icon(Icons.check_circle, color: scheme.primary) : null,
                       ),
                       keyboardType: TextInputType.url,
                       autocorrect: false,
-                      onChanged: (_) => setState(() => _urlValid = false),
+                      onChanged: _onUrlChanged,
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -266,12 +330,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const Expanded(child: Divider()),
                       ]),
                       const SizedBox(height: 12),
+                      Text('Single sign-on is available on this server',
+                          style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant)),
+                      const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: _oidcLogin,
-                          icon: const Icon(Icons.open_in_new, size: 18),
-                          label: const Text('Sign in with OIDC'),
+                          onPressed: _loggingIn ? null : _oidcLogin,
+                          icon: const Icon(Icons.login, size: 18),
+                          label: const Text('Continue with SSO'),
                         ),
                       ),
                     ],

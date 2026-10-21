@@ -60,6 +60,26 @@ class ApiClient {
 
   Future<Response<dynamic>> getOidcStatus() => dio.get('/api/auth/oidc/status');
 
+  /// Checks whether a server advertises OIDC support without sending the
+  /// stored session cookie. Used while the user is still typing a server URL.
+  static Future<bool> oidcEnabledAt(String baseUrl) async {
+    try {
+      final probe = Dio(BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 8),
+        receiveTimeout: const Duration(seconds: 8),
+        headers: {'Accept': 'application/json'},
+        validateStatus: (s) => s != null && s < 500,
+      ));
+      final resp = await probe.get('/api/auth/oidc/status');
+      return resp.statusCode == 200 &&
+          resp.data is Map &&
+          resp.data['enabled'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<Response<dynamic>> login(String username, String password) => dio.post(
         '/login',
         data: {'username': username, 'password': password},

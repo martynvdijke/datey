@@ -21,6 +21,13 @@ class StorageService {
     }
   }
 
+  /// Store a session captured outside the HTTP client (e.g. the OIDC WebView)
+  /// and drop any CSRF token that belonged to the previous session.
+  Future<void> saveSession(String session) async {
+    await setSession(session);
+    await setCsrf(null);
+  }
+
   Future<String?> getCsrf() => _storage.read(key: _kCsrf);
   Future<void> setCsrf(String? v) async {
     if (v == null || v.isEmpty) {
