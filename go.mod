@@ -6,10 +6,10 @@ require (
 	entgo.io/ent v0.14.6
 	github.com/6tail/lunar-go v1.4.6
 	github.com/SherClockHolmes/webpush-go v1.4.0
-	github.com/arran4/golang-ical v0.3.7
+	github.com/arran4/golang-ical v0.3.8
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/emersion/go-vcard v0.1.0
-	github.com/go-chi/chi/v5 v5.3.2
+	github.com/go-chi/chi/v5 v5.5.0
 	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/riandyrn/otelchi v0.12.3
 	go.opentelemetry.io/contrib/bridges/otelslog v0.21.0
