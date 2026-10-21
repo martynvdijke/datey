@@ -1,3 +1,10 @@
+## [1.54.1](https://github.com/martynvdijke/datey/compare/v1.54.0...v1.54.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **release:** write real pubspec version during releases ([ee1f962](https://github.com/martynvdijke/datey/commit/ee1f96227a782154e2fab64d643ab59ff961d3c6))
+
 # [1.54.0](https://github.com/martynvdijke/datey/compare/v1.53.3...v1.54.0) (2026-10-21)
 
 
