@@ -1,7 +1,7 @@
 name: datey
 description: Datey — birthdays, anniversaries, and gift ideas.
 publish_to: 'none'
-version: 1.54.1+1054001
+version: 1.54.2+1054002
 
 environment:
   sdk: ^3.13.2
