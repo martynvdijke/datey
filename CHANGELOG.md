@@ -1,3 +1,10 @@
+# [1.54.0](https://github.com/martynvdijke/datey/compare/v1.53.3...v1.54.0) (2026-10-21)
+
+
+### Features
+
+* **android:** add OIDC sign-in and favicon-based launcher icon ([5b5d4f7](https://github.com/martynvdijke/datey/commit/5b5d4f7b375f99db1b3d9016ac5d17f7abf454db))
+
 ## [1.53.3](https://github.com/martynvdijke/datey/compare/v1.53.2...v1.53.3) (2026-10-20)
 
 
