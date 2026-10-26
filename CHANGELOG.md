@@ -1,3 +1,10 @@
+# [1.55.0](https://github.com/martynvdijke/datey/compare/v1.54.8...v1.55.0) (2026-10-26)
+
+
+### Features
+
+* **release:** publish android bundles to google play and add emulator e2e ([f16a60f](https://github.com/martynvdijke/datey/commit/f16a60f9ac4e309dfb66a03e12b2a2a7e78001f4))
+
 ## [1.54.8](https://github.com/martynvdijke/datey/compare/v1.54.7...v1.54.8) (2026-10-26)
 
 ## [1.54.7](https://github.com/martynvdijke/datey/compare/v1.54.6...v1.54.7) (2026-10-24)
