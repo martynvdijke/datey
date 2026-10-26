@@ -1,6 +1,6 @@
 {
   "name": "datey",
-  "version": "1.54.7",
+  "version": "1.54.8",
   "private": true,
   "description": "Relationship event reminder application",
   "scripts": {
