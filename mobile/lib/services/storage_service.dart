@@ -1,5 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// Hosted Datey instance used as the default on first run. Users can still
+/// override this with any self-hosted server on the onboarding screen.
+const String defaultBaseUrl = 'https://datey.vandijke.xyz';
+
 class StorageService {
   static const _kBaseUrl = 'datey_base_url';
   static const _kSession = 'datey_session';
