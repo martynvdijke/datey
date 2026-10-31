@@ -4,5 +4,9 @@ import 'app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: DateyApp()));
+  runApp(ProviderScope(
+    // Preserve v2 behaviour: surface errors instead of silently retrying forever.
+    retry: (retryCount, error) => null,
+    child: const DateyApp(),
+  ));
 }
