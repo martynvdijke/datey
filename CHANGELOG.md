@@ -1,3 +1,12 @@
+# [1.56.0](https://github.com/martynvdijke/datey/compare/v1.55.1...v1.56.0) (2026-10-31)
+
+
+### Features
+
+* **mobile:** default to datey.vandijke.xyz and offer self-hosted option ([8290571](https://github.com/martynvdijke/datey/commit/82905710565029b683ce385c1454c313ec45fd83))
+
+## [1.55.1](https://github.com/martynvdijke/datey/compare/v1.55.0...v1.55.1) (2026-10-27)
+
 # [1.55.0](https://github.com/martynvdijke/datey/compare/v1.54.8...v1.55.0) (2026-10-26)
 
 

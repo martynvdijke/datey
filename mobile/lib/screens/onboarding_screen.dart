@@ -41,11 +41,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _loadExisting() async {
     final storage = StorageService();
-    final url = await storage.getBaseUrl();
+    final savedUrl = await storage.getBaseUrl();
     if (!mounted) return;
-    // Only a URL the user previously entered is ever prefilled; there is no
-    // built-in default server address.
-    if (url == null || url.isEmpty) return;
+    // A previously saved URL always wins. On first run, prefill the hosted
+    // default and probe it so sign-in options are ready without extra taps.
+    final url = (savedUrl == null || savedUrl.isEmpty) ? defaultBaseUrl : savedUrl;
     setState(() => _urlCtrl.text = url);
     _checkOidc(normalizeServerUrl(url));
   }
@@ -240,7 +240,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       decoration: InputDecoration(
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.link),
-                        helperText: 'Enter the address of your self-hosted Datey server.',
+                        helperText: 'Use the default instance below, or enter another self-hosted Datey server.',
                         errorText: _urlError,
                         suffixIcon: _urlValid ? Icon(Icons.check_circle, color: scheme.primary) : null,
                       ),
