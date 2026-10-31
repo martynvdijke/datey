@@ -57,6 +57,7 @@ void main() {
 
   testWidgets('Dashboard error state', (tester) async {
     await tester.pumpWidget(ProviderScope(
+      retry: (retryCount, error) => null,
       overrides: [dashboardProvider.overrideWith((ref) async => throw Exception('network error'))],
       child: const MaterialApp(home: DashboardScreen()),
     ));
