@@ -1,3 +1,12 @@
+## [1.56.1](https://github.com/martynvdijke/datey/compare/v1.56.0...v1.56.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **ci:** point flutter setup at root fvmrc ([6fb8db0](https://github.com/martynvdijke/datey/commit/6fb8db0b958e10dc50e543b479db7d7c6b3d3637))
+* **deps:** update dependency flutter_riverpod to v3 ([2746650](https://github.com/martynvdijke/datey/commit/274665067bc87bd3a65cc08601145c07d10b0441))
+* **mobile:** adapt to Riverpod 3 legacy providers and disable auto-retry ([2ba730c](https://github.com/martynvdijke/datey/commit/2ba730ce01838d83d6a1f585431439579b8547e3))
+
 # [1.56.0](https://github.com/martynvdijke/datey/compare/v1.55.1...v1.56.0) (2026-10-31)
 
 
