@@ -1,3 +1,10 @@
+## [1.56.2](https://github.com/martynvdijke/datey/compare/v1.56.1...v1.56.2) (2026-11-01)
+
+
+### Bug Fixes
+
+* **ci:** skip Play Store publish when credentials are missing ([0d887d4](https://github.com/martynvdijke/datey/commit/0d887d45e4cdaf5cd7e34b2179b05168cef67704))
+
 ## [1.56.1](https://github.com/martynvdijke/datey/compare/v1.56.0...v1.56.1) (2026-10-31)
 
 
