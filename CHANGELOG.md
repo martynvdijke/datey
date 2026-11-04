@@ -1,3 +1,10 @@
+# [1.57.0](https://github.com/martynvdijke/datey/compare/v1.56.4...v1.57.0) (2026-11-04)
+
+
+### Features
+
+* **legal:** GDPR/Play compliance for datey ([575de78](https://github.com/martynvdijke/datey/commit/575de78c13266787f78addb70a9e3620269f681c))
+
 ## [1.56.4](https://github.com/martynvdijke/datey/compare/v1.56.3...v1.56.4) (2026-11-03)
 
 ## [1.56.3](https://github.com/martynvdijke/datey/compare/v1.56.2...v1.56.3) (2026-11-02)
