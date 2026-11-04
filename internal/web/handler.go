@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -16,6 +17,7 @@ import (
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/user"
 	"github.com/datey/datey/handlers"
+	"github.com/datey/datey/internal/account"
 	"github.com/datey/datey/internal/age"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/i18n"
@@ -57,6 +59,7 @@ type Handler struct {
 	photoStore          *photos.Store
 	audit               auditRecorder
 	telegram            telegramUpdateHandler
+	accounts            *account.Service
 }
 
 type auditRecorder interface {
@@ -104,6 +107,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		apiTokens:           repository.NewApiTokenRepository(client),
 		immich:              immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
 		photoStore:          photos.NewStore(cfg.DataDir),
+		accounts:            account.New(client),
 	}
 }
 
@@ -157,6 +161,12 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/reset-password", h.resetPasswordPage)
 		r.Post("/reset-password", h.resetPasswordPost)
 
+		// Public legal pages: stores and data-protection law both require these
+		// to load without a session.
+		r.Get("/privacy", h.privacyPage)
+		r.Get("/terms", h.termsPage)
+		r.Get("/account/delete", h.accountDeletePage)
+
 		// Public iCal feed — unauthenticated, protected by a secret key
 		// (?key=...) checked inside the handlers. Feed disabled → 404.
 		r.Get("/ical.ics", h.icalFeedGlobal)
@@ -184,7 +194,13 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Use(h.Locale)
 
 			r.Get("/api/me", h.apiMe)
+			r.Delete("/api/me", h.apiDeleteMe)
+			r.Get("/api/v1/me", h.apiMe)
+			r.Delete("/api/v1/me", h.apiDeleteMe)
+			r.Get("/api/v1/me/export", h.apiExportMe)
+			r.Get("/api/me/export", h.apiExportMe)
 			r.Post("/api/me/linked-person", h.setLinkedPerson)
+			r.Post("/settings/account/delete", h.accountDeleteSelf)
 			r.Get("/", h.dashboard)
 			// People routes (new path)
 			r.Get("/people", h.listPeople)
@@ -644,14 +660,22 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 		username = userToDelete.Username
 	}
 
-	// Delete all sessions for this user first
-	if err := h.sessions.DeleteByUserID(r.Context(), id); err != nil {
-		slog.Error("delete user: delete sessions", "error", err)
-	}
-
-	if err := h.users.Delete(r.Context(), id); err != nil {
-		slog.Error("delete user", "error", err)
+	// The shared account service revokes every credential and related row in one
+	// transaction. It also refuses to delete the last admin, so the admin UI
+	// cannot leave the instance without an administrator.
+	if h.accounts == nil {
 		toastHeader(w, "Failed to delete user", "error")
+		w.Header().Set("HX-Refresh", "true")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if err := h.accounts.Delete(r.Context(), id); err != nil {
+		slog.Error("delete user", "error", err)
+		message := "Failed to delete user"
+		if errors.Is(err, account.ErrLastAdmin) {
+			message = "The last admin cannot be deleted"
+		}
+		toastHeader(w, message, "error")
 		w.Header().Set("HX-Refresh", "true")
 		w.WriteHeader(http.StatusOK)
 		return

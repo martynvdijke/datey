@@ -1,0 +1,46 @@
+{{define "content"}}
+<section class="legal py-4">
+  <p class="text-uppercase text-muted fw-semibold small mb-2">Account</p>
+  <h1 class="mb-3">Delete your account</h1>
+  <p class="lead">Deletion is immediate. Your account and credentials are erased the moment you confirm; nothing is held for a waiting period.</p>
+
+  <h2>Delete it yourself</h2>
+  {{if .User}}
+  <p>You are signed in as <strong>{{.User.Username}}</strong>. Type your username (or <code>DELETE</code>) and confirm. This signs you out everywhere.</p>
+  {{if .Error}}<div class="alert alert-danger" role="alert">{{.Error}}</div>{{end}}
+  <form method="POST" action="/settings/account/delete" class="card card-body mb-4" style="max-width: 32rem;">
+    {{template "csrfField" .}}
+    <label class="form-label" for="confirm">Confirmation</label>
+    <input class="form-control" id="confirm" name="confirm" autocomplete="off" required placeholder="{{.User.Username}} or DELETE">
+    <div class="form-text">This cannot be undone.</div>
+    <button class="btn btn-danger mt-3" type="submit">Delete my account</button>
+  </form>
+  {{else}}
+  <p>Sign in, then return to this page and type your username to confirm. <a href="/login">Sign in</a> if you have not already.</p>
+  <p>In the Android app the same action lives under <strong>Settings → Delete account</strong>, and it calls the same API with the same confirmation.</p>
+  {{end}}
+
+  <h2>If you cannot sign in</h2>
+  {{if .Legal.ContactEmail}}
+  <p>Write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a> from the address on the account and ask for it to be deleted. Requests are handled within one month, usually much sooner.</p>
+  {{else}}
+  <p>Ask the administrator of this instance to delete the account from the user management page. There is no self-service route that works without signing in.</p>
+  {{end}}
+
+  <h2>What is removed</h2>
+  <ul>
+    <li>Your account row: username, email address, password hash, locale and appearance preferences, and your OIDC link.</li>
+    <li>Every way into the account: browser sessions, API tokens, password-reset tokens, push subscriptions and per-user notification channels.</li>
+    <li>Notification history rows attributed to your account, and the username in audit entries that named you (relabelled <code>deleted-user</code>).</li>
+  </ul>
+
+  <h2>What stays</h2>
+  <p>Datey stores one shared address book, so the people, birthdays, anniversaries, groups, notes and gift ideas are not owned by, or deleted with, a single account. They remain available to the other people who use this instance. If you added a person record that should be removed, delete that person separately from their detail page (administrators can do this too).</p>
+  <p>Backups taken before the deletion may still contain the old account data until they rotate out; they are not used to restore individual accounts.</p>
+
+  <h2>Delete a person who has no account</h2>
+  <p>Datey stores people who may never have an account of their own. To remove one of those records, open the person's page and choose <strong>Delete person</strong>. That deletes their events, notes, gift ideas, photo and relationships; it does not affect any account.</p>
+
+  <p class="text-muted">The full detail is in the <a href="/privacy">privacy policy</a>.</p>
+</section>
+{{end}}

@@ -90,6 +90,45 @@ void main() {
     });
   });
 
+  group('account deletion', () {
+    test('deleteAccount sends DELETE /api/v1/me with confirmation', () async {
+      String? capturedPath;
+      String? capturedMethod;
+      dynamic capturedData;
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(onRequest: (o, h) {
+        capturedPath = o.path;
+        capturedMethod = o.method;
+        capturedData = o.data;
+        h.resolve(Response(requestOptions: o, statusCode: 204, data: null));
+      }));
+      final client = ApiClient(storage: FakeStorageService(), dioOverride: dio, baseUrl: 'https://example.com');
+
+      await client.deleteAccount('alice');
+
+      expect(capturedPath, '/api/v1/me');
+      expect(capturedMethod, 'DELETE');
+      expect(capturedData['confirm'], 'alice');
+    });
+
+    test('deleteAccount surfaces the server error message', () async {
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(onRequest: (o, h) {
+        h.resolve(Response(
+          requestOptions: o,
+          statusCode: 409,
+          data: {'error': 'last_admin', 'message': 'The last admin cannot be deleted'},
+        ));
+      }));
+      final client = ApiClient(storage: FakeStorageService(), dioOverride: dio, baseUrl: 'https://example.com');
+
+      expect(
+        () => client.deleteAccount('alice'),
+        throwsA(isA<ApiException>().having((e) => e.message, 'message', contains('last admin'))),
+      );
+    });
+  });
+
   group('eventTypeLabel guard', () {
     test('empty type does not throw', () async {
       // Import from real utils

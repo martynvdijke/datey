@@ -53,6 +53,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
  - **🔑 API Tokens** — Bearer-token authentication for scripts and automations (`Authorization: Bearer ...`). Create, rotate, and revoke personal tokens from Settings → API Tokens; secrets are shown once and stored only as SHA-256 hashes.
 - **📜 Audit Log** — Append-only, retention-capped record of security-relevant mutations (login success/failure, user create/delete, config saves, person/event/group deletes, backup run/restore, feed-key regeneration) with admin-only filterable viewer at `/settings/audit`. Retention via `AUDIT_RETENTION_MAX` (default 10000, min 100).
+- **⚖️ Public legal & account deletion** — `/privacy`, `/terms` and `/account/delete` render from deployment config (no invented operator or processors). Signed-in members delete their account from the deletion page, Settings → Delete account in the Android app, or `DELETE /api/v1/me`; sessions, tokens, push subscriptions and notification channels are revoked in one transaction. `GET /api/v1/me/export` returns the account data that can be attributed to one person. See [docs/legal.md](docs/legal.md) and [docs/play-store.md](docs/play-store.md).
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets. One-time password-reset links are emailed via the configured email channel (see `APP_URL`); reset requests are rate-limited per IP and responses never reveal whether a username exists.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
 - **🔭 OpenTelemetry Support** — Export logs to OTLP-compatible backends.
@@ -154,6 +155,10 @@ See `.env.example` for a template.
 | `GOOGLE_CLIENT_SECRET` | — | Google OAuth client secret (masked in UI, never logged) |
 | `GOOGLE_REFRESH_TOKEN` | — | Google OAuth refresh token (stored after consent, masked) |
 | `GOOGLE_DELETE_POLICY` | `keep` | Deletion policy for Google sync: `keep` or `delete` (**enforced**) |
+| `LEGAL_CONTROLLER_NAME` | — | Operator name published on `/privacy`, `/terms` and `/account/delete`; empty falls back to "the operator of this Datey instance" |
+| `LEGAL_CONTACT_EMAIL` | — | Privacy contact address; also enables the email deletion fallback. Empty does not invent an address |
+| `LEGAL_CONTACT_ADDRESS` | — | Optional postal address shown with the privacy contact |
+| `LEGAL_HOSTING_REGION` | — | Where the server runs, for the transfer paragraph; empty falls back to "the European Union" |
 
 > **Note:** Enforced ranges are validated both at startup and when saving from the admin UI. Invalid values cause the application to exit at startup, or re-render the admin form with an inline error in the UI.
 

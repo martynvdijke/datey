@@ -110,6 +110,14 @@ type Config struct {
 	OIDCScopes           string
 
 	AuditRetentionMax int
+
+	// Legal identity of the instance operator. These appear verbatim in the
+	// published privacy policy, terms and deletion page, so they are
+	// deployment configuration rather than runtime-editable content.
+	LegalControllerName string
+	LegalContactEmail   string
+	LegalContactAddress string
+	LegalHostingRegion  string
 }
 
 func Load() (*Config, error) {
@@ -203,6 +211,11 @@ func Load() (*Config, error) {
 		OIDCScopes:           getEnv("OIDC_SCOPES", "openid email profile groups"),
 
 		AuditRetentionMax: getEnvInt("AUDIT_RETENTION_MAX", 10000),
+
+		LegalControllerName: strings.TrimSpace(getEnv("LEGAL_CONTROLLER_NAME", "")),
+		LegalContactEmail:   strings.TrimSpace(getEnv("LEGAL_CONTACT_EMAIL", "")),
+		LegalContactAddress: strings.TrimSpace(getEnv("LEGAL_CONTACT_ADDRESS", "")),
+		LegalHostingRegion:  strings.TrimSpace(getEnv("LEGAL_HOSTING_REGION", "")),
 	}
 	// Secret file wins over env value so Docker secrets work without leaking
 	// the value into the process environment (file content is trimmed).

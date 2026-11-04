@@ -1,0 +1,97 @@
+{{define "content"}}
+<section class="legal py-4">
+  <p class="text-uppercase text-muted fw-semibold small mb-2">Legal</p>
+  <h1 class="mb-3">Privacy policy</h1>
+  <p class="lead">What {{if .Legal.Controller}}{{.Legal.Controller}}{{else}}the operator of this Datey instance{{end}} stores about you, why it stores it, who else sees it, and how to get it back or remove it. Last updated {{.Legal.Year}}.</p>
+
+  <div class="alert alert-light border" role="note">
+    Datey is a shared address book for birthdays, anniversaries and gift ideas. It is not an advertising service and it does not sell personal data.
+  </div>
+
+  <h2>Who is responsible</h2>
+  <p><strong>{{.Legal.Controller}}</strong> runs this instance and decides what is done with the data described here. The instance is hosted in {{.Legal.HostingRegion}}.</p>
+  {{if .Legal.ContactEmail}}
+  <p>For any privacy question, or to exercise a right below, write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a>.{{if .Legal.ContactAddress}} Postal address: {{.Legal.ContactAddress}}.{{end}}</p>
+  {{else}}
+  <p>This instance has not published a dedicated privacy address. Requests can be made from the account itself (see <a href="/account/delete">Delete your account</a>), or through the administrator of this instance.</p>
+  {{end}}
+
+  <h2>What is stored</h2>
+  <ul>
+    <li><strong>Account.</strong> Your username, optional email address, role, locale and appearance preferences. If you sign in with a password, a bcrypt hash of it is stored; the password itself is never stored. If the instance uses an external login provider, the provider's subject identifier (and the email it returns) is stored so the accounts can be linked.</li>
+    <li><strong>People records.</strong> The people in the shared address book may include names, first/middle/last name parts, birthdays and other important dates, postal addresses or other details in the notes field, phone or contact details in imported vCard data, photos, tags, group membership, relationships to other people, and free-text notes. Datey can store people who do not have an account.</li>
+    <li><strong>Calendar and events.</strong> Dates, event types (birthday, anniversary, custom and similar), descriptions, notes and reminder settings.</li>
+    <li><strong>Gift ideas and notes.</strong> Gift descriptions, notes, prices, links, status, and the notes timeline attached to a person or group.</li>
+    <li><strong>Notification settings.</strong> Per-user notification channels and their targets (for example an email address, chat id, ntfy topic, webhook URL or Matrix room), and browser push subscriptions (endpoint and encryption keys) when you enable push.</li>
+    <li><strong>Credentials and sessions.</strong> Session records, password-reset tokens and API tokens. API tokens and reset tokens are stored only as hashes; the raw secret is shown once.</li>
+    <li><strong>Technical and audit data.</strong> The IP address a request came from, request logs, and an audit record of security-relevant actions such as sign-in, configuration changes and deletions. Audit records include the acting username, action, target and source IP.</li>
+    <li><strong>Integrations.</strong> Identifiers needed to sync with CardDAV or Immich, and Google resource identifiers for contacts imported through Google.</li>
+    {{if .Legal.Analytics}}<li><strong>Analytics.</strong> This instance runs a self-hosted Umami instance at {{.Legal.AnalyticsURL}}. It records page views without advertising cookies or cross-site tracking.</li>{{end}}
+    {{if .Legal.Traces}}<li><strong>Server traces.</strong> OpenTelemetry tracing is enabled. Traces describe request timings on the server and are not used to build a profile of you.</li>{{end}}
+  </ul>
+
+  <h2>Why it is stored</h2>
+  <ul>
+    <li><strong>To run your account and the address book</strong> — signing you in, storing the people and dates you add, and sending the reminders you ask for. Legal basis: performance of a contract (GDPR Art. 6(1)(b)).</li>
+    <li><strong>To keep the instance secure</strong> — rate limiting, abuse prevention, audit logging and diagnosing failures. Legal basis: legitimate interest in a working, safe service (Art. 6(1)(f)).</li>
+    <li><strong>To send notifications you configure</strong> — email, push or chat messages. Legal basis: performance of a contract or your consent, depending on the channel.</li>
+    <li><strong>To keep records we are required to keep</strong> — for example a security audit record. Legal basis: legal obligation where it applies (Art. 6(1)(c)).</li>
+    {{if .Legal.Analytics}}<li><strong>To understand aggregate usage</strong> — page views only, without profiling. Legal basis: legitimate interest.</li>{{end}}
+  </ul>
+
+  <h2>Who else sees it</h2>
+  <p>Datey is a shared instance: everyone with an account can see the address-book records this instance contains, subject to the features the administrator enables. There is no per-record visibility setting in Datey, so do not store information in the shared address book that only one person should see.</p>
+  <p>Processors and integrations that may handle data on the operator's behalf or at the operator's direction:</p>
+  <ul>
+    {{if .Legal.Mail}}<li><strong>An email provider (SMTP)</strong>, which delivers verification, password-reset and reminder messages and therefore sees the recipient address and message content.</li>{{end}}
+    {{if .Legal.Push}}<li><strong>Web push services</strong>, which deliver notifications to a browser if push is enabled. They receive a push endpoint and encryption keys, not the account password.</li>{{end}}
+    {{if .Legal.OIDC}}<li><strong>Your identity provider</strong>, which authenticates you and returns your identity to this instance.</li>{{end}}
+    {{if .Legal.Google}}<li><strong>Google People API</strong>, which is queried only to import contacts the operator explicitly connects. See the Limited Use section below.</li>{{end}}
+    {{if .Legal.Processors}}<li><strong>Notification processors configured on this instance:</strong> {{range $i, $p := .Legal.Processors}}{{if $i}}, {{end}}{{$p}}{{end}}. They receive the message text and the destination configured for the channel.</li>{{end}}
+    <li><strong>CardDAV or Immich servers</strong>, if the operator connects them, receive or provide contact and photo data for the people records they are configured to sync.</li>
+    <li><strong>The hosting provider</strong> running this server and its backups.</li>
+  </ul>
+  <p>Nothing is sold, and no data is shared for advertising. Some processors may operate outside the European Economic Area. Where that happens, transfers rely on an adequacy decision or the standard contractual clauses of the provider.</p>
+
+  <h2 id="cookies">Cookies and tracking</h2>
+  <p>This site sets one cookie, <code>{{.Legal.SessionCookie}}</code>, and only when you sign in. It holds an opaque session token, is <code>HttpOnly</code> and <code>SameSite=Lax</code>, and exists so you do not have to sign in on every page. It is deleted when you sign out. A separate <code>csrf_token</code> cookie protects state-changing forms and is not used to identify you.</p>
+  <p>There are no advertising cookies, no third-party tracking pixels and no cross-site profiling.{{if .Legal.Analytics}} The analytics service above is self-hosted.{{else}} No analytics service is enabled on this instance.{{end}}</p>
+
+  <h2>How long it is kept</h2>
+  <p>Account data and address-book records are kept while the instance exists and the operator has not removed them. Sessions expire on their own, and request and audit logs are capped by the instance's retention settings.</p>
+  <p>When you delete your account, the account row and every credential that could act as you are removed immediately: sessions, API tokens, password-reset tokens, push subscriptions and per-user notification channels. Audit entries that named your username are relabelled <code>deleted-user</code>. Address-book records are shared data and are not deleted with your account; they remain available to the other people who use this instance.</p>
+
+  <h2>Your rights</h2>
+  <ul>
+    <li><strong>Access and portability.</strong> Download your account data as JSON from <code>GET /api/v1/me/export</code>. It contains your profile and preferences, credential metadata, audit entries naming your account, and the person record your account linked itself to.</li>
+    <li><strong>Rectification.</strong> Correct your account details in Settings, and correct shared people records in the address book.</li>
+    <li><strong>Erasure.</strong> Use <a href="/account/delete">Delete your account</a>. It takes effect immediately. Shared address-book records must be removed separately because they concern other people too.</li>
+    <li><strong>Restriction and objection.</strong> Ask the operator to restrict processing, or turn off optional features such as analytics or notifications.</li>
+    <li><strong>Complaint.</strong> You can lodge a complaint with the data protection authority in the country where you live or work.</li>
+  </ul>
+  <p>Anything not covered by the self-service pages can be requested from the contact above; we answer within one month, as the GDPR requires.</p>
+
+  <h2>Google API Services User Data Policy (Limited Use)</h2>
+  <p>Datey can import contacts through the Google People API when the operator explicitly connects a Google account. When that integration is enabled, the following Limited Use commitments apply:</p>
+  <ul>
+    <li>Data received from Google APIs is used <strong>only</strong> to import and maintain the contacts the operator explicitly connects — names, birthdays, contact details and notes that Google returns for that account.</li>
+    <li>Google user data is <strong>not sold</strong> and is <strong>not shared with third parties</strong> except as necessary to provide the import feature (the hosting and database processors that run this instance), to comply with applicable law, or as part of a merger, acquisition or sale of assets with notice to users.</li>
+    <li>Google user data is <strong>not used for advertising</strong>, including retargeting, personalised ads or interest-based advertising.</li>
+    <li>Google user data is <strong>not read by humans</strong> except where the user has given explicit consent, where it is necessary for security purposes such as investigating abuse, or where required by law.</li>
+    <li>Google user data is <strong>not used to train or improve generalised AI or machine-learning models</strong>.</li>
+  </ul>
+  <p>The operator can disconnect Google at any time from the admin settings, which stops further imports. To revoke Datey's access at Google, use <a href="https://myaccount.google.com/permissions" rel="noopener">Google Account permissions</a>. Revocation stops future access; contacts already imported remain in the address book until removed there.</p>
+  <p>Datey's use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+  <h2>Children</h2>
+  <p>This instance is not intended for anyone under 16, and accounts for younger users are not knowingly created.</p>
+
+  <h2>Backups</h2>
+  <p>The operator takes database backups. Backups may still contain data from before a deletion until they rotate out; they are not used to restore an individual account and are kept only for disaster recovery.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes in a way that affects you, the change is announced in the app before it takes effect.</p>
+
+  <p class="text-muted">See also the <a href="/terms">terms of use</a> and <a href="/account/delete">account deletion page</a>.</p>
+</section>
+{{end}}

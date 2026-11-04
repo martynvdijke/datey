@@ -160,7 +160,7 @@ func (h *Handler) SetupRedirect(next http.Handler) http.Handler {
 		// Skip for setup, login, logout, health endpoints, OIDC round-trip, and the public
 		// iCal feeds (which are key-protected and may be configured purely
 		// via environment variables before any user exists).
-		if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/logout" || r.URL.Path == "/health" || strings.HasPrefix(r.URL.Path, "/api/auth/oidc") || strings.HasPrefix(r.URL.Path, "/ical") {
+		if r.URL.Path == "/setup" || r.URL.Path == "/login" || r.URL.Path == "/logout" || r.URL.Path == "/health" || r.URL.Path == "/privacy" || r.URL.Path == "/terms" || r.URL.Path == "/account/delete" || strings.HasPrefix(r.URL.Path, "/api/auth/oidc") || strings.HasPrefix(r.URL.Path, "/ical") {
 			next.ServeHTTP(w, r)
 			return
 		}

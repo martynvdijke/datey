@@ -1,0 +1,41 @@
+{{define "content"}}
+<section class="legal py-4">
+  <p class="text-uppercase text-muted fw-semibold small mb-2">Legal</p>
+  <h1 class="mb-3">Terms of use</h1>
+  <p class="lead">The short version: keep accurate dates, be decent to the other people in the address book, and keep your account secure. Last updated {{.Legal.Year}}.</p>
+
+  <h2>Your account</h2>
+  <p>You need an account to use the shared address book. Keep one account per person, use an address you can actually receive mail at if you add one, and keep your password to yourself. You are responsible for what happens under your account; if you think someone else has access, change your password and sign out everywhere.</p>
+  <p>You can delete your account at any time from <a href="/account/delete">Delete your account</a>. Administrators may suspend accounts that break these terms.</p>
+
+  <h2>Shared address book</h2>
+  <p>Datey stores one shared set of people, dates, groups and gift ideas for the instance. Anything you add is visible to other account holders on the instance. Do not add information about someone else that they would not expect the other users of this instance to see.</p>
+  <p>You keep ownership of the records you contribute. By adding them you give the operator permission to store, display and back them up as part of running this instance, including showing them to other users of the instance. That permission ends when a record is deleted, except for copies in other people's exports or in backups that have not yet rotated.</p>
+  <p>Do not post content that is illegal, hateful, harassing, or someone else's private information without a lawful basis.</p>
+
+  <h2>What is not allowed</h2>
+  <ul>
+    <li>Scraping, bulk-downloading or reselling other people's data.</li>
+    <li>Automated creation of accounts, events or messages, or otherwise evading rate limits.</li>
+    <li>Uploading malware, or probing the service for vulnerabilities without asking first.</li>
+    <li>Impersonating another person or a brand you do not represent.</li>
+  </ul>
+
+  <h2>Integrations</h2>
+  <p>CardDAV, Google Contacts and Immich sync are optional and controlled by the administrator. Imported data is shown as it was found and may be incomplete or wrong. Google data is used only for the import described in the <a href="/privacy">privacy policy</a>.</p>
+
+  <h2>Availability</h2>
+  <p>This is a self-hosted instance, offered as it is. It can go down for maintenance, lose data if a backup fails, or shut down entirely. Do not rely on it as the only copy of anything you care about — export your data regularly.</p>
+
+  <h2>Liability</h2>
+  <p>To the extent the law allows, the operator is not liable for indirect or consequential loss arising from use of the instance. Nothing here limits liability that cannot be limited by law, including for death, personal injury or fraud.</p>
+
+  <h2>Governing law</h2>
+  <p>These terms are governed by the law of the country in which the operator of this instance is established, without affecting consumer protections you have where you live.</p>
+
+  <h2>Changes</h2>
+  <p>Material changes are announced in the app before they take effect. Continuing to use the instance after that means you accept the updated terms.</p>
+
+  <p class="text-muted">See also the <a href="/privacy">privacy policy</a>, which explains what data is stored and how to remove it.</p>
+</section>
+{{end}}

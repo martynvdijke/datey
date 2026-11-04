@@ -128,6 +128,9 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"recurring_rule_form.html",
 		"recurring_rule_list.html",
 		"audit.html",
+		"privacy.html",
+		"terms.html",
+		"account_delete.html",
 	}
 
 	templates := make(map[string]*template.Template, len(pages))

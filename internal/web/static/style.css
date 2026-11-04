@@ -925,6 +925,21 @@ h1, h2, h3, h4, h5, h6 {
   width: 1px;
 }
 
+/* ── Legal pages ── */
+.legal {
+  max-width: 52rem;
+}
+.legal h2 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+}
+.legal li {
+  margin-bottom: 0.35rem;
+}
+.legal-footer {
+  font-size: 0.875rem;
+}
+
 /* ── Offline Banner ── */
 .offline-banner {
   background: #f59e0b;

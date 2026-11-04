@@ -1,6 +1,15 @@
 import 'package:dio/dio.dart';
 import 'storage_service.dart';
 
+/// Error returned by an API call whose message is safe to show to the user.
+class ApiException implements Exception {
+  ApiException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class ApiClient {
   final Dio dio;
   final StorageService storage;
@@ -29,8 +38,11 @@ class ApiClient {
             ].join('; ');
             options.headers['Cookie'] = existing == null ? cookie : '$existing; $cookie';
           }
-          // CSRF for POST
-          if (options.method.toUpperCase() == 'POST' && csrf != null && csrf.isNotEmpty) {
+          // CSRF for state-changing requests.
+          final method = options.method.toUpperCase();
+          if ((method == 'POST' || method == 'PUT' || method == 'PATCH' || method == 'DELETE') &&
+              csrf != null &&
+              csrf.isNotEmpty) {
             options.headers['X-CSRF-Token'] = csrf;
           }
           handler.next(options);
@@ -56,9 +68,39 @@ class ApiClient {
 
   String resolvePhotoUrl(String? photoUrl) => _resolvePhotoUrl(photoUrl, null);
 
-  Future<Response<dynamic>> getMe() => dio.get('/api/me');
+  Future<Response<dynamic>> getMe() => dio.get('/api/v1/me');
 
   Future<Response<dynamic>> getOidcStatus() => dio.get('/api/auth/oidc/status');
+
+  /// Download the requester's attributable account data as JSON.
+  Future<Map<String, dynamic>> exportAccount() async {
+    final resp = await dio.get('/api/v1/me/export');
+    if (resp.statusCode == 200 && resp.data is Map) {
+      return Map<String, dynamic>.from(resp.data as Map);
+    }
+    throw ApiException(_errorMessage(resp, 'Could not export the account data.'));
+  }
+
+  /// Close the account. The server requires an explicit confirmation matching
+  /// the username or the literal DELETE.
+  Future<void> deleteAccount(String confirm) async {
+    final resp = await dio.delete(
+      '/api/v1/me',
+      data: {'confirm': confirm},
+      options: Options(contentType: 'application/json'),
+    );
+    if (resp.statusCode == 204 || resp.statusCode == 200) return;
+    throw ApiException(_errorMessage(resp, 'Could not delete the account.'));
+  }
+
+  String _errorMessage(Response<dynamic> resp, String fallback) {
+    final data = resp.data;
+    if (data is Map) {
+      final message = data['message'];
+      if (message is String && message.isNotEmpty) return message;
+    }
+    return fallback;
+  }
 
   /// Checks whether a server advertises OIDC support without sending the
   /// stored session cookie. Used while the user is still typing a server URL.

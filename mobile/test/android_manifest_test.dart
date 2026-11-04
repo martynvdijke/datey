@@ -11,8 +11,28 @@ void main() {
     expect(manifest, contains('android.permission.INTERNET'));
   });
 
-  test('manifest permits self-hosted cleartext HTTP', () {
-    expect(manifest, contains('android:usesCleartextTraffic="true"'));
+  test('manifest blocks cleartext HTTP in release builds', () {
+    expect(manifest, contains('android:usesCleartextTraffic="false"'));
+    expect(manifest, isNot(contains('android:usesCleartextTraffic="true"')));
+  });
+
+  test('debug manifest permits self-hosted LAN HTTP during development', () {
+    final debugManifest =
+        File('android/app/src/debug/AndroidManifest.xml').readAsStringSync();
+    expect(debugManifest, contains('android:usesCleartextTraffic="true"'));
+    expect(debugManifest, contains('tools:replace="android:usesCleartextTraffic"'));
+  });
+
+  test('manifest excludes app data from backups and device transfers', () {
+    expect(manifest, contains('android:allowBackup="false"'));
+    expect(manifest, contains('android:fullBackupContent="false"'));
+    expect(manifest, contains('android:dataExtractionRules="@xml/data_extraction_rules"'));
+    final rules = File(
+      'android/app/src/main/res/xml/data_extraction_rules.xml',
+    ).readAsStringSync();
+    expect(rules, contains('<cloud-backup>'));
+    expect(rules, contains('<device-transfer>'));
+    expect(rules, contains('domain="sharedpref"'));
   });
 
   test('manifest declares a round launcher icon', () {
