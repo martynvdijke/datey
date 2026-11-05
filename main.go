@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/internal/auditlog"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/db"
+	"github.com/datey/datey/internal/demo"
 	"github.com/datey/datey/internal/logstore"
 	"github.com/datey/datey/internal/notifier"
 	"github.com/datey/datey/internal/repository"
@@ -78,6 +79,13 @@ func main() {
 	if err := db.DropOneTimeNotificationTables(context.Background(), client, cfg.DataDir+"/datey.db"); err != nil {
 		slog.Error("failed to drop one-time notification tables", "error", err)
 		os.Exit(1)
+	}
+
+	// Provision the public demo account (hosted demo instance only) and seed
+	// demo content when the shared address book is empty. A failure must not
+	// stop the server from starting.
+	if err := demo.Ensure(context.Background(), client, cfg, repository.NewUserRepository(client)); err != nil {
+		slog.Error("failed to provision demo account", "error", err)
 	}
 
 	// Initialise the log store with a ring buffer. Done after the settings

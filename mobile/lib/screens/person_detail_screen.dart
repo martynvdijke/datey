@@ -12,6 +12,7 @@ import '../widgets/person_avatar.dart';
 import '../widgets/countdown_badge.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/gift_sheet.dart';
+import '../widgets/note_sheet.dart';
 
 class PersonDetailScreen extends ConsumerStatefulWidget {
   final int personId;
@@ -27,7 +28,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 3, vsync: this);
+    _tab = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -105,6 +106,34 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
     }
   }
 
+  Future<void> _deleteNote(int noteId) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete note?'),
+        content: const Text('This cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final storage = StorageService();
+      final baseUrl = await storage.getBaseUrl();
+      if (baseUrl == null) return;
+      final client = ApiClient(storage: storage, baseUrl: baseUrl);
+      final resp = await client.deletePersonNote(widget.personId, noteId);
+      if (resp.statusCode == 204 || resp.statusCode == 200) {
+        ref.invalidate(personDetailProvider(widget.personId));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Note deleted')));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(personDetailProvider(widget.personId));
@@ -121,10 +150,12 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
         ),
         bottom: TabBar(
           controller: _tab,
+          isScrollable: true,
           tabs: const [
             Tab(text: 'Overview'),
             Tab(text: 'Relationships'),
             Tab(text: 'Gifts'),
+            Tab(text: 'Notes'),
           ],
         ),
       ),
@@ -139,6 +170,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
               _overviewTab(context, p, isMe, scheme),
               _relationshipsTab(context, p),
               _giftsTab(context, p, scheme),
+              _notesTab(context, p, scheme),
             ],
           );
         },
@@ -160,7 +192,21 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
                     icon: const Icon(Icons.add),
                     label: const Text('Add gift'),
                   )
-                : null,
+                : _tab.index == 3
+                    ? FloatingActionButton.extended(
+                        onPressed: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                          builder: (_) => NoteSheet(
+                            personId: p.id,
+                            onSaved: () => ref.invalidate(personDetailProvider(p.id)),
+                          ),
+                        ),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add note'),
+                      )
+                    : null,
           ),
     );
   }
@@ -388,6 +434,59 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
                   tooltip: 'Delete',
                 ),
               ]),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _notesTab(BuildContext context, PersonDetail p, ColorScheme scheme) {
+    if (p.notesTimeline.isEmpty) {
+      return EmptyState(
+        icon: Icons.sticky_note_2_outlined,
+        title: 'No notes yet',
+        subtitle: 'Tap “Add note” to capture something worth remembering.',
+        action: FilledButton.icon(
+          onPressed: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+            builder: (_) => NoteSheet(personId: p.id, onSaved: () => ref.invalidate(personDetailProvider(p.id))),
+          ),
+          icon: const Icon(Icons.add),
+          label: const Text('Add note'),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+      itemCount: p.notesTimeline.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      itemBuilder: (context, i) {
+        final n = p.notesTimeline[i];
+        final date = n.noteDate.isNotEmpty ? n.noteDate : n.createdAt;
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Icon(Icons.sticky_note_2_outlined, size: 16, color: scheme.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    date.isEmpty ? '' : noteDateLabel(date),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.delete_outline, size: 18, color: scheme.error),
+                  onPressed: () => _deleteNote(n.id),
+                  tooltip: 'Delete',
+                ),
+              ]),
+              const SizedBox(height: 4),
+              Text(n.note, style: const TextStyle(fontSize: 14)),
             ]),
           ),
         );

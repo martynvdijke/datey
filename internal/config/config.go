@@ -24,6 +24,15 @@ type Config struct {
 	// When empty, links are derived from the incoming request instead.
 	AppURL string
 
+	// Demo account. Only meant for the hosted demo instance: the credentials
+	// are advertised publicly on the login page, and the account is a normal
+	// read-write user. Demo seeding is skipped on instances that already have
+	// people in the shared address book.
+	DemoUserEnabled  bool
+	DemoUserHandle   string
+	DemoUserPassword string
+	DemoUserEmail    string
+
 	BackupDir                  string
 	BackupRetentionDays        int
 	WeeklyBackupDay            int
@@ -132,6 +141,10 @@ func Load() (*Config, error) {
 		LogBufferSize:         getEnvInt("LOG_BUFFER_SIZE", 10000),
 		OTLPEndpoint:          getEnv("OTEL_ENDPOINT", ""),
 		AppURL:                getEnv("APP_URL", ""),
+		DemoUserEnabled:       getEnvBool("DEMO_USER_ENABLED", isDemoHost(getEnv("APP_URL", ""))),
+		DemoUserHandle:        strings.ToLower(getEnvExplicit("DEMO_USER_HANDLE", "demo")),
+		DemoUserPassword:      getEnvExplicit("DEMO_USER_PASSWORD", "demo"),
+		DemoUserEmail:         getEnv("DEMO_USER_EMAIL", "demo@datey.local"),
 		SMTPHost:              getEnv("SMTP_HOST", ""),
 		SMTPPort:              getEnvInt("SMTP_PORT", 587),
 		SMTPUser:              getEnv("SMTP_USER", ""),
@@ -405,6 +418,24 @@ func ParseClockTime(s string) (hour, minute int, err error) {
 		return 0, 0, fmt.Errorf("invalid clock time %q", s)
 	}
 	return hour, minute, nil
+}
+
+// isDemoHost reports whether appURL points at the hosted demo instance. It
+// tolerates a missing scheme so a bare hostname still resolves, and returns
+// false for empty or unparseable input.
+func isDemoHost(appURL string) bool {
+	appURL = strings.TrimSpace(appURL)
+	if appURL == "" {
+		return false
+	}
+	u, err := url.Parse(appURL)
+	if err != nil || u.Host == "" {
+		u, err = url.Parse("https://" + appURL)
+		if err != nil {
+			return false
+		}
+	}
+	return strings.EqualFold(u.Hostname(), "datey.vandijke.xyz")
 }
 
 func getEnv(key, fallback string) string {

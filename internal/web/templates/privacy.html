@@ -2,7 +2,8 @@
 <section class="legal py-4">
   <p class="text-uppercase text-muted fw-semibold small mb-2">Legal</p>
   <h1 class="mb-3">Privacy policy</h1>
-  <p class="lead">What {{if .Legal.Controller}}{{.Legal.Controller}}{{else}}the operator of this Datey instance{{end}} stores about you, why it stores it, who else sees it, and how to get it back or remove it. Last updated {{.Legal.Year}}.</p>
+  <p class="lead">What {{if .Legal.Controller}}{{.Legal.Controller}}{{else}}the operator of this Datey instance{{end}} stores about you, why it stores it, who else sees it, and how to get it back or remove it.</p>
+  <p class="text-muted small">Effective date: {{.Legal.EffectiveDate}} · Version {{.Legal.Version}} · Applies to this Datey instance and its web and Android clients.</p>
 
   <div class="alert alert-light border" role="note">
     Datey is a shared address book for birthdays, anniversaries and gift ideas. It is not an advertising service and it does not sell personal data.
@@ -19,13 +20,14 @@
   <h2>What is stored</h2>
   <ul>
     <li><strong>Account.</strong> Your username, optional email address, role, locale and appearance preferences. If you sign in with a password, a bcrypt hash of it is stored; the password itself is never stored. If the instance uses an external login provider, the provider's subject identifier (and the email it returns) is stored so the accounts can be linked.</li>
-    <li><strong>People records.</strong> The people in the shared address book may include names, first/middle/last name parts, birthdays and other important dates, postal addresses or other details in the notes field, phone or contact details in imported vCard data, photos, tags, group membership, relationships to other people, and free-text notes. Datey can store people who do not have an account.</li>
+    <li><strong>People records.</strong> The people in the shared address book may include names, first/middle/last name parts, birthdays and other important dates, postal addresses or other details in the notes field, phone or contact details in imported vCard data, photos, tags, group membership, relationships to other people, and free-text notes. Datey can store people who do not have an account. If the operator connects an Immich server, photo references and image data for people records may be stored there and fetched through this instance.</li>
     <li><strong>Calendar and events.</strong> Dates, event types (birthday, anniversary, custom and similar), descriptions, notes and reminder settings.</li>
     <li><strong>Gift ideas and notes.</strong> Gift descriptions, notes, prices, links, status, and the notes timeline attached to a person or group.</li>
-    <li><strong>Notification settings.</strong> Per-user notification channels and their targets (for example an email address, chat id, ntfy topic, webhook URL or Matrix room), and browser push subscriptions (endpoint and encryption keys) when you enable push.</li>
+    <li><strong>Notification settings and push subscriptions.</strong> Per-user notification channels and their targets (for example an email address, chat id, ntfy topic, webhook URL or Matrix room), and browser or Android push subscriptions (push endpoint and encryption keys) when you enable push.</li>
     <li><strong>Credentials and sessions.</strong> Session records, password-reset tokens and API tokens. API tokens and reset tokens are stored only as hashes; the raw secret is shown once.</li>
-    <li><strong>Technical and audit data.</strong> The IP address a request came from, request logs, and an audit record of security-relevant actions such as sign-in, configuration changes and deletions. Audit records include the acting username, action, target and source IP.</li>
+    <li><strong>Technical and audit data.</strong> The IP address a request came from, request and application logs, and an audit record of security-relevant actions such as sign-in, configuration changes and deletions. Audit records include the acting username, action, target and source IP.</li>
     <li><strong>Integrations.</strong> Identifiers needed to sync with CardDAV or Immich, and Google resource identifiers for contacts imported through Google.</li>
+    <li><strong>Notification history.</strong> A log of notifications sent to you (channel, target, message summary, timestamp and delivery result) so the operator can diagnose delivery failures.</li>
     {{if .Legal.Analytics}}<li><strong>Analytics.</strong> This instance runs a self-hosted Umami instance at {{.Legal.AnalyticsURL}}. It records page views without advertising cookies or cross-site tracking.</li>{{end}}
     {{if .Legal.Traces}}<li><strong>Server traces.</strong> OpenTelemetry tracing is enabled. Traces describe request timings on the server and are not used to build a profile of you.</li>{{end}}
   </ul>
@@ -35,6 +37,7 @@
     <li><strong>To run your account and the address book</strong> — signing you in, storing the people and dates you add, and sending the reminders you ask for. Legal basis: performance of a contract (GDPR Art. 6(1)(b)).</li>
     <li><strong>To keep the instance secure</strong> — rate limiting, abuse prevention, audit logging and diagnosing failures. Legal basis: legitimate interest in a working, safe service (Art. 6(1)(f)).</li>
     <li><strong>To send notifications you configure</strong> — email, push or chat messages. Legal basis: performance of a contract or your consent, depending on the channel.</li>
+    <li><strong>To run optional features you switch on</strong> — browser or Android push, photo sync, integrations and analytics. Legal basis: your consent (Art. 6(1)(a)) where consent is required, which you can withdraw at any time in Settings or by disabling the feature.</li>
     <li><strong>To keep records we are required to keep</strong> — for example a security audit record. Legal basis: legal obligation where it applies (Art. 6(1)(c)).</li>
     {{if .Legal.Analytics}}<li><strong>To understand aggregate usage</strong> — page views only, without profiling. Legal basis: legitimate interest.</li>{{end}}
   </ul>
@@ -51,25 +54,38 @@
     <li><strong>CardDAV or Immich servers</strong>, if the operator connects them, receive or provide contact and photo data for the people records they are configured to sync.</li>
     <li><strong>The hosting provider</strong> running this server and its backups.</li>
   </ul>
-  <p>Nothing is sold, and no data is shared for advertising. Some processors may operate outside the European Economic Area. Where that happens, transfers rely on an adequacy decision or the standard contractual clauses of the provider.</p>
+  <p>Nothing is sold, and no data is shared for advertising. Data may be handled outside the European Economic Area where a processor or the hosting provider operates there. Transfers are covered by an adequacy decision of the European Commission or, where none applies, by the Standard Contractual Clauses (or another approved transfer mechanism) together with the provider's security commitments. The operator chooses processors that offer those safeguards.</p>
 
   <h2 id="cookies">Cookies and tracking</h2>
   <p>This site sets one cookie, <code>{{.Legal.SessionCookie}}</code>, and only when you sign in. It holds an opaque session token, is <code>HttpOnly</code> and <code>SameSite=Lax</code>, and exists so you do not have to sign in on every page. It is deleted when you sign out. A separate <code>csrf_token</code> cookie protects state-changing forms and is not used to identify you.</p>
   <p>There are no advertising cookies, no third-party tracking pixels and no cross-site profiling.{{if .Legal.Analytics}} The analytics service above is self-hosted.{{else}} No analytics service is enabled on this instance.{{end}}</p>
 
   <h2>How long it is kept</h2>
-  <p>Account data and address-book records are kept while the instance exists and the operator has not removed them. Sessions expire on their own, and request and audit logs are capped by the instance's retention settings.</p>
+  <p>Retention depends on the category of data. The periods below describe this instance's defaults; the operator may shorten them.</p>
+  <ul>
+    <li><strong>Account data</strong> — kept until you delete the account, or until the operator removes it. Deletion is immediate, with no grace period.</li>
+    <li><strong>Address-book records</strong> (people, events, gifts, notes, tags, groups, relationships) — kept while the shared address book is in use. They are not tied to a single account and are removed record by record.</li>
+    <li><strong>Audit records</strong> — kept for security review and capped by the operator's configurable maximum retention setting. Entries that named a deleted account have the username replaced with <code>deleted-user</code>.</li>
+    <li><strong>Technical and application logs</strong> — kept in memory or on disk for a short operational period and capped by the instance's log retention setting.</li>
+    <li><strong>Notification history</strong> — kept for a bounded period so delivery failures can be diagnosed, and deleted when the account is deleted.</li>
+    <li><strong>Sessions, reset tokens and API tokens</strong> — sessions expire automatically; reset and API tokens remain until they expire, are revoked, or the account is deleted.</li>
+    <li><strong>Backups</strong> — taken on the operator's schedule and rotated out on a fixed cycle. Backups are kept only for disaster recovery and are not used to restore an individual account.</li>
+  </ul>
   <p>When you delete your account, the account row and every credential that could act as you are removed immediately: sessions, API tokens, password-reset tokens, push subscriptions and per-user notification channels. Audit entries that named your username are relabelled <code>deleted-user</code>. Address-book records are shared data and are not deleted with your account; they remain available to the other people who use this instance.</p>
 
   <h2>Your rights</h2>
+  <p>If you are in the EU/EEA (or another jurisdiction with equivalent rights), you have the following rights in relation to your personal data:</p>
   <ul>
-    <li><strong>Access and portability.</strong> Download your account data as JSON from <code>GET /api/v1/me/export</code>. It contains your profile and preferences, credential metadata, audit entries naming your account, and the person record your account linked itself to.</li>
+    <li><strong>Access.</strong> Ask the operator for a copy of the personal data held about you.</li>
+    <li><strong>Portability.</strong> Download your account data as JSON from <a href="/api/v1/me/export">Download my data (JSON)</a> (signed-in users can use the link on <a href="/account/delete">Delete your account</a> or in Settings). It contains your profile and preferences, notification settings, credential metadata, audit entries naming your account, and the person record your account linked itself to with its events, notes, gift ideas, tags, groups and relationships. Secrets and tokens are excluded.</li>
     <li><strong>Rectification.</strong> Correct your account details in Settings, and correct shared people records in the address book.</li>
     <li><strong>Erasure.</strong> Use <a href="/account/delete">Delete your account</a>. It takes effect immediately. Shared address-book records must be removed separately because they concern other people too.</li>
-    <li><strong>Restriction and objection.</strong> Ask the operator to restrict processing, or turn off optional features such as analytics or notifications.</li>
-    <li><strong>Complaint.</strong> You can lodge a complaint with the data protection authority in the country where you live or work.</li>
+    <li><strong>Restriction.</strong> Ask the operator to restrict processing while a request is investigated.</li>
+    <li><strong>Objection.</strong> Object to processing based on legitimate interests, for example security logging. The operator must then stop unless it can show compelling grounds that override your interests.</li>
+    <li><strong>Withdraw consent.</strong> Where processing relies on consent, withdraw it at any time by turning the feature off in Settings or by contacting the operator. Withdrawal does not affect the lawfulness of processing before the withdrawal.</li>
+    <li><strong>Complaint.</strong> Lodge a complaint with your local supervisory authority — the data protection authority in the EU/EEA country where you live, work, or where the alleged infringement occurred. You can find the national authorities in the <a href="https://www.edpb.europa.eu/about-edpb/about-edpb/members_en" rel="noopener">EDPB member list</a>. The operator's contact details above are the first point of contact; you do not need to use them before complaining.</li>
   </ul>
-  <p>Anything not covered by the self-service pages can be requested from the contact above; we answer within one month, as the GDPR requires.</p>
+  <p>Anything not covered by the self-service pages can be requested from the contact above; we answer within one month, as the GDPR requires, and may extend that period by two further months for complex requests.</p>
 
   <h2>Google API Services User Data Policy (Limited Use)</h2>
   <p>Datey can import contacts through the Google People API when the operator explicitly connects a Google account. When that integration is enabled, the following Limited Use commitments apply:</p>
@@ -83,6 +99,12 @@
   <p>The operator can disconnect Google at any time from the admin settings, which stops further imports. To revoke Datey's access at Google, use <a href="https://myaccount.google.com/permissions" rel="noopener">Google Account permissions</a>. Revocation stops future access; contacts already imported remain in the address book until removed there.</p>
   <p>Datey's use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
 
+  <h2>Security</h2>
+  <p>The operator takes appropriate technical and organisational measures to protect the data: passwords are stored as bcrypt hashes, API and reset tokens as hashes, session cookies are <code>HttpOnly</code> and <code>SameSite=Lax</code>, state-changing forms carry CSRF tokens, and access to the instance is authenticated. Transport is protected with HTTPS where the operator terminates TLS. Only the operator and administrators who need it for running the instance can access the database and backups. No system is perfectly secure, so report suspected issues to the contact above.</p>
+
+  <h2>No sale, no profiling, no automated decisions</h2>
+  <p>Datey does not sell personal data, does not share it for advertising, and does not use it for automated decision-making or profiling that produces legal or similarly significant effects. Reminders are scheduled from the dates you enter; they are not decisions about you.</p>
+
   <h2>Children</h2>
   <p>This instance is not intended for anyone under 16, and accounts for younger users are not knowingly created.</p>
 
@@ -90,7 +112,7 @@
   <p>The operator takes database backups. Backups may still contain data from before a deletion until they rotate out; they are not used to restore an individual account and are kept only for disaster recovery.</p>
 
   <h2>Changes</h2>
-  <p>If this policy changes in a way that affects you, the change is announced in the app before it takes effect.</p>
+  <p>If this policy changes in a way that affects you, the change is announced in the app before it takes effect, and the effective date and version at the top are updated. Where a change relies on consent, it is requested again. Continuing to use the instance after a change takes effect means you accept the updated policy; you can always delete your account instead.</p>
 
   <p class="text-muted">See also the <a href="/terms">terms of use</a> and <a href="/account/delete">account deletion page</a>.</p>
 </section>

@@ -39,6 +39,48 @@
 </section>
 {{end}}
 
+<!-- Notes -->
+<section class="card mb-4" aria-labelledby="person-notes-heading">
+  <div class="card-body">
+    <h2 id="person-notes-heading" class="h5 mb-3">{{T "person_detail.notes"}}</h2>
+    <form action="/people/{{.Person.ID}}/notes" method="POST" class="row g-2 align-items-end mb-4">
+      {{template "csrfField" .}}
+      <div class="col-md-7">
+        <label class="form-label" for="person-note">{{T "person_detail.notes"}} {{template "requiredIndicator" .}}</label>
+        <textarea class="form-control" id="person-note" name="note" rows="2" required></textarea>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="person-note-date">Date</label>
+        <input type="date" class="form-control" id="person-note-date" name="note_date">
+      </div>
+      <div class="col-md-auto">
+        <button type="submit" class="btn btn-primary">{{T "person_detail.add_note"}}</button>
+      </div>
+    </form>
+    {{if .Notes}}
+    <ul class="list-group list-group-flush">
+      {{range .Notes}}
+      <li class="list-group-item px-0 d-flex align-items-start gap-3">
+        <div class="flex-grow-1">
+          <div class="note-text">{{.Note}}</div>
+          <div class="small text-muted">{{.Date}}{{if .Created}} · added {{.Created}}{{end}}</div>
+        </div>
+        <form action="/people/{{$.Person.ID}}/notes/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="{{T "person_detail.delete_note_confirm"}}" hx-post="/people/{{$.Person.ID}}/notes/{{.ID}}/delete" hx-target="closest li" hx-swap="outerHTML">
+          {{template "csrfField" $}}
+          <button class="btn btn-outline-danger btn-sm py-0" type="submit">
+            <span class="btn-text">Delete</span>
+            <span class="spinner-border spinner-border-sm htmx-indicator" role="status"><span class="visually-hidden">Deleting...</span></span>
+          </button>
+        </form>
+      </li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="text-muted mb-0">{{T "person_detail.no_notes"}}</p>
+    {{end}}
+  </div>
+</section>
+
 <!-- Related people -->
 <div class="card mb-3">
   <div class="card-body">

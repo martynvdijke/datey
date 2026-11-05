@@ -696,6 +696,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		"AvatarColor":       avatarColorIndex(person.Name),
 		"PhotoURL":          h.photoURL(r, person),
 		"EventRows":         eventRows,
+		"Notes":             h.loadPersonNoteRows(r, id),
 		"Groups":            groups,
 		"Tags":              tags,
 		"GiftIdeas":         giftIdeas,

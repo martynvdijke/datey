@@ -189,9 +189,9 @@ func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	h.render(w, r, "login.html", map[string]any{
+	h.render(w, r, "login.html", h.loginData(map[string]any{
 		"Title": "Datey - Login",
-	})
+	}))
 }
 
 func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
@@ -222,13 +222,13 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 			writeAPIError(w, http.StatusBadRequest, "validation", "Username and password are required")
 			return
 		}
-		h.render(w, r, "login.html", map[string]any{
+		h.render(w, r, "login.html", h.loginData(map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Username and password are required",
 			"FormData": map[string]string{
 				"Username": username,
 			},
-		})
+		}))
 		return
 	}
 
@@ -242,13 +242,13 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Retry-After", strconv.Itoa(int(retryAfter.Seconds())+1))
-		h.render(w, r, "login.html", map[string]any{
+		h.render(w, r, "login.html", h.loginData(map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Too many login attempts. Please try again later.",
 			"FormData": map[string]string{
 				"Username": username,
 			},
-		})
+		}))
 		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
@@ -260,13 +260,13 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 			writeAPIError(w, http.StatusUnauthorized, "invalid_credentials", "Invalid username or password")
 			return
 		}
-		h.render(w, r, "login.html", map[string]any{
+		h.render(w, r, "login.html", h.loginData(map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
 			"FormData": map[string]string{
 				"Username": username,
 			},
-		})
+		}))
 		return
 	}
 
@@ -276,13 +276,13 @@ func (h *Handler) loginPost(w http.ResponseWriter, r *http.Request) {
 			writeAPIError(w, http.StatusUnauthorized, "invalid_credentials", "Invalid username or password")
 			return
 		}
-		h.render(w, r, "login.html", map[string]any{
+		h.render(w, r, "login.html", h.loginData(map[string]any{
 			"Title": "Datey - Login",
 			"Error": "Invalid username or password",
 			"FormData": map[string]string{
 				"Username": username,
 			},
-		})
+		}))
 		return
 	}
 

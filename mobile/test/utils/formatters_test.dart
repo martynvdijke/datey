@@ -37,6 +37,14 @@ void main() {
     test('5 cents', () => expect(priceLabel(5), r'$0.05'));
   });
 
+  group('formatDataSize', () {
+    test('bytes', () => expect(formatDataSize(0), '0 B'));
+    test('bytes below a kilobyte', () => expect(formatDataSize(820), '820 B'));
+    test('kilobytes', () => expect(formatDataSize(1024), '1.0 KB'));
+    test('fractional kilobytes', () => expect(formatDataSize(1536), '1.5 KB'));
+    test('megabytes', () => expect(formatDataSize(1048576), '1.0 MB'));
+  });
+
   group('labels', () {
     test('gift status', () {
       expect(giftStatusLabel('idea'), 'Idea');

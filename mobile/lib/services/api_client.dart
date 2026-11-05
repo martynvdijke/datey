@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'storage_service.dart';
 
 /// Error returned by an API call whose message is safe to show to the user.
@@ -122,6 +123,44 @@ class ApiClient {
     }
   }
 
+  /// Test seam so widget tests can stub the unauthenticated auth-config probe.
+  @visibleForTesting
+  static Future<Map<String, dynamic>?> Function(String baseUrl)? authConfigProbeOverride;
+
+  /// Reads the public auth configuration (including demo-account details)
+  /// without sending the stored session cookie. Used while the user is still
+  /// typing a server URL. Returns null when the server cannot be reached or
+  /// does not expose a usable config.
+  static Future<Map<String, dynamic>?> authConfigAt(String baseUrl, {Dio? probeDio}) async {
+    final override = authConfigProbeOverride;
+    if (override != null) return override(baseUrl);
+    try {
+      final probe = probeDio ??
+          Dio(BaseOptions(
+            baseUrl: _normalizeProbeUrl(baseUrl),
+            connectTimeout: const Duration(seconds: 4),
+            receiveTimeout: const Duration(seconds: 4),
+            headers: {'Accept': 'application/json'},
+            validateStatus: (s) => s != null && s < 500,
+          ));
+      final resp = await probe.get('/api/auth/config');
+      if (resp.statusCode == 200 && resp.data is Map) {
+        return Map<String, dynamic>.from(resp.data as Map);
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static String _normalizeProbeUrl(String baseUrl) {
+    var v = baseUrl.trim();
+    while (v.endsWith('/')) {
+      v = v.substring(0, v.length - 1);
+    }
+    return v;
+  }
+
   Future<Response<dynamic>> login(String username, String password) => dio.post(
         '/login',
         data: {'username': username, 'password': password},
@@ -164,6 +203,25 @@ class ApiClient {
 
   Future<Response<dynamic>> deleteGift(int personId, int giftId) => dio.post(
         '/people/$personId/gift-ideas/$giftId/delete',
+        options: Options(contentType: 'application/json'),
+      );
+
+  Future<Response<dynamic>> createPersonNote(
+    int personId, {
+    required String note,
+    String? noteDate,
+  }) =>
+      dio.post(
+        '/people/$personId/notes',
+        data: {
+          'note': note,
+          if (noteDate != null && noteDate.isNotEmpty) 'note_date': noteDate,
+        },
+        options: Options(contentType: 'application/json'),
+      );
+
+  Future<Response<dynamic>> deletePersonNote(int personId, int noteId) => dio.post(
+        '/people/$personId/notes/$noteId/delete',
         options: Options(contentType: 'application/json'),
       );
 

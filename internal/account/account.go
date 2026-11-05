@@ -6,6 +6,7 @@ package account
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -113,6 +114,15 @@ func (s *Service) Delete(ctx context.Context, userID int) error {
 	if _, err := tx.AuditEntry.Update().
 		Where(auditentry.ActorUsernameEQ(u.Username)).
 		SetActorUsername(DeletedActor).
+		Save(ctx); err != nil {
+		return err
+	}
+	// Some actions (for example a successful login) store the username in the
+	// target column instead of the actor. Replace exact matches too, otherwise
+	// the closed account would still be named in the audit trail.
+	if _, err := tx.AuditEntry.Update().
+		Where(auditentry.TargetEQ(u.Username)).
+		SetTarget(fmt.Sprintf("user:%d", userID)).
 		Save(ctx); err != nil {
 		return err
 	}

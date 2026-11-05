@@ -88,6 +88,14 @@ type GiftIdeaDTO struct {
 	UpdatedAt  string `json:"updated_at"`
 }
 
+type PersonNoteDTO struct {
+	ID        int    `json:"id"`
+	Note      string `json:"note"`
+	NoteDate  string `json:"note_date"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 type EventDTO struct {
 	ID             int    `json:"id"`
 	Type           string `json:"type"`

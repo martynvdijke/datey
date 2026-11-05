@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sort"
 	"strings"
@@ -22,6 +23,8 @@ type LegalData struct {
 	HostingRegion  string
 	BaseURL        string
 	Year           int
+	Version        string
+	EffectiveDate  string
 	SessionCookie  string
 	Analytics      bool
 	AnalyticsURL   string
@@ -39,6 +42,8 @@ func (h *Handler) legal() LegalData {
 		Controller:    "the operator of this Datey instance",
 		HostingRegion: "the European Union",
 		Year:          time.Now().Year(),
+		Version:       "1.0",
+		EffectiveDate: "5 November 2026",
 		SessionCookie: session.CookieName,
 		Processors:    []string{},
 	}
@@ -153,7 +158,7 @@ func (h *Handler) accountDeleteSelf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session.ClearCookie(w)
-	h.auditRecord(r, "account.delete_self", u.Username)
+	h.auditDeletedAccount(r, u.ID)
 	http.Redirect(w, r, "/login?success=Your+account+has+been+deleted", http.StatusSeeOther)
 }
 
@@ -195,8 +200,20 @@ func (h *Handler) apiDeleteMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session.ClearCookie(w)
-	h.auditRecord(r, "account.delete_self", u.Username)
+	h.auditDeletedAccount(r, u.ID)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// auditDeletedAccount records a self-service deletion under a pseudonymous
+// actor and a stable numeric target. The normal auditRecord helper derives the
+// actor from the request context, which still holds the account being deleted;
+// using it here would write the deleted username back into the audit log right
+// after account.Delete relabelled it.
+func (h *Handler) auditDeletedAccount(r *http.Request, userID int) {
+	if h.audit == nil {
+		return
+	}
+	h.audit.RecordWithActor(r.Context(), account.DeletedActor, "", "account.delete_self", fmt.Sprintf("user:%d", userID))
 }
 
 // apiExportMe returns the requester's attributable data as JSON.
@@ -219,5 +236,7 @@ func (h *Handler) apiExportMe(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, http.StatusInternalServerError, "internal", "Could not build export")
 		return
 	}
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Pragma", "no-cache")
 	writeAPIJSON(w, http.StatusOK, export)
 }

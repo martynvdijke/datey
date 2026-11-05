@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"errors"
+	"strconv"
 	"testing"
 	"time"
 
@@ -83,6 +84,15 @@ func TestDeleteRevokesCredentialsAndKeepsSharedData(t *testing.T) {
 		SetTarget("web").
 		SetSourceIP("127.0.0.1").
 		SaveX(context.Background())
+	// A login-success row stores the username as its target rather than actor;
+	// account deletion must scrub that column too.
+	client.AuditEntry.Create().
+		SetCreatedAt(now).
+		SetActorUsername("system").
+		SetAction("login_success").
+		SetTarget("alice").
+		SetSourceIP("127.0.0.1").
+		SaveX(context.Background())
 	sharedPerson := client.Person.Create().
 		SetName("Shared Person").
 		SetCreatedAt(now).
@@ -114,6 +124,12 @@ func TestDeleteRevokesCredentialsAndKeepsSharedData(t *testing.T) {
 	audit := client.AuditEntry.Query().Order(ent.Asc(auditentry.FieldID)).FirstX(ctx)
 	if audit.ActorUsername != DeletedActor {
 		t.Fatalf("audit actor %q, want %q", audit.ActorUsername, DeletedActor)
+	}
+	loginAudit := client.AuditEntry.Query().
+		Where(auditentry.ActionEQ("login_success")).
+		OnlyX(ctx)
+	if want := "user:" + strconv.Itoa(u.ID); loginAudit.Target != want {
+		t.Fatalf("audit target %q, want %q", loginAudit.Target, want)
 	}
 }
 

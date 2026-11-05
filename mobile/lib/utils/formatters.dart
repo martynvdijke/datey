@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 String countdownText(int daysRemaining) {
   if (daysRemaining == 0) return 'Today';
   if (daysRemaining == 1) return 'Tomorrow';
@@ -83,4 +85,31 @@ String bucketTitle(String key) {
     default:
       return key;
   }
+}
+
+/// Formats a `YYYY-MM-DD` note date for display, falling back to the raw value
+/// when it cannot be parsed.
+String noteDateLabel(String date) {
+  final parsed = DateTime.tryParse(date);
+  if (parsed == null) return date;
+  return DateFormat('MMM d, y').format(parsed);
+}
+
+/// The current local date as `YYYY-MM-DD`.
+String isoToday() => isoDate(DateTime.now());
+
+/// A local date as `YYYY-MM-DD`.
+String isoDate(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
+
+/// Human-readable byte size, e.g. `820 B`, `1.5 KB`, `2.0 MB`.
+String formatDataSize(int bytes) {
+  if (bytes < 1024) return '$bytes B';
+  const units = ['KB', 'MB', 'GB'];
+  var size = bytes / 1024;
+  var unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit++;
+  }
+  return '${size.toStringAsFixed(1)} ${units[unit]}';
 }

@@ -29,7 +29,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _checkingOidc = false;
   Timer? _oidcDebounce;
   String? _oidcForUrl;
-  // Incremented on every URL edit and every OIDC status request so a slow
+  bool _demoEnabled = false;
+  String? _demoHandle;
+  String? _demoPassword;
+  // Incremented on every URL edit and every sign-in status request so a slow
   // response for an older URL can never overwrite the current result.
   int _oidcRequestGen = 0;
 
@@ -47,24 +50,49 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     // default and probe it so sign-in options are ready without extra taps.
     final url = (savedUrl == null || savedUrl.isEmpty) ? defaultBaseUrl : savedUrl;
     setState(() => _urlCtrl.text = url);
-    _checkOidc(normalizeServerUrl(url));
+    _checkSignInOptions(normalizeServerUrl(url));
   }
 
-  Future<void> _checkOidc(String baseUrl) async {
+  Future<void> _checkSignInOptions(String baseUrl) async {
     final generation = ++_oidcRequestGen;
     if (mounted) setState(() => _checkingOidc = true);
     // Probe without the stored session so a mistyped host never receives it.
-    final enabled = await ApiClient.oidcEnabledAt(baseUrl);
+    final results = await Future.wait<Object?>([
+      ApiClient.oidcEnabledAt(baseUrl),
+      ApiClient.authConfigAt(baseUrl),
+    ]);
     if (!mounted || generation != _oidcRequestGen) return;
+    final oidcEnabled = results[0] == true;
+    final config = results[1] is Map ? results[1] as Map : null;
+    final demo = config != null ? config['demo'] : null;
+    var demoEnabled = false;
+    String? demoHandle;
+    String? demoPassword;
+    if (demo is Map) {
+      final handle = demo['handle'];
+      final password = demo['password'];
+      if (demo['enabled'] == true &&
+          handle is String &&
+          handle.isNotEmpty &&
+          password is String &&
+          password.isNotEmpty) {
+        demoEnabled = true;
+        demoHandle = handle;
+        demoPassword = password;
+      }
+    }
     setState(() {
-      _oidcEnabled = enabled;
+      _oidcEnabled = oidcEnabled;
       _oidcForUrl = baseUrl;
       _checkingOidc = false;
+      _demoEnabled = demoEnabled;
+      _demoHandle = demoHandle;
+      _demoPassword = demoPassword;
     });
   }
 
-  /// Detect OIDC support while the user types, so single sign-on is available
-  /// without first tapping "Test connection".
+  /// Detect sign-in options while the user types, so single sign-on and the
+  /// shared demo account are available without first tapping "Test connection".
   void _onUrlChanged(String value) {
     _oidcDebounce?.cancel();
     // Invalidate any in-flight status request for the previous URL.
@@ -78,12 +106,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _oidcEnabled = false;
         _oidcForUrl = null;
       }
+      _demoEnabled = false;
+      _demoHandle = null;
+      _demoPassword = null;
     });
     final raw = value.trim();
     if (validateServerUrl(raw) != null) return;
     _oidcDebounce = Timer(const Duration(milliseconds: 500), () {
       if (!mounted) return;
-      _checkOidc(normalized);
+      _checkSignInOptions(normalized);
     });
   }
 
@@ -117,7 +148,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (ok) {
       setState(() => _urlValid = true);
       await storage.setBaseUrl(normalized);
-      _checkOidc(normalized);
+      _checkSignInOptions(normalized);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Connected to $normalized'), behavior: SnackBarBehavior.floating),
@@ -147,6 +178,37 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       final st = ref.read(authStateProvider);
       st.whenOrNull(error: (e, _) => setState(() => _loginError = e.toString()));
       if (_loginError == null) setState(() => _loginError = 'Login failed. Check your credentials.');
+    }
+  }
+
+  /// Sign in with the shared demo account advertised by the server. Uses the
+  /// same auth path as a normal username/password login.
+  Future<void> _demoLogin() async {
+    final handle = _demoHandle;
+    final password = _demoPassword;
+    if (!_demoEnabled || handle == null || password == null) return;
+    final raw = _urlCtrl.text.trim();
+    final err = validateServerUrl(raw);
+    if (err != null) {
+      setState(() => _urlError = err);
+      return;
+    }
+    final baseUrl = normalizeServerUrl(raw);
+    setState(() {
+      _loggingIn = true;
+      _loginError = null;
+      _urlError = null;
+    });
+    // Show which account is being used, matching a normal credential login.
+    _userCtrl.text = handle;
+    _passCtrl.text = password;
+    final ok = await ref.read(authStateProvider.notifier).login(baseUrl, handle, password);
+    if (!mounted) return;
+    setState(() => _loggingIn = false);
+    if (!ok) {
+      final st = ref.read(authStateProvider);
+      st.whenOrNull(error: (e, _) => setState(() => _loginError = e.toString()));
+      if (_loginError == null) setState(() => _loginError = 'Demo login failed. Try again later.');
     }
   }
 
@@ -322,6 +384,49 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             : const Text('Sign in'),
                       ),
                     ),
+                    if (_demoEnabled) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: scheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Row(children: [
+                            Icon(Icons.auto_awesome, size: 18, color: scheme.onSecondaryContainer),
+                            const SizedBox(width: 8),
+                            Text('Demo account',
+                                style: TextStyle(fontWeight: FontWeight.w700, color: scheme.onSecondaryContainer)),
+                          ]),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Shared demo account @$_demoHandle, password $_demoPassword. Anyone can use it.',
+                            style: TextStyle(fontSize: 13, color: scheme.onSecondaryContainer),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Icon(Icons.info_outline, size: 14, color: scheme.onSecondaryContainer),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'This is a public account — don’t enter personal information.',
+                                style: TextStyle(fontSize: 12, color: scheme.onSecondaryContainer),
+                              ),
+                            ),
+                          ]),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.tonalIcon(
+                              onPressed: _loggingIn ? null : _demoLogin,
+                              icon: const Icon(Icons.play_circle_outline, size: 18),
+                              label: const Text('Try the demo account'),
+                            ),
+                          ),
+                        ]),
+                      ),
+                    ],
                     if (_oidcEnabled) ...[
                       const SizedBox(height: 12),
                       Row(children: [

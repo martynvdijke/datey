@@ -206,6 +206,19 @@
         <div id="google-result" class="mt-3"></div>
       </div>
     </div>
+
+    <h2 class="mb-3 mt-4">Account and data</h2>
+    <div class="card mb-4">
+      <div class="card-body">
+        <h3 class="h6">Download my data (JSON)</h3>
+        <p class="text-muted small">Exercise your GDPR right to data portability. The export is generated for your signed-in account and includes your profile and notification settings, the person record your account linked itself to, their events, notes, gift ideas, tags, groups and relationships. Password hashes, API token secrets and push subscription keys are excluded.</p>
+        <a class="btn btn-outline-primary" href="/api/v1/me/export" download="datey-export.json">Download my data (JSON)</a>
+        <hr>
+        <h3 class="h6">Delete account</h3>
+        <p class="text-muted small mb-2">Deletion is immediate and removes your account, sessions, tokens and notification channels. Shared address-book records remain.</p>
+        <a class="btn btn-outline-danger" href="/account/delete">Delete my account</a>
+      </div>
+    </div>
   {{end}}
 
   {{if eq .SettingsTab "config"}}

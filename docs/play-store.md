@@ -12,12 +12,42 @@ The Data safety form is a legal declaration, not a formality.
 | Privacy policy URL | Store listing → Privacy policy | `https://<your-host>/privacy` — must load without signing in |
 | Account deletion URL | App content → Data deletion | `https://<your-host>/account/delete` |
 | Data deletion in app | App content → Data deletion | Yes: Settings → Delete account, plus `DELETE /api/v1/me` |
-| Sign-in details | App content → App access | Test account credentials, or "all functionality is restricted" if the instance is private |
+| Sign-in details | App content → App access | Hosted demo: username `demo`, password `demo` (live values at `/api/auth/config`). Private instance: "all functionality is restricted" plus a reviewer account |
 
 Play requires the deletion URL to be reachable **and** to explain what happens,
-not just to exist. `/account/delete` does both. The default hosted instance is
-`https://datey.vandijke.xyz`; self-hosters must substitute their own HTTPS
-origin.
+not just to exist. `/account/delete` does both, signed in or out. The default
+hosted instance is `https://datey.vandijke.xyz`; self-hosters must substitute
+their own HTTPS origin.
+
+## Demo account for reviewers
+
+The hosted instance enables a public demo account automatically on
+`datey.vandijke.xyz` (`DEMO_USER_ENABLED` defaults on only for that hostname).
+It exists so a reviewer can reach every screen without waiting for an invite:
+
+- **Credentials:** username `demo`, password `demo`. Change them with
+  `DEMO_USER_HANDLE` / `DEMO_USER_PASSWORD`; the web login page and
+  `GET /api/auth/config` always advertise the live values, and the Android
+  onboarding screen shows a **Try the demo account** button from the same
+  endpoint.
+- **What it can do:** it is an ordinary, non-admin, read-write user. It can
+  browse and edit the shared address book, add notes/gifts/events, export its
+  data, and open Settings → Delete account.
+- **Seeded data:** a fresh instance with no people gets a small fictional
+  address book (three people, relationships, events, gifts and person notes).
+  Seeding never runs when any people already exist, so a demo deployment cannot
+  pollute a real instance.
+- **Never real data:** the demo address book is fabricated. Do not point a
+  reviewer at a host that contains member data.
+- **No admin access:** the provisioner refuses to take over an existing admin
+  account. If the handle already belongs to a different email or an admin, it
+  logs an error and leaves the account alone.
+- **Password rotation:** if you change `DEMO_USER_PASSWORD`, update the App
+  access credentials in Play Console at the same time.
+
+Self-hosters should leave `DEMO_USER_ENABLED` unset (or set it to `false`).
+Enabling it publishes working credentials on the login page and makes the demo
+account read-write; only do that on a disposable deployment.
 
 ## Data safety answers
 
@@ -67,9 +97,37 @@ Notes that matter during review:
 
 If the instance is invite-only, choose "All or some functionality is
 restricted" and provide a working test account with enough access to open the
-People list, a person, and Settings → Delete account. Never put real member
-data in the test account. If the instance is open for registration, provide the
-public sign-up/sign-in route instead.
+People list, a person, notes, gifts and Settings → Download my data / Delete
+account. For `datey.vandijke.xyz` use the seeded demo account (`demo` / `demo`);
+do not create a reviewer account inside a real address book. If the instance is
+open for registration, provide the public sign-up/sign-in route instead. If you
+rotate the demo password, update the credentials here immediately.
+
+## EU/EEA data protection
+
+The server-side legal pages are written for an EU/EEA audience and are the
+source of truth for the Play declarations:
+
+- `/privacy` names the controller and contact, lists the categories of data,
+  purposes and GDPR legal bases, subprocessors and international transfers,
+  per-category retention, data-subject rights (including a complaint to the
+  local supervisory authority), security measures, no sale/profiling/automated
+  decisions, and the under-16 position. Optional sections appear only when the
+  corresponding processor is actually configured.
+- `/account/delete` works without signing in. When `LEGAL_CONTACT_EMAIL` is set
+  it renders a prefilled `mailto:` deletion request; otherwise it tells the user
+  to contact the named operator. Signed-in users also get the exact-confirmation
+  form and a **Download my data (JSON)** link.
+- `GET /api/v1/me/export` is the portability endpoint. Responses are sent with
+  `Cache-Control: no-store` and `Pragma: no-cache`, and omit passwords, token
+  hashes, push keys and OIDC subject identifiers. The Android app exposes it as
+  Settings → Download my data, with a copy-JSON action.
+- Self-service deletion and administrator deletion keep the deleted account
+  pseudonymous in the audit log: the actor becomes `deleted-user` for self
+  deletion, and the target is stored as `user:<id>` rather than a username.
+- Set `LEGAL_CONTROLLER_NAME`, `LEGAL_CONTACT_EMAIL`, `LEGAL_CONTACT_ADDRESS`,
+  `LEGAL_HOSTING_REGION` and a public HTTPS `APP_URL` before submitting. Those
+  values are what the reviewer will see.
 
 ## Permissions
 

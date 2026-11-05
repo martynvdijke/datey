@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_client.dart';
 import '../services/storage_service.dart';
+import '../utils/formatters.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -37,6 +41,41 @@ class SettingsScreen extends ConsumerWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Your account has been deleted')),
+    );
+  }
+
+  Future<void> _exportData(BuildContext context) async {
+    final base = await StorageService().getBaseUrl();
+    if (base == null || base.isEmpty || !context.mounted) return;
+    final api = ApiClient(storage: StorageService(), baseUrl: base);
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _ExportProgressDialog(),
+    );
+
+    Map<String, dynamic> data;
+    try {
+      data = await api.exportAccount();
+    } catch (error) {
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+      if (!context.mounted) return;
+      final message = error is ApiException
+          ? error.message
+          : 'Could not export your data. Try again.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+      return;
+    }
+    if (!context.mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _ExportDataSheet(data: data),
     );
   }
 
@@ -108,6 +147,14 @@ class SettingsScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.open_in_new),
                   onTap: () => _openLegal(context, '/terms'),
                 ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(Icons.download_outlined, color: scheme.primary),
+                  title: const Text('Download my data'),
+                  subtitle: const Text('Export your account as JSON (data portability)'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _exportData(context),
+                ),
               ],
             ),
           ),
@@ -149,6 +196,85 @@ class SettingsScreen extends ConsumerWidget {
             orElse: () => const SizedBox.shrink(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Shown while the account export request is in flight.
+class _ExportProgressDialog extends StatelessWidget {
+  const _ExportProgressDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return const AlertDialog(
+      content: Row(children: [
+        SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+        SizedBox(width: 16),
+        Expanded(child: Text('Preparing your data export…')),
+      ]),
+    );
+  }
+}
+
+/// GDPR data-portability summary with the payload size and a copy action.
+class _ExportDataSheet extends StatelessWidget {
+  const _ExportDataSheet({required this.data});
+
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final json = const JsonEncoder.withIndent('  ').convert(data);
+    final bytes = utf8.encode(json).length;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Download my data',
+                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            Text(
+              'This export contains the information Datey stores about your account, '
+              'in a portable JSON format (GDPR data portability). It never includes '
+              'your password, session cookies or API tokens.',
+              style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              Icon(Icons.data_object, size: 18, color: scheme.primary),
+              const SizedBox(width: 8),
+              Text('Payload size: ${formatDataSize(bytes)}',
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+            ]),
+            const SizedBox(height: 16),
+            Row(children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () async {
+                    await Clipboard.setData(ClipboardData(text: json));
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Copied account data to clipboard')),
+                    );
+                  },
+                  icon: const Icon(Icons.copy, size: 18),
+                  label: const Text('Copy JSON'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ]),
+          ],
+        ),
       ),
     );
   }

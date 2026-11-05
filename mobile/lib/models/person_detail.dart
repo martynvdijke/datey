@@ -1,5 +1,6 @@
 import 'gift_idea.dart';
 import 'person_card.dart';
+import 'person_note.dart';
 
 class PersonDetail {
   final int id;
@@ -16,6 +17,7 @@ class PersonDetail {
   final List<PersonEvent> events;
   final List<GiftIdea> giftIdeas;
   final bool giftIdeasHidden;
+  final List<PersonNote> notesTimeline;
   final List<Relationship> relationships;
   final List<GroupRef> groups;
 
@@ -34,6 +36,7 @@ class PersonDetail {
     required this.events,
     required this.giftIdeas,
     required this.giftIdeasHidden,
+    this.notesTimeline = const [],
     required this.relationships,
     required this.groups,
   });
@@ -57,6 +60,10 @@ class PersonDetail {
             .map((e) => GiftIdea.fromJson(e as Map<String, dynamic>))
             .toList(),
         giftIdeasHidden: j['gift_ideas_hidden'] as bool? ?? false,
+        notesTimeline: (j['notes_timeline'] as List<dynamic>? ?? [])
+            .whereType<Map<String, dynamic>>()
+            .map(PersonNote.fromJson)
+            .toList(),
         relationships: (j['relationships'] as List<dynamic>? ?? [])
             .map((e) => Relationship.fromJson(e as Map<String, dynamic>))
             .toList(),

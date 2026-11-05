@@ -44,6 +44,7 @@ type Handler struct {
 	tags                *repository.TagRepository
 	events              *repository.EventRepository
 	groupNotes          *repository.GroupNoteRepository
+	personNotes         *repository.PersonNoteRepository
 	giftIdeas           *repository.GiftIdeaRepository
 	relationships       *repository.RelationshipRepository
 	notifReg            *notifier.Registry
@@ -94,6 +95,7 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		events:              events,
 		telegram:            telegram.New(cfg, events, people),
 		groupNotes:          repository.NewGroupNoteRepository(client),
+		personNotes:         repository.NewPersonNoteRepository(client),
 		giftIdeas:           repository.NewGiftIdeaRepository(client),
 		relationships:       repository.NewRelationshipRepository(client),
 		notifReg:            notifReg,
@@ -152,6 +154,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Post("/login", h.loginPost)
 		r.Get("/logout", h.logout)
 		r.Get("/api/auth/oidc/status", h.oidcStatus)
+		r.Get("/api/auth/config", h.authConfig)
 		// OIDC login via Authelia (public; disabled → 404 inside handlers).
 		r.Get("/api/auth/oidc/login", h.oidcLogin)
 		r.Get("/api/auth/oidc/callback", h.oidcCallback)
@@ -222,6 +225,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/people/{id}/immich", h.setImmichPhoto)
 			r.Post("/people/{id}/photo/upload", h.uploadPersonPhoto)
 			r.Post("/people/{id}/photo/remove", h.removePersonPhoto)
+			r.Post("/people/{id}/notes", h.createPersonNote)
+			r.Post("/people/{id}/notes/{noteID}/delete", h.deletePersonNote)
 			r.Post("/people/{id}/gift-ideas", h.createGiftIdea)
 			r.Post("/people/{id}/gift-ideas/{giftID}", h.updateGiftIdea)
 			r.Post("/people/{id}/gift-ideas/{giftID}/status", h.updateGiftIdeaStatus)
@@ -686,7 +691,15 @@ func (h *Handler) userDelete(w http.ResponseWriter, r *http.Request) {
 	} else {
 		toastHeader(w, "User deleted", "success")
 	}
-	h.auditRecord(r, "user.delete", username)
+	// Keep the deleted account pseudonymous in the audit trail: the actor is
+	// the administrator performing the action, the target is a numeric id.
+	actor := ""
+	if currentUser != nil {
+		actor = currentUser.Username
+	}
+	if h.audit != nil {
+		h.audit.RecordWithActor(r.Context(), actor, "", "user.delete", fmt.Sprintf("user:%d", id))
+	}
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)
 }

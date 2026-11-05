@@ -96,6 +96,7 @@ func (h *Handler) viewPersonJSON(w http.ResponseWriter, r *http.Request) {
 	showPurchased := r.URL.Query().Get("show_purchased") == "1"
 	giftIdeas, _ := h.giftIdeas.ListByPersonFiltered(r.Context(), id, showPurchased)
 	relEntries, _ := h.relationships.ListForPerson(r.Context(), id)
+	personNotes, _ := h.personNotes.ListByPerson(r.Context(), id)
 
 	u := UserFromContext(r.Context())
 	hidden := false
@@ -176,10 +177,18 @@ func (h *Handler) viewPersonJSON(w http.ResponseWriter, r *http.Request) {
 	if grpDTOs == nil {
 		grpDTOs = []GroupRefDTO{}
 	}
+	noteDTOs := []PersonNoteDTO{}
+	for _, n := range personNotes {
+		noteDTOs = append(noteDTOs, personNoteDTO(n))
+	}
+	if noteDTOs == nil {
+		noteDTOs = []PersonNoteDTO{}
+	}
 	notify := person.NotifyBirthdays
 	writeAPIJSON(w, http.StatusOK, map[string]any{
 		"id": person.ID, "name": person.Name, "first_name": first, "middle_name": middle, "last_name": last,
 		"notes": person.Notes, "photo_url": photoURL, "immich_person_id": person.ImmichPersonID, "notify_birthdays": notify, "timezone": "UTC",
 		"tags": tagNames, "events": evDTOs, "gift_ideas": giftDTOs, "gift_ideas_hidden": hidden, "relationships": relDTOs, "groups": grpDTOs,
+		"notes_timeline": noteDTOs,
 	})
 }

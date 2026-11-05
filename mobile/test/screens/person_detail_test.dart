@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:datey/screens/person_detail_screen.dart';
 import 'package:datey/providers/person_detail_provider.dart';
 import 'package:datey/models/person_detail.dart';
+import 'package:datey/models/person_note.dart';
 import 'package:datey/models/gift_idea.dart';
 
-PersonDetail _detail({bool hidden = false, List<GiftIdea>? gifts}) => PersonDetail(
+PersonDetail _detail({bool hidden = false, List<GiftIdea>? gifts, List<PersonNote> notes = const []}) => PersonDetail(
       id: 1,
       name: 'Dana',
       firstName: 'Dana',
@@ -26,6 +27,7 @@ PersonDetail _detail({bool hidden = false, List<GiftIdea>? gifts}) => PersonDeta
             GiftIdea(id: 1, title: 'Book', notes: 'nice', priceCents: 1999, url: 'https://example.com', status: 'idea', createdAt: '', updatedAt: ''),
           ],
       giftIdeasHidden: hidden,
+      notesTimeline: notes,
       relationships: [
         Relationship(id: 1, type: 'partner', label: null, otherPersonId: 2, otherPersonName: 'Alex', direction: 'from'),
       ],
@@ -81,5 +83,41 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Partner'), findsOneWidget);
     expect(find.textContaining('Alex'), findsOneWidget);
+  });
+
+  testWidgets('PersonDetail notes tab shows empty state', (tester) async {
+    await tester.pumpWidget(ProviderScope(
+      overrides: [personDetailProvider(1).overrideWith((ref) async => _detail())],
+      child: const MaterialApp(home: PersonDetailScreen(personId: 1)),
+    ));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Notes'));
+    await tester.pumpAndSettle();
+    expect(find.text('No notes yet'), findsOneWidget);
+    expect(find.text('Add note'), findsWidgets);
+  });
+
+  testWidgets('PersonDetail notes tab lists notes with formatted date', (tester) async {
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        personDetailProvider(1).overrideWith((ref) async => _detail(notes: const [
+              PersonNote(
+                id: 9,
+                note: 'Prefers tea over coffee',
+                noteDate: '2026-01-02',
+                createdAt: '2026-01-02T10:00:00Z',
+                updatedAt: '2026-01-02T10:00:00Z',
+              ),
+            ])),
+      ],
+      child: const MaterialApp(home: PersonDetailScreen(personId: 1)),
+    ));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Notes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Prefers tea over coffee'), findsOneWidget);
+    expect(find.text('Jan 2, 2026'), findsOneWidget);
   });
 }

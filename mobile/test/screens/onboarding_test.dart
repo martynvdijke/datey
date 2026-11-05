@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:datey/screens/onboarding_screen.dart';
+import 'package:datey/services/api_client.dart';
 import 'package:datey/services/storage_service.dart';
 
 Future<void> _pumpOnboarding(WidgetTester tester) async {
@@ -58,5 +59,41 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.textContaining('Enter your server URL'), findsOneWidget);
+  });
+
+  testWidgets('Onboarding hides the demo account when disabled', (tester) async {
+    ApiClient.authConfigProbeOverride = (_) async => {
+          'demo': {'enabled': false},
+        };
+    addTearDown(() => ApiClient.authConfigProbeOverride = null);
+    FlutterSecureStorage.setMockInitialValues({});
+    await _pumpOnboarding(tester);
+
+    expect(find.text('Try the demo account'), findsNothing);
+  });
+
+  testWidgets('Onboarding hides the demo account when the probe fails', (tester) async {
+    ApiClient.authConfigProbeOverride = (_) async => null;
+    addTearDown(() => ApiClient.authConfigProbeOverride = null);
+    FlutterSecureStorage.setMockInitialValues({});
+    await _pumpOnboarding(tester);
+
+    expect(find.text('Try the demo account'), findsNothing);
+  });
+
+  testWidgets('Onboarding shows the demo account with its public credentials', (tester) async {
+    ApiClient.authConfigProbeOverride = (_) async => {
+          'demo': {'enabled': true, 'handle': 'demo', 'password': 'demo'},
+        };
+    addTearDown(() => ApiClient.authConfigProbeOverride = null);
+    FlutterSecureStorage.setMockInitialValues({});
+    await _pumpOnboarding(tester);
+
+    expect(find.text('Try the demo account'), findsOneWidget);
+    expect(
+      find.text('Shared demo account @demo, password demo. Anyone can use it.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('public account'), findsOneWidget);
   });
 }

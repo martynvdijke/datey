@@ -3,6 +3,7 @@ import 'package:datey/models/upcoming_event.dart';
 import 'package:datey/models/person_card.dart';
 import 'package:datey/models/person_detail.dart';
 import 'package:datey/models/gift_idea.dart';
+import 'package:datey/models/person_note.dart';
 import 'package:datey/models/user.dart';
 
 void main() {
@@ -112,6 +113,59 @@ void main() {
     expect(d.relationships.first.direction, 'from');
     expect(d.relationships.first.displayLabel(), 'Partner');
     expect(d.events.first.calendarSystem, 'gregorian');
+  });
+
+  test('PersonNote and notes_timeline parsing', () {
+    final j = {
+      'id': 3,
+      'name': 'Dana',
+      'first_name': 'Dana',
+      'middle_name': '',
+      'last_name': '',
+      'notes': 'Legacy contact info',
+      'tags': [],
+      'events': [],
+      'gift_ideas': [],
+      'gift_ideas_hidden': false,
+      'notes_timeline': [
+        {
+          'id': 9,
+          'note': 'First note',
+          'note_date': '2026-01-02',
+          'created_at': '2026-01-02T10:00:00Z',
+          'updated_at': '2026-01-02T10:00:00Z',
+        },
+        {
+          'id': 10,
+          'note': 'Second note',
+          'note_date': '2026-02-03',
+          'created_at': '2026-02-03T10:00:00Z',
+          'updated_at': '2026-02-04T10:00:00Z',
+        },
+      ],
+      'relationships': [],
+      'groups': [],
+    };
+    final d = PersonDetail.fromJson(j);
+    expect(d.notes, 'Legacy contact info');
+    expect(d.notesTimeline.length, 2);
+    expect(d.notesTimeline.first.noteDate, '2026-01-02');
+    expect(d.notesTimeline.last.note, 'Second note');
+    expect(d.notesTimeline.last.updatedAt, '2026-02-04T10:00:00Z');
+  });
+
+  test('PersonNote tolerates missing/null fields', () {
+    final n = PersonNote.fromJson({'id': null, 'note': null, 'note_date': null, 'created_at': null, 'updated_at': null});
+    expect(n.id, 0);
+    expect(n.note, '');
+    expect(n.noteDate, '');
+    expect(n.createdAt, '');
+    expect(n.updatedAt, '');
+  });
+
+  test('PersonDetail defaults notes_timeline to empty', () {
+    final d = PersonDetail.fromJson({'id': 1, 'name': 'A'});
+    expect(d.notesTimeline, isEmpty);
   });
 
   test('GiftIdea fromJson', () {

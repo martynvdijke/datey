@@ -15,16 +15,24 @@
     <div class="form-text">This cannot be undone.</div>
     <button class="btn btn-danger mt-3" type="submit">Delete my account</button>
   </form>
+
+  <h2>Take a copy first</h2>
+  <p>You have the right to data portability under the GDPR. Before you delete, download a machine-readable copy of everything Datey attributes to your account.</p>
+  <p><a class="btn btn-outline-primary" href="/api/v1/me/export" download="datey-export.json">Download my data (JSON)</a></p>
+  <p class="text-muted small">The export includes your profile and notification settings, the person record your account linked itself to, their events, notes, gift ideas, tags, groups and relationships. Password hashes, API token secrets and push subscription keys are deliberately excluded.</p>
   {{else}}
   <p>Sign in, then return to this page and type your username to confirm. <a href="/login">Sign in</a> if you have not already.</p>
-  <p>In the Android app the same action lives under <strong>Settings → Delete account</strong>, and it calls the same API with the same confirmation.</p>
+  <p>You do not have to sign in or install the Android app to request deletion. Use the contact method under <strong>If you cannot sign in</strong> below.</p>
   {{end}}
 
   <h2>If you cannot sign in</h2>
   {{if .Legal.ContactEmail}}
-  <p>Write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a> from the address on the account and ask for it to be deleted. Requests are handled within one month, usually much sooner.</p>
+  <p>Send an account deletion request to <strong>{{.Legal.ContactEmail}}</strong>. You can use this ready-made link:</p>
+  <p><a class="btn btn-outline-danger" href="mailto:{{.Legal.ContactEmail}}?subject=Account%20deletion%20request%20%E2%80%94%20Datey&amp;body=Please%20delete%20my%20account%20and%20all%20associated%20data.%20My%20username%20is%3A%20">Email an account deletion request</a></p>
+  <p class="text-muted small">The link opens your mail app with the subject <em>Account deletion request — Datey</em> and a message you can complete with your username. If your mail app does not open, write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a> directly. Requests are handled within one month, usually much sooner.</p>
   {{else}}
-  <p>Ask the administrator of this instance to delete the account from the user management page. There is no self-service route that works without signing in.</p>
+  <p>This instance has not published a dedicated privacy address. Contact the administrator or operator of <strong>{{.Legal.Controller}}</strong> and ask them to delete the account from the user management page. State the username and, if possible, the email address on the account so they can find it.</p>
+  <p class="text-muted small">There is no self-service deletion route that works without signing in on this instance. If you cannot reach the operator, you can still lodge a complaint with your local data protection authority, as described in the <a href="/privacy">privacy policy</a>.</p>
   {{end}}
 
   <h2>What is removed</h2>

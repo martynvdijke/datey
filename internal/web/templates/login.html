@@ -17,6 +17,20 @@
           </div>
           <button type="submit" class="btn btn-dark w-100">Log In</button>
         </form>
+        {{if .DemoEnabled}}
+          <div class="card demo-card mt-4">
+            <div class="card-body">
+              <h5 class="card-title">Try the demo account</h5>
+              <p class="card-text small text-muted">Shared demo account @{{.DemoHandle}}, password <code>{{.DemoPassword}}</code>. Anyone can use it.</p>
+              <form method="POST" action="/login">
+                {{template "csrfField" .}}
+                <input type="hidden" name="username" value="{{.DemoHandle}}">
+                <input type="hidden" name="password" value="{{.DemoPassword}}">
+                <button type="submit" class="btn btn-outline-dark w-100">Log in as @{{.DemoHandle}}</button>
+              </form>
+            </div>
+          </div>
+        {{end}}
         {{if .OIDCEnabled}}
           <div class="text-center mt-3">
             <a href="/api/auth/oidc/login" class="btn btn-outline-dark w-100">Login with Authelia</a>
