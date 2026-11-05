@@ -1,3 +1,10 @@
+# [1.58.0](https://github.com/martynvdijke/datey/compare/v1.57.0...v1.58.0) (2026-11-05)
+
+
+### Features
+
+* add person notes and Play demo/GDPR compliance ([d72a7a4](https://github.com/martynvdijke/datey/commit/d72a7a463fc02e1be51ae12f08e5186104e5d4fd))
+
 # [1.57.0](https://github.com/martynvdijke/datey/compare/v1.56.4...v1.57.0) (2026-11-04)
 
 
