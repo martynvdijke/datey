@@ -182,13 +182,15 @@ func main() {
 		cancel()
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer shutdownCancel()
+		// Drain in-flight HTTP requests first so their spans and logs are
+		// emitted before the telemetry providers flush and shut down.
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			slog.Error("server shutdown error", "error", err)
+		}
 		if telemetry != nil {
 			if err := telemetry.Shutdown(shutdownCtx); err != nil {
 				slog.Error("OTel shutdown error", "error", err)
 			}
-		}
-		if err := srv.Shutdown(shutdownCtx); err != nil {
-			slog.Error("server shutdown error", "error", err)
 		}
 	}()
 
@@ -206,7 +208,17 @@ func otelMetricsMiddleware(m *logstore.HTTPMetrics) func(http.Handler) http.Hand
 			start := time.Now()
 			ww := &statusWriter{ResponseWriter: w, statusCode: http.StatusOK}
 			next.ServeHTTP(ww, r)
-			m.RecordHTTPRequest(r.Context(), r.Method, r.URL.Path, ww.statusCode, time.Since(start))
+			// chi only populates the route pattern after the request has been
+			// routed, so read it once the handler chain has returned. The
+			// pattern keeps metric cardinality bounded; raw URL paths (which
+			// contain IDs) must never be used as an attribute.
+			route := "unmatched"
+			if rctx := chi.RouteContext(r.Context()); rctx != nil {
+				if pattern := rctx.RoutePattern(); pattern != "" {
+					route = pattern
+				}
+			}
+			m.RecordHTTPRequest(r.Context(), r.Method, route, ww.statusCode, time.Since(start))
 		})
 	}
 }
@@ -220,4 +232,10 @@ type statusWriter struct {
 func (w *statusWriter) WriteHeader(code int) {
 	w.statusCode = code
 	w.ResponseWriter.WriteHeader(code)
+}
+
+// Unwrap lets http.ResponseController reach the underlying ResponseWriter so
+// flushing, hijacking, and deadlines keep working through the wrapper.
+func (w *statusWriter) Unwrap() http.ResponseWriter {
+	return w.ResponseWriter
 }

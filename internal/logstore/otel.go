@@ -333,15 +333,17 @@ func createHTTPMetrics(meter metric.Meter) (*HTTPMetrics, error) {
 	}, nil
 }
 
-// RecordHTTPRequest records metrics for an HTTP request.
-func (m *HTTPMetrics) RecordHTTPRequest(ctx context.Context, method, path string, statusCode int, duration time.Duration) {
+// RecordHTTPRequest records metrics for an HTTP request. route must be the
+// low-cardinality chi route pattern (for example "/api/people/{id}") rather
+// than the raw request path.
+func (m *HTTPMetrics) RecordHTTPRequest(ctx context.Context, method, route string, statusCode int, duration time.Duration) {
 	if m == nil {
 		return
 	}
 	attrs := []attribute.KeyValue{
-		attribute.String("http.method", method),
-		attribute.String("http.path", path),
-		attribute.Int("http.status_code", statusCode),
+		semconv.HTTPRequestMethodKey.String(method),
+		semconv.HTTPRouteKey.String(route),
+		semconv.HTTPResponseStatusCodeKey.Int(statusCode),
 	}
 	m.RequestCount.Add(ctx, 1, metric.WithAttributes(attrs...))
 	m.RequestDuration.Record(ctx, duration.Seconds(), metric.WithAttributes(attrs...))

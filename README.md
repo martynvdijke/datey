@@ -58,7 +58,7 @@ A self-hosted web application for tracking important dates and receiving automat
 - **🎭 Public demo account** — Optional, off by default except on `datey.vandijke.xyz`, provisioned idempotently at boot from `DEMO_USER_*`. It is a normal non-admin user and seeds a fictional address book only when the shared people table is empty. The web login page and Android onboarding show a **Try the demo account** button using the credentials advertised by `GET /api/auth/config`. Only enable it on a disposable deployment. See [docs/legal.md](docs/legal.md) and [docs/play-store.md](docs/play-store.md).
 - **🔒 Security Hardening** — CSRF double-submit tokens on all state-changing requests, login rate limiting, sanitized error messages, SRI on CDN assets. One-time password-reset links are emailed via the configured email channel (see `APP_URL`); reset requests are rate-limited per IP and responses never reveal whether a username exists.
 - **📈 Umami Analytics** — Optional analytics integration via Umami.
-- **🔭 OpenTelemetry Support** — Export logs to OTLP-compatible backends.
+- **🔭 OpenTelemetry Support** — Optional OTLP export of traces, metrics, and logs (gRPC or HTTP/protobuf). HTTP and database spans carry trace context from incoming `traceparent` headers, and log records emitted with a context are correlated to the active span.
 - **🐳 Docker Ready** — Multi-stage Docker build with health check and docker-compose support.
 - **⚡ HTMX-Powered UI** — Fast, dynamic interface without heavy JavaScript frameworks.
 
@@ -110,7 +110,12 @@ See `.env.example` for a template.
 | `BACKUP_RETENTION_DAYS` | `30` | Days to retain daily backups before pruning |
 | `WEEKLY_BACKUP_DAY` | `0` | Weekday for weekly backup (0=Sunday, 6=Saturday) |
 | `WEEKLY_BACKUP_RETENTION_WEEKS` | `52` | Weeks to retain weekly backups |
-| `OTEL_ENDPOINT` | — | OpenTelemetry OTLP endpoint *(restart required)* |
+| `OTEL_ENDPOINT` | — | OpenTelemetry OTLP endpoint for traces, metrics, and logs, e.g. `http://localhost:4317`. Unset disables telemetry *(restart required)* |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | Standard OTel endpoint; when set it takes precedence over `OTEL_ENDPOINT` *(env-only)* |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | OTLP transport: `grpc` or `http/protobuf` *(env-only)* |
+| `OTEL_SERVICE_NAME` | `datey` | Service name reported on traces, metrics, and logs *(env-only)* |
+| `OTEL_TRACES_SAMPLER` | `parentbased_always_on` | Trace sampler: `always_on`, `always_off`, `traceidratio`, or `parentbased_*` (ratio via `OTEL_TRACES_SAMPLER_ARG`) *(env-only)* |
+| `OTEL_RESOURCE_ATTRIBUTES` | — | Extra OTel resource attributes as `key=value` pairs *(env-only)* |
 | `APP_URL` | — | Public base URL of this instance (e.g. `https://datey.example.com`); used to build password-reset links sent by email. When unset, reset links are derived from the incoming request instead (**enforced**: absolute URL) |
 | `SMTP_HOST` | — | SMTP server hostname |
 | `SMTP_PORT` | `587` | SMTP server port (**enforced**: 1–65535) |
@@ -245,7 +250,7 @@ datey/
 │   ├── logstore/
 │   │   ├── store.go           # Ring-buffer log store
 │   │   ├── handler.go         # Custom slog handler
-│   │   └── otel.go            # OpenTelemetry log export
+│   │   └── otel.go            # OTel bootstrap: traces, metrics, logs
 │   ├── notifier/
 │   │   ├── notifier.go        # Notifier interface
 │   │   ├── registry.go        # Multi-channel notification registry

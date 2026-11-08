@@ -45,9 +45,12 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	entry := h.recordToEntry(r)
 	h.store.Append(entry)
 
-	// Forward to OTel exporter if configured.
+	// Forward to the OTel exporter if configured. Emit synchronously: the
+	// SDK batch processor already buffers on its own goroutine, so spawning
+	// another goroutine per record only loses ordering and can drop records
+	// when the process shuts down before the goroutine runs.
 	if h.otelFn != nil {
-		go h.otelFn(ctx, r.Clone())
+		h.otelFn(ctx, r.Clone())
 	}
 
 	return nil
@@ -126,4 +129,3 @@ func guessSource(pc uintptr) string {
 	}
 	return name
 }
-

@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"go.opentelemetry.io/otel/attribute"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -225,19 +226,84 @@ func TestRecordHTTPRequest_Records(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	m.RecordHTTPRequest(ctx, "GET", "/test", 200, 500*time.Millisecond)
+	m.RecordHTTPRequest(ctx, "GET", "/people/{id}", 201, 500*time.Millisecond)
 
 	var rm metricdata.ResourceMetrics
 	if err := reader.Collect(ctx, &rm); err != nil {
 		t.Fatalf("Collect: %v", err)
 	}
 
-	// We should have at least one scope metric with at least 2 metrics.
-	if len(rm.ScopeMetrics) == 0 {
-		t.Fatal("expected at least one ScopeMetrics")
+	byName := make(map[string]metricdata.Metrics)
+	for _, sm := range rm.ScopeMetrics {
+		for _, metric := range sm.Metrics {
+			byName[metric.Name] = metric
+		}
 	}
-	// At minimum verify we don't panic and metrics flow through.
-	_ = rm.ScopeMetrics[0].Metrics
+
+	// Counter: one request, labelled with low-cardinality semconv attributes.
+	countMetric, ok := byName["otel_http_requests_total"]
+	if !ok {
+		t.Fatalf("missing otel_http_requests_total, got metrics %v", keysOf(byName))
+	}
+	sum, ok := countMetric.Data.(metricdata.Sum[int64])
+	if !ok {
+		t.Fatalf("otel_http_requests_total has type %T, want metricdata.Sum[int64]", countMetric.Data)
+	}
+	if len(sum.DataPoints) != 1 {
+		t.Fatalf("expected 1 counter datapoint, got %d", len(sum.DataPoints))
+	}
+	if sum.DataPoints[0].Value != 1 {
+		t.Errorf("counter value = %d, want 1", sum.DataPoints[0].Value)
+	}
+	assertHTTPAttrs(t, sum.DataPoints[0].Attributes)
+
+	// Histogram: one observation of 500ms.
+	durMetric, ok := byName["otel_http_request_duration_seconds"]
+	if !ok {
+		t.Fatalf("missing otel_http_request_duration_seconds, got metrics %v", keysOf(byName))
+	}
+	hist, ok := durMetric.Data.(metricdata.Histogram[float64])
+	if !ok {
+		t.Fatalf("otel_http_request_duration_seconds has type %T, want metricdata.Histogram[float64]", durMetric.Data)
+	}
+	if len(hist.DataPoints) != 1 {
+		t.Fatalf("expected 1 histogram datapoint, got %d", len(hist.DataPoints))
+	}
+	if hist.DataPoints[0].Count != 1 {
+		t.Errorf("histogram count = %d, want 1", hist.DataPoints[0].Count)
+	}
+	if hist.DataPoints[0].Sum != 0.5 {
+		t.Errorf("histogram sum = %v, want 0.5", hist.DataPoints[0].Sum)
+	}
+	assertHTTPAttrs(t, hist.DataPoints[0].Attributes)
+}
+
+// assertHTTPAttrs verifies the semconv attributes recorded on an HTTP metric
+// datapoint. Routes (not raw paths) are asserted so cardinality stays bounded.
+func assertHTTPAttrs(t *testing.T, set attribute.Set) {
+	t.Helper()
+	got := make(map[string]string, set.Len())
+	for _, kv := range set.ToSlice() {
+		got[string(kv.Key)] = kv.Value.Emit()
+	}
+	want := map[string]string{
+		"http.request.method":       "GET",
+		"http.route":                "/people/{id}",
+		"http.response.status_code": "201",
+	}
+	for k, v := range want {
+		if got[k] != v {
+			t.Errorf("attribute %q = %q, want %q (all: %v)", k, got[k], v, got)
+		}
+	}
+}
+
+func keysOf(m map[string]metricdata.Metrics) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // ── Telemetry Emit ─────────────────────────────────────────────────────────
