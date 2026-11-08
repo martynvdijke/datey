@@ -155,6 +155,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/logout", h.logout)
 		r.Get("/api/auth/oidc/status", h.oidcStatus)
 		r.Get("/api/auth/config", h.authConfig)
+		// Public telemetry settings for mobile clients — no secrets exposed.
+		r.Get("/api/otel-settings", h.otelSettings)
 		// OIDC login via Authelia (public; disabled → 404 inside handlers).
 		r.Get("/api/auth/oidc/login", h.oidcLogin)
 		r.Get("/api/auth/oidc/callback", h.oidcCallback)
