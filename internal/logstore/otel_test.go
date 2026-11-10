@@ -284,7 +284,7 @@ func assertHTTPAttrs(t *testing.T, set attribute.Set) {
 	t.Helper()
 	got := make(map[string]string, set.Len())
 	for _, kv := range set.ToSlice() {
-		got[string(kv.Key)] = kv.Value.Emit()
+		got[string(kv.Key)] = kv.Value.String()
 	}
 	want := map[string]string{
 		"http.request.method":       "GET",

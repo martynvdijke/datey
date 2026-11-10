@@ -11,9 +11,7 @@
   "automergeType": "pr",
   "dependencyDashboard": true,
   "ignorePaths": [
-    "**/node_modules/**",
-    "**/__fixtures__/**",
-    "test/**"
+    "tests/**"
   ],
   "ignorePresets": [
     ":ignoreModulesAndTests"
