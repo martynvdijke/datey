@@ -4,13 +4,13 @@ go 1.26.3
 
 require (
 	entgo.io/ent v0.14.6
-	github.com/6tail/lunar-go v1.4.6
+	github.com/6tail/lunar-go v1.4.7
 	github.com/SherClockHolmes/webpush-go v1.4.0
 	github.com/arran4/golang-ical v0.3.8
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/emersion/go-vcard v0.1.0
 	github.com/go-chi/chi/v5 v5.5.0
-	github.com/mattn/go-sqlite3 v1.14.52
+	github.com/mattn/go-sqlite3 v1.14.53
 	github.com/riandyrn/otelchi v0.12.3
 	go.opentelemetry.io/contrib/bridges/otelslog v0.21.0
 	go.opentelemetry.io/otel v1.47.0
@@ -26,7 +26,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.47.0
 	go.opentelemetry.io/otel/trace v1.47.0
 	golang.org/x/crypto v0.58.0
-	golang.org/x/oauth2 v0.37.0
+	golang.org/x/oauth2 v0.38.0
 )
 
 require (
