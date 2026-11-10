@@ -1,3 +1,16 @@
+# [1.59.0](https://github.com/martynvdijke/datey/compare/v1.58.0...v1.59.0) (2026-11-10)
+
+
+### Bug Fixes
+
+* **otel:** harden HTTP metric attributes and telemetry shutdown ([6589bd9](https://github.com/martynvdijke/datey/commit/6589bd969c0272adf749c42469ce24533e98bbf0)), closes [hi#cardinality](https://github.com/hi/issues/cardinality)
+* **renovate:** disable platform automerge so Renovate merges green PRs itself ([d939ad8](https://github.com/martynvdijke/datey/commit/d939ad86ff380126b9d142a4f56ae7d04f97c7fc))
+
+
+### Features
+
+* **mobile:** add OpenTelemetry tracing with runtime endpoint from API ([0966eb2](https://github.com/martynvdijke/datey/commit/0966eb258830439edcb96edae631d96d404fcb44))
+
 # [1.58.0](https://github.com/martynvdijke/datey/compare/v1.57.0...v1.58.0) (2026-11-05)
 
 
