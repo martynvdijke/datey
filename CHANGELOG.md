@@ -1,3 +1,10 @@
+## [1.59.1](https://github.com/martynvdijke/datey/compare/v1.59.0...v1.59.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#94](https://github.com/martynvdijke/datey/issues/94)) ([643d6c6](https://github.com/martynvdijke/datey/commit/643d6c6f1a8156b5fd7d5d87abe306a0905519a1))
+
 # [1.59.0](https://github.com/martynvdijke/datey/compare/v1.58.0...v1.59.0) (2026-11-10)
 
 
