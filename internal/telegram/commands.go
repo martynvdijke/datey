@@ -55,7 +55,7 @@ func (b *Bot) handleUpcoming(ctx context.Context, arg string) string {
 	}
 	today := todayStartUTC()
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Upcoming — next %d days\n", days))
+	fmt.Fprintf(&sb, "Upcoming — next %d days\n", days)
 	shown := len(occs)
 	if shown > maxUpcomingLines {
 		shown = maxUpcomingLines
@@ -66,7 +66,7 @@ func (b *Bot) handleUpcoming(ctx context.Context, arg string) string {
 		sb.WriteString(formatLine(oc.Event, oc.Date, today))
 	}
 	if rest := len(occs) - shown; rest > 0 {
-		sb.WriteString(fmt.Sprintf("\n…and %d more", rest))
+		fmt.Fprintf(&sb, "\n…and %d more", rest)
 	}
 	return sb.String()
 }
@@ -94,7 +94,7 @@ func (b *Bot) handleToday(ctx context.Context) string {
 	sb.WriteString("Today\n")
 	for i, oc := range filtered {
 		if i >= maxUpcomingLines {
-			sb.WriteString(fmt.Sprintf("\n…and %d more", len(filtered)-maxUpcomingLines))
+			fmt.Fprintf(&sb, "\n…and %d more", len(filtered)-maxUpcomingLines)
 			break
 		}
 		sb.WriteString("\n")
@@ -157,7 +157,7 @@ func (b *Bot) handlePerson(ctx context.Context, arg string) string {
 		sb.WriteString(formatLine(oc.Event, oc.Date, today))
 	}
 	if rest := len(filtered) - shown; rest > 0 {
-		sb.WriteString(fmt.Sprintf("\n…and %d more", rest))
+		fmt.Fprintf(&sb, "\n…and %d more", rest)
 	}
 	return sb.String()
 }
@@ -176,7 +176,7 @@ func personCandidates(people []*ent.Person) string {
 		sb.WriteString("\n")
 	}
 	if rest := len(people) - shown; rest > 0 {
-		sb.WriteString(fmt.Sprintf("…and %d more\n", rest))
+		fmt.Fprintf(&sb, "…and %d more\n", rest)
 	}
 	sb.WriteString("Please be more specific, e.g. /person First Last.")
 	return sb.String()
@@ -205,7 +205,7 @@ func (b *Bot) handleSearch(ctx context.Context, arg string) string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Results for %q\n", q))
+	fmt.Fprintf(&sb, "Results for %q\n", q)
 	for _, g := range groups {
 		sb.WriteString("\n")
 		sb.WriteString(searchGroupTitle(g.Entity))
@@ -224,7 +224,7 @@ func (b *Bot) handleSearch(ctx context.Context, arg string) string {
 			sb.WriteString("\n")
 		}
 		if rest := len(g.Results) - len(rows); rest > 0 {
-			sb.WriteString(fmt.Sprintf("…and %d more\n", rest))
+			fmt.Fprintf(&sb, "…and %d more\n", rest)
 		}
 	}
 	return strings.TrimRight(sb.String(), "\n")

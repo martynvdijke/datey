@@ -50,10 +50,7 @@ func IsRetryable(err error) bool {
 		return false
 	}
 	var permanent *PermanentError
-	if errors.As(err, &permanent) {
-		return false
-	}
-	return true
+	return !errors.As(err, &permanent)
 }
 
 // RetryPolicy describes bounded exponential backoff. Every field is

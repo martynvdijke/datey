@@ -375,13 +375,6 @@ func (h *Handler) renderGroupEventForm(w http.ResponseWriter, r *http.Request, g
 	})
 }
 
-func groupNameOrEmpty(g *ent.Group) string {
-	if g == nil {
-		return ""
-	}
-	return g.Name
-}
-
 func (h *Handler) createGroupNote(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {

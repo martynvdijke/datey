@@ -278,7 +278,7 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 			dayOf := days == 0
 			stages := s.occurrenceStages(event)
 			stage, staged := stageForDays(days, stages)
-			if !staged && !dayOf && !(catchUp && days < 0) {
+			if !(staged || dayOf || (catchUp && days < 0)) {
 				continue
 			}
 			if len(stages) > 1 {
@@ -370,7 +370,7 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 		dayOf := days == 0
 		stages := s.occurrenceStages(event)
 		stage, staged := stageForDays(days, stages)
-		if !staged && !dayOf && !(catchUp && days < 0) {
+		if !(staged || dayOf || (catchUp && days < 0)) {
 			continue
 		}
 		if len(stages) > 1 {

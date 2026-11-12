@@ -258,7 +258,7 @@ func TestParse_DateFormatsInFile(t *testing.T) {
 		if row.SkipReason != "" {
 			t.Fatalf("row %d (%q) unexpectedly skipped: %q", row.Row, row.Name, row.SkipReason)
 		}
-		if row.Date != "1990-06-08" && !(row.Name == "E" || row.Name == "F") {
+		if row.Date != "1990-06-08" && row.Name != "E" && row.Name != "F" {
 			t.Errorf("row %d (%q) date = %q, want 1990-06-08", row.Row, row.Name, row.Date)
 		}
 		if (row.Name == "E" || row.Name == "F") && row.Date != "1990-01-02" {

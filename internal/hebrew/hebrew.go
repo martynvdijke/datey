@@ -25,11 +25,6 @@ import (
 // occurrence inside the target Gregorian year.
 var ErrNoOccurrence = errors.New("hebrew: no occurrence in Gregorian year")
 
-// referenceLeapYear is a known Hebrew leap year (5784, 2023–24). It is used
-// only to validate month lengths and to identify the Adar II month; it never
-// appears in a returned date.
-const referenceLeapYear = 5784
-
 // ToGregorian returns the first Gregorian occurrence inside gYear for the
 // Hebrew month/day, or ErrNoOccurrence when the date does not occur in that
 // Gregorian year.

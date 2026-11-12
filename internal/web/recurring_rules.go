@@ -98,11 +98,12 @@ func (h *Handler) createRecurringRule(w http.ResponseWriter, r *http.Request) {
 				month = v
 			}
 		}
-		if patternType == recurring.RuleLastWeekday {
+		switch {
+		case patternType == recurring.RuleLastWeekday:
 			// ordinal is implied; no form field needed.
-		} else if nthStr == "" {
+		case nthStr == "":
 			errors["nth"] = "Ordinal is required"
-		} else {
+		default:
 			v, err := strconv.Atoi(nthStr)
 			if err != nil || v < 1 || v > 5 {
 				errors["nth"] = "Ordinal must be 1-5"
