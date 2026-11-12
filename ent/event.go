@@ -14,6 +14,7 @@ import (
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/group"
 	"github.com/datey/datey/ent/person"
+	"github.com/datey/datey/ent/subscription"
 )
 
 // Event is the model entity for the Event schema.
@@ -41,6 +42,24 @@ type Event struct {
 	LunarDay *int `json:"lunar_day,omitempty"`
 	// LunarLeap holds the value of the "lunar_leap" field.
 	LunarLeap bool `json:"lunar_leap,omitempty"`
+	// Frequency holds the value of the "frequency" field.
+	Frequency string `json:"frequency,omitempty"`
+	// Interval holds the value of the "interval" field.
+	Interval int `json:"interval,omitempty"`
+	// EndDate holds the value of the "end_date" field.
+	EndDate *time.Time `json:"end_date,omitempty"`
+	// OccurrenceCount holds the value of the "occurrence_count" field.
+	OccurrenceCount *int `json:"occurrence_count,omitempty"`
+	// SubscriptionID holds the value of the "subscription_id" field.
+	SubscriptionID *int `json:"subscription_id,omitempty"`
+	// ExternalUID holds the value of the "external_uid" field.
+	ExternalUID string `json:"external_uid,omitempty"`
+	// RuleKind holds the value of the "rule_kind" field.
+	RuleKind string `json:"rule_kind,omitempty"`
+	// RuleOrdinal holds the value of the "rule_ordinal" field.
+	RuleOrdinal *int `json:"rule_ordinal,omitempty"`
+	// RuleWeekday holds the value of the "rule_weekday" field.
+	RuleWeekday *int `json:"rule_weekday,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventQuery when eager-loading is set.
 	Edges          EventEdges `json:"edges"`
@@ -60,9 +79,11 @@ type EventEdges struct {
 	Group *Group `json:"group,omitempty"`
 	// NotificationLogs holds the value of the notification_logs edge.
 	NotificationLogs []*NotificationLog `json:"notification_logs,omitempty"`
+	// Subscription holds the value of the subscription edge.
+	Subscription *Subscription `json:"subscription,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ContactOrErr returns the Contact value or an error if the edge
@@ -107,6 +128,17 @@ func (e EventEdges) NotificationLogsOrErr() ([]*NotificationLog, error) {
 	return nil, &NotLoadedError{edge: "notification_logs"}
 }
 
+// SubscriptionOrErr returns the Subscription value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e EventEdges) SubscriptionOrErr() (*Subscription, error) {
+	if e.Subscription != nil {
+		return e.Subscription, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: subscription.Label}
+	}
+	return nil, &NotLoadedError{edge: "subscription"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Event) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -116,11 +148,11 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case event.FieldLunarLeap:
 			values[i] = new(sql.NullBool)
-		case event.FieldID, event.FieldLunarMonth, event.FieldLunarDay:
+		case event.FieldID, event.FieldLunarMonth, event.FieldLunarDay, event.FieldInterval, event.FieldOccurrenceCount, event.FieldSubscriptionID, event.FieldRuleOrdinal, event.FieldRuleWeekday:
 			values[i] = new(sql.NullInt64)
-		case event.FieldType, event.FieldDescription, event.FieldNotes, event.FieldCalendarSystem:
+		case event.FieldType, event.FieldDescription, event.FieldNotes, event.FieldCalendarSystem, event.FieldFrequency, event.FieldExternalUID, event.FieldRuleKind:
 			values[i] = new(sql.NullString)
-		case event.FieldDate, event.FieldCreatedAt:
+		case event.FieldDate, event.FieldCreatedAt, event.FieldEndDate:
 			values[i] = new(sql.NullTime)
 		case event.ForeignKeys[0]: // contact_events
 			values[i] = new(sql.NullInt64)
@@ -213,6 +245,65 @@ func (_m *Event) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.LunarLeap = value.Bool
 			}
+		case event.FieldFrequency:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field frequency", values[i])
+			} else if value.Valid {
+				_m.Frequency = value.String
+			}
+		case event.FieldInterval:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field interval", values[i])
+			} else if value.Valid {
+				_m.Interval = int(value.Int64)
+			}
+		case event.FieldEndDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field end_date", values[i])
+			} else if value.Valid {
+				_m.EndDate = new(time.Time)
+				*_m.EndDate = value.Time
+			}
+		case event.FieldOccurrenceCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field occurrence_count", values[i])
+			} else if value.Valid {
+				_m.OccurrenceCount = new(int)
+				*_m.OccurrenceCount = int(value.Int64)
+			}
+		case event.FieldSubscriptionID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field subscription_id", values[i])
+			} else if value.Valid {
+				_m.SubscriptionID = new(int)
+				*_m.SubscriptionID = int(value.Int64)
+			}
+		case event.FieldExternalUID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_uid", values[i])
+			} else if value.Valid {
+				_m.ExternalUID = value.String
+			}
+		case event.FieldRuleKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field rule_kind", values[i])
+			} else if value.Valid {
+				_m.RuleKind = value.String
+			}
+		case event.FieldRuleOrdinal:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field rule_ordinal", values[i])
+			} else if value.Valid {
+				_m.RuleOrdinal = new(int)
+				*_m.RuleOrdinal = int(value.Int64)
+			}
+		case event.FieldRuleWeekday:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field rule_weekday", values[i])
+			} else if value.Valid {
+				_m.RuleWeekday = new(int)
+				*_m.RuleWeekday = int(value.Int64)
+			}
 		case event.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field contact_events", value)
@@ -265,6 +356,11 @@ func (_m *Event) QueryGroup() *GroupQuery {
 // QueryNotificationLogs queries the "notification_logs" edge of the Event entity.
 func (_m *Event) QueryNotificationLogs() *NotificationLogQuery {
 	return NewEventClient(_m.config).QueryNotificationLogs(_m)
+}
+
+// QuerySubscription queries the "subscription" edge of the Event entity.
+func (_m *Event) QuerySubscription() *SubscriptionQuery {
+	return NewEventClient(_m.config).QuerySubscription(_m)
 }
 
 // Update returns a builder for updating this Event.
@@ -323,6 +419,43 @@ func (_m *Event) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("lunar_leap=")
 	builder.WriteString(fmt.Sprintf("%v", _m.LunarLeap))
+	builder.WriteString(", ")
+	builder.WriteString("frequency=")
+	builder.WriteString(_m.Frequency)
+	builder.WriteString(", ")
+	builder.WriteString("interval=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Interval))
+	builder.WriteString(", ")
+	if v := _m.EndDate; v != nil {
+		builder.WriteString("end_date=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.OccurrenceCount; v != nil {
+		builder.WriteString("occurrence_count=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.SubscriptionID; v != nil {
+		builder.WriteString("subscription_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("external_uid=")
+	builder.WriteString(_m.ExternalUID)
+	builder.WriteString(", ")
+	builder.WriteString("rule_kind=")
+	builder.WriteString(_m.RuleKind)
+	builder.WriteString(", ")
+	if v := _m.RuleOrdinal; v != nil {
+		builder.WriteString("rule_ordinal=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.RuleWeekday; v != nil {
+		builder.WriteString("rule_weekday=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

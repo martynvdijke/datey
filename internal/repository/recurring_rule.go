@@ -42,6 +42,14 @@ func (r *RecurringRuleRepository) List(ctx context.Context) ([]*ent.RecurringRul
 		All(ctx)
 }
 
+// ListAll returns every recurring rule, including disabled ones, ordered by
+// name then ID. Used by whole-dataset exports.
+func (r *RecurringRuleRepository) ListAll(ctx context.Context) ([]*ent.RecurringRule, error) {
+	return r.client.RecurringRule.Query().
+		Order(ent.Asc(recurringrule.FieldName), ent.Asc(recurringrule.FieldID)).
+		All(ctx)
+}
+
 func (r *RecurringRuleRepository) Update(ctx context.Context, id int, name, patternType string, nth, weekday, month, day int, enabled bool) (*ent.RecurringRule, error) {
 	return r.client.RecurringRule.UpdateOneID(id).
 		SetName(name).

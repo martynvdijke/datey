@@ -187,7 +187,7 @@ func (h *Handler) viewPersonJSON(w http.ResponseWriter, r *http.Request) {
 	notify := person.NotifyBirthdays
 	writeAPIJSON(w, http.StatusOK, map[string]any{
 		"id": person.ID, "name": person.Name, "first_name": first, "middle_name": middle, "last_name": last,
-		"notes": person.Notes, "photo_url": photoURL, "immich_person_id": person.ImmichPersonID, "notify_birthdays": notify, "timezone": "UTC",
+		"notes": person.Notes, "photo_url": photoURL, "immich_person_id": person.ImmichPersonID, "notify_birthdays": notify, "timezone": person.Timezone,
 		"tags": tagNames, "events": evDTOs, "gift_ideas": giftDTOs, "gift_ideas_hidden": hidden, "relationships": relDTOs, "groups": grpDTOs,
 		"notes_timeline": noteDTOs,
 	})

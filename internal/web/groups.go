@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/datey/datey/ent"
+	"github.com/datey/datey/internal/i18n"
+	"github.com/datey/datey/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -310,6 +312,7 @@ func (h *Handler) newGroupEventForm(w http.ResponseWriter, r *http.Request) {
 		"Title":     "Datey - Add Event",
 		"GroupID":   g.ID,
 		"GroupName": g.Name,
+		"FormData":  eventFormData("", "", "", "gregorian", "", "", "", "", "", "", ""),
 	})
 }
 
@@ -323,43 +326,53 @@ func (h *Handler) createGroupEvent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-	eventType := r.FormValue("type")
-	dateStr := r.FormValue("date")
-	description := r.FormValue("description")
 
-	errors := make(map[string]string)
-	if eventType == "" {
-		errors["type"] = "Event type is required"
-	}
-	if dateStr == "" {
-		errors["date"] = "Date is required"
-	}
-	date, parseErr := time.Parse("2006-01-02", dateStr)
-	if dateStr != "" && parseErr != nil {
-		errors["date"] = "Invalid date format"
-	}
-	if len(errors) > 0 {
-		g, _ := h.groups.GetByID(r.Context(), id)
-		h.render(w, r, "event_form.html", map[string]any{
-			"Title":     "Datey - Add Event",
-			"GroupID":   id,
-			"GroupName": groupNameOrEmpty(g),
-			"Errors":    errors,
-			"FormData": map[string]string{
-				"Type":        eventType,
-				"Date":        dateStr,
-				"Description": description,
-			},
-		})
-		return
-	}
+	// The group route shares exactly the same parser and rules as the person
+	// route, so frequency, interval, bounds and calendar fields are validated
+	// and persisted instead of being dropped.
+	in := eventFormInputFromRequest(r)
 
-	if _, err := h.events.CreateForGroup(r.Context(), id, eventType, date, description); err != nil {
-		slog.Error("create group event", "error", err)
+	g, err := h.groups.GetByID(r.Context(), id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			h.renderError(w, r, http.StatusNotFound)
+			return
+		}
+		slog.Error("get group", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
 	}
+
+	locale := localeFromRequest(r)
+	tr := func(key string) string { return i18n.T(locale, key) }
+
+	validated, codes := validateEventInput(in)
+	errors := eventErrorMessages(codes, tr)
+	if len(errors) > 0 {
+		h.renderGroupEventForm(w, r, g, errors, eventFormDataFromInput(in))
+		return
+	}
+
+	schedule := repository.NewEventSchedule(validated.Frequency, validated.Interval, validated.EndDate, validated.OccurrenceCount)
+	if _, err := h.events.CreateForGroupWithSchedule(r.Context(), id, validated.Type, validated.Date, in.Description, validated.CalendarSystem, validated.StoredMonth, validated.LunarDay, validated.StoredLeap, schedule); err != nil {
+		slog.Info("create group event validation failed", "error", err)
+		errors["lunar_month"] = err.Error()
+		h.renderGroupEventForm(w, r, g, errors, eventFormDataFromInput(in))
+		return
+	}
 	http.Redirect(w, r, fmt.Sprintf("/groups/%d?success=Event+created", id), http.StatusSeeOther)
+}
+
+// renderGroupEventForm re-renders the create form for a group with errors and
+// the submitted values retained.
+func (h *Handler) renderGroupEventForm(w http.ResponseWriter, r *http.Request, g *ent.Group, errors map[string]string, data map[string]string) {
+	h.render(w, r, "event_form.html", map[string]any{
+		"Title":     "Datey - Add Event",
+		"GroupID":   g.ID,
+		"GroupName": g.Name,
+		"Errors":    errors,
+		"FormData":  data,
+	})
 }
 
 func groupNameOrEmpty(g *ent.Group) string {

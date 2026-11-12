@@ -1,47 +1,64 @@
 {{define "content"}}
-<div class="row justify-content-center" style="margin-top: 10vh;">
-  <div class="col-md-5 col-lg-4">
-    <div class="card login-card shadow-sm">
-      <div class="card-body">
-        <h3 class="card-title text-center mb-1">Welcome back</h3>
-        <p class="text-center text-muted small mb-4">Log in to Datey to manage your reminders</p>
-        <form method="POST" action="/login">
-          {{template "csrfField" .}}
-          <div class="mb-3">
-            <label for="username" class="form-label">Username {{template "requiredIndicator" .}}</label>
-            <input type="text" class="form-control" id="username" name="username" required autofocus autocomplete="username" value="{{if .FormData}}{{.FormData.Username}}{{end}}">
+<div class="auth-shell">
+  <div class="card login-card shadow-sm">
+    <div class="card-body">
+      <div class="auth-brand" aria-hidden="true"><span class="brand-icon">D</span></div>
+      <h1 class="card-title text-center mb-1">Welcome back</h1>
+      <p class="text-center text-muted small mb-4">Log in to Datey to manage your reminders</p>
+
+      {{if .Error}}
+        <div class="auth-alert" id="login-error" role="alert">
+          <span class="auth-alert-icon" aria-hidden="true">!</span>
+          <span>{{.Error}}</span>
+        </div>
+      {{end}}
+
+      <form method="POST" action="/login">
+        {{template "csrfField" .}}
+        <div class="mb-3">
+          <label for="username" class="form-label">Username {{template "requiredIndicator" .}}</label>
+          <input type="text" class="form-control" id="username" name="username" required autofocus
+                 autocomplete="username" autocapitalize="none" spellcheck="false"
+                 placeholder="e.g. jane"
+                 value="{{if .FormData}}{{.FormData.Username}}{{end}}"
+                 {{if .Error}}aria-invalid="true" aria-describedby="login-error"{{end}}>
+        </div>
+        <div class="mb-4">
+          <label for="password" class="form-label">Password {{template "requiredIndicator" .}}</label>
+          <input type="password" class="form-control" id="password" name="password" required
+                 autocomplete="current-password" placeholder="Your password"
+                 {{if .Error}}aria-invalid="true" aria-describedby="login-error"{{end}}>
+        </div>
+        <button type="submit" class="btn btn-dark w-100">Log In</button>
+      </form>
+
+      {{if .DemoEnabled}}
+        <div class="card demo-card mt-4">
+          <div class="card-body">
+            <h2 class="h6 mb-1">Try the demo account</h2>
+            <p class="card-text small text-muted mb-3">Shared demo account @{{.DemoHandle}}, password <code>{{.DemoPassword}}</code>. Anyone can use it.</p>
+            <form method="POST" action="/login">
+              {{template "csrfField" .}}
+              <input type="hidden" name="username" value="{{.DemoHandle}}">
+              <input type="hidden" name="password" value="{{.DemoPassword}}">
+              <button type="submit" class="btn btn-outline-dark w-100">Log in as @{{.DemoHandle}}</button>
+            </form>
           </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password {{template "requiredIndicator" .}}</label>
-            <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
-          </div>
-          <button type="submit" class="btn btn-dark w-100">Log In</button>
-        </form>
-        {{if .DemoEnabled}}
-          <div class="card demo-card mt-4">
-            <div class="card-body">
-              <h5 class="card-title">Try the demo account</h5>
-              <p class="card-text small text-muted">Shared demo account @{{.DemoHandle}}, password <code>{{.DemoPassword}}</code>. Anyone can use it.</p>
-              <form method="POST" action="/login">
-                {{template "csrfField" .}}
-                <input type="hidden" name="username" value="{{.DemoHandle}}">
-                <input type="hidden" name="password" value="{{.DemoPassword}}">
-                <button type="submit" class="btn btn-outline-dark w-100">Log in as @{{.DemoHandle}}</button>
-              </form>
-            </div>
-          </div>
-        {{end}}
-        {{if .OIDCEnabled}}
-          <div class="text-center mt-3">
-            <a href="/api/auth/oidc/login" class="btn btn-outline-dark w-100">Login with Authelia</a>
-          </div>
-        {{end}}
-        {{if .EmailConfigured}}
-          <div class="text-center mt-3">
-            <a href="/forgot-password" class="small">Forgot password?</a>
-          </div>
-        {{end}}
-      </div>
+        </div>
+      {{end}}
+
+      {{if .OIDCEnabled}}
+        <div class="auth-divider" aria-hidden="true"></div>
+        <a href="/api/auth/oidc/login" class="btn btn-outline-dark w-100">Login with Authelia</a>
+      {{end}}
+
+      {{if .EmailConfigured}}
+        <div class="auth-links">
+          <a href="/forgot-password">Forgot password?</a>
+        </div>
+      {{end}}
+
+      {{template "authVersionFooter" .}}
     </div>
   </div>
 </div>

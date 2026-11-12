@@ -1,0 +1,46 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">{{T "search.title"}}</h1>
+</div>
+
+<form class="mb-4" role="search" action="/search" method="GET">
+  <label for="search-page-q" class="form-label">{{T "search.label"}}</label>
+  <div class="input-group">
+    <input id="search-page-q" class="form-control" type="search" name="q" value="{{.Query}}"
+           placeholder="{{T "search.placeholder"}}" autocomplete="off"
+           {{if and (not .Query) (not .HXRequest)}}autofocus{{end}}>
+    <button class="btn btn-outline-secondary" type="submit">{{T "search.submit"}}</button>
+  </div>
+</form>
+
+{{if .Unavailable}}
+<div class="alert alert-warning" role="alert" id="search-unavailable">{{T "search.unavailable"}}</div>
+{{else if not .Searched}}
+<p class="text-muted" id="search-hint">{{T "search.hint"}}</p>
+{{else}}
+<p class="text-muted" role="status" aria-live="polite" id="search-status">{{.Summary}}</p>
+
+{{if not .Groups}}
+<div class="empty-state" id="search-empty">
+  <p class="mb-0">{{T "search.no_results"}}</p>
+</div>
+{{end}}
+
+{{range .Groups}}
+<section class="card mb-4" id="search-group-{{.Entity}}" aria-labelledby="search-group-{{.Entity}}-heading">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="h6 mb-0" id="search-group-{{.Entity}}-heading">{{T .TitleKey}}</h2>
+    <span class="badge text-bg-secondary">{{.Count}}</span>
+  </div>
+  <ul class="list-group list-group-flush">
+    {{range .Results}}
+    <li class="list-group-item">
+      <a href="{{.URL}}" class="fw-semibold text-decoration-none">{{.Label}}</a>
+      {{if .Snippet}}<div class="small text-muted">{{.Snippet}}</div>{{end}}
+    </li>
+    {{end}}
+  </ul>
+</section>
+{{end}}
+{{end}}
+{{end}}

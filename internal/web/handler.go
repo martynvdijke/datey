@@ -30,6 +30,7 @@ import (
 	"github.com/datey/datey/internal/session"
 	"github.com/datey/datey/internal/settings"
 	"github.com/datey/datey/internal/telegram"
+	"github.com/datey/datey/internal/tzutil"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -138,6 +139,23 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Post("/api/telegram/webhook", h.telegramWebhook)
 
+	// Versioned JSON write API — bearer API token or session cookie.
+	// Own group: BearerAuth → APIAuthJSON (JSON 401) → CSRF. APIAuthJSON must
+	// run before CSRF so unauthenticated calls get 401 instead of an HTML 403.
+	r.Group(func(r chi.Router) {
+		r.Use(h.BearerAuth)
+		r.Use(h.APIAuthJSON)
+		r.Use(h.CSRF)
+
+		r.Post("/api/v1/people", h.apiCreatePerson)
+		r.Patch("/api/v1/people/{id}", h.apiUpdatePerson)
+		r.Delete("/api/v1/people/{id}", h.apiDeletePerson)
+		r.Get("/api/v1/people/{id}/events", h.apiListPersonEvents)
+		r.Post("/api/v1/people/{id}/events", h.apiCreateEvent)
+		r.Patch("/api/v1/events/{id}", h.apiUpdateEvent)
+		r.Delete("/api/v1/events/{id}", h.apiDeleteEvent)
+	})
+
 	// All other routes with middleware applied via group
 	r.Group(func(r chi.Router) {
 		r.Use(h.SetupRedirect)
@@ -182,6 +200,13 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 		// Public JSON API of upcoming events — same key protection.
 		r.Get("/api/upcoming", h.upcomingAPI)
+
+		// Public read-only share links (HMAC-signed, expiring).
+		r.Get("/s/{token}", h.handleShareView)
+
+		// Public reminder actions — the signed token is the authentication.
+		r.Get("/a/{token}", h.handleReminderAction)
+		r.Post("/a/{token}", h.handleReminderActionSubmit)
 
 		// Public Home Assistant stats feed — same key protection.
 		r.Get("/api/homeassistant/stats", h.homeAssistantStats)
@@ -233,12 +258,18 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/people/{id}/gift-ideas/{giftID}", h.updateGiftIdea)
 			r.Post("/people/{id}/gift-ideas/{giftID}/status", h.updateGiftIdeaStatus)
 			r.Post("/people/{id}/gift-ideas/{giftID}/delete", h.deleteGiftIdea)
+			r.Post("/people/{id}/share", h.handleShareCreatePerson)
 			r.Post("/people/import", h.handleImportVCard)
+			r.Get("/people/import/csv", h.handleCSVImportForm)
+			r.Post("/people/import/csv", h.handleCSVImportPreview)
+			r.Post("/people/import/csv/confirm", h.handleCSVImportConfirm)
 			r.Get("/people/{id}/vcard", h.handleExportSingleVCard)
 			r.Get("/people/export", h.handleExportAllVCard)
 			r.Get("/people/{id}/events/new", h.newEventForm)
 			r.Post("/people/{id}/events/new", h.createEvent)
 			r.Post("/events/{id}/delete", h.deleteEvent)
+			r.Get("/events/{id}/edit", h.editEventForm)
+			r.Post("/events/{id}/edit", h.updateEvent)
 
 			// Legacy /contacts/* 301 redirects → /people/*
 			r.Get("/contacts", h.redirectContactsList)
@@ -262,6 +293,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/groups/{id}/events/new", h.createGroupEvent)
 			r.Post("/groups/{id}/notes", h.createGroupNote)
 			r.Post("/groups/{id}/notes/{noteID}/delete", h.deleteGroupNote)
+			r.Post("/groups/{id}/share", h.handleShareCreateGroup)
 
 			r.Get("/recurring-rules", h.listRecurringRules)
 			r.Get("/recurring-rules/new", h.newRecurringRuleForm)
@@ -269,6 +301,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/recurring-rules/{id}/delete", h.deleteRecurringRule)
 
 			r.Get("/stats", h.statsPage)
+			r.Get("/data-quality", h.handleDataQuality)
+			r.Get("/search", h.handleSearch)
 			r.Get("/calendar", h.calendarPage)
 			r.Get("/api/calendar-events", h.calendarEvents)
 			r.Post("/calendar/import", h.handleImportICS)
@@ -277,6 +311,12 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			// E-Ink toggle: requires auth (not admin-only, any user can toggle)
 			r.Post("/settings/eink-toggle", h.settingsEinkToggle)
 			r.Post("/settings/locale", h.settingsLocaleSave)
+
+			// Portable data export / additive import
+			r.Get("/settings/portable/export", h.handlePortableExport)
+			r.Get("/settings/portable/import", h.handlePortableImportForm)
+			r.Post("/settings/portable/import", h.handlePortableImportPreview)
+			r.Post("/settings/portable/import/confirm", h.handlePortableImportConfirm)
 
 			// Web Push subscription management (authenticated, CSRF-protected)
 			r.Get("/push/vapid-public-key", h.pushVAPIDPublicKey)
@@ -320,6 +360,15 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 				r.Post("/users/create", h.userCreate)
 				r.Post("/users/{id}/delete", h.userDelete)
 				r.Get("/settings/audit", h.auditLog)
+
+				// Live ICS subscriptions
+				r.Get("/settings/subscriptions", h.subscriptionsPage)
+				r.Post("/settings/subscriptions", h.subscriptionCreate)
+				r.Post("/settings/subscriptions/{id}", h.subscriptionUpdate)
+				r.Post("/settings/subscriptions/{id}/toggle", h.subscriptionToggle)
+				r.Post("/settings/subscriptions/{id}/refresh", h.subscriptionRefresh)
+				r.Post("/settings/subscriptions/{id}/delete", h.subscriptionDelete)
+
 				r.Post("/settings/feed/regenerate/ical", h.regenerateFeedKey("ical", "feedkey.regenerate"))
 				r.Post("/settings/feed/regenerate/rss", h.regenerateFeedKey("rss", "feedkey.regenerate"))
 				r.Post("/settings/feed/regenerate/upcoming", h.regenerateFeedKey("upcoming", "feedkey.regenerate"))
@@ -363,7 +412,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 
 	end := now.AddDate(0, 0, reminderDays)
 
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), end)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC().AddDate(0, 0, -1), end.AddDate(0, 0, 1))
 	if err != nil {
 		slog.Error("dashboard: list upcoming", "error", err, "from", now.Format(time.RFC3339), "to", end.Format(time.RFC3339))
 		h.renderError(w, r, http.StatusInternalServerError)
@@ -398,7 +447,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 		e := occ.Event
 		personName := eventOwnerName(e)
 
-		days := int(occ.Date.Sub(now).Hours() / 24)
+		days := tzutil.DaysUntil(occ.Date, occurrenceLocation(e), now)
 
 		// Relative label
 		var relativeLabel string
@@ -426,9 +475,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 				if e.Date.Year() > 1 {
 					occ, _ := displayDateForEvent(e, now)
 					years := now.Year() - e.Date.Year()
-					nowDay := dateOnly(now, now.Location())
-					occDay := dateOnly(occ, time.UTC)
-					if occDay.After(nowDay) {
+					if tzutil.DaysUntil(occ, occurrenceLocation(e), now) > 0 {
 						years--
 					}
 					if years >= 0 {
@@ -446,7 +493,7 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, occ := range occurrences {
-		days := int(occ.Date.Sub(now).Hours() / 24)
+		days := tzutil.DaysUntil(occ.Date, occurrenceLocation(occ.Event), now)
 
 		ev := viewFor(occ)
 

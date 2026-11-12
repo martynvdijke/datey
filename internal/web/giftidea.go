@@ -47,7 +47,7 @@ func (h *Handler) createGiftIdea(w http.ResponseWriter, r *http.Request) {
 		// handle status if provided and not default
 		if body.Status != "" && body.Status != "idea" {
 			if status := giftidea.Status(body.Status); giftidea.StatusValidator(status) == nil {
-				if updated, err := h.giftIdeas.UpdateStatus(r.Context(), g.ID, status); err == nil {
+				if updated, err := h.giftIdeas.SetStatus(r.Context(), g.ID, status); err == nil {
 					g = updated
 				}
 			}
@@ -109,7 +109,7 @@ func (h *Handler) updateGiftIdeaStatus(w http.ResponseWriter, r *http.Request) {
 			writeAPIError(w, http.StatusBadRequest, "validation", "invalid status")
 			return
 		}
-		updated, err := h.giftIdeas.UpdateStatus(r.Context(), giftID, status)
+		updated, err := h.giftIdeas.SetStatus(r.Context(), giftID, status)
 		if err != nil {
 			writeAPIError(w, http.StatusInternalServerError, "internal", "failed")
 			return
@@ -127,7 +127,7 @@ func (h *Handler) updateGiftIdeaStatus(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid status", http.StatusBadRequest)
 		return
 	}
-	if _, err := h.giftIdeas.UpdateStatus(r.Context(), giftID, status); err != nil {
+	if _, err := h.giftIdeas.SetStatus(r.Context(), giftID, status); err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}

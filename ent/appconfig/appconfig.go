@@ -23,6 +23,8 @@ const (
 	FieldLastSchedulerRun = "last_scheduler_run"
 	// FieldSchedulerCatchup holds the string denoting the scheduler_catchup field in the database.
 	FieldSchedulerCatchup = "scheduler_catchup"
+	// FieldSubscriptionPollHours holds the string denoting the subscription_poll_hours field in the database.
+	FieldSubscriptionPollHours = "subscription_poll_hours"
 	// FieldDateVariant holds the string denoting the date_variant field in the database.
 	FieldDateVariant = "date_variant"
 	// FieldReminderDigest holds the string denoting the reminder_digest field in the database.
@@ -73,6 +75,10 @@ const (
 	FieldNtfyToken = "ntfy_token"
 	// FieldNtfyPriority holds the string denoting the ntfy_priority field in the database.
 	FieldNtfyPriority = "ntfy_priority"
+	// FieldPushoverToken holds the string denoting the pushover_token field in the database.
+	FieldPushoverToken = "pushover_token"
+	// FieldPushoverUser holds the string denoting the pushover_user field in the database.
+	FieldPushoverUser = "pushover_user"
 	// FieldWebhookURL holds the string denoting the webhook_url field in the database.
 	FieldWebhookURL = "webhook_url"
 	// FieldWebhookSecret holds the string denoting the webhook_secret field in the database.
@@ -174,6 +180,7 @@ var Columns = []string{
 	FieldReminderDays,
 	FieldLastSchedulerRun,
 	FieldSchedulerCatchup,
+	FieldSubscriptionPollHours,
 	FieldDateVariant,
 	FieldReminderDigest,
 	FieldReminderStages,
@@ -199,6 +206,8 @@ var Columns = []string{
 	FieldNtfyTopic,
 	FieldNtfyToken,
 	FieldNtfyPriority,
+	FieldPushoverToken,
+	FieldPushoverUser,
 	FieldWebhookURL,
 	FieldWebhookSecret,
 	FieldDiscordWebhookURL,
@@ -291,6 +300,11 @@ func ByLastSchedulerRun(opts ...sql.OrderTermOption) OrderOption {
 // BySchedulerCatchup orders the results by the scheduler_catchup field.
 func BySchedulerCatchup(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSchedulerCatchup, opts...).ToFunc()
+}
+
+// BySubscriptionPollHours orders the results by the subscription_poll_hours field.
+func BySubscriptionPollHours(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubscriptionPollHours, opts...).ToFunc()
 }
 
 // ByDateVariant orders the results by the date_variant field.
@@ -416,6 +430,16 @@ func ByNtfyToken(opts ...sql.OrderTermOption) OrderOption {
 // ByNtfyPriority orders the results by the ntfy_priority field.
 func ByNtfyPriority(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNtfyPriority, opts...).ToFunc()
+}
+
+// ByPushoverToken orders the results by the pushover_token field.
+func ByPushoverToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPushoverToken, opts...).ToFunc()
+}
+
+// ByPushoverUser orders the results by the pushover_user field.
+func ByPushoverUser(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPushoverUser, opts...).ToFunc()
 }
 
 // ByWebhookURL orders the results by the webhook_url field.

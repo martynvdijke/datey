@@ -32,6 +32,12 @@ type GiftIdea struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// PurchasedAt holds the value of the "purchased_at" field.
+	PurchasedAt *time.Time `json:"purchased_at,omitempty"`
+	// GivenAt holds the value of the "given_at" field.
+	GivenAt *time.Time `json:"given_at,omitempty"`
+	// ArchivedAt holds the value of the "archived_at" field.
+	ArchivedAt *time.Time `json:"archived_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GiftIdeaQuery when eager-loading is set.
 	Edges             GiftIdeaEdges `json:"edges"`
@@ -68,7 +74,7 @@ func (*GiftIdea) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case giftidea.FieldTitle, giftidea.FieldNotes, giftidea.FieldURL, giftidea.FieldStatus:
 			values[i] = new(sql.NullString)
-		case giftidea.FieldCreatedAt, giftidea.FieldUpdatedAt:
+		case giftidea.FieldCreatedAt, giftidea.FieldUpdatedAt, giftidea.FieldPurchasedAt, giftidea.FieldGivenAt, giftidea.FieldArchivedAt:
 			values[i] = new(sql.NullTime)
 		case giftidea.ForeignKeys[0]: // person_gift_ideas
 			values[i] = new(sql.NullInt64)
@@ -135,6 +141,27 @@ func (_m *GiftIdea) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
+			}
+		case giftidea.FieldPurchasedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field purchased_at", values[i])
+			} else if value.Valid {
+				_m.PurchasedAt = new(time.Time)
+				*_m.PurchasedAt = value.Time
+			}
+		case giftidea.FieldGivenAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field given_at", values[i])
+			} else if value.Valid {
+				_m.GivenAt = new(time.Time)
+				*_m.GivenAt = value.Time
+			}
+		case giftidea.FieldArchivedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field archived_at", values[i])
+			} else if value.Valid {
+				_m.ArchivedAt = new(time.Time)
+				*_m.ArchivedAt = value.Time
 			}
 		case giftidea.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -206,6 +233,21 @@ func (_m *GiftIdea) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.PurchasedAt; v != nil {
+		builder.WriteString("purchased_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.GivenAt; v != nil {
+		builder.WriteString("given_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ArchivedAt; v != nil {
+		builder.WriteString("archived_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

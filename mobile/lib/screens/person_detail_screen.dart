@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/person_detail_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/people_provider.dart';
 import '../models/person_detail.dart';
 import '../services/api_client.dart';
 import '../services/storage_service.dart';
@@ -13,6 +14,8 @@ import '../widgets/countdown_badge.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/gift_sheet.dart';
 import '../widgets/note_sheet.dart';
+import '../widgets/person_form_sheet.dart';
+import '../widgets/event_form_sheet.dart';
 
 class PersonDetailScreen extends ConsumerStatefulWidget {
   final int personId;
@@ -134,6 +137,100 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
     }
   }
 
+  Future<void> _editPerson(PersonDetail p) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => PersonFormSheet(
+        existing: p,
+        onSaved: () {
+          ref.invalidate(personDetailProvider(p.id));
+          ref.invalidate(peopleProvider);
+        },
+      ),
+    );
+  }
+
+  Future<void> _deletePerson(PersonDetail p) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete person?'),
+        content: Text('${p.name} and their events will be deleted. This cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final storage = StorageService();
+      final baseUrl = await storage.getBaseUrl();
+      if (baseUrl == null) return;
+      final client = ApiClient(storage: storage, baseUrl: baseUrl);
+      await client.deletePerson(p.id);
+      ref.invalidate(peopleProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${p.name} deleted')));
+      context.pop();
+    } on ApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not reach the server. Please try again.')));
+      }
+    }
+  }
+
+  Future<void> _openEventForm(PersonDetail p, {PersonEvent? event}) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => EventFormSheet(
+        personId: p.id,
+        existing: event,
+        onSaved: () {
+          ref.invalidate(personEventsProvider(p.id));
+          ref.invalidate(personDetailProvider(p.id));
+        },
+      ),
+    );
+  }
+
+  Future<void> _deleteEvent(PersonDetail p, PersonEvent event) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete event?'),
+        content: Text('The ${eventTypeLabel(event.type).toLowerCase()} on ${event.date} will be removed.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      final storage = StorageService();
+      final baseUrl = await storage.getBaseUrl();
+      if (baseUrl == null) return;
+      final client = ApiClient(storage: storage, baseUrl: baseUrl);
+      await client.deleteEvent(event.id);
+      ref.invalidate(personEventsProvider(p.id));
+      ref.invalidate(personDetailProvider(p.id));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Event deleted')));
+    } on ApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not reach the server. Please try again.')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(personDetailProvider(widget.personId));
@@ -148,6 +245,21 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
           loading: () => const Text(''),
           error: (_, _) => const Text(''),
         ),
+        actions: [
+          async.maybeWhen(
+            data: (p) => PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') _editPerson(p);
+                if (value == 'delete') _deletePerson(p);
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'edit', child: Text('Edit person')),
+                PopupMenuItem(value: 'delete', child: Text('Delete person')),
+              ],
+            ),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
         bottom: TabBar(
           controller: _tab,
           isScrollable: true,
@@ -167,7 +279,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
           return TabBarView(
             controller: _tab,
             children: [
-              _overviewTab(context, p, isMe, scheme),
+              _overviewTab(context, p, isMe, scheme, ref.watch(personEventsProvider(p.id))),
               _relationshipsTab(context, p),
               _giftsTab(context, p, scheme),
               _notesTab(context, p, scheme),
@@ -211,7 +323,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
     );
   }
 
-  Widget _overviewTab(BuildContext context, PersonDetail p, bool isMe, ColorScheme scheme) {
+  Widget _overviewTab(BuildContext context, PersonDetail p, bool isMe, ColorScheme scheme, AsyncValue<List<PersonEvent>> eventsAsync) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
@@ -274,34 +386,101 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> with Si
           ),
         ),
         const SizedBox(height: 16),
-        Text('Events', style: TextStyle(fontWeight: FontWeight.w800, color: scheme.onSurface)),
-        const SizedBox(height: 8),
-        if (p.events.isEmpty)
-          Card(child: Padding(padding: const EdgeInsets.all(16), child: Text('No events yet.', style: TextStyle(color: scheme.onSurfaceVariant))))
-        else
-          ...p.events.map((ev) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-                    child: Icon(ev.type == 'birthday' ? Icons.cake : Icons.favorite, color: scheme.primary),
-                  ),
-                  title: Text(eventTypeLabel(ev.type), style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(ev.date, style: TextStyle(color: scheme.onSurfaceVariant)),
-                    if (ev.description.isNotEmpty) Text(ev.description, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-                    if (ev.calendarSystem == 'lunar')
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: LunarBadge(label: 'Lunar ${ev.lunarMonth}/${ev.lunarDay}', isLeap: ev.lunarLeap),
-                      ),
-                  ]),
+        Row(children: [
+          Expanded(
+            child: Text('Events', style: TextStyle(fontWeight: FontWeight.w800, color: scheme.onSurface)),
+          ),
+          TextButton.icon(
+            onPressed: () => _openEventForm(p),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Add event'),
+          ),
+        ]),
+        const SizedBox(height: 4),
+        eventsAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) => Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(children: [
+                Expanded(child: Text('Could not load events.', style: TextStyle(color: scheme.onSurfaceVariant))),
+                TextButton(
+                  onPressed: () => ref.invalidate(personEventsProvider(p.id)),
+                  child: const Text('Retry'),
                 ),
-              )),
+              ]),
+            ),
+          ),
+          data: (events) {
+            if (events.isEmpty) {
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('No events yet.', style: TextStyle(color: scheme.onSurfaceVariant)),
+                ),
+              );
+            }
+            return Column(
+              children: events.map((ev) {
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+                      child: Icon(ev.type == 'birthday' ? Icons.cake : Icons.favorite, color: scheme.primary),
+                    ),
+                    title: Text(eventTypeLabel(ev.type), style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(ev.date, style: TextStyle(color: scheme.onSurfaceVariant)),
+                      if (ev.description.isNotEmpty)
+                        Text(ev.description, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      if (ev.frequency != 'annual' && ev.frequency.isNotEmpty)
+                        Text(_repeatLabel(ev), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      if (ev.calendarSystem == 'lunar')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: LunarBadge(label: 'Lunar ${ev.lunarMonth}/${ev.lunarDay}', isLeap: ev.lunarLeap),
+                        ),
+                    ]),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') _openEventForm(p, event: ev);
+                        if (value == 'delete') _deleteEvent(p, ev);
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'edit', child: Text('Edit event')),
+                        PopupMenuItem(value: 'delete', child: Text('Delete event')),
+                      ],
+                    ),
+                    onTap: () => _openEventForm(p, event: ev),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
       ],
     );
+  }
+
+  String _repeatLabel(PersonEvent ev) {
+    switch (ev.frequency) {
+      case 'once':
+        return 'One-off';
+      case 'monthly':
+        return 'Every month';
+      case 'weekly':
+        return 'Every week';
+      case 'every_n':
+        return 'Every ${ev.interval} days';
+      default:
+        return '';
+    }
   }
 
   Widget _relationshipsTab(BuildContext context, PersonDetail p) {

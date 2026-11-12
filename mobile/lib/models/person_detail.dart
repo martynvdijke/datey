@@ -75,34 +75,52 @@ class PersonDetail {
 
 class PersonEvent {
   final int id;
+  final int? personId;
   final String type;
   final String date;
   final String description;
+  final String notes;
   final String calendarSystem;
   final int? lunarMonth;
   final int? lunarDay;
   final bool lunarLeap;
+  final String frequency;
+  final int interval;
+  final String? endDate;
+  final int? occurrenceCount;
 
   const PersonEvent({
     required this.id,
+    this.personId,
     required this.type,
     required this.date,
     required this.description,
+    this.notes = '',
     required this.calendarSystem,
     this.lunarMonth,
     this.lunarDay,
     required this.lunarLeap,
+    this.frequency = 'annual',
+    this.interval = 1,
+    this.endDate,
+    this.occurrenceCount,
   });
 
   factory PersonEvent.fromJson(Map<String, dynamic> j) => PersonEvent(
         id: j['id'] as int,
+        personId: j['person_id'] as int?,
         type: j['type'] as String,
         date: j['date'] as String,
         description: j['description'] as String? ?? '',
+        notes: j['notes'] as String? ?? '',
         calendarSystem: j['calendar_system'] as String? ?? 'gregorian',
         lunarMonth: j['lunar_month'] as int?,
         lunarDay: j['lunar_day'] as int?,
         lunarLeap: j['lunar_leap'] as bool? ?? false,
+        frequency: j['frequency'] as String? ?? 'annual',
+        interval: j['interval'] as int? ?? 1,
+        endDate: j['end_date'] as String?,
+        occurrenceCount: j['occurrence_count'] as int?,
       );
 }
 

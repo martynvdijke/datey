@@ -103,6 +103,20 @@ func (_c *AppConfigCreate) SetNillableSchedulerCatchup(v *bool) *AppConfigCreate
 	return _c
 }
 
+// SetSubscriptionPollHours sets the "subscription_poll_hours" field.
+func (_c *AppConfigCreate) SetSubscriptionPollHours(v int) *AppConfigCreate {
+	_c.mutation.SetSubscriptionPollHours(v)
+	return _c
+}
+
+// SetNillableSubscriptionPollHours sets the "subscription_poll_hours" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableSubscriptionPollHours(v *int) *AppConfigCreate {
+	if v != nil {
+		_c.SetSubscriptionPollHours(*v)
+	}
+	return _c
+}
+
 // SetDateVariant sets the "date_variant" field.
 func (_c *AppConfigCreate) SetDateVariant(v string) *AppConfigCreate {
 	_c.mutation.SetDateVariant(v)
@@ -449,6 +463,34 @@ func (_c *AppConfigCreate) SetNtfyPriority(v int) *AppConfigCreate {
 func (_c *AppConfigCreate) SetNillableNtfyPriority(v *int) *AppConfigCreate {
 	if v != nil {
 		_c.SetNtfyPriority(*v)
+	}
+	return _c
+}
+
+// SetPushoverToken sets the "pushover_token" field.
+func (_c *AppConfigCreate) SetPushoverToken(v string) *AppConfigCreate {
+	_c.mutation.SetPushoverToken(v)
+	return _c
+}
+
+// SetNillablePushoverToken sets the "pushover_token" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillablePushoverToken(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetPushoverToken(*v)
+	}
+	return _c
+}
+
+// SetPushoverUser sets the "pushover_user" field.
+func (_c *AppConfigCreate) SetPushoverUser(v string) *AppConfigCreate {
+	_c.mutation.SetPushoverUser(v)
+	return _c
+}
+
+// SetNillablePushoverUser sets the "pushover_user" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillablePushoverUser(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetPushoverUser(*v)
 	}
 	return _c
 }
@@ -1153,6 +1195,10 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 		_spec.SetField(appconfig.FieldSchedulerCatchup, field.TypeBool, value)
 		_node.SchedulerCatchup = &value
 	}
+	if value, ok := _c.mutation.SubscriptionPollHours(); ok {
+		_spec.SetField(appconfig.FieldSubscriptionPollHours, field.TypeInt, value)
+		_node.SubscriptionPollHours = &value
+	}
 	if value, ok := _c.mutation.DateVariant(); ok {
 		_spec.SetField(appconfig.FieldDateVariant, field.TypeString, value)
 		_node.DateVariant = &value
@@ -1252,6 +1298,14 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.NtfyPriority(); ok {
 		_spec.SetField(appconfig.FieldNtfyPriority, field.TypeInt, value)
 		_node.NtfyPriority = &value
+	}
+	if value, ok := _c.mutation.PushoverToken(); ok {
+		_spec.SetField(appconfig.FieldPushoverToken, field.TypeString, value)
+		_node.PushoverToken = &value
+	}
+	if value, ok := _c.mutation.PushoverUser(); ok {
+		_spec.SetField(appconfig.FieldPushoverUser, field.TypeString, value)
+		_node.PushoverUser = &value
 	}
 	if value, ok := _c.mutation.WebhookURL(); ok {
 		_spec.SetField(appconfig.FieldWebhookURL, field.TypeString, value)

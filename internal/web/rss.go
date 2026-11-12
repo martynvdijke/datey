@@ -10,6 +10,7 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/rss"
+	"github.com/datey/datey/internal/tzutil"
 )
 
 // rssFeedAccessOK reports whether the public RSS feed is enabled and the
@@ -32,7 +33,8 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), now.AddDate(0, 0, h.cfg.ReminderDays))
+	reminderDays := h.cfg.ReminderDays
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC().AddDate(0, 0, -1), now.AddDate(0, 0, reminderDays+1))
 	if err != nil {
 		slog.Error("rss: list upcoming events", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
@@ -41,7 +43,14 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 
 	items := make([]rss.Item, 0, len(occurrences))
 	for _, occ := range occurrences {
-		items = append(items, h.rssItem(occ.Event, occ.Date, now, r))
+		loc := occurrenceLocation(occ.Event)
+		days := tzutil.DaysUntil(occ.Date, loc, now)
+		// The padded query bounds cover every UTC offset; the effective
+		// window is a calendar window in the owner's own zone.
+		if days < 0 || days > reminderDays {
+			continue
+		}
+		items = append(items, h.rssItem(occ.Event, occ.Date, now, loc, r))
 	}
 
 	origin := feedOrigin(r)
@@ -68,10 +77,10 @@ func (h *Handler) rssFeed(w http.ResponseWriter, r *http.Request) {
 // rssItem converts a stored event into an RSS item, mirroring the dashboard's
 // day-count logic against the occurrence date. Title format: "Birthday —
 // Dana in 3 days".
-func (h *Handler) rssItem(e *ent.Event, date, now time.Time, r *http.Request) rss.Item {
+func (h *Handler) rssItem(e *ent.Event, date, now time.Time, loc *time.Location, r *http.Request) rss.Item {
 	name := eventOwnerName(e)
 
-	days := int(date.Sub(now).Hours() / 24)
+	days := tzutil.DaysUntil(date, loc, now)
 	var relative string
 	switch {
 	case days <= 0:

@@ -11,6 +11,17 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// Validation failure with per-field codes from the versioned write API.
+///
+/// `fields` maps a request field name to a machine-readable code (for example
+/// `name` -> `required`); the UI turns those into inline messages via
+/// `apiFieldMessages` in `utils/api_errors.dart`.
+class ApiValidationException extends ApiException {
+  ApiValidationException(this.fields, {String? message})
+      : super(message ?? 'Please check the highlighted fields.');
+  final Map<String, String> fields;
+}
+
 class ApiClient {
   final Dio dio;
   final StorageService storage;
@@ -92,6 +103,27 @@ class ApiClient {
     );
     if (resp.statusCode == 204 || resp.statusCode == 200) return;
     throw ApiException(_errorMessage(resp, 'Could not delete the account.'));
+  }
+
+  /// Builds a typed exception from the write API error envelope:
+  /// `{"error": "...", "message": "...", "fields": {"name": "required"}}`.
+  ApiException _apiError(Response<dynamic> resp, String fallback) {
+    final data = resp.data;
+    if (data is Map) {
+      final rawFields = data['fields'];
+      if (rawFields is Map) {
+        final fields = <String, String>{};
+        rawFields.forEach((key, value) {
+          if (key is String && value is String) fields[key] = value;
+        });
+        if (fields.isNotEmpty) {
+          return ApiValidationException(fields);
+        }
+      }
+      final message = data['message'];
+      if (message is String && message.isNotEmpty) return ApiException(message);
+    }
+    return ApiException(fallback);
   }
 
   String _errorMessage(Response<dynamic> resp, String fallback) {
@@ -182,6 +214,85 @@ class ApiClient {
   Future<Response<dynamic>> getPerson(int id) => dio.get('/people/$id');
 
   Future<Response<dynamic>> getGroups() => dio.get('/groups');
+
+  // ── Versioned write API (people + events) ──────────────────────────────
+
+  /// Creates a person and returns the created record.
+  Future<Map<String, dynamic>> createPerson(Map<String, dynamic> body) async {
+    final resp = await dio.post(
+      '/api/v1/people',
+      data: body,
+      options: Options(contentType: 'application/json'),
+    );
+    if (resp.statusCode == 201 && resp.data is Map) {
+      return Map<String, dynamic>.from(resp.data as Map);
+    }
+    throw _apiError(resp, 'Could not create the person.');
+  }
+
+  /// Applies a partial update to a person and returns the updated record.
+  Future<Map<String, dynamic>> updatePerson(int id, Map<String, dynamic> body) async {
+    final resp = await dio.patch(
+      '/api/v1/people/$id',
+      data: body,
+      options: Options(contentType: 'application/json'),
+    );
+    if (resp.statusCode == 200 && resp.data is Map) {
+      return Map<String, dynamic>.from(resp.data as Map);
+    }
+    throw _apiError(resp, 'Could not update the person.');
+  }
+
+  Future<void> deletePerson(int id) async {
+    final resp = await dio.delete('/api/v1/people/$id');
+    if (resp.statusCode == 204 || resp.statusCode == 200) return;
+    throw _apiError(resp, 'Could not delete the person.');
+  }
+
+  /// Lists a person's events including the schedule fields.
+  Future<List<Map<String, dynamic>>> listPersonEvents(int personId) async {
+    final resp = await dio.get('/api/v1/people/$personId/events');
+    if (resp.statusCode == 200 && resp.data is Map) {
+      final raw = (resp.data as Map)['events'];
+      if (raw is List) {
+        return raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+      return const [];
+    }
+    throw _apiError(resp, 'Could not load the events.');
+  }
+
+  /// Creates an event for a person and returns the created record.
+  Future<Map<String, dynamic>> createEvent(int personId, Map<String, dynamic> body) async {
+    final resp = await dio.post(
+      '/api/v1/people/$personId/events',
+      data: body,
+      options: Options(contentType: 'application/json'),
+    );
+    if (resp.statusCode == 201 && resp.data is Map) {
+      return Map<String, dynamic>.from(resp.data as Map);
+    }
+    throw _apiError(resp, 'Could not create the event.');
+  }
+
+  /// Applies a partial update to an event and returns the updated record.
+  Future<Map<String, dynamic>> updateEvent(int id, Map<String, dynamic> body) async {
+    final resp = await dio.patch(
+      '/api/v1/events/$id',
+      data: body,
+      options: Options(contentType: 'application/json'),
+    );
+    if (resp.statusCode == 200 && resp.data is Map) {
+      return Map<String, dynamic>.from(resp.data as Map);
+    }
+    throw _apiError(resp, 'Could not update the event.');
+  }
+
+  Future<void> deleteEvent(int id) async {
+    final resp = await dio.delete('/api/v1/events/$id');
+    if (resp.statusCode == 204 || resp.statusCode == 200) return;
+    throw _apiError(resp, 'Could not delete the event.');
+  }
 
   Future<Response<dynamic>> createGift(int personId, Map<String, dynamic> body) => dio.post(
         '/people/$personId/gift-ideas',

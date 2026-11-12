@@ -26,6 +26,7 @@ func (AppConfig) Fields() []ent.Field {
 		field.Int("reminder_days").Optional().Nillable(),
 		field.Time("last_scheduler_run").Optional().Nillable(),
 		field.Bool("scheduler_catchup").Optional().Nillable(),
+		field.Int("subscription_poll_hours").Optional().Nillable(),
 		field.String("date_variant").Optional().Nillable(),
 		field.Bool("reminder_digest").Optional().Nillable(),
 		field.String("reminder_stages").Optional().Nillable(),
@@ -56,6 +57,9 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("ntfy_topic").Optional().Nillable(),
 		field.String("ntfy_token").Optional().Nillable(),
 		field.Int("ntfy_priority").Optional().Nillable(),
+
+		field.String("pushover_token").Optional().Nillable(),
+		field.String("pushover_user").Optional().Nillable(),
 
 		field.String("webhook_url").Optional().Nillable(),
 		field.String("webhook_secret").Optional().Nillable(),

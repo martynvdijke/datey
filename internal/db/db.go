@@ -14,6 +14,8 @@ import (
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/vcard"
 
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -322,10 +324,15 @@ func DropOneTimeNotificationTables(ctx context.Context, client *ent.Client, dbPa
 func Init(cfg *config.Config) (*ent.Client, error) {
 	applyPendingRestore(cfg.DataDir)
 	dbPath := cfg.DataDir + "/datey.db"
-	client, err := ent.Open("sqlite3", dbPath+"?_journal_mode=WAL&_timeout=5000&_fk=1")
+	// Open the database handle ourselves (instead of ent.Open) so raw-SQL
+	// features — the FTS5 full-text index — can reach the same connection pool.
+	// This is exactly what ent.Open does internally.
+	sqlDB, err := sql.Open("sqlite3", dbPath+"?_journal_mode=WAL&_timeout=5000&_fk=1")
 	if err != nil {
 		return nil, err
 	}
+	client := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.SQLite, sqlDB)))
+	RegisterSQLDB(client, sqlDB)
 
 	// Instrument all ent queries with OTel spans. Noop until an OTel tracer
 	// provider is installed, so this is safe when telemetry is disabled.
@@ -341,7 +348,22 @@ func Init(cfg *config.Config) (*ent.Client, error) {
 		return nil, err
 	}
 
+	// Full-text search is derived data: build it from the migrated schema and
+	// keep it in sync through SQLite triggers. A failure (e.g. an SQLite build
+	// without the FTS5 module) must not stop the app; the search page degrades
+	// to a "search unavailable" state instead.
+	if err := EnsureSearchIndex(ctx, client); err != nil {
+		slog.Warn("full-text search disabled: could not prepare search index", "source", "db", "error", err)
+	}
+
 	seedBuiltInRules(ctx, client)
+
+	// Fold legacy RecurringRule rows into real events so the scheduler can
+	// remind about them. Runs after seeding so the built-in rules are converted
+	// on the first boot rather than on the next restart.
+	if err := MigrateRecurringRulesToEvents(ctx, client); err != nil {
+		slog.Warn("could not migrate recurring rules to events", "source", "db", "error", err)
+	}
 
 	return client, nil
 }

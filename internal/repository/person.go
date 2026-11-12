@@ -227,6 +227,27 @@ func (r *PersonRepository) SetNotifyBirthdays(ctx context.Context, id int, enabl
 		Save(ctx)
 }
 
+// SetTimezone stores the person's IANA timezone. An empty string clears the
+// column so the instance-wide default applies again.
+func (r *PersonRepository) SetTimezone(ctx context.Context, id int, tz string) (*ent.Person, error) {
+	return r.client.Person.UpdateOneID(id).
+		SetTimezone(tz).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+}
+
+// SetReminderDays replaces the person's reminder-stage override. An empty list
+// clears the column so the global reminder stages apply again.
+func (r *PersonRepository) SetReminderDays(ctx context.Context, id int, days []int) (*ent.Person, error) {
+	mutation := r.client.Person.UpdateOneID(id).SetUpdatedAt(time.Now())
+	if len(days) == 0 {
+		mutation = mutation.ClearReminderDays()
+	} else {
+		mutation = mutation.SetReminderDays(days)
+	}
+	return mutation.Save(ctx)
+}
+
 func (r *PersonRepository) SetImmichPhoto(ctx context.Context, id int, immichID *string, disabled bool) (*ent.Person, error) {
 	return r.client.Person.UpdateOneID(id).
 		SetNillableImmichPersonID(immichID).

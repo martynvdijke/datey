@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/datey/datey/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -168,5 +169,131 @@ func TestICalFeedUnknownPersonReturns404(t *testing.T) {
 
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("expected 404 for unknown person, got %d", w.Code)
+	}
+}
+
+// newScheduledEvent creates a Gregorian person event with an explicit schedule.
+func newScheduledEvent(t *testing.T, h *Handler, personID int, eventType string, date time.Time, freq string, interval int, endDate *time.Time, count *int) {
+	t.Helper()
+	sched := repository.NewEventSchedule(freq, interval, endDate, count)
+	if _, err := h.events.CreateForPersonWithSchedule(context.Background(), personID, eventType, date, "", "gregorian", nil, nil, false, sched); err != nil {
+		t.Fatalf("create scheduled event: %v", err)
+	}
+}
+
+func fetchGlobalFeed(t *testing.T, h *Handler) string {
+	t.Helper()
+	req := httptest.NewRequest("GET", "/ical.ics?key=testsecretkey", nil)
+	w := httptest.NewRecorder()
+	setupICalRouter(h).ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	return w.Body.String()
+}
+
+func TestICalFeedMonthlyEmitsRDATEDates(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableFeed(h)
+	personID := newTestPerson(t, h, "Anna")
+	newScheduledEvent(t, h, personID, "custom",
+		time.Date(2026, 1, 31, 0, 0, 0, 0, time.UTC), "monthly", 1, nil, nil)
+
+	body := fetchGlobalFeed(t, h)
+	if strings.Contains(body, "FREQ=YEARLY") {
+		t.Errorf("monthly event must not be published as yearly, got:\n%s", body)
+	}
+	if strings.Contains(body, "RRULE") {
+		t.Errorf("monthly event must not carry an RRULE, got:\n%s", body)
+	}
+	if !strings.Contains(body, "DTSTART;VALUE=DATE:20260131") {
+		t.Errorf("expected the anchor as DTSTART, got:\n%s", body)
+	}
+	// The engine clamps Jan 31 to the end of short months.
+	for _, want := range []string{"RDATE;VALUE=DATE:20260228", "RDATE;VALUE=DATE:20260331"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("expected %q, got:\n%s", want, body)
+		}
+	}
+}
+
+func TestICalFeedOnceDoesNotRepeat(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableFeed(h)
+	personID := newTestPerson(t, h, "Anna")
+	newScheduledEvent(t, h, personID, "custom",
+		time.Date(2026, 7, 4, 0, 0, 0, 0, time.UTC), "once", 1, nil, nil)
+
+	body := fetchGlobalFeed(t, h)
+	if strings.Contains(body, "RRULE") || strings.Contains(body, "RDATE") {
+		t.Errorf("one-off event must not repeat, got:\n%s", body)
+	}
+	if !strings.Contains(body, "DTSTART;VALUE=DATE:20260704") {
+		t.Errorf("expected the one-off DTSTART, got:\n%s", body)
+	}
+	if strings.Count(body, "BEGIN:VEVENT") != 1 {
+		t.Errorf("expected exactly one VEVENT, got:\n%s", body)
+	}
+}
+
+func TestICalFeedAnnualCarriesYearlyRRule(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableFeed(h)
+	personID := newTestPerson(t, h, "Anna")
+	newScheduledEvent(t, h, personID, "birthday",
+		time.Date(2026, 8, 15, 0, 0, 0, 0, time.UTC), "annual", 1, nil, nil)
+
+	body := fetchGlobalFeed(t, h)
+	if !strings.Contains(body, "RRULE:FREQ=YEARLY") {
+		t.Errorf("expected yearly rule for an annual event, got:\n%s", body)
+	}
+	if strings.Contains(body, "RDATE") {
+		t.Errorf("annual event must not materialize RDATEs, got:\n%s", body)
+	}
+}
+
+func TestICalFeedAnnualHonoursEndDate(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableFeed(h)
+	personID := newTestPerson(t, h, "Anna")
+	end := time.Date(2030, 8, 15, 0, 0, 0, 0, time.UTC)
+	newScheduledEvent(t, h, personID, "birthday",
+		time.Date(2026, 8, 15, 0, 0, 0, 0, time.UTC), "annual", 1, &end, nil)
+
+	body := fetchGlobalFeed(t, h)
+	if !strings.Contains(body, "RRULE:FREQ=YEARLY;UNTIL=20300815") {
+		t.Errorf("expected UNTIL bound from end_date, got:\n%s", body)
+	}
+}
+
+func TestICalFeedAnnualHonoursOccurrenceCount(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableFeed(h)
+	personID := newTestPerson(t, h, "Anna")
+	count := 3
+	newScheduledEvent(t, h, personID, "birthday",
+		time.Date(2026, 8, 15, 0, 0, 0, 0, time.UTC), "annual", 1, nil, &count)
+
+	body := fetchGlobalFeed(t, h)
+	if !strings.Contains(body, "RRULE:FREQ=YEARLY;COUNT=3") {
+		t.Errorf("expected COUNT bound from occurrence_count, got:\n%s", body)
+	}
+}
+
+func TestICalFeedWeeklyIsMaterialized(t *testing.T) {
+	h := newTestWebHandler(t)
+	enableFeed(h)
+	personID := newTestPerson(t, h, "Anna")
+	newScheduledEvent(t, h, personID, "custom",
+		time.Date(2026, 1, 5, 0, 0, 0, 0, time.UTC), "weekly", 1, nil, nil)
+
+	body := fetchGlobalFeed(t, h)
+	if strings.Contains(body, "RRULE") {
+		t.Errorf("weekly event must not carry an RRULE, got:\n%s", body)
+	}
+	for _, want := range []string{"RDATE;VALUE=DATE:20260112", "RDATE;VALUE=DATE:20260119"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("expected %q, got:\n%s", want, body)
+		}
 	}
 }

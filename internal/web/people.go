@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -9,11 +10,84 @@ import (
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/age"
+	"github.com/datey/datey/internal/i18n"
 	"github.com/datey/datey/internal/immich"
 	"github.com/datey/datey/internal/milestone"
 	personname "github.com/datey/datey/internal/person"
+	"github.com/datey/datey/internal/recurring"
+	"github.com/datey/datey/internal/reminderplan"
+	"github.com/datey/datey/internal/tzutil"
 	"github.com/go-chi/chi/v5"
 )
+
+// personTimezone returns the stored IANA zone for a person, or "" when unset.
+func personTimezone(p *ent.Person) string {
+	if p == nil {
+		return ""
+	}
+	return p.Timezone
+}
+
+// occurrenceLocation returns the effective zone for an event's owner: the
+// person's own timezone when set, otherwise the instance default, otherwise
+// time.Local. Events owned by a group or with no owner use the default.
+func occurrenceLocation(e *ent.Event) *time.Location {
+	if e != nil && e.Edges.Person != nil {
+		return tzutil.Resolve(personTimezone(e.Edges.Person))
+	}
+	return tzutil.Default()
+}
+
+// timezoneFormValue reads the timezone pair from a submitted person form. The
+// select posts "__custom__" when the user typed an IANA name into the fallback
+// input; everything else is used verbatim. An empty result means "inherit".
+func timezoneFormValue(r *http.Request) string {
+	tz := strings.TrimSpace(r.FormValue("timezone"))
+	if tz == "__custom__" {
+		tz = strings.TrimSpace(r.FormValue("timezone_custom"))
+	}
+	return tz
+}
+
+// timezoneFormData builds the template values for the timezone picker,
+// including the free-text fallback's initial state.
+func timezoneFormData(value string) map[string]any {
+	custom := value != "" && !isCommonZone(value)
+	customValue := ""
+	if custom {
+		customValue = value
+	}
+	return map[string]any{
+		"TimezoneGroups":      tzutil.CommonZoneGroups(),
+		"TimezoneValue":       value,
+		"TimezoneIsCustom":    custom,
+		"TimezoneCustomValue": customValue,
+		"TimezoneDefaultName": tzutil.DefaultName(),
+	}
+}
+
+// isCommonZone reports whether name appears in the curated picker list, so the
+// form can select it instead of opening the free-text fallback.
+func isCommonZone(name string) bool {
+	for _, g := range tzutil.CommonZoneGroups() {
+		for _, z := range g.Zones {
+			if z == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// stageListString renders a reminder stage list for the form input, e.g.
+// []int{1, 7} -> "1, 7".
+func stageListString(days []int) string {
+	parts := make([]string, 0, len(days))
+	for _, d := range days {
+		parts = append(parts, strconv.Itoa(d))
+	}
+	return strings.Join(parts, ", ")
+}
 
 // personCard holds the data for a single person card in the grid.
 type personCard struct {
@@ -30,6 +104,10 @@ type personCard struct {
 	PhotoURL      string
 	Groups        []string
 	Tags          []string
+	// NeedsGiftIdea is set when a birthday or anniversary falls inside the
+	// configured reminder window and the person has no open ("idea") gift
+	// idea. It drives the "No gift idea yet" chip.
+	NeedsGiftIdea bool
 }
 
 // listPeopleInGroups returns the de-duplicated union of the members of all
@@ -162,17 +240,27 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 	cards := make([]personCard, 0, len(people))
+	// celebrating[i] mirrors cards[i]: the person has a birthday or anniversary
+	// occurrence inside the reminder window. Computed from the events already
+	// eager-loaded with the people query, so this adds no queries per person.
+	celebrating := make([]bool, 0, len(people))
 	for _, p := range people {
 		// Eager-loaded via WithEvents/WithGroups/WithTags — avoids 3*N queries.
 		events := p.Edges.Events
+		// The reminder window is a calendar window in the person's own zone,
+		// so a birthday that is "tomorrow" for them is never missed because the
+		// server already rolled over.
+		loc := tzutil.Resolve(personTimezone(p))
+		windowStart := tzutil.Today(now, loc)
+		windowEnd := windowStart.AddDate(0, 0, h.cfg.ReminderDays)
 		eventCount := len(events)
 		var nextEventType, nextEventDate string
-		cardAge, hasAge := birthdayAgeForEvents(events, now)
+		cardAge, hasAge := birthdayAgeForEvents(events, now, loc)
 		if eventCount > 0 {
 			// Find the next upcoming event
 			var nearest *ent.Event
 			for _, e := range events {
-				if !calendarDayBefore(e.Date, now, now.Location()) {
+				if !calendarDayBefore(e.Date, now, loc) {
 					if nearest == nil || e.Date.Before(nearest.Date) {
 						nearest = e
 					}
@@ -206,6 +294,28 @@ func (h *Handler) listPeople(w http.ResponseWriter, r *http.Request) {
 			Groups:        groupNames,
 			Tags:          tagNames,
 		})
+		celebrating = append(celebrating, hasCelebrationInWindow(events, windowStart, windowEnd))
+	}
+
+	// Gift-gap hint: batched, one grouped query for every person whose
+	// celebration is inside the window (never one query per person).
+	needsGiftIdeaIDs := make([]int, 0, len(cards))
+	for i, card := range cards {
+		if celebrating[i] {
+			needsGiftIdeaIDs = append(needsGiftIdeaIDs, card.ID)
+		}
+	}
+	if len(needsGiftIdeaIDs) > 0 {
+		openCounts, err := h.giftIdeas.CountOpenByPersonIDs(r.Context(), needsGiftIdeaIDs)
+		if err != nil {
+			slog.Error("people: count open gift ideas", "error", err)
+		} else {
+			for i := range cards {
+				if celebrating[i] && openCounts[cards[i].ID] == 0 {
+					cards[i].NeedsGiftIdea = true
+				}
+			}
+		}
 	}
 
 	// Load all groups for the group filter dropdown
@@ -243,12 +353,50 @@ func parseNameForm(r *http.Request) (first, middle, last, legacy string) {
 		strings.TrimSpace(r.FormValue("name"))
 }
 
+// syncPersonGroups makes a person's group memberships match ids exactly:
+// joins the groups that are missing and leaves the ones no longer selected.
+// Shared by the HTML edit form (best-effort) and the JSON write API (which
+// surfaces the error).
+func (h *Handler) syncPersonGroups(ctx context.Context, personID int, ids []int) error {
+	desired := make(map[int]bool, len(ids))
+	for _, id := range ids {
+		if id > 0 {
+			desired[id] = true
+		}
+	}
+	currentIDs := make(map[int]bool)
+	if current, err := h.groups.ListByPerson(ctx, personID); err == nil {
+		for _, g := range current {
+			currentIDs[g.ID] = true
+		}
+	}
+	for id := range desired {
+		if !currentIDs[id] {
+			if err := h.groups.AddPerson(ctx, id, personID); err != nil {
+				return err
+			}
+		}
+	}
+	for id := range currentIDs {
+		if !desired[id] {
+			if err := h.groups.RemovePerson(ctx, id, personID); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (h *Handler) newPersonForm(w http.ResponseWriter, r *http.Request) {
 	groups, _ := h.groups.List(r.Context())
-	h.render(w, r, "person_form.html", map[string]any{
+	data := map[string]any{
 		"Title":  "Datey - Add Person",
 		"Groups": groups,
-	})
+	}
+	for k, v := range timezoneFormData("") {
+		data[k] = v
+	}
+	h.render(w, r, "person_form.html", data)
 }
 
 func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
@@ -260,28 +408,45 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 	first, middle, last, legacy := parseNameForm(r)
 	notes := r.FormValue("notes")
 	groupIDs := r.Form["groups"]
+	reminderDaysRaw := strings.TrimSpace(r.FormValue("reminder_days"))
+	timezone := timezoneFormValue(r)
 	displayName := personname.DisplayName(first, middle, last, legacy)
+
+	tr := func(key string) string { return i18n.T(localeFromRequest(r), key) }
 
 	errors := make(map[string]string)
 	if displayName == "" {
 		errors["first_name"] = "Name is required"
 	}
+	stages, stageErr := reminderplan.ParseStages(reminderDaysRaw)
+	if stageErr != nil {
+		errors["reminder_days"] = tr("people.reminder_stages_invalid")
+	}
+	if !tzutil.Valid(timezone) {
+		errors["timezone"] = tr("people.timezone_invalid")
+	}
 
 	if len(errors) > 0 {
 		groups, _ := h.groups.List(r.Context())
-		h.render(w, r, "person_form.html", map[string]any{
+		data := map[string]any{
 			"Title":  "Datey - Add Person",
 			"Groups": groups,
 			"Errors": errors,
 			"FormData": map[string]any{
-				"FirstName":  first,
-				"MiddleName": middle,
-				"LastName":   last,
-				"Name":       displayName,
-				"Notes":      notes,
-				"GroupIDs":   groupIDs,
+				"FirstName":    first,
+				"MiddleName":   middle,
+				"LastName":     last,
+				"Name":         displayName,
+				"Notes":        notes,
+				"GroupIDs":     groupIDs,
+				"ReminderDays": reminderDaysRaw,
+				"Timezone":     timezone,
 			},
-		})
+		}
+		for k, v := range timezoneFormData(timezone) {
+			data[k] = v
+		}
+		h.render(w, r, "person_form.html", data)
 		return
 	}
 
@@ -290,6 +455,22 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 		slog.Error("create person", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
+	}
+
+	if timezone != "" {
+		if _, err := h.people.SetTimezone(r.Context(), p.ID, timezone); err != nil {
+			slog.Error("set person timezone", "error", err)
+			h.renderError(w, r, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if len(stages) > 0 {
+		if _, err := h.people.SetReminderDays(r.Context(), p.ID, stages); err != nil {
+			slog.Error("set person reminder days", "error", err)
+			h.renderError(w, r, http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// Add to selected groups
@@ -340,14 +521,24 @@ func (h *Handler) renderEditPersonForm(w http.ResponseWriter, r *http.Request, p
 	}
 	first, middle, last := structuredNameForForm(person)
 	data := map[string]any{
-		"Title":          "Datey - Edit Person",
-		"Person":         person,
-		"FirstName":      first,
-		"MiddleName":     middle,
-		"LastName":       last,
-		"Groups":         groups,
-		"MemberGroupIDs": memberIDs,
-		"Birthday":       birthday,
+		"Title":             "Datey - Edit Person",
+		"Person":            person,
+		"FirstName":         first,
+		"MiddleName":        middle,
+		"LastName":          last,
+		"Groups":            groups,
+		"MemberGroupIDs":    memberIDs,
+		"Birthday":          birthday,
+		"ReminderDaysValue": stageListString(person.ReminderDays),
+	}
+	tzValue := personTimezone(person)
+	if formData != nil {
+		if v, ok := formData["Timezone"].(string); ok {
+			tzValue = v
+		}
+	}
+	for k, v := range timezoneFormData(tzValue) {
+		data[k] = v
 	}
 	if formData != nil {
 		data["FormData"] = formData
@@ -406,7 +597,11 @@ func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
 	notes := r.FormValue("notes")
 	groupIDs := r.Form["groups"]
 	birthdayStr := r.FormValue("birthday")
+	reminderDaysRaw := strings.TrimSpace(r.FormValue("reminder_days"))
+	timezone := timezoneFormValue(r)
 	displayName := personname.DisplayName(first, middle, last, legacy)
+
+	tr := func(key string) string { return i18n.T(localeFromRequest(r), key) }
 
 	errors := make(map[string]string)
 	var birthday time.Time
@@ -423,16 +618,25 @@ func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
 	if displayName == "" {
 		errors["first_name"] = "Name is required"
 	}
+	stages, stageErr := reminderplan.ParseStages(reminderDaysRaw)
+	if stageErr != nil {
+		errors["reminder_days"] = tr("people.reminder_stages_invalid")
+	}
+	if !tzutil.Valid(timezone) {
+		errors["timezone"] = tr("people.timezone_invalid")
+	}
 
 	if len(errors) > 0 {
 		h.renderEditPersonForm(w, r, person, map[string]any{
-			"FirstName":  first,
-			"MiddleName": middle,
-			"LastName":   last,
-			"Name":       displayName,
-			"Notes":      notes,
-			"GroupIDs":   groupIDs,
-			"Birthday":   birthdayStr,
+			"FirstName":    first,
+			"MiddleName":   middle,
+			"LastName":     last,
+			"Name":         displayName,
+			"Notes":        notes,
+			"GroupIDs":     groupIDs,
+			"Birthday":     birthdayStr,
+			"ReminderDays": reminderDaysRaw,
+			"Timezone":     timezone,
 		}, errors)
 		return
 	}
@@ -440,13 +644,15 @@ func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
 	if _, err := h.people.UpdateStructured(r.Context(), id, displayName, first, middle, last, notes, ""); err != nil {
 		if ent.IsConstraintError(err) {
 			h.renderEditPersonForm(w, r, person, map[string]any{
-				"FirstName":  first,
-				"MiddleName": middle,
-				"LastName":   last,
-				"Name":       displayName,
-				"Notes":      notes,
-				"GroupIDs":   groupIDs,
-				"Birthday":   birthdayStr,
+				"FirstName":    first,
+				"MiddleName":   middle,
+				"LastName":     last,
+				"Name":         displayName,
+				"Notes":        notes,
+				"GroupIDs":     groupIDs,
+				"Birthday":     birthdayStr,
+				"ReminderDays": reminderDaysRaw,
+				"Timezone":     timezone,
 			}, map[string]string{"first_name": "A person with this name already exists"})
 			return
 		}
@@ -455,29 +661,29 @@ func (h *Handler) updatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Sync group memberships to the submitted checkbox state.
-	desired := make(map[int]bool, len(groupIDs))
+	if _, err := h.people.SetTimezone(r.Context(), id, timezone); err != nil {
+		slog.Error("set person timezone", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	// A blank reminder_days field clears the override so the global stages
+	// apply again; a non-empty list replaces them.
+	if _, err := h.people.SetReminderDays(r.Context(), id, stages); err != nil {
+		slog.Error("set person reminder days", "error", err)
+		h.renderError(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	// Sync group memberships to the submitted checkbox state. Group edits are
+	// best-effort here: the person save above already succeeded.
+	ids := make([]int, 0, len(groupIDs))
 	for _, gidStr := range groupIDs {
 		if gid, parseErr := strconv.Atoi(strings.TrimSpace(gidStr)); parseErr == nil && gid > 0 {
-			desired[gid] = true
+			ids = append(ids, gid)
 		}
 	}
-	currentIDs := make(map[int]bool)
-	if current, e := h.groups.ListByPerson(r.Context(), id); e == nil {
-		for _, g := range current {
-			currentIDs[g.ID] = true
-		}
-	}
-	for gid := range desired {
-		if !currentIDs[gid] {
-			_ = h.groups.AddPerson(r.Context(), gid, id)
-		}
-	}
-	for gid := range currentIDs {
-		if !desired[gid] {
-			_ = h.groups.RemovePerson(r.Context(), gid, id)
-		}
-	}
+	_ = h.syncPersonGroups(r.Context(), id, ids)
 
 	// Upsert the birthday event. An empty field is a no-op so year-less
 	// birthdays are never clobbered.
@@ -540,10 +746,12 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		groups = nil
 	}
 
-	// Split events into upcoming and past using calendar days, not elapsed
-	// 24-hour periods. This avoids midnight/timezone boundary errors.
+	// Split events into upcoming and past using calendar days in the person's
+	// own timezone, not elapsed 24-hour periods. This avoids midnight/timezone
+	// boundary errors for people who live in a different zone than the server.
 	now := time.Now()
-	today := dateOnly(now, now.Location())
+	loc := tzutil.Resolve(personTimezone(person))
+	today := tzutil.Today(now, loc)
 	type eventRow struct {
 		ID             int
 		Type           string
@@ -559,8 +767,8 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 	for _, e := range events {
 		var occDate time.Time
 		var lunarNote string
-		if e.CalendarSystem == "lunar" && e.LunarMonth != nil && e.LunarDay != nil {
-			lunarNote = formatLunarNotation(e)
+		if e.CalendarSystem != "" && e.CalendarSystem != "gregorian" && e.LunarMonth != nil && e.LunarDay != nil {
+			lunarNote = formatCalendarNotation(e)
 			occDate, _ = displayDateForEvent(e, now)
 		} else {
 			occDate = time.Date(now.Year(), e.Date.Month(), e.Date.Day(), 0, 0, 0, 0, time.UTC)
@@ -571,7 +779,7 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		_ = occDate
 		// For upcoming checks use occurrence date
 		occForCheck := occDate
-		days := calendarDayDelta(today, dateOnly(occForCheck, now.Location()))
+		days := tzutil.DaysBetween(today, occForCheck)
 		var rel string
 		switch {
 		case days == 0:
@@ -611,6 +819,13 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		giftIdeas = nil
 	}
 	relEntries, _ := h.relationships.ListForPerson(r.Context(), id)
+	// allPeople is loaded once and reused for the relationship picker and for
+	// resolving each related person's timezone (no per-relationship query).
+	allPeople, _ := h.people.List(r.Context())
+	peopleByID := make(map[int]*ent.Person, len(allPeople))
+	for _, p := range allPeople {
+		peopleByID[p.ID] = p
+	}
 	// Group relationships by EffectiveTypeLabel
 	// Build related people upcoming info
 	type relatedView struct {
@@ -631,27 +846,36 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 			OtherName: e.OtherPersonName,
 			Label:     e.EffectiveTypeLabel,
 		}
+		// Related people are counted in their own zone too: their birthday is
+		// "today" for them, wherever the server happens to be.
+		otherLoc := tzutil.Resolve(personTimezone(peopleByID[e.OtherPersonID]))
+		otherToday := tzutil.Today(now, otherLoc)
 		// Find next upcoming date for other person
 		if otherEvents, err := h.events.ListByPerson(r.Context(), e.OtherPersonID); err == nil {
 			bestDays := 99999
 			for _, ev := range otherEvents {
 				occDate, _ := displayDateForEvent(ev, now)
-				// displayDateForEvent may return past date for gregorian if birthday this year already passed; ensure future
-				if dateOnly(occDate, now.Location()).Before(dateOnly(now, now.Location())) {
-					// try next year for gregorian
-					if ev.CalendarSystem != "lunar" {
+				// displayDateForEvent may return a past date when the event's
+				// anniversary this year has already passed; find the next one.
+				if tzutil.DaysBetween(otherToday, occDate) < 0 {
+					nonGregorian := ev.CalendarSystem != "" && ev.CalendarSystem != "gregorian" && ev.LunarMonth != nil && ev.LunarDay != nil
+					if nonGregorian {
+						if next, ok := nextOccurrenceAfter(ev, now); ok {
+							occDate = next
+						} else {
+							continue
+						}
+					} else {
 						occDate = time.Date(now.Year()+1, ev.Date.Month(), ev.Date.Day(), 0, 0, 0, 0, time.UTC)
 						if ev.Date.Month() == time.February && ev.Date.Day() == 29 && !isLeapYear(now.Year()+1) {
 							occDate = time.Date(now.Year()+1, time.February, 28, 0, 0, 0, 0, time.UTC)
 						}
-					} else {
-						continue
 					}
-					if dateOnly(occDate, now.Location()).Before(dateOnly(now, now.Location())) {
+					if tzutil.DaysBetween(otherToday, occDate) < 0 {
 						continue
 					}
 				}
-				days := calendarDayDelta(dateOnly(now, now.Location()), dateOnly(occDate, now.Location()))
+				days := tzutil.DaysBetween(otherToday, occDate)
 				if days < bestDays {
 					bestDays = days
 					rv.NextDate = formatEventDate(h.cfg.DateVariant, occDate)
@@ -664,7 +888,6 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		// Normalize grouping: parent/child etc. Use label as key so custom labels group themselves.
 		grouped[key] = append(grouped[key], rv)
 	}
-	allPeople, _ := h.people.List(r.Context())
 	var pickerPeople []*ent.Person
 	for _, p := range allPeople {
 		if p.ID != id {
@@ -689,6 +912,17 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 			immichPersonName = *person.ImmichPersonID
 		}
 	}
+	// Timezone label for the detail page: the person's own zone, else the
+	// instance default (marked as inherited), else the server's local zone.
+	tzLabel := personTimezone(person)
+	tzInherited := false
+	if tzLabel == "" {
+		tzInherited = true
+		tzLabel = tzutil.DefaultName()
+	}
+	if tzLabel == "" {
+		tzLabel = "Local"
+	}
 	h.render(w, r, "person_detail.html", map[string]any{
 		"Title":             "Datey - " + person.Name,
 		"Person":            person,
@@ -702,6 +936,8 @@ func (h *Handler) viewPerson(w http.ResponseWriter, r *http.Request) {
 		"GiftIdeas":         giftIdeas,
 		"ShowPurchased":     showPurchased,
 		"Now":               now,
+		"TimezoneLabel":     tzLabel,
+		"TimezoneInherited": tzInherited,
 		"Relationships":     relEntries,
 		"GroupedRelations":  grouped,
 		"PickerPeople":      pickerPeople,
@@ -799,10 +1035,26 @@ func (h *Handler) redirectContactsView(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/people/"+id, http.StatusMovedPermanently)
 }
 
+// hasCelebrationInWindow reports whether the person has a birthday or
+// anniversary occurrence inside [from, to]. It reuses the same occurrence
+// expansion the dashboard and scheduler use, so lunar/Hebrew/Hijri dates and
+// annual series behave identically everywhere.
+func hasCelebrationInWindow(events []*ent.Event, from, to time.Time) bool {
+	for _, e := range events {
+		if e.Type != "birthday" && e.Type != "anniversary" {
+			continue
+		}
+		if len(recurring.OccurrencesInForEvent(e, from, to)) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // birthdayAgeForEvents derives the current age from a person's birthday
 // events. For lunar birthdays age counts completed lunar years (one per
 // anniversary of the stored lunar month/day), documented in code.
-func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, ok bool) {
+func birthdayAgeForEvents(events []*ent.Event, now time.Time, loc *time.Location) (currentAge int, ok bool) {
 	var latest *ent.Event
 	for _, e := range events {
 		if e.Type != "birthday" {
@@ -815,15 +1067,15 @@ func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, o
 	if latest == nil {
 		return 0, false
 	}
-	if latest.CalendarSystem == "lunar" && latest.LunarMonth != nil && latest.LunarDay != nil {
+	if latest.CalendarSystem != "" && latest.CalendarSystem != "gregorian" && latest.LunarMonth != nil && latest.LunarDay != nil {
 		if latest.Date.Year() <= 1 {
 			return 0, false
 		}
-		years := now.Year() - latest.Date.Year()
+		years := tzutil.Today(now, loc).Year() - latest.Date.Year()
 		display, _ := displayDateForEvent(latest, now)
-		nowDay := dateOnly(now, now.Location())
-		occDay := dateOnly(display, time.UTC)
-		if occDay.After(nowDay) {
+		// Still-to-come this year in the person's own zone means one fewer
+		// completed year.
+		if tzutil.DaysUntil(display, loc, now) > 0 {
 			years--
 		}
 		if years < 0 {
@@ -831,7 +1083,9 @@ func birthdayAgeForEvents(events []*ent.Event, now time.Time) (currentAge int, o
 		}
 		return years, true
 	}
-	return age.AgeAt(latest.Date, now)
+	// AgeAt reads the calendar date off the given instant, so hand it "now"
+	// already converted into the person's zone.
+	return age.AgeAt(latest.Date, now.In(loc))
 }
 
 func isLeapYear(y int) bool { return y%4 == 0 && (y%100 != 0 || y%400 == 0) }

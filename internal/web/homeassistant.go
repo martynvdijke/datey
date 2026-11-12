@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/datey/datey/ent"
+	"github.com/datey/datey/internal/tzutil"
 )
 
 // homeAssistantEvent is one entry of the upcoming array in the Home Assistant
@@ -60,9 +61,8 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 	if horizon < 30 {
 		horizon = 30
 	}
-	windowEnd := now.AddDate(0, 0, h.cfg.ReminderDays)
 
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), now.AddDate(0, 0, horizon))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC().AddDate(0, 0, -1), now.AddDate(0, 0, horizon+1))
 	if err != nil {
 		slog.Error("home assistant stats: list upcoming", "error", err)
 		h.renderError(w, r, http.StatusInternalServerError)
@@ -74,9 +74,18 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 	nextDate := ""
 	nextDays := 0
 	var events7, events30 int
+	reminderDays := h.cfg.ReminderDays
 	for _, occ := range occurrences {
 		e := occ.Event
-		ev := homeAssistantEventFromEvent(e, occ.Date, now)
+		// Days are counted in the event owner's zone; the padded query bounds
+		// cover every UTC offset, so past/out-of-horizon entries are dropped
+		// here instead of by the SQL date range.
+		loc := occurrenceLocation(e)
+		days := tzutil.DaysUntil(occ.Date, loc, now)
+		if days < 0 || days > horizon {
+			continue
+		}
+		ev := homeAssistantEventFromEvent(e, occ.Date, now, loc)
 		if ev.Days <= 7 {
 			events7++
 		}
@@ -85,7 +94,7 @@ func (h *Handler) homeAssistantStats(w http.ResponseWriter, r *http.Request) {
 		}
 		// Events beyond the reminder window still count toward the summary
 		// counts but are excluded from the display list.
-		if occ.Date.After(windowEnd) {
+		if days > reminderDays {
 			continue
 		}
 		upcoming = append(upcoming, ev)
@@ -149,11 +158,11 @@ func (h *Handler) homeAssistantCalendar(w http.ResponseWriter, r *http.Request) 
 	endStr := r.URL.Query().Get("end")
 	var start, end time.Time
 	if startStr == "" && endStr == "" {
-		// Default window respects the configured reminder window.
-		start = todayStartUTC()
-		end = time.Now().AddDate(0, 0, h.cfg.ReminderDays)
-		// Normalize to midnight UTC boundaries.
-		end = time.Date(end.Year(), end.Month(), end.Day(), 0, 0, 0, 0, time.UTC)
+		// Default window respects the configured reminder window, anchored on
+		// today's calendar date in the instance's effective zone.
+		nowForWindow := time.Now()
+		start = tzutil.Today(nowForWindow, tzutil.Default())
+		end = start.AddDate(0, 0, h.cfg.ReminderDays)
 		if !end.After(start) {
 			end = start.AddDate(0, 0, 1)
 		}
@@ -231,13 +240,13 @@ func (h *Handler) homeAssistantCalendar(w http.ResponseWriter, r *http.Request) 
 
 // homeAssistantEventFromEvent converts an ent event into the Home Assistant
 // feed shape against the occurrence date.
-func homeAssistantEventFromEvent(e *ent.Event, date, now time.Time) homeAssistantEvent {
+func homeAssistantEventFromEvent(e *ent.Event, date, now time.Time, loc *time.Location) homeAssistantEvent {
 	personName := eventOwnerName(e)
 
 	return homeAssistantEvent{
 		Name: personName,
 		Type: e.Type,
 		Date: date.Format("2006-01-02"),
-		Days: int(date.Sub(now).Hours() / 24),
+		Days: tzutil.DaysUntil(date, loc, now),
 	}
 }

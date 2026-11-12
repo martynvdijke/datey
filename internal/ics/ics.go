@@ -18,6 +18,9 @@ const MaxFileSize = 10 << 20 // 10 MB
 
 // Event is a single VEVENT extracted from a calendar file.
 type Event struct {
+	// UID is the VEVENT UID property ("" if absent). It identifies the event
+	// across feed revisions and enables subscription diffing.
+	UID string
 	// Summary is the VEVENT SUMMARY property ("" if absent).
 	Summary string
 	// Start is the event start. For all-day events only the date part is
@@ -66,6 +69,10 @@ func Parse(r io.Reader) ([]Event, error) {
 // value rather than failing on timed values).
 func extractEvent(vevent *ical.VEvent) (Event, bool) {
 	var ev Event
+
+	if prop := vevent.GetProperty(ical.ComponentPropertyUniqueId); prop != nil {
+		ev.UID = strings.TrimSpace(prop.Value)
+	}
 
 	if prop := vevent.GetProperty(ical.ComponentPropertySummary); prop != nil {
 		ev.Summary = strings.TrimSpace(prop.Value)

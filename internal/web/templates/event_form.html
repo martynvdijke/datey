@@ -1,5 +1,5 @@
 {{define "content"}}
-<h1 class="mb-4">Add Event{{if .GroupName}} — {{.GroupName}}{{end}}</h1>
+<h1 class="mb-4">{{if .IsEdit}}Edit Event{{else}}Add Event{{end}}{{if .GroupName}} — {{.GroupName}}{{end}}</h1>
 <div class="row">
   <div class="col-md-8 col-lg-6">
     {{$target := printf "/people/%d/events/new" .PersonID}}
@@ -8,49 +8,97 @@
       {{$target = printf "/groups/%d/events/new" .GroupID}}
       {{$cancel = printf "/groups/%d" .GroupID}}
     {{end}}
+    {{if .IsEdit}}
+      {{$target = printf "/events/%d/edit" .EventID}}
+      {{if .PersonID}}{{$cancel = printf "/people/%d" .PersonID}}{{else if .GroupID}}{{$cancel = printf "/groups/%d" .GroupID}}{{end}}
+    {{end}}
     <form action="{{$target}}" method="POST">
       {{template "csrfField" .}}
+      {{$freq := "annual"}}{{if .FormData}}{{if .FormData.Frequency}}{{$freq = .FormData.Frequency}}{{end}}{{end}}
       <div class="mb-3">
         <label for="type" class="form-label">Type {{template "requiredIndicator" .}}</label>
         <select class="form-select" id="type" name="type" required>
-          <option value="birthday"{{if eq .FormData.Type "birthday"}} selected{{end}}>Birthday</option>
-          <option value="anniversary"{{if eq .FormData.Type "anniversary"}} selected{{end}}>Anniversary</option>
-          <option value="wedding"{{if eq .FormData.Type "wedding"}} selected{{end}}>Wedding</option>
-          <option value="custom"{{if eq .FormData.Type "custom"}} selected{{end}}>Custom</option>
+          <option value="birthday"{{if eq .FormData.Type "birthday"}} selected{{end}}>{{T "event_type.birthday"}}</option>
+          <option value="anniversary"{{if eq .FormData.Type "anniversary"}} selected{{end}}>{{T "event_type.anniversary"}}</option>
+          <option value="wedding"{{if eq .FormData.Type "wedding"}} selected{{end}}>{{T "event_type.wedding"}}</option>
+          <option value="memorial"{{if eq .FormData.Type "memorial"}} selected{{end}}>{{T "event_type.memorial"}}</option>
+          <option value="custom"{{if eq .FormData.Type "custom"}} selected{{end}}>{{T "event_type.custom"}}</option>
         </select>
         {{template "fieldError" (dict "Errors" .Errors "Field" "type")}}
       </div>
       <div class="mb-3">
         <label for="calendar_system" class="form-label">Calendar</label>
         <select class="form-select" id="calendar_system" name="calendar_system" aria-label="Calendar system">
-          <option value="gregorian"{{if and .FormData (eq .FormData.CalendarSystem "gregorian")}} selected{{end}}>Gregorian</option>
-          <option value="lunar"{{if and .FormData (eq .FormData.CalendarSystem "lunar")}} selected{{end}}>Lunar</option>
+          <option value="gregorian"{{if and .FormData (eq .FormData.CalendarSystem "gregorian")}} selected{{end}}>{{T "calendar_system.gregorian"}}</option>
+          <option value="lunar"{{if and .FormData (eq .FormData.CalendarSystem "lunar")}} selected{{end}}>{{T "calendar_system.lunar"}}</option>
+          <option value="hebrew"{{if and .FormData (eq .FormData.CalendarSystem "hebrew")}} selected{{end}}>{{T "calendar_system.hebrew"}}</option>
+          <option value="hijri"{{if and .FormData (eq .FormData.CalendarSystem "hijri")}} selected{{end}}>{{T "calendar_system.hijri"}}</option>
         </select>
       </div>
       <div class="mb-3">
         <label for="date" class="form-label">Date {{template "requiredIndicator" .}}</label>
         <input type="date" class="form-control" id="date" name="date" required autocomplete="off" value="{{if .FormData}}{{.FormData.Date}}{{end}}">
+        <div class="form-text" id="date-hint" style="display:none">The Gregorian date keeps the original year used for age and “years since”.</div>
         {{template "fieldError" (dict "Errors" .Errors "Field" "date")}}
+      </div>
+      <div class="mb-3">
+        <label for="frequency" class="form-label">{{T "event.frequency.label"}}</label>
+        <select class="form-select" id="frequency" name="frequency" aria-describedby="frequency-hint">
+          <option value="once"{{if eq $freq "once"}} selected{{end}}>{{T "event.frequency.once"}}</option>
+          <option value="annual"{{if eq $freq "annual"}} selected{{end}}>{{T "event.frequency.annual"}}</option>
+          <option value="monthly"{{if eq $freq "monthly"}} selected{{end}}>{{T "event.frequency.monthly"}}</option>
+          <option value="weekly"{{if eq $freq "weekly"}} selected{{end}}>{{T "event.frequency.weekly"}}</option>
+          <option value="every_n"{{if eq $freq "every_n"}} selected{{end}}>{{T "event.frequency.every_n"}}</option>
+        </select>
+        <div class="form-text" id="frequency-hint">{{T "event.frequency.hint"}}</div>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "frequency")}}
+      </div>
+      <div id="every-n-fields">
+        <div class="mb-3">
+          <label for="interval" class="form-label">{{T "event.frequency.interval_label"}}</label>
+          <input type="number" min="1" max="120" step="1" class="form-control" id="interval" name="interval" autocomplete="off" value="{{if .FormData}}{{.FormData.Interval}}{{else}}1{{end}}">
+          {{template "fieldError" (dict "Errors" .Errors "Field" "interval")}}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 mb-3">
+          <label for="end_date" class="form-label">{{T "event.frequency.end_date_label"}}</label>
+          <input type="date" class="form-control" id="end_date" name="end_date" autocomplete="off" value="{{if .FormData}}{{.FormData.EndDate}}{{end}}">
+          {{template "fieldError" (dict "Errors" .Errors "Field" "end_date")}}
+        </div>
+        <div class="col-sm-6 mb-3">
+          <label for="occurrence_count" class="form-label">{{T "event.frequency.count_label"}}</label>
+          <input type="number" min="1" step="1" class="form-control" id="occurrence_count" name="occurrence_count" autocomplete="off" value="{{if .FormData}}{{.FormData.OccurrenceCount}}{{end}}">
+          {{template "fieldError" (dict "Errors" .Errors "Field" "occurrence_count")}}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 mb-3">
+          <label for="reminder_days" class="form-label">{{T "people.reminder_stages_label"}}</label>
+          <input type="text" class="form-control" id="reminder_days" name="reminder_days" autocomplete="off" value="{{if .FormData}}{{.FormData.ReminderDays}}{{end}}">
+          <div class="form-text">{{T "people.reminder_stages_help"}}</div>
+          {{template "fieldError" (dict "Errors" .Errors "Field" "reminder_days")}}
+        </div>
       </div>
       <div id="lunar-fields" style="display:none">
         <div class="mb-3">
-          <label for="lunar_month" class="form-label">Lunar month</label>
-          <select class="form-select" id="lunar_month" name="lunar_month" aria-label="Lunar month">
+          <label for="lunar_month" class="form-label">Month</label>
+          <select class="form-select" id="lunar_month" name="lunar_month" aria-label="Month in the selected calendar">
             <option value="">Select month</option>
-            {{range $i := seq 1 12}}<option value="{{$i}}"{{if and $.FormData (eq $.FormData.LunarMonth (printf "%d" $i))}} selected{{end}}>{{$i}}</option>{{end}}
+            {{range $i := seq 1 13}}<option value="{{$i}}"{{if and $.FormData (eq $.FormData.LunarMonth (printf "%d" $i))}} selected{{end}}>{{$i}}</option>{{end}}
           </select>
           {{template "fieldError" (dict "Errors" .Errors "Field" "lunar_month")}}
         </div>
         <div class="mb-3">
-          <label for="lunar_day" class="form-label">Lunar day</label>
-          <select class="form-select" id="lunar_day" name="lunar_day" aria-label="Lunar day">
+          <label for="lunar_day" class="form-label">Day</label>
+          <select class="form-select" id="lunar_day" name="lunar_day" aria-label="Day in the selected calendar">
             <option value="">Select day</option>
             {{range $i := seq 1 30}}<option value="{{$i}}"{{if and $.FormData (eq $.FormData.LunarDay (printf "%d" $i))}} selected{{end}}>{{$i}}</option>{{end}}
           </select>
           {{template "fieldError" (dict "Errors" .Errors "Field" "lunar_day")}}
         </div>
-        <div class="mb-3 form-check">
-          <input type="checkbox" class="form-check-input" id="lunar_leap" name="lunar_leap" value="on" aria-label="Leap month">
+        <div class="mb-3 form-check" id="lunar-leap-row">
+          <input type="checkbox" class="form-check-input" id="lunar_leap" name="lunar_leap" value="on" aria-label="Leap month"{{if and .FormData .FormData.LunarLeap}} checked{{end}}>
           <label for="lunar_leap" class="form-check-label">Leap month</label>
         </div>
       </div>
@@ -58,15 +106,42 @@
       (function(){
         var sel=document.getElementById('calendar_system');
         var lf=document.getElementById('lunar-fields');
-        function upd(){ lf.style.display = sel.value==='lunar' ? 'block' : 'none'; }
-        sel.addEventListener('change', upd); upd();
+        var leapRow=document.getElementById('lunar-leap-row');
+        var monthSel=document.getElementById('lunar_month');
+        var m13=monthSel.querySelector('option[value="13"]');
+        var hint=document.getElementById('date-hint');
+        var freq=document.getElementById('frequency');
+        var everyN=document.getElementById('every-n-fields');
+        function updFreq(){
+          everyN.style.display = freq.value==='every_n' ? 'block' : 'none';
+        }
+        function upd(){
+          var v=sel.value;
+          var nonGregorian = v!=='gregorian';
+          lf.style.display = nonGregorian ? 'block' : 'none';
+          hint.style.display = nonGregorian ? 'block' : 'none';
+          leapRow.style.display = v==='lunar' ? 'block' : 'none';
+          // Month 13 is Adar II: Hebrew leap years only.
+          m13.hidden = v!=='hebrew';
+          m13.disabled = v!=='hebrew';
+          if (v!=='hebrew' && monthSel.value==='13') { monthSel.value=''; }
+          // Non-Gregorian calendars only support annual repetition.
+          Array.prototype.forEach.call(freq.options, function(o){
+            o.disabled = nonGregorian && o.value!=='annual';
+          });
+          if (nonGregorian && freq.value!=='annual') { freq.value='annual'; }
+          updFreq();
+        }
+        sel.addEventListener('change', upd);
+        freq.addEventListener('change', updFreq);
+        upd();
       })();
       </script>
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
         <input type="text" class="form-control" id="description" name="description" autocomplete="off" value="{{if .FormData}}{{.FormData.Description}}{{end}}">
       </div>
-      <button type="submit" class="btn btn-primary">Create Event</button>
+      <button type="submit" class="btn btn-primary">{{if .IsEdit}}Save Changes{{else}}Create Event{{end}}</button>
       <a href="{{$cancel}}" class="btn btn-outline-secondary">Cancel</a>
     </form>
   </div>

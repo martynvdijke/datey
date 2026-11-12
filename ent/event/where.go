@@ -100,6 +100,51 @@ func LunarLeap(v bool) predicate.Event {
 	return predicate.Event(sql.FieldEQ(FieldLunarLeap, v))
 }
 
+// Frequency applies equality check predicate on the "frequency" field. It's identical to FrequencyEQ.
+func Frequency(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldFrequency, v))
+}
+
+// Interval applies equality check predicate on the "interval" field. It's identical to IntervalEQ.
+func Interval(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldInterval, v))
+}
+
+// EndDate applies equality check predicate on the "end_date" field. It's identical to EndDateEQ.
+func EndDate(v time.Time) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldEndDate, v))
+}
+
+// OccurrenceCount applies equality check predicate on the "occurrence_count" field. It's identical to OccurrenceCountEQ.
+func OccurrenceCount(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldOccurrenceCount, v))
+}
+
+// SubscriptionID applies equality check predicate on the "subscription_id" field. It's identical to SubscriptionIDEQ.
+func SubscriptionID(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldSubscriptionID, v))
+}
+
+// ExternalUID applies equality check predicate on the "external_uid" field. It's identical to ExternalUIDEQ.
+func ExternalUID(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldExternalUID, v))
+}
+
+// RuleKind applies equality check predicate on the "rule_kind" field. It's identical to RuleKindEQ.
+func RuleKind(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldRuleKind, v))
+}
+
+// RuleOrdinal applies equality check predicate on the "rule_ordinal" field. It's identical to RuleOrdinalEQ.
+func RuleOrdinal(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldRuleOrdinal, v))
+}
+
+// RuleWeekday applies equality check predicate on the "rule_weekday" field. It's identical to RuleWeekdayEQ.
+func RuleWeekday(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldRuleWeekday, v))
+}
+
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v string) predicate.Event {
 	return predicate.Event(sql.FieldEQ(FieldType, v))
@@ -580,6 +625,491 @@ func LunarLeapNEQ(v bool) predicate.Event {
 	return predicate.Event(sql.FieldNEQ(FieldLunarLeap, v))
 }
 
+// FrequencyEQ applies the EQ predicate on the "frequency" field.
+func FrequencyEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldFrequency, v))
+}
+
+// FrequencyNEQ applies the NEQ predicate on the "frequency" field.
+func FrequencyNEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldFrequency, v))
+}
+
+// FrequencyIn applies the In predicate on the "frequency" field.
+func FrequencyIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldFrequency, vs...))
+}
+
+// FrequencyNotIn applies the NotIn predicate on the "frequency" field.
+func FrequencyNotIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldFrequency, vs...))
+}
+
+// FrequencyGT applies the GT predicate on the "frequency" field.
+func FrequencyGT(v string) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldFrequency, v))
+}
+
+// FrequencyGTE applies the GTE predicate on the "frequency" field.
+func FrequencyGTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldFrequency, v))
+}
+
+// FrequencyLT applies the LT predicate on the "frequency" field.
+func FrequencyLT(v string) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldFrequency, v))
+}
+
+// FrequencyLTE applies the LTE predicate on the "frequency" field.
+func FrequencyLTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldFrequency, v))
+}
+
+// FrequencyContains applies the Contains predicate on the "frequency" field.
+func FrequencyContains(v string) predicate.Event {
+	return predicate.Event(sql.FieldContains(FieldFrequency, v))
+}
+
+// FrequencyHasPrefix applies the HasPrefix predicate on the "frequency" field.
+func FrequencyHasPrefix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasPrefix(FieldFrequency, v))
+}
+
+// FrequencyHasSuffix applies the HasSuffix predicate on the "frequency" field.
+func FrequencyHasSuffix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasSuffix(FieldFrequency, v))
+}
+
+// FrequencyEqualFold applies the EqualFold predicate on the "frequency" field.
+func FrequencyEqualFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldEqualFold(FieldFrequency, v))
+}
+
+// FrequencyContainsFold applies the ContainsFold predicate on the "frequency" field.
+func FrequencyContainsFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldContainsFold(FieldFrequency, v))
+}
+
+// IntervalEQ applies the EQ predicate on the "interval" field.
+func IntervalEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldInterval, v))
+}
+
+// IntervalNEQ applies the NEQ predicate on the "interval" field.
+func IntervalNEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldInterval, v))
+}
+
+// IntervalIn applies the In predicate on the "interval" field.
+func IntervalIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldInterval, vs...))
+}
+
+// IntervalNotIn applies the NotIn predicate on the "interval" field.
+func IntervalNotIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldInterval, vs...))
+}
+
+// IntervalGT applies the GT predicate on the "interval" field.
+func IntervalGT(v int) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldInterval, v))
+}
+
+// IntervalGTE applies the GTE predicate on the "interval" field.
+func IntervalGTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldInterval, v))
+}
+
+// IntervalLT applies the LT predicate on the "interval" field.
+func IntervalLT(v int) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldInterval, v))
+}
+
+// IntervalLTE applies the LTE predicate on the "interval" field.
+func IntervalLTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldInterval, v))
+}
+
+// EndDateEQ applies the EQ predicate on the "end_date" field.
+func EndDateEQ(v time.Time) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldEndDate, v))
+}
+
+// EndDateNEQ applies the NEQ predicate on the "end_date" field.
+func EndDateNEQ(v time.Time) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldEndDate, v))
+}
+
+// EndDateIn applies the In predicate on the "end_date" field.
+func EndDateIn(vs ...time.Time) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldEndDate, vs...))
+}
+
+// EndDateNotIn applies the NotIn predicate on the "end_date" field.
+func EndDateNotIn(vs ...time.Time) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldEndDate, vs...))
+}
+
+// EndDateGT applies the GT predicate on the "end_date" field.
+func EndDateGT(v time.Time) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldEndDate, v))
+}
+
+// EndDateGTE applies the GTE predicate on the "end_date" field.
+func EndDateGTE(v time.Time) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldEndDate, v))
+}
+
+// EndDateLT applies the LT predicate on the "end_date" field.
+func EndDateLT(v time.Time) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldEndDate, v))
+}
+
+// EndDateLTE applies the LTE predicate on the "end_date" field.
+func EndDateLTE(v time.Time) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldEndDate, v))
+}
+
+// EndDateIsNil applies the IsNil predicate on the "end_date" field.
+func EndDateIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldEndDate))
+}
+
+// EndDateNotNil applies the NotNil predicate on the "end_date" field.
+func EndDateNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldEndDate))
+}
+
+// OccurrenceCountEQ applies the EQ predicate on the "occurrence_count" field.
+func OccurrenceCountEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldOccurrenceCount, v))
+}
+
+// OccurrenceCountNEQ applies the NEQ predicate on the "occurrence_count" field.
+func OccurrenceCountNEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldOccurrenceCount, v))
+}
+
+// OccurrenceCountIn applies the In predicate on the "occurrence_count" field.
+func OccurrenceCountIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldOccurrenceCount, vs...))
+}
+
+// OccurrenceCountNotIn applies the NotIn predicate on the "occurrence_count" field.
+func OccurrenceCountNotIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldOccurrenceCount, vs...))
+}
+
+// OccurrenceCountGT applies the GT predicate on the "occurrence_count" field.
+func OccurrenceCountGT(v int) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldOccurrenceCount, v))
+}
+
+// OccurrenceCountGTE applies the GTE predicate on the "occurrence_count" field.
+func OccurrenceCountGTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldOccurrenceCount, v))
+}
+
+// OccurrenceCountLT applies the LT predicate on the "occurrence_count" field.
+func OccurrenceCountLT(v int) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldOccurrenceCount, v))
+}
+
+// OccurrenceCountLTE applies the LTE predicate on the "occurrence_count" field.
+func OccurrenceCountLTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldOccurrenceCount, v))
+}
+
+// OccurrenceCountIsNil applies the IsNil predicate on the "occurrence_count" field.
+func OccurrenceCountIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldOccurrenceCount))
+}
+
+// OccurrenceCountNotNil applies the NotNil predicate on the "occurrence_count" field.
+func OccurrenceCountNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldOccurrenceCount))
+}
+
+// SubscriptionIDEQ applies the EQ predicate on the "subscription_id" field.
+func SubscriptionIDEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldSubscriptionID, v))
+}
+
+// SubscriptionIDNEQ applies the NEQ predicate on the "subscription_id" field.
+func SubscriptionIDNEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldSubscriptionID, v))
+}
+
+// SubscriptionIDIn applies the In predicate on the "subscription_id" field.
+func SubscriptionIDIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldSubscriptionID, vs...))
+}
+
+// SubscriptionIDNotIn applies the NotIn predicate on the "subscription_id" field.
+func SubscriptionIDNotIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldSubscriptionID, vs...))
+}
+
+// SubscriptionIDIsNil applies the IsNil predicate on the "subscription_id" field.
+func SubscriptionIDIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldSubscriptionID))
+}
+
+// SubscriptionIDNotNil applies the NotNil predicate on the "subscription_id" field.
+func SubscriptionIDNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldSubscriptionID))
+}
+
+// ExternalUIDEQ applies the EQ predicate on the "external_uid" field.
+func ExternalUIDEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldExternalUID, v))
+}
+
+// ExternalUIDNEQ applies the NEQ predicate on the "external_uid" field.
+func ExternalUIDNEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldExternalUID, v))
+}
+
+// ExternalUIDIn applies the In predicate on the "external_uid" field.
+func ExternalUIDIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldExternalUID, vs...))
+}
+
+// ExternalUIDNotIn applies the NotIn predicate on the "external_uid" field.
+func ExternalUIDNotIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldExternalUID, vs...))
+}
+
+// ExternalUIDGT applies the GT predicate on the "external_uid" field.
+func ExternalUIDGT(v string) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldExternalUID, v))
+}
+
+// ExternalUIDGTE applies the GTE predicate on the "external_uid" field.
+func ExternalUIDGTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldExternalUID, v))
+}
+
+// ExternalUIDLT applies the LT predicate on the "external_uid" field.
+func ExternalUIDLT(v string) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldExternalUID, v))
+}
+
+// ExternalUIDLTE applies the LTE predicate on the "external_uid" field.
+func ExternalUIDLTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldExternalUID, v))
+}
+
+// ExternalUIDContains applies the Contains predicate on the "external_uid" field.
+func ExternalUIDContains(v string) predicate.Event {
+	return predicate.Event(sql.FieldContains(FieldExternalUID, v))
+}
+
+// ExternalUIDHasPrefix applies the HasPrefix predicate on the "external_uid" field.
+func ExternalUIDHasPrefix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasPrefix(FieldExternalUID, v))
+}
+
+// ExternalUIDHasSuffix applies the HasSuffix predicate on the "external_uid" field.
+func ExternalUIDHasSuffix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasSuffix(FieldExternalUID, v))
+}
+
+// ExternalUIDIsNil applies the IsNil predicate on the "external_uid" field.
+func ExternalUIDIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldExternalUID))
+}
+
+// ExternalUIDNotNil applies the NotNil predicate on the "external_uid" field.
+func ExternalUIDNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldExternalUID))
+}
+
+// ExternalUIDEqualFold applies the EqualFold predicate on the "external_uid" field.
+func ExternalUIDEqualFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldEqualFold(FieldExternalUID, v))
+}
+
+// ExternalUIDContainsFold applies the ContainsFold predicate on the "external_uid" field.
+func ExternalUIDContainsFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldContainsFold(FieldExternalUID, v))
+}
+
+// RuleKindEQ applies the EQ predicate on the "rule_kind" field.
+func RuleKindEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldRuleKind, v))
+}
+
+// RuleKindNEQ applies the NEQ predicate on the "rule_kind" field.
+func RuleKindNEQ(v string) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldRuleKind, v))
+}
+
+// RuleKindIn applies the In predicate on the "rule_kind" field.
+func RuleKindIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldRuleKind, vs...))
+}
+
+// RuleKindNotIn applies the NotIn predicate on the "rule_kind" field.
+func RuleKindNotIn(vs ...string) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldRuleKind, vs...))
+}
+
+// RuleKindGT applies the GT predicate on the "rule_kind" field.
+func RuleKindGT(v string) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldRuleKind, v))
+}
+
+// RuleKindGTE applies the GTE predicate on the "rule_kind" field.
+func RuleKindGTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldRuleKind, v))
+}
+
+// RuleKindLT applies the LT predicate on the "rule_kind" field.
+func RuleKindLT(v string) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldRuleKind, v))
+}
+
+// RuleKindLTE applies the LTE predicate on the "rule_kind" field.
+func RuleKindLTE(v string) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldRuleKind, v))
+}
+
+// RuleKindContains applies the Contains predicate on the "rule_kind" field.
+func RuleKindContains(v string) predicate.Event {
+	return predicate.Event(sql.FieldContains(FieldRuleKind, v))
+}
+
+// RuleKindHasPrefix applies the HasPrefix predicate on the "rule_kind" field.
+func RuleKindHasPrefix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasPrefix(FieldRuleKind, v))
+}
+
+// RuleKindHasSuffix applies the HasSuffix predicate on the "rule_kind" field.
+func RuleKindHasSuffix(v string) predicate.Event {
+	return predicate.Event(sql.FieldHasSuffix(FieldRuleKind, v))
+}
+
+// RuleKindIsNil applies the IsNil predicate on the "rule_kind" field.
+func RuleKindIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldRuleKind))
+}
+
+// RuleKindNotNil applies the NotNil predicate on the "rule_kind" field.
+func RuleKindNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldRuleKind))
+}
+
+// RuleKindEqualFold applies the EqualFold predicate on the "rule_kind" field.
+func RuleKindEqualFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldEqualFold(FieldRuleKind, v))
+}
+
+// RuleKindContainsFold applies the ContainsFold predicate on the "rule_kind" field.
+func RuleKindContainsFold(v string) predicate.Event {
+	return predicate.Event(sql.FieldContainsFold(FieldRuleKind, v))
+}
+
+// RuleOrdinalEQ applies the EQ predicate on the "rule_ordinal" field.
+func RuleOrdinalEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldRuleOrdinal, v))
+}
+
+// RuleOrdinalNEQ applies the NEQ predicate on the "rule_ordinal" field.
+func RuleOrdinalNEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldRuleOrdinal, v))
+}
+
+// RuleOrdinalIn applies the In predicate on the "rule_ordinal" field.
+func RuleOrdinalIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldRuleOrdinal, vs...))
+}
+
+// RuleOrdinalNotIn applies the NotIn predicate on the "rule_ordinal" field.
+func RuleOrdinalNotIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldRuleOrdinal, vs...))
+}
+
+// RuleOrdinalGT applies the GT predicate on the "rule_ordinal" field.
+func RuleOrdinalGT(v int) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldRuleOrdinal, v))
+}
+
+// RuleOrdinalGTE applies the GTE predicate on the "rule_ordinal" field.
+func RuleOrdinalGTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldRuleOrdinal, v))
+}
+
+// RuleOrdinalLT applies the LT predicate on the "rule_ordinal" field.
+func RuleOrdinalLT(v int) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldRuleOrdinal, v))
+}
+
+// RuleOrdinalLTE applies the LTE predicate on the "rule_ordinal" field.
+func RuleOrdinalLTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldRuleOrdinal, v))
+}
+
+// RuleOrdinalIsNil applies the IsNil predicate on the "rule_ordinal" field.
+func RuleOrdinalIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldRuleOrdinal))
+}
+
+// RuleOrdinalNotNil applies the NotNil predicate on the "rule_ordinal" field.
+func RuleOrdinalNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldRuleOrdinal))
+}
+
+// RuleWeekdayEQ applies the EQ predicate on the "rule_weekday" field.
+func RuleWeekdayEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldRuleWeekday, v))
+}
+
+// RuleWeekdayNEQ applies the NEQ predicate on the "rule_weekday" field.
+func RuleWeekdayNEQ(v int) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldRuleWeekday, v))
+}
+
+// RuleWeekdayIn applies the In predicate on the "rule_weekday" field.
+func RuleWeekdayIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldRuleWeekday, vs...))
+}
+
+// RuleWeekdayNotIn applies the NotIn predicate on the "rule_weekday" field.
+func RuleWeekdayNotIn(vs ...int) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldRuleWeekday, vs...))
+}
+
+// RuleWeekdayGT applies the GT predicate on the "rule_weekday" field.
+func RuleWeekdayGT(v int) predicate.Event {
+	return predicate.Event(sql.FieldGT(FieldRuleWeekday, v))
+}
+
+// RuleWeekdayGTE applies the GTE predicate on the "rule_weekday" field.
+func RuleWeekdayGTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldGTE(FieldRuleWeekday, v))
+}
+
+// RuleWeekdayLT applies the LT predicate on the "rule_weekday" field.
+func RuleWeekdayLT(v int) predicate.Event {
+	return predicate.Event(sql.FieldLT(FieldRuleWeekday, v))
+}
+
+// RuleWeekdayLTE applies the LTE predicate on the "rule_weekday" field.
+func RuleWeekdayLTE(v int) predicate.Event {
+	return predicate.Event(sql.FieldLTE(FieldRuleWeekday, v))
+}
+
+// RuleWeekdayIsNil applies the IsNil predicate on the "rule_weekday" field.
+func RuleWeekdayIsNil() predicate.Event {
+	return predicate.Event(sql.FieldIsNull(FieldRuleWeekday))
+}
+
+// RuleWeekdayNotNil applies the NotNil predicate on the "rule_weekday" field.
+func RuleWeekdayNotNil() predicate.Event {
+	return predicate.Event(sql.FieldNotNull(FieldRuleWeekday))
+}
+
 // HasContact applies the HasEdge predicate on the "contact" edge.
 func HasContact() predicate.Event {
 	return predicate.Event(func(s *sql.Selector) {
@@ -664,6 +1194,29 @@ func HasNotificationLogs() predicate.Event {
 func HasNotificationLogsWith(preds ...predicate.NotificationLog) predicate.Event {
 	return predicate.Event(func(s *sql.Selector) {
 		step := newNotificationLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSubscription applies the HasEdge predicate on the "subscription" edge.
+func HasSubscription() predicate.Event {
+	return predicate.Event(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, SubscriptionTable, SubscriptionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSubscriptionWith applies the HasEdge predicate on the "subscription" edge with a given conditions (other predicates).
+func HasSubscriptionWith(preds ...predicate.Subscription) predicate.Event {
+	return predicate.Event(func(s *sql.Selector) {
+		step := newSubscriptionStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -18,6 +18,8 @@ type Tx struct {
 	AppConfig *AppConfigClient
 	// AuditEntry is the client for interacting with the AuditEntry builders.
 	AuditEntry *AuditEntryClient
+	// ChannelHealth is the client for interacting with the ChannelHealth builders.
+	ChannelHealth *ChannelHealthClient
 	// Contact is the client for interacting with the Contact builders.
 	Contact *ContactClient
 	// Event is the client for interacting with the Event builders.
@@ -46,6 +48,10 @@ type Tx struct {
 	Relationship *RelationshipClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// Snooze is the client for interacting with the Snooze builders.
+	Snooze *SnoozeClient
+	// Subscription is the client for interacting with the Subscription builders.
+	Subscription *SubscriptionClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// User is the client for interacting with the User builders.
@@ -186,6 +192,7 @@ func (tx *Tx) init() {
 	tx.ApiToken = NewApiTokenClient(tx.config)
 	tx.AppConfig = NewAppConfigClient(tx.config)
 	tx.AuditEntry = NewAuditEntryClient(tx.config)
+	tx.ChannelHealth = NewChannelHealthClient(tx.config)
 	tx.Contact = NewContactClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
 	tx.GiftIdea = NewGiftIdeaClient(tx.config)
@@ -200,6 +207,8 @@ func (tx *Tx) init() {
 	tx.RecurringRule = NewRecurringRuleClient(tx.config)
 	tx.Relationship = NewRelationshipClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
+	tx.Snooze = NewSnoozeClient(tx.config)
+	tx.Subscription = NewSubscriptionClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserNotificationChannel = NewUserNotificationChannelClient(tx.config)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/auditentry"
+	"github.com/datey/datey/ent/channelhealth"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/giftidea"
@@ -22,6 +23,8 @@ import (
 	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/schema"
 	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/snooze"
+	"github.com/datey/datey/ent/subscription"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
 	"github.com/datey/datey/ent/usernotificationchannel"
@@ -63,6 +66,24 @@ func init() {
 	auditentryDescSourceIP := auditentryFields[4].Descriptor()
 	// auditentry.DefaultSourceIP holds the default value on creation for the source_ip field.
 	auditentry.DefaultSourceIP = auditentryDescSourceIP.Default.(string)
+	channelhealthFields := schema.ChannelHealth{}.Fields()
+	_ = channelhealthFields
+	// channelhealthDescChannel is the schema descriptor for channel field.
+	channelhealthDescChannel := channelhealthFields[0].Descriptor()
+	// channelhealth.ChannelValidator is a validator for the "channel" field. It is called by the builders before save.
+	channelhealth.ChannelValidator = channelhealthDescChannel.Validators[0].(func(string) error)
+	// channelhealthDescTarget is the schema descriptor for target field.
+	channelhealthDescTarget := channelhealthFields[1].Descriptor()
+	// channelhealth.DefaultTarget holds the default value on creation for the target field.
+	channelhealth.DefaultTarget = channelhealthDescTarget.Default.(string)
+	// channelhealthDescLastError is the schema descriptor for last_error field.
+	channelhealthDescLastError := channelhealthFields[4].Descriptor()
+	// channelhealth.DefaultLastError holds the default value on creation for the last_error field.
+	channelhealth.DefaultLastError = channelhealthDescLastError.Default.(string)
+	// channelhealthDescConsecutiveFailures is the schema descriptor for consecutive_failures field.
+	channelhealthDescConsecutiveFailures := channelhealthFields[5].Descriptor()
+	// channelhealth.DefaultConsecutiveFailures holds the default value on creation for the consecutive_failures field.
+	channelhealth.DefaultConsecutiveFailures = channelhealthDescConsecutiveFailures.Default.(int)
 	contactFields := schema.Contact{}.Fields()
 	_ = contactFields
 	// contactDescName is the schema descriptor for name field.
@@ -131,6 +152,78 @@ func init() {
 	eventDescLunarLeap := eventFields[9].Descriptor()
 	// event.DefaultLunarLeap holds the default value on creation for the lunar_leap field.
 	event.DefaultLunarLeap = eventDescLunarLeap.Default.(bool)
+	// eventDescFrequency is the schema descriptor for frequency field.
+	eventDescFrequency := eventFields[10].Descriptor()
+	// event.DefaultFrequency holds the default value on creation for the frequency field.
+	event.DefaultFrequency = eventDescFrequency.Default.(string)
+	// eventDescInterval is the schema descriptor for interval field.
+	eventDescInterval := eventFields[11].Descriptor()
+	// event.DefaultInterval holds the default value on creation for the interval field.
+	event.DefaultInterval = eventDescInterval.Default.(int)
+	// event.IntervalValidator is a validator for the "interval" field. It is called by the builders before save.
+	event.IntervalValidator = func() func(int) error {
+		validators := eventDescInterval.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(interval int) error {
+			for _, fn := range fns {
+				if err := fn(interval); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// eventDescOccurrenceCount is the schema descriptor for occurrence_count field.
+	eventDescOccurrenceCount := eventFields[13].Descriptor()
+	// event.OccurrenceCountValidator is a validator for the "occurrence_count" field. It is called by the builders before save.
+	event.OccurrenceCountValidator = eventDescOccurrenceCount.Validators[0].(func(int) error)
+	// eventDescExternalUID is the schema descriptor for external_uid field.
+	eventDescExternalUID := eventFields[15].Descriptor()
+	// event.DefaultExternalUID holds the default value on creation for the external_uid field.
+	event.DefaultExternalUID = eventDescExternalUID.Default.(string)
+	// eventDescRuleKind is the schema descriptor for rule_kind field.
+	eventDescRuleKind := eventFields[16].Descriptor()
+	// event.DefaultRuleKind holds the default value on creation for the rule_kind field.
+	event.DefaultRuleKind = eventDescRuleKind.Default.(string)
+	// eventDescRuleOrdinal is the schema descriptor for rule_ordinal field.
+	eventDescRuleOrdinal := eventFields[17].Descriptor()
+	// event.RuleOrdinalValidator is a validator for the "rule_ordinal" field. It is called by the builders before save.
+	event.RuleOrdinalValidator = func() func(int) error {
+		validators := eventDescRuleOrdinal.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(rule_ordinal int) error {
+			for _, fn := range fns {
+				if err := fn(rule_ordinal); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// eventDescRuleWeekday is the schema descriptor for rule_weekday field.
+	eventDescRuleWeekday := eventFields[18].Descriptor()
+	// event.RuleWeekdayValidator is a validator for the "rule_weekday" field. It is called by the builders before save.
+	event.RuleWeekdayValidator = func() func(int) error {
+		validators := eventDescRuleWeekday.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(rule_weekday int) error {
+			for _, fn := range fns {
+				if err := fn(rule_weekday); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	giftideaFields := schema.GiftIdea{}.Fields()
 	_ = giftideaFields
 	// giftideaDescTitle is the schema descriptor for title field.
@@ -301,6 +394,40 @@ func init() {
 	sessionDescTokenHash := sessionFields[0].Descriptor()
 	// session.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
 	session.TokenHashValidator = sessionDescTokenHash.Validators[0].(func(string) error)
+	snoozeFields := schema.Snooze{}.Fields()
+	_ = snoozeFields
+	// snoozeDescUserID is the schema descriptor for user_id field.
+	snoozeDescUserID := snoozeFields[3].Descriptor()
+	// snooze.DefaultUserID holds the default value on creation for the user_id field.
+	snooze.DefaultUserID = snoozeDescUserID.Default.(int)
+	subscriptionFields := schema.Subscription{}.Fields()
+	_ = subscriptionFields
+	// subscriptionDescName is the schema descriptor for name field.
+	subscriptionDescName := subscriptionFields[0].Descriptor()
+	// subscription.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	subscription.NameValidator = subscriptionDescName.Validators[0].(func(string) error)
+	// subscriptionDescURL is the schema descriptor for url field.
+	subscriptionDescURL := subscriptionFields[1].Descriptor()
+	// subscription.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	subscription.URLValidator = subscriptionDescURL.Validators[0].(func(string) error)
+	// subscriptionDescEnabled is the schema descriptor for enabled field.
+	subscriptionDescEnabled := subscriptionFields[2].Descriptor()
+	// subscription.DefaultEnabled holds the default value on creation for the enabled field.
+	subscription.DefaultEnabled = subscriptionDescEnabled.Default.(bool)
+	// subscriptionDescLastError is the schema descriptor for last_error field.
+	subscriptionDescLastError := subscriptionFields[5].Descriptor()
+	// subscription.DefaultLastError holds the default value on creation for the last_error field.
+	subscription.DefaultLastError = subscriptionDescLastError.Default.(string)
+	// subscriptionDescCreatedAt is the schema descriptor for created_at field.
+	subscriptionDescCreatedAt := subscriptionFields[6].Descriptor()
+	// subscription.DefaultCreatedAt holds the default value on creation for the created_at field.
+	subscription.DefaultCreatedAt = subscriptionDescCreatedAt.Default.(func() time.Time)
+	// subscriptionDescUpdatedAt is the schema descriptor for updated_at field.
+	subscriptionDescUpdatedAt := subscriptionFields[7].Descriptor()
+	// subscription.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	subscription.DefaultUpdatedAt = subscriptionDescUpdatedAt.Default.(func() time.Time)
+	// subscription.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	subscription.UpdateDefaultUpdatedAt = subscriptionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	tagFields := schema.Tag{}.Fields()
 	_ = tagFields
 	// tagDescName is the schema descriptor for name field.

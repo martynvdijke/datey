@@ -3,6 +3,8 @@ package web
 import (
 	"net/http"
 	"strings"
+
+	"github.com/datey/datey/handlers"
 )
 
 type demoAuthConfig struct {
@@ -37,10 +39,13 @@ func (h *Handler) authConfig(w http.ResponseWriter, r *http.Request) {
 	writeAPIJSON(w, http.StatusOK, authConfigResponse{Demo: demoCfg})
 }
 
-// loginData adds demo-account details to a login template's data when the
-// demo account is enabled. Keeping this in one helper avoids repeating the
-// fields across the initial render and every error branch.
-func (h *Handler) loginData(data map[string]any) map[string]any {
+// authPageData adds the values every unauthenticated auth surface shares: the
+// running application version for the quiet card footer, plus the demo
+// credentials when they apply. handlers.Version is the single source of truth
+// (main.go sets it from the build version). Keeping it in one helper avoids
+// repeating fields across the initial render and every error branch.
+func (h *Handler) authPageData(data map[string]any) map[string]any {
+	data["Version"] = handlers.Version
 	if !h.demoLoginEnabled() {
 		return data
 	}
@@ -48,4 +53,11 @@ func (h *Handler) loginData(data map[string]any) map[string]any {
 	data["DemoHandle"] = strings.ToLower(strings.TrimSpace(h.cfg.DemoUserHandle))
 	data["DemoPassword"] = h.cfg.DemoUserPassword
 	return data
+}
+
+// renderAuth renders a public auth page (login, setup, password reset) with the
+// shared auth data. It exists so those pages cannot drift apart: every one of
+// them shows the same version footer.
+func (h *Handler) renderAuth(w http.ResponseWriter, r *http.Request, page string, data map[string]any) {
+	h.render(w, r, page, h.authPageData(data))
 }

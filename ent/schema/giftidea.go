@@ -22,6 +22,9 @@ func (GiftIdea) Fields() []ent.Field {
 		field.Enum("status").Values("idea", "purchased", "given", "archived").Default("idea"),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+		field.Time("purchased_at").Optional().Nillable(),
+		field.Time("given_at").Optional().Nillable(),
+		field.Time("archived_at").Optional().Nillable(),
 	}
 }
 

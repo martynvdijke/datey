@@ -132,6 +132,14 @@ func (r *RelationshipRepository) Remove(ctx context.Context, id int) error {
 	return r.client.Relationship.DeleteOneID(id).Exec(ctx)
 }
 
+// ListAll returns every relationship ordered by ID. Used by whole-dataset
+// exports; callers resolve the endpoint names themselves.
+func (r *RelationshipRepository) ListAll(ctx context.Context) ([]*ent.Relationship, error) {
+	return r.client.Relationship.Query().
+		Order(ent.Asc(relationship.FieldID)).
+		All(ctx)
+}
+
 // ListForPerson returns normalized entries visible from personID.
 func (r *RelationshipRepository) ListForPerson(ctx context.Context, personID int) ([]RelationshipEntry, error) {
 	rels, err := r.client.Relationship.Query().

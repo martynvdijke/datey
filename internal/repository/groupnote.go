@@ -44,6 +44,15 @@ func (r *GroupNoteRepository) Delete(ctx context.Context, id int) error {
 	return r.client.GroupNote.DeleteOneID(id).Exec(ctx)
 }
 
+// ListAll returns every group note with its owner eager-loaded, ordered by
+// note date then ID. Used by whole-dataset exports.
+func (r *GroupNoteRepository) ListAll(ctx context.Context) ([]*ent.GroupNote, error) {
+	return r.client.GroupNote.Query().
+		WithGroup().
+		Order(ent.Asc(groupnote.FieldNoteDate), ent.Asc(groupnote.FieldID)).
+		All(ctx)
+}
+
 // ListByGroup returns the group's notes ordered oldest first (timeline order).
 func (r *GroupNoteRepository) ListByGroup(ctx context.Context, groupID int) ([]*ent.GroupNote, error) {
 	return r.client.GroupNote.Query().

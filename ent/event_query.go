@@ -18,6 +18,7 @@ import (
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
+	"github.com/datey/datey/ent/subscription"
 )
 
 // EventQuery is the builder for querying Event entities.
@@ -31,6 +32,7 @@ type EventQuery struct {
 	withPerson           *PersonQuery
 	withGroup            *GroupQuery
 	withNotificationLogs *NotificationLogQuery
+	withSubscription     *SubscriptionQuery
 	withFKs              bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -149,6 +151,28 @@ func (_q *EventQuery) QueryNotificationLogs() *NotificationLogQuery {
 			sqlgraph.From(event.Table, event.FieldID, selector),
 			sqlgraph.To(notificationlog.Table, notificationlog.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, event.NotificationLogsTable, event.NotificationLogsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubscription chains the current query on the "subscription" edge.
+func (_q *EventQuery) QuerySubscription() *SubscriptionQuery {
+	query := (&SubscriptionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(event.Table, event.FieldID, selector),
+			sqlgraph.To(subscription.Table, subscription.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, event.SubscriptionTable, event.SubscriptionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -352,6 +376,7 @@ func (_q *EventQuery) Clone() *EventQuery {
 		withPerson:           _q.withPerson.Clone(),
 		withGroup:            _q.withGroup.Clone(),
 		withNotificationLogs: _q.withNotificationLogs.Clone(),
+		withSubscription:     _q.withSubscription.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -399,6 +424,17 @@ func (_q *EventQuery) WithNotificationLogs(opts ...func(*NotificationLogQuery)) 
 		opt(query)
 	}
 	_q.withNotificationLogs = query
+	return _q
+}
+
+// WithSubscription tells the query-builder to eager-load the nodes that are connected to
+// the "subscription" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EventQuery) WithSubscription(opts ...func(*SubscriptionQuery)) *EventQuery {
+	query := (&SubscriptionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSubscription = query
 	return _q
 }
 
@@ -481,11 +517,12 @@ func (_q *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 		nodes       = []*Event{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withContact != nil,
 			_q.withPerson != nil,
 			_q.withGroup != nil,
 			_q.withNotificationLogs != nil,
+			_q.withSubscription != nil,
 		}
 	)
 	if _q.withContact != nil || _q.withPerson != nil || _q.withGroup != nil {
@@ -534,6 +571,12 @@ func (_q *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 		if err := _q.loadNotificationLogs(ctx, query, nodes,
 			func(n *Event) { n.Edges.NotificationLogs = []*NotificationLog{} },
 			func(n *Event, e *NotificationLog) { n.Edges.NotificationLogs = append(n.Edges.NotificationLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSubscription; query != nil {
+		if err := _q.loadSubscription(ctx, query, nodes, nil,
+			func(n *Event, e *Subscription) { n.Edges.Subscription = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -667,6 +710,38 @@ func (_q *EventQuery) loadNotificationLogs(ctx context.Context, query *Notificat
 	}
 	return nil
 }
+func (_q *EventQuery) loadSubscription(ctx context.Context, query *SubscriptionQuery, nodes []*Event, init func(*Event), assign func(*Event, *Subscription)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Event)
+	for i := range nodes {
+		if nodes[i].SubscriptionID == nil {
+			continue
+		}
+		fk := *nodes[i].SubscriptionID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(subscription.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "subscription_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (_q *EventQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -692,6 +767,9 @@ func (_q *EventQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != event.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withSubscription != nil {
+			_spec.Node.AddColumnOnce(event.FieldSubscriptionID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

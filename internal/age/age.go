@@ -64,6 +64,14 @@ func NextAge(birthDate, now time.Time) (int, bool) {
 	return current + 1, true
 }
 
+// YearsSince returns the completed number of years between original and now,
+// and whether a usable year exists. It is AgeAt's arithmetic under a name that
+// reads correctly for memorial events ("N years since"): the count only
+// includes anniversaries that have already occurred.
+func YearsSince(original, now time.Time) (int, bool) {
+	return AgeAt(original, now)
+}
+
 // birthdayOccurred reports whether the birthday has occurred (or is today) in
 // the year of `now`. A Feb 29 birthday is treated as Feb 28 when the year of
 // `now` is not a leap year.

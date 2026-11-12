@@ -9,12 +9,15 @@ import (
 	"log/slog"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/SherClockHolmes/webpush-go"
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/internal/config"
+	"github.com/datey/datey/internal/reminderplan"
+	"github.com/datey/datey/internal/tzutil"
 )
 
 // Store reads and writes the singleton app_config row that backs the
@@ -79,11 +82,26 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.ReminderDays; v != nil {
 		cfg.ReminderDays = *v
 	}
+	if v := row.ReminderStages; v != nil {
+		if st, err := reminderplan.ParseStages(*v); err == nil && len(st) > 0 {
+			cfg.ReminderStages = st
+		}
+	}
+	if v := row.ReminderDigest; v != nil {
+		cfg.ReminderDigest = *v
+	}
 	if v := row.SchedulerCatchup; v != nil {
 		cfg.SchedulerCatchup = *v
 	}
+	if v := row.SubscriptionPollHours; v != nil {
+		cfg.SubscriptionPollHours = *v
+	}
 	if v := row.DateVariant; v != nil {
 		cfg.DateVariant = *v
+	}
+	if v := row.Timezone; v != nil {
+		cfg.Timezone = *v
+		tzutil.SetDefault(*v)
 	}
 	if v := row.LogLevel; v != nil {
 		cfg.LogLevel = *v
@@ -147,6 +165,12 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	}
 	if v := row.NtfyPriority; v != nil {
 		cfg.NtfyPriority = *v
+	}
+	if v := row.PushoverToken; v != nil {
+		cfg.PushoverToken = *v
+	}
+	if v := row.PushoverUser; v != nil {
+		cfg.PushoverUser = *v
 	}
 	if v := row.WebhookURL; v != nil {
 		cfg.WebhookURL = *v
@@ -580,10 +604,22 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 
 	port := parseIntPtr(form, "PORT", errs)
 	schedulerHour := parseIntPtr(form, "SCHEDULER_HOUR", errs)
+	subscriptionPollHours := parseIntPtr(form, "SUBSCRIPTION_POLL_HOURS", errs)
 	reminderDays := parseIntPtr(form, "REMINDER_DAYS", errs)
+	reminderStagesRaw := strings.TrimSpace(form.Get("REMINDER_STAGES"))
+	reminderDigest := form.Get("REMINDER_DIGEST") == "on"
+	var reminderStages []int
+	if reminderStagesRaw != "" {
+		if st, err := reminderplan.ParseStages(reminderStagesRaw); err != nil {
+			errs["REMINDER_STAGES"] = "Reminder stages must be up to 10 comma-separated days between 1 and 365"
+		} else {
+			reminderStages = st
+		}
+	}
 	schedulerCatchupRaw := form.Get("SCHEDULER_CATCHUP")
 	schedulerCatchup := schedulerCatchupRaw == "on"
 	dateVariant := form.Get("DATE_VARIANT")
+	timezone := strings.TrimSpace(form.Get("TIMEZONE"))
 	logLevel := form.Get("LOG_LEVEL")
 	logBufferSize := parseIntPtr(form, "LOG_BUFFER_SIZE", errs)
 	otelEndpoint := form.Get("OTEL_ENDPOINT")
@@ -605,6 +641,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	ntfyTopic := form.Get("NTFY_TOPIC")
 	ntfyToken := form.Get("NTFY_TOKEN")
 	ntfyPriority := parseIntPtr(form, "NTFY_PRIORITY", errs)
+	pushoverToken := form.Get("PUSHOVER_TOKEN")
+	pushoverUser := form.Get("PUSHOVER_USER")
 	webhookURL := form.Get("WEBHOOK_URL")
 	webhookSecret := form.Get("WEBHOOK_SECRET")
 	discordWebhookURL := form.Get("DISCORD_WEBHOOK_URL")
@@ -646,14 +684,35 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	if schedulerHour != nil && (*schedulerHour < 0 || *schedulerHour > 23) {
 		errs["SCHEDULER_HOUR"] = "Scheduler hour must be between 0 and 23"
 	}
+	if subscriptionPollHours != nil && (*subscriptionPollHours < 0 || *subscriptionPollHours > 168) {
+		errs["SUBSCRIPTION_POLL_HOURS"] = "Subscription poll hours must be between 0 and 168"
+	}
 	if reminderDays != nil && (*reminderDays < 1 || *reminderDays > 365) {
 		errs["REMINDER_DAYS"] = "Reminder days must be between 1 and 365"
+	}
+	if len(reminderStages) > 0 {
+		if len(reminderStages) > reminderplan.MaxStages {
+			errs["REMINDER_STAGES"] = "Reminder stages must have at most 10 entries"
+		}
+		for i, st := range reminderStages {
+			if st < reminderplan.MinStage || st > reminderplan.MaxStage {
+				errs["REMINDER_STAGES"] = "Reminder stages must be between 1 and 365"
+				break
+			}
+			if i > 0 && st <= reminderStages[i-1] {
+				errs["REMINDER_STAGES"] = "Reminder stages must be strictly ascending"
+				break
+			}
+		}
 	}
 	if schedulerCatchupRaw != "" && schedulerCatchupRaw != "on" {
 		errs["SCHEDULER_CATCHUP"] = "Catch up missed reminders must be a boolean"
 	}
 	if dateVariant != "" && !validDateVariants[dateVariant] {
 		errs["DATE_VARIANT"] = "Date variant must be one of: european, us"
+	}
+	if timezone != "" && !tzutil.Valid(timezone) {
+		errs["TIMEZONE"] = "Time zone must be a valid IANA name (e.g. Europe/Berlin)"
 	}
 	if logLevel != "" && !validLogLevels[logLevel] {
 		errs["LOG_LEVEL"] = "Log level must be one of: debug, info, warn, error"
@@ -807,8 +866,12 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillablePort(port).
 		SetNillableSchedulerHour(schedulerHour).
 		SetNillableReminderDays(reminderDays).
+		SetNillableReminderStages(nillableStr(reminderStagesRaw)).
+		SetNillableReminderDigest(&reminderDigest).
 		SetNillableSchedulerCatchup(&schedulerCatchup).
+		SetNillableSubscriptionPollHours(subscriptionPollHours).
 		SetNillableDateVariant(nillableStr(dateVariant)).
+		SetNillableTimezone(nillableStr(timezone)).
 		SetNillableLogLevel(nillableStr(logLevel)).
 		SetNillableLogBufferSize(logBufferSize).
 		SetNillableOtelEndpoint(nillableStr(otelEndpoint)).
@@ -830,6 +893,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillableNtfyTopic(nillableStr(ntfyTopic)).
 		SetNillableNtfyToken(nillableStr(ntfyToken)).
 		SetNillableNtfyPriority(ntfyPriority).
+		SetNillablePushoverToken(nillableStr(pushoverToken)).
+		SetNillablePushoverUser(nillableStr(pushoverUser)).
 		SetNillableWebhookURL(nillableStr(webhookURL)).
 		SetNillableWebhookSecret(nillableStr(webhookSecret)).
 		SetNillableDiscordWebhookURL(nillableStr(discordWebhookURL)).
@@ -867,10 +932,18 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	// Hot-reload: mutate cfg in place so notifiers/scheduler/dashboard pick up
 	// changes immediately. Restart-required fields are left untouched.
 	cfg.ReminderDays = deref(reminderDays, cfg.ReminderDays)
+	if reminderStagesRaw == "" {
+		cfg.ReminderStages = []int{cfg.ReminderDays}
+	} else if len(reminderStages) > 0 {
+		cfg.ReminderStages = reminderStages
+	}
+	cfg.ReminderDigest = reminderDigest
 	cfg.SchedulerCatchup = schedulerCatchup
 	if dateVariant != "" {
 		cfg.DateVariant = dateVariant
 	}
+	cfg.Timezone = timezone
+	tzutil.SetDefault(timezone)
 	if logLevel != "" {
 		cfg.LogLevel = logLevel
 	}
@@ -893,6 +966,8 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.NtfyTopic = ntfyTopic
 	cfg.NtfyToken = ntfyToken
 	cfg.NtfyPriority = deref(ntfyPriority, cfg.NtfyPriority)
+	cfg.PushoverToken = pushoverToken
+	cfg.PushoverUser = pushoverUser
 	cfg.WebhookURL = webhookURL
 	cfg.WebhookSecret = webhookSecret
 	cfg.DiscordWebhookURL = discordWebhookURL

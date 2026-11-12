@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/datey/datey/internal/tzutil"
 )
 
 // upcomingEvent is one entry of GET /api/upcoming.
@@ -51,7 +53,7 @@ func (h *Handler) upcomingAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), now.AddDate(0, 0, days))
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC().AddDate(0, 0, -1), now.AddDate(0, 0, days+1))
 	if err != nil {
 		h.renderError(w, r, http.StatusInternalServerError)
 		return
@@ -60,13 +62,19 @@ func (h *Handler) upcomingAPI(w http.ResponseWriter, r *http.Request) {
 	out := make([]upcomingEvent, 0, len(occurrences))
 	for _, occ := range occurrences {
 		e := occ.Event
+		daysRemaining := tzutil.DaysUntil(occ.Date, occurrenceLocation(e), now)
+		// The padded query may include dates that are already past (or beyond
+		// the horizon) in the owner's zone; those are not upcoming for them.
+		if daysRemaining < 0 || daysRemaining > days {
+			continue
+		}
 		person := eventOwnerName(e)
 		out = append(out, upcomingEvent{
 			ID:            e.ID,
 			Person:        person,
 			Type:          e.Type,
 			Date:          occ.Date.Format("2006-01-02"),
-			DaysRemaining: int(occ.Date.Sub(now).Hours() / 24),
+			DaysRemaining: daysRemaining,
 		})
 	}
 

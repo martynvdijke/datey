@@ -27,6 +27,7 @@
   --event-wedding: #059669;
   --event-holiday: #dc2626;
   --event-meeting: #7c3aed;
+  --event-memorial: #475569;
   --event-custom: var(--bs-secondary);
 
   /* Focus & state */
@@ -99,6 +100,7 @@
 .event-type-badge.event-wedding { background-color: var(--event-wedding); color: #000; }
 .event-type-badge.event-holiday { background-color: var(--event-holiday); color: #fff; }
 .event-type-badge.event-meeting { background-color: var(--event-meeting); color: #fff; }
+.event-type-badge.event-memorial { background-color: var(--event-memorial); color: #fff; }
 .event-type-badge.event-custom { background-color: var(--event-custom); color: #fff; }
 
 /* ── Event Card ── */
@@ -114,6 +116,7 @@
 .event-card.event-wedding { border-left-color: var(--event-wedding); }
 .event-card.event-holiday { border-left-color: var(--event-holiday); }
 .event-card.event-meeting { border-left-color: var(--event-meeting); }
+.event-card.event-memorial { border-left-color: var(--event-memorial); }
 .event-card.event-custom { border-left-color: var(--event-custom); }
 .event-card.event-urgent { border-left-color: var(--event-birthday); }
 
@@ -186,6 +189,7 @@
 .fc .fc-event.event-wedding { background-color: var(--event-wedding); border-color: var(--event-wedding); color: var(--calendar-event-wedding-text); }
 .fc .fc-event.event-holiday { background-color: var(--event-holiday); border-color: var(--event-holiday); color: var(--calendar-event-text); }
 .fc .fc-event.event-meeting { background-color: var(--event-meeting); border-color: var(--event-meeting); color: var(--calendar-event-text); }
+.fc .fc-event.event-memorial { background-color: var(--event-memorial); border-color: var(--event-memorial); color: var(--calendar-event-text); }
 .fc .fc-event.event-custom { background-color: var(--event-custom); border-color: var(--event-custom); color: var(--calendar-event-text); }
 
 /* Popovers */
@@ -950,3 +954,489 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
 .offline-banner[hidden] { display: none !important; }
+
+/* ── Read-only share links ── */
+.share-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.share-days {
+  max-width: 6rem;
+}
+.share-link-snippet .share-url-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+}
+.share-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-left: 4px solid var(--bs-secondary, #6c757d);
+  border-radius: 0.5rem;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+  font-size: 0.9rem;
+}
+.share-banner-expiry {
+  color: var(--bs-secondary-color, #6c757d);
+}
+.share-view {
+  max-width: 52rem;
+}
+.share-events .share-event-date {
+  font-weight: 500;
+}
+
+/* ── People Card: gift-gap hint ── */
+
+/* Rendered above the card's stretched link so the chip stays its own target
+   while the rest of the card still opens the person page. */
+.gift-hint {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Notification channel cards: delivery health ── */
+
+/* The health block is server-rendered (no JS); keep the error text wrapping
+   inside the card instead of stretching the grid. */
+.channel-card .channel-health {
+  border-top: 1px solid var(--bs-border-color, #dee2e6);
+  padding-top: 0.75rem;
+}
+.channel-card .channel-health-error {
+  display: inline;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+}
+.channel-card .channel-health dd {
+  margin-bottom: 0.25rem;
+}
+
+/* ═══════════════════════════════════════════
+   Auth surfaces — login, setup, password reset
+   ═══════════════════════════════════════════
+   Appended for the login-page-polish change. Everything is scoped to
+   .auth-shell so the rest of the app is untouched. Theme is read from the
+   data-bs-theme attribute on <html> (light | dark | eink); E-Ink keeps its
+   own !important overrides in eink.css.
+
+   Contrast targets (WCAG 2.2 AA: 4.5:1 text, 3:1 control boundary):
+   ┌────────────────────┬──────────┬──────────┬──────────┐
+   │ Primary button     │ Light    │ Dark     │ E-Ink    │
+   ├────────────────────┼──────────┼──────────┼──────────┤
+   │ label on fill      │ 17.7:1   │ 16.1:1   │ 21:1     │
+   │ fill on card       │ 17.7:1   │ 14.3:1   │ 21:1     │
+   │ hover label        │ 10.2:1   │ 14.1:1   │ 21:1     │
+   │ active label       │ 14.6:1   │ 12.0:1   │ 21:1     │
+   │ disabled label     │  4.8:1   │  6.0:1   │ 21:1     │
+   ├────────────────────┼──────────┼──────────┼──────────┤
+   │ links on card      │  7.9:1   │  7.9:1   │ 21:1     │
+   │ muted / helper     │  7.6:1   │  6.2:1   │ 12.6:1   │
+   │ error text         │  9.2:1   │ 11.5:1   │ 21:1     │
+   └────────────────────┴──────────┴──────────┴──────────┘ */
+
+.auth-shell {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: clamp(1.25rem, 5vh, 3.5rem) 0 1.5rem;
+
+  /* Light theme tokens (default). */
+  --auth-btn-bg: #111827;
+  --auth-btn-fg: #ffffff;
+  --auth-btn-hover-bg: #374151;
+  --auth-btn-hover-fg: #ffffff;
+  --auth-btn-active-bg: #1f2937;
+  --auth-btn-active-fg: #ffffff;
+  --auth-btn-disabled-bg: #6b7280;
+  --auth-btn-disabled-fg: #ffffff;
+  --auth-outline-fg: #111827;
+  --auth-outline-border: #6b7280;
+  --auth-link: #4338ca;
+  --auth-link-hover: #312e81;
+  --auth-muted: #4b5563;
+  --auth-field-error: #b91c1c;
+  --auth-field-border: #868e96;
+  --auth-focus: #111827;
+  --auth-focus-ring: rgba(79, 70, 229, 0.35);
+  --auth-glow: rgba(79, 70, 229, 0.10);
+  --auth-alert-bg: #fef2f2;
+  --auth-alert-fg: #7f1d1d;
+  --auth-alert-border: #b91c1c;
+  --auth-ok-bg: #ecfdf5;
+  --auth-ok-fg: #065f46;
+  --auth-ok-border: #047857;
+}
+
+[data-bs-theme="dark"] .auth-shell {
+  --auth-btn-bg: #f3f4f6;
+  --auth-btn-fg: #111827;
+  --auth-btn-hover-bg: #e5e7eb;
+  --auth-btn-hover-fg: #111827;
+  --auth-btn-active-bg: #d1d5db;
+  --auth-btn-active-fg: #111827;
+  --auth-btn-disabled-bg: #4b5563;
+  --auth-btn-disabled-fg: #e5e7eb;
+  --auth-outline-fg: #f3f4f6;
+  --auth-outline-border: #9ca3af;
+  --auth-link: #a5b4fc;
+  --auth-link-hover: #c7d2fe;
+  --auth-muted: #9ca3af;
+  --auth-field-error: #fca5a5;
+  --auth-field-border: #6b7280;
+  --auth-focus: #ffffff;
+  --auth-focus-ring: rgba(165, 180, 252, 0.45);
+  --auth-glow: rgba(165, 180, 252, 0.10);
+  --auth-alert-bg: #2a1a1c;
+  --auth-alert-fg: #fecaca;
+  --auth-alert-border: #f87171;
+  --auth-ok-bg: #12261f;
+  --auth-ok-fg: #a7f3d0;
+  --auth-ok-border: #34d399;
+}
+
+[data-bs-theme="eink"] .auth-shell {
+  --auth-btn-bg: #000000;
+  --auth-btn-fg: #ffffff;
+  --auth-btn-hover-bg: #000000;
+  --auth-btn-hover-fg: #ffffff;
+  --auth-btn-active-bg: #000000;
+  --auth-btn-active-fg: #ffffff;
+  --auth-btn-disabled-bg: #ffffff;
+  --auth-btn-disabled-fg: #000000;
+  --auth-outline-fg: #000000;
+  --auth-outline-border: #000000;
+  --auth-link: #000000;
+  --auth-link-hover: #000000;
+  --auth-muted: #333333;
+  --auth-field-error: #000000;
+  --auth-field-border: #000000;
+  --auth-focus: #000000;
+  --auth-focus-ring: transparent;
+  --auth-glow: transparent;
+  --auth-alert-bg: #ffffff;
+  --auth-alert-fg: #000000;
+  --auth-alert-border: #000000;
+  --auth-ok-bg: #ffffff;
+  --auth-ok-fg: #000000;
+  --auth-ok-border: #000000;
+}
+
+/* Soft light behind the card so it sits on the page instead of floating. */
+.auth-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 22rem;
+  background: radial-gradient(closest-side, var(--auth-glow), transparent);
+  pointer-events: none;
+}
+
+.auth-shell .login-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 26rem;
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+  animation: auth-rise 320ms var(--ease-out) both;
+}
+
+[data-bs-theme="dark"] .auth-shell .login-card {
+  box-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, 0.35);
+}
+
+@keyframes auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Generous but responsive inner padding: 320px stays comfortable. */
+.auth-shell .login-card .card-body {
+  padding: clamp(1.25rem, 5vw, 2.5rem);
+}
+
+.auth-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.auth-brand .brand-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.25rem;
+  box-shadow: 0 0 0 6px var(--auth-glow);
+}
+
+.auth-shell .login-card .card-title {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+/* ── Fields ── */
+
+.auth-shell .login-card .form-label {
+  color: var(--auth-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.auth-shell .login-card .form-control {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  /* Bootstrap's default input border is ~1.3:1 against the card; 1.4.11
+     (non-text contrast) wants 3:1 for the control boundary. */
+  border-color: var(--auth-field-border);
+}
+
+.auth-shell .login-card .form-control::placeholder {
+  color: var(--auth-muted);
+  opacity: 0.8;
+}
+
+.auth-shell .login-card .form-control:focus,
+.auth-shell .login-card .form-control:focus-visible {
+  border-color: var(--auth-focus);
+  box-shadow: 0 0 0 0.2rem var(--auth-focus-ring);
+}
+
+.auth-shell .login-card .form-text {
+  color: var(--auth-muted);
+}
+
+/* Server-rendered per-field errors (password reset). */
+.auth-field-error {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--auth-field-error);
+}
+
+/* The required asterisk is a <span class="text-danger">, so let it follow the
+   field-error colour instead of Bootstrap's fixed #dc2626 (3.3:1 on dark). */
+.auth-shell .login-card .text-danger {
+  color: var(--auth-field-error) !important;
+}
+
+.auth-shell .login-card .text-muted,
+.auth-shell .login-card .form-text {
+  color: var(--auth-muted) !important;
+}
+
+/* ── Buttons ──
+   Bootstrap drives every state from --bs-btn-* custom properties, so the
+   tokens above cover default, hover, active, disabled and focus at once. */
+
+.auth-shell .login-card .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  text-align: center;
+  touch-action: manipulation;
+}
+
+.auth-shell .login-card .btn-dark {
+  --bs-btn-color: var(--auth-btn-fg);
+  --bs-btn-bg: var(--auth-btn-bg);
+  --bs-btn-border-color: var(--auth-btn-bg);
+  --bs-btn-hover-color: var(--auth-btn-hover-fg);
+  --bs-btn-hover-bg: var(--auth-btn-hover-bg);
+  --bs-btn-hover-border-color: var(--auth-btn-hover-bg);
+  --bs-btn-active-color: var(--auth-btn-active-fg);
+  --bs-btn-active-bg: var(--auth-btn-active-bg);
+  --bs-btn-active-border-color: var(--auth-btn-active-bg);
+  --bs-btn-disabled-color: var(--auth-btn-disabled-fg);
+  --bs-btn-disabled-bg: var(--auth-btn-disabled-bg);
+  --bs-btn-disabled-border-color: var(--auth-btn-disabled-bg);
+  opacity: 1;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.18);
+  transition: background-color var(--transition-fast) var(--ease-out),
+              border-color var(--transition-fast) var(--ease-out),
+              color var(--transition-fast) var(--ease-out),
+              box-shadow var(--transition-fast) var(--ease-out);
+}
+
+/* Replace the old opacity fade: opacity would pull the label under 4.5:1. */
+.auth-shell .login-card .btn-dark:hover {
+  opacity: 1;
+}
+
+.auth-shell .login-card .btn:disabled,
+.auth-shell .login-card .btn.disabled {
+  opacity: 1;
+}
+
+.auth-shell .login-card .btn-outline-dark {
+  --bs-btn-color: var(--auth-outline-fg);
+  --bs-btn-border-color: var(--auth-outline-border);
+  --bs-btn-hover-color: var(--auth-btn-fg);
+  --bs-btn-hover-bg: var(--auth-btn-bg);
+  --bs-btn-hover-border-color: var(--auth-btn-bg);
+  --bs-btn-active-color: var(--auth-btn-fg);
+  --bs-btn-active-bg: var(--auth-btn-bg);
+  --bs-btn-active-border-color: var(--auth-btn-bg);
+  --bs-btn-disabled-color: var(--auth-muted);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--auth-outline-border);
+  font-weight: 500;
+}
+
+/* Keyboard focus: a solid ring offset from the control, visible on both the
+   button fill and the card behind it. */
+.auth-shell .login-card .btn:focus-visible,
+.auth-shell .login-card a:not(.btn):focus-visible {
+  outline: 3px solid var(--auth-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 0.2rem var(--auth-focus-ring);
+}
+
+/* ── Links ── */
+
+.auth-shell .login-card a:not(.btn) {
+  color: var(--auth-link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--transition-fast) var(--ease-out),
+              border-color var(--transition-fast) var(--ease-out);
+}
+
+.auth-shell .login-card a:not(.btn):hover {
+  color: var(--auth-link-hover);
+  border-bottom-color: currentColor;
+}
+
+.auth-links {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+/* 44px touch target for the secondary text links. */
+.auth-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+}
+
+.auth-divider {
+  height: 0;
+  margin: 1.25rem 0;
+  border-top: 1px solid var(--bs-border-color);
+}
+
+/* ── Demo account panel ── */
+
+.auth-shell .login-card .demo-card {
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: none;
+}
+
+.auth-shell .login-card .demo-card .card-body {
+  padding: 1rem;
+}
+
+.auth-shell .login-card .demo-card .h6 {
+  font-weight: 600;
+}
+
+.auth-shell .login-card .demo-card code {
+  padding: 0;
+  background: transparent;
+  color: var(--auth-link);
+  font-weight: 600;
+}
+
+/* ── Inline alerts ── */
+
+.auth-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--auth-alert-border);
+  border-left-width: 4px;
+  border-radius: var(--bs-border-radius);
+  background: var(--auth-alert-bg);
+  color: var(--auth-alert-fg);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.auth-alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.05rem;
+  border-radius: 50%;
+  background: var(--auth-alert-fg);
+  color: var(--auth-alert-bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.auth-alert-success {
+  border-color: var(--auth-ok-border);
+  background: var(--auth-ok-bg);
+  color: var(--auth-ok-fg);
+}
+
+.auth-alert-success .auth-alert-icon {
+  background: var(--auth-ok-fg);
+  color: var(--auth-ok-bg);
+}
+
+/* E-Ink keeps square corners everywhere else; match it. */
+[data-bs-theme="eink"] .auth-alert {
+  border-radius: 0;
+}
+
+/* ── Version footer ── */
+
+.auth-version {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--auth-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Smallest phones: keep the card edge-to-edge inside the container. */
+@media (max-width: 400px) {
+  .auth-shell {
+    padding-top: 1rem;
+  }
+
+  .auth-shell .login-card .card-body {
+    padding: 1.25rem 1rem;
+  }
+}

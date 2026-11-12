@@ -1,0 +1,11 @@
+<div class="share-link-snippet" data-share-snippet>
+  {{if .Error}}
+  <div class="alert alert-danger py-2 px-3 small mb-0 mt-2" role="alert" data-share-error>{{.Error}}</div>
+  {{else}}
+  <div class="input-group input-group-sm mt-2">
+    <input type="text" class="form-control share-url-input" id="share-url" value="{{.URL}}" readonly aria-label="{{T "share.url_label"}}" onclick="this.select()">
+    <button type="button" class="btn btn-outline-secondary" data-share-copy onclick="var i=this.parentNode.querySelector('input');if(i){i.select();if(navigator.clipboard){navigator.clipboard.writeText(i.value);}}}">{{T "share.copy"}}</button>
+  </div>
+  <div class="small text-muted mt-1" data-share-expiry>{{T "share.expires"}} {{.Expires}}</div>
+  {{end}}
+</div>

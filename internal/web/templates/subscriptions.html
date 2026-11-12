@@ -1,0 +1,97 @@
+{{define "content"}}
+<h1 class="mb-4">{{T "subscriptions.title"}}</h1>
+<p class="text-muted">{{T "subscriptions.intro"}}</p>
+
+{{if .Error}}
+  <div class="alert alert-danger" role="alert">{{.Error}}</div>
+{{end}}
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="card-title">{{T "subscriptions.add_title"}}</h5>
+    <form method="POST" action="/settings/subscriptions" class="row g-3 align-items-end">
+      {{template "csrfField" .}}
+      <div class="col-md-4">
+        <label class="form-label" for="new-sub-name">{{T "subscriptions.name"}} {{template "requiredIndicator" .}}</label>
+        <input type="text" class="form-control" id="new-sub-name" name="name" value="{{.FormName}}" maxlength="200" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="new-sub-url">{{T "subscriptions.url"}} {{template "requiredIndicator" .}}</label>
+        <input type="url" class="form-control" id="new-sub-url" name="url" value="{{.FormURL}}" placeholder="{{T "subscriptions.url_placeholder"}}" required>
+      </div>
+      <div class="col-md-2">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="new-sub-enabled" name="enabled" {{if .FormEnabled}}checked{{end}}>
+          <label class="form-check-label" for="new-sub-enabled">{{T "subscriptions.enabled"}}</label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">{{T "subscriptions.add_submit"}}</button>
+      </div>
+    </form>
+    <p class="text-muted small mb-0 mt-2">{{T "subscriptions.add_help"}}</p>
+  </div>
+</div>
+
+{{if .Subscriptions}}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th scope="col">{{T "subscriptions.name"}}</th>
+          <th scope="col">{{T "subscriptions.url"}}</th>
+          <th scope="col">{{T "subscriptions.status"}}</th>
+          <th scope="col">{{T "subscriptions.last_success"}}</th>
+          <th scope="col">{{T "subscriptions.last_error"}}</th>
+          <th scope="col" class="text-end">{{T "subscriptions.actions"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Subscriptions}}
+          <tr>
+            <td>
+              <form id="sub-{{.ID}}" method="POST" action="/settings/subscriptions/{{.ID}}">{{template "csrfField" $}}</form>
+              <input form="sub-{{.ID}}" type="text" class="form-control form-control-sm" name="name" value="{{.Name}}" maxlength="200" required aria-label="{{T "subscriptions.name"}}">
+            </td>
+            <td>
+              <input form="sub-{{.ID}}" type="url" class="form-control form-control-sm" name="url" value="{{.URL}}" required aria-label="{{T "subscriptions.url"}}">
+            </td>
+            <td>
+              {{if .Enabled}}
+                <span class="badge bg-success">{{T "subscriptions.status_enabled"}}</span>
+              {{else}}
+                <span class="badge bg-secondary">{{T "subscriptions.status_disabled"}}</span>
+              {{end}}
+              <div class="form-check mt-1">
+                <input form="sub-{{.ID}}" class="form-check-input" type="checkbox" id="sub-enabled-{{.ID}}" name="enabled" {{if .Enabled}}checked{{end}}>
+                <label class="form-check-label small" for="sub-enabled-{{.ID}}">{{T "subscriptions.enabled"}}</label>
+              </div>
+            </td>
+            <td>
+              {{if .LastSuccessAt}}{{.LastSuccessAt.Format "Jan 2, 2006 15:04"}}{{else}}{{T "subscriptions.never"}}{{end}}
+            </td>
+            <td>
+              {{if .LastError}}<span class="text-danger small">{{.LastError}}</span>{{else}}—{{end}}
+            </td>
+            <td class="text-end">
+              <button form="sub-{{.ID}}" type="submit" class="btn btn-sm btn-outline-primary">{{T "subscriptions.save"}}</button>
+              <form method="POST" action="/settings/subscriptions/{{.ID}}/toggle" class="d-inline">
+                {{template "csrfField" $}}
+                <button type="submit" class="btn btn-sm btn-outline-secondary">{{if .Enabled}}{{T "subscriptions.disable"}}{{else}}{{T "subscriptions.enable"}}{{end}}</button>
+              </form>
+              <form method="POST" action="/settings/subscriptions/{{.ID}}/refresh" class="d-inline">
+                {{template "csrfField" $}}
+                <button type="submit" class="btn btn-sm btn-outline-primary">{{T "subscriptions.refresh"}}</button>
+              </form>
+              <form method="POST" action="/settings/subscriptions/{{.ID}}/delete" class="d-inline">
+                {{template "csrfField" $}}
+                <button type="submit" class="btn btn-sm btn-outline-danger" hx-confirm="{{T "subscriptions.delete_confirm"}}">{{T "subscriptions.delete"}}</button>
+              </form>
+            </td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+{{else}}
+  {{template "emptyState" (dict "Message" (T "subscriptions.empty"))}}
+{{end}}
+{{end}}

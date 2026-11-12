@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -9,7 +10,9 @@ import (
 	"time"
 
 	"github.com/datey/datey/internal/age"
+	"github.com/datey/datey/internal/i18n"
 	"github.com/datey/datey/internal/milestone"
+	"github.com/datey/datey/internal/tzutil"
 )
 
 func wantsJSON(r *http.Request) bool {
@@ -48,6 +51,8 @@ type UpcomingEventDTO struct {
 	DaysRemaining  int     `json:"days_remaining"`
 	TurningAge     *int    `json:"turning_age"`
 	YearsTogether  *int    `json:"years_together"`
+	YearsSince     *int    `json:"years_since"`
+	YearsSinceText *string `json:"years_since_text"`
 	CalendarSystem string  `json:"calendar_system"`
 	LunarLabel     *string `json:"lunar_label"`
 	IsLeapMonth    bool    `json:"is_leap_month"`
@@ -165,12 +170,24 @@ func (h *Handler) dashboardJSON(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	end := now.AddDate(0, 0, reminderDays)
-	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC(), end)
+	occurrences, err := h.events.ListUpcomingOccurrences(r.Context(), todayStartUTC().AddDate(0, 0, -1), end.AddDate(0, 0, 1))
 	if err != nil {
 		slog.Error("dashboard json: list upcoming", "error", err)
 		writeAPIError(w, http.StatusInternalServerError, "internal", "failed")
 		return
 	}
+	// Keep only occurrences that fall inside the window measured in their
+	// owner's own timezone (the query above is padded by a day on each side to
+	// cover zones ahead of and behind the server).
+	inWindow := occurrences[:0]
+	for _, occ := range occurrences {
+		d := tzutil.DaysUntil(occ.Date, occurrenceLocation(occ.Event), now)
+		if d < 0 || d > reminderDays {
+			continue
+		}
+		inWindow = append(inWindow, occ)
+	}
+	occurrences = inWindow
 	hasBirthday := false
 	for _, occ := range occurrences {
 		if occ.Event.Type == "birthday" {
@@ -188,7 +205,11 @@ func (h *Handler) dashboardJSON(w http.ResponseWriter, r *http.Request) {
 	for _, occ := range occurrences {
 		e := occ.Event
 		occDate := occ.Date
-		days := calendarDayDelta(dateOnly(now, now.Location()), dateOnly(occDate, time.UTC))
+		// Days remaining is a calendar count in the owner's zone: an event
+		// dated "tomorrow" for a person in Auckland is not "today" because the
+		// server in UTC just passed midnight.
+		loc := occurrenceLocation(e)
+		days := tzutil.DaysUntil(occDate, loc, now)
 		if days < 0 {
 			days = 0
 		}
@@ -221,10 +242,10 @@ func (h *Handler) dashboardJSON(w http.ResponseWriter, r *http.Request) {
 			dto.PersonName = eventOwnerName(e)
 		}
 		if e.Type == "birthday" && e.Date.Year() > 1 {
-			if e.CalendarSystem == "lunar" && e.LunarMonth != nil && e.LunarDay != nil {
+			if e.CalendarSystem != "" && e.CalendarSystem != "gregorian" && e.LunarMonth != nil && e.LunarDay != nil {
 				years := now.Year() - e.Date.Year()
 				disp, _ := displayDateForEvent(e, now)
-				if dateOnly(disp, time.UTC).After(dateOnly(now, now.Location())) {
+				if tzutil.DaysUntil(disp, loc, now) > 0 {
 					years--
 				}
 				if years >= 0 {
@@ -245,8 +266,19 @@ func (h *Handler) dashboardJSON(w http.ResponseWriter, r *http.Request) {
 				dto.YearsTogether = &yt
 			}
 		}
-		if e.CalendarSystem == "lunar" && e.LunarMonth != nil && e.LunarDay != nil {
-			lbl := formatLunarNotation(e)
+		if e.Type == "memorial" && e.Date.Year() > 1 {
+			if ys, ok := age.YearsSince(e.Date, occDate); ok {
+				dto.YearsSince = &ys
+				key := "age.years_since"
+				if ys == 1 {
+					key = "age.year_since"
+				}
+				text := fmt.Sprintf(i18n.T(localeFromRequest(r), key), ys)
+				dto.YearsSinceText = &text
+			}
+		}
+		if e.CalendarSystem != "" && e.CalendarSystem != "gregorian" && e.LunarMonth != nil && e.LunarDay != nil {
+			lbl := formatCalendarNotation(e)
 			dto.LunarLabel = &lbl
 		}
 		if ok, label := milestone.IsMilestone(e.Type, e.Date, occDate); ok {

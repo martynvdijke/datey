@@ -1,9 +1,9 @@
 // Package ical renders RFC 5545 iCalendar documents for the public iCal feed.
 //
 // The generator is intentionally minimal: it emits a VCALENDAR with one
-// VEVENT per event, supports all-day and timed events, optional yearly
-// recurrence, and RFC 5545 text escaping and line folding. No external
-// dependency is required.
+// VEVENT per event, supports all-day and timed events, recurrence expressed as
+// a raw RRULE (e.g. FREQ=YEARLY) and/or explicit RDATE instances, plus
+// RFC 5545 text escaping and line folding. No external dependency is required.
 package ical
 
 import (
@@ -48,9 +48,21 @@ type Event struct {
 	// Duration is the event length used to compute DTEND when timed.
 	Duration time.Duration
 
-	// RecurYearly emits RRULE:FREQ=YEARLY so annual dates (birthdays,
-	// anniversaries, ...) repeat every year in subscribed calendars.
-	RecurYearly bool
+	// RRule is the raw value of the recurrence rule, emitted as
+	// "RRULE:<RRule>" (for example "FREQ=YEARLY" or
+	// "FREQ=YEARLY;COUNT=12"). Empty means the event does not repeat.
+	//
+	// Only rules the calendar client can reproduce faithfully belong here;
+	// schedules the app expands differently from RFC 5545 (month-end
+	// clamping, every-N-days) must be materialized into ExtraDates instead.
+	RRule string
+
+	// ExtraDates lists additional occurrence dates, emitted as RDATE
+	// instances (VALUE=DATE for all-day events, floating DATE-TIME for timed
+	// ones). Use it for series that cannot be expressed faithfully as an
+	// RRULE. The event's Date is already the first instance and must not be
+	// repeated here.
+	ExtraDates []time.Time
 }
 
 // Calendar renders a complete VCALENDAR document containing the given events.
@@ -85,8 +97,17 @@ func writeVEVENT(b *strings.Builder, e Event, dtstamp time.Time) {
 	if e.Description != "" {
 		writeProperty(b, "DESCRIPTION", escapeText(e.Description))
 	}
-	if e.RecurYearly {
-		writeProperty(b, "RRULE", "FREQ=YEARLY")
+	if e.RRule != "" {
+		writeProperty(b, "RRULE", e.RRule)
+	}
+	for _, d := range e.ExtraDates {
+		if e.AllDay {
+			writeProperty(b, "RDATE;VALUE=DATE", d.Format("20060102"))
+			continue
+		}
+		start := time.Date(d.Year(), d.Month(), d.Day(),
+			e.StartHour, e.StartMinute, 0, 0, d.Location())
+		writeProperty(b, "RDATE", start.Format("20060102T150405"))
 	}
 	b.WriteString("END:VEVENT\r\n")
 }

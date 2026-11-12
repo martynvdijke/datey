@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/url"
+	"reflect"
 	"testing"
 
 	"entgo.io/ent/dialect"
@@ -81,7 +82,7 @@ func TestOverlay_NullRow_KeepsEnvValues(t *testing.T) {
 	if err := s.Overlay(ctx, got); err != nil {
 		t.Fatalf("overlay: %v", err)
 	}
-	if *got != *want {
+	if !reflect.DeepEqual(got, want) {
 		t.Errorf("overlay on all-null row changed cfg:\n got  %+v\n want %+v", *got, *want)
 	}
 }
@@ -448,7 +449,7 @@ func TestApplyForm_ValidationErrors(t *testing.T) {
 				}
 			}
 			// cfg must not be mutated when validation fails.
-			if *cfg != *base {
+			if !reflect.DeepEqual(*cfg, *base) {
 				t.Errorf("validation failure mutated cfg:\n got  %+v\n want %+v", *cfg, *base)
 			}
 		})

@@ -118,6 +118,8 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"event_form.html",
 		"calendar.html",
 		"settings.html",
+		"settings_notifications.html",
+		"subscriptions.html",
 		"error.html",
 		"login.html",
 		"setup.html",
@@ -131,6 +133,9 @@ func loadTemplates() (map[string]*template.Template, error) {
 		"privacy.html",
 		"terms.html",
 		"account_delete.html",
+		"share_view.html",
+		"action_confirm.html",
+		"portable_import.html",
 	}
 
 	templates := make(map[string]*template.Template, len(pages))
@@ -146,6 +151,7 @@ func loadTemplates() (map[string]*template.Template, error) {
 	// (no base layout).
 	partials := []string{
 		"immich_sync_result.html",
+		"share_link.html",
 	}
 	for _, partial := range partials {
 		t, err := template.New(partial).Funcs(funcMap).ParseFS(templateFS, "templates/"+partial)

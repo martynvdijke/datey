@@ -29,6 +29,12 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldPurchasedAt holds the string denoting the purchased_at field in the database.
+	FieldPurchasedAt = "purchased_at"
+	// FieldGivenAt holds the string denoting the given_at field in the database.
+	FieldGivenAt = "given_at"
+	// FieldArchivedAt holds the string denoting the archived_at field in the database.
+	FieldArchivedAt = "archived_at"
 	// EdgePerson holds the string denoting the person edge name in mutations.
 	EdgePerson = "person"
 	// Table holds the table name of the giftidea in the database.
@@ -52,6 +58,9 @@ var Columns = []string{
 	FieldStatus,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldPurchasedAt,
+	FieldGivenAt,
+	FieldArchivedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "gift_ideas"
@@ -159,6 +168,21 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByPurchasedAt orders the results by the purchased_at field.
+func ByPurchasedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPurchasedAt, opts...).ToFunc()
+}
+
+// ByGivenAt orders the results by the given_at field.
+func ByGivenAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGivenAt, opts...).ToFunc()
+}
+
+// ByArchivedAt orders the results by the archived_at field.
+func ByArchivedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArchivedAt, opts...).ToFunc()
 }
 
 // ByPersonField orders the results by person field.

@@ -18,6 +18,7 @@ import (
 	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/ent/auditentry"
+	"github.com/datey/datey/ent/channelhealth"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/giftidea"
@@ -32,6 +33,8 @@ import (
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/snooze"
+	"github.com/datey/datey/ent/subscription"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
 	"github.com/datey/datey/ent/usernotificationchannel"
@@ -48,6 +51,8 @@ type Client struct {
 	AppConfig *AppConfigClient
 	// AuditEntry is the client for interacting with the AuditEntry builders.
 	AuditEntry *AuditEntryClient
+	// ChannelHealth is the client for interacting with the ChannelHealth builders.
+	ChannelHealth *ChannelHealthClient
 	// Contact is the client for interacting with the Contact builders.
 	Contact *ContactClient
 	// Event is the client for interacting with the Event builders.
@@ -76,6 +81,10 @@ type Client struct {
 	Relationship *RelationshipClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// Snooze is the client for interacting with the Snooze builders.
+	Snooze *SnoozeClient
+	// Subscription is the client for interacting with the Subscription builders.
+	Subscription *SubscriptionClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// User is the client for interacting with the User builders.
@@ -96,6 +105,7 @@ func (c *Client) init() {
 	c.ApiToken = NewApiTokenClient(c.config)
 	c.AppConfig = NewAppConfigClient(c.config)
 	c.AuditEntry = NewAuditEntryClient(c.config)
+	c.ChannelHealth = NewChannelHealthClient(c.config)
 	c.Contact = NewContactClient(c.config)
 	c.Event = NewEventClient(c.config)
 	c.GiftIdea = NewGiftIdeaClient(c.config)
@@ -110,6 +120,8 @@ func (c *Client) init() {
 	c.RecurringRule = NewRecurringRuleClient(c.config)
 	c.Relationship = NewRelationshipClient(c.config)
 	c.Session = NewSessionClient(c.config)
+	c.Snooze = NewSnoozeClient(c.config)
+	c.Subscription = NewSubscriptionClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserNotificationChannel = NewUserNotificationChannelClient(c.config)
@@ -208,6 +220,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ApiToken:                NewApiTokenClient(cfg),
 		AppConfig:               NewAppConfigClient(cfg),
 		AuditEntry:              NewAuditEntryClient(cfg),
+		ChannelHealth:           NewChannelHealthClient(cfg),
 		Contact:                 NewContactClient(cfg),
 		Event:                   NewEventClient(cfg),
 		GiftIdea:                NewGiftIdeaClient(cfg),
@@ -222,6 +235,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		RecurringRule:           NewRecurringRuleClient(cfg),
 		Relationship:            NewRelationshipClient(cfg),
 		Session:                 NewSessionClient(cfg),
+		Snooze:                  NewSnoozeClient(cfg),
+		Subscription:            NewSubscriptionClient(cfg),
 		Tag:                     NewTagClient(cfg),
 		User:                    NewUserClient(cfg),
 		UserNotificationChannel: NewUserNotificationChannelClient(cfg),
@@ -247,6 +262,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ApiToken:                NewApiTokenClient(cfg),
 		AppConfig:               NewAppConfigClient(cfg),
 		AuditEntry:              NewAuditEntryClient(cfg),
+		ChannelHealth:           NewChannelHealthClient(cfg),
 		Contact:                 NewContactClient(cfg),
 		Event:                   NewEventClient(cfg),
 		GiftIdea:                NewGiftIdeaClient(cfg),
@@ -261,6 +277,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		RecurringRule:           NewRecurringRuleClient(cfg),
 		Relationship:            NewRelationshipClient(cfg),
 		Session:                 NewSessionClient(cfg),
+		Snooze:                  NewSnoozeClient(cfg),
+		Subscription:            NewSubscriptionClient(cfg),
 		Tag:                     NewTagClient(cfg),
 		User:                    NewUserClient(cfg),
 		UserNotificationChannel: NewUserNotificationChannelClient(cfg),
@@ -293,10 +311,11 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.ApiToken, c.AppConfig, c.AuditEntry, c.Contact, c.Event, c.GiftIdea, c.Group,
-		c.GroupNote, c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
-		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Relationship, c.Session,
-		c.Tag, c.User, c.UserNotificationChannel,
+		c.ApiToken, c.AppConfig, c.AuditEntry, c.ChannelHealth, c.Contact, c.Event,
+		c.GiftIdea, c.Group, c.GroupNote, c.MigrationLog, c.NotificationLog,
+		c.PasswordResetToken, c.Person, c.PersonNote, c.PushSubscription,
+		c.RecurringRule, c.Relationship, c.Session, c.Snooze, c.Subscription, c.Tag,
+		c.User, c.UserNotificationChannel,
 	} {
 		n.Use(hooks...)
 	}
@@ -306,10 +325,11 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.ApiToken, c.AppConfig, c.AuditEntry, c.Contact, c.Event, c.GiftIdea, c.Group,
-		c.GroupNote, c.MigrationLog, c.NotificationLog, c.PasswordResetToken, c.Person,
-		c.PersonNote, c.PushSubscription, c.RecurringRule, c.Relationship, c.Session,
-		c.Tag, c.User, c.UserNotificationChannel,
+		c.ApiToken, c.AppConfig, c.AuditEntry, c.ChannelHealth, c.Contact, c.Event,
+		c.GiftIdea, c.Group, c.GroupNote, c.MigrationLog, c.NotificationLog,
+		c.PasswordResetToken, c.Person, c.PersonNote, c.PushSubscription,
+		c.RecurringRule, c.Relationship, c.Session, c.Snooze, c.Subscription, c.Tag,
+		c.User, c.UserNotificationChannel,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -324,6 +344,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AppConfig.mutate(ctx, m)
 	case *AuditEntryMutation:
 		return c.AuditEntry.mutate(ctx, m)
+	case *ChannelHealthMutation:
+		return c.ChannelHealth.mutate(ctx, m)
 	case *ContactMutation:
 		return c.Contact.mutate(ctx, m)
 	case *EventMutation:
@@ -352,6 +374,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Relationship.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
+	case *SnoozeMutation:
+		return c.Snooze.mutate(ctx, m)
+	case *SubscriptionMutation:
+		return c.Subscription.mutate(ctx, m)
 	case *TagMutation:
 		return c.Tag.mutate(ctx, m)
 	case *UserMutation:
@@ -778,6 +804,139 @@ func (c *AuditEntryClient) mutate(ctx context.Context, m *AuditEntryMutation) (V
 	}
 }
 
+// ChannelHealthClient is a client for the ChannelHealth schema.
+type ChannelHealthClient struct {
+	config
+}
+
+// NewChannelHealthClient returns a client for the ChannelHealth from the given config.
+func NewChannelHealthClient(c config) *ChannelHealthClient {
+	return &ChannelHealthClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `channelhealth.Hooks(f(g(h())))`.
+func (c *ChannelHealthClient) Use(hooks ...Hook) {
+	c.hooks.ChannelHealth = append(c.hooks.ChannelHealth, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `channelhealth.Intercept(f(g(h())))`.
+func (c *ChannelHealthClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChannelHealth = append(c.inters.ChannelHealth, interceptors...)
+}
+
+// Create returns a builder for creating a ChannelHealth entity.
+func (c *ChannelHealthClient) Create() *ChannelHealthCreate {
+	mutation := newChannelHealthMutation(c.config, OpCreate)
+	return &ChannelHealthCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChannelHealth entities.
+func (c *ChannelHealthClient) CreateBulk(builders ...*ChannelHealthCreate) *ChannelHealthCreateBulk {
+	return &ChannelHealthCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ChannelHealthClient) MapCreateBulk(slice any, setFunc func(*ChannelHealthCreate, int)) *ChannelHealthCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ChannelHealthCreateBulk{err: fmt.Errorf("calling to ChannelHealthClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ChannelHealthCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ChannelHealthCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChannelHealth.
+func (c *ChannelHealthClient) Update() *ChannelHealthUpdate {
+	mutation := newChannelHealthMutation(c.config, OpUpdate)
+	return &ChannelHealthUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChannelHealthClient) UpdateOne(_m *ChannelHealth) *ChannelHealthUpdateOne {
+	mutation := newChannelHealthMutation(c.config, OpUpdateOne, withChannelHealth(_m))
+	return &ChannelHealthUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChannelHealthClient) UpdateOneID(id int) *ChannelHealthUpdateOne {
+	mutation := newChannelHealthMutation(c.config, OpUpdateOne, withChannelHealthID(id))
+	return &ChannelHealthUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChannelHealth.
+func (c *ChannelHealthClient) Delete() *ChannelHealthDelete {
+	mutation := newChannelHealthMutation(c.config, OpDelete)
+	return &ChannelHealthDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChannelHealthClient) DeleteOne(_m *ChannelHealth) *ChannelHealthDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChannelHealthClient) DeleteOneID(id int) *ChannelHealthDeleteOne {
+	builder := c.Delete().Where(channelhealth.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChannelHealthDeleteOne{builder}
+}
+
+// Query returns a query builder for ChannelHealth.
+func (c *ChannelHealthClient) Query() *ChannelHealthQuery {
+	return &ChannelHealthQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChannelHealth},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChannelHealth entity by its id.
+func (c *ChannelHealthClient) Get(ctx context.Context, id int) (*ChannelHealth, error) {
+	return c.Query().Where(channelhealth.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChannelHealthClient) GetX(ctx context.Context, id int) *ChannelHealth {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ChannelHealthClient) Hooks() []Hook {
+	return c.hooks.ChannelHealth
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChannelHealthClient) Interceptors() []Interceptor {
+	return c.inters.ChannelHealth
+}
+
+func (c *ChannelHealthClient) mutate(ctx context.Context, m *ChannelHealthMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChannelHealthCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChannelHealthUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChannelHealthUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChannelHealthDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChannelHealth mutation op: %q", m.Op())
+	}
+}
+
 // ContactClient is a client for the Contact schema.
 type ContactClient struct {
 	config
@@ -1092,6 +1251,22 @@ func (c *EventClient) QueryNotificationLogs(_m *Event) *NotificationLogQuery {
 			sqlgraph.From(event.Table, event.FieldID, id),
 			sqlgraph.To(notificationlog.Table, notificationlog.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, event.NotificationLogsTable, event.NotificationLogsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubscription queries the subscription edge of a Event.
+func (c *EventClient) QuerySubscription(_m *Event) *SubscriptionQuery {
+	query := (&SubscriptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(event.Table, event.FieldID, id),
+			sqlgraph.To(subscription.Table, subscription.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, event.SubscriptionTable, event.SubscriptionColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -3024,6 +3199,288 @@ func (c *SessionClient) mutate(ctx context.Context, m *SessionMutation) (Value, 
 	}
 }
 
+// SnoozeClient is a client for the Snooze schema.
+type SnoozeClient struct {
+	config
+}
+
+// NewSnoozeClient returns a client for the Snooze from the given config.
+func NewSnoozeClient(c config) *SnoozeClient {
+	return &SnoozeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `snooze.Hooks(f(g(h())))`.
+func (c *SnoozeClient) Use(hooks ...Hook) {
+	c.hooks.Snooze = append(c.hooks.Snooze, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `snooze.Intercept(f(g(h())))`.
+func (c *SnoozeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Snooze = append(c.inters.Snooze, interceptors...)
+}
+
+// Create returns a builder for creating a Snooze entity.
+func (c *SnoozeClient) Create() *SnoozeCreate {
+	mutation := newSnoozeMutation(c.config, OpCreate)
+	return &SnoozeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Snooze entities.
+func (c *SnoozeClient) CreateBulk(builders ...*SnoozeCreate) *SnoozeCreateBulk {
+	return &SnoozeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SnoozeClient) MapCreateBulk(slice any, setFunc func(*SnoozeCreate, int)) *SnoozeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SnoozeCreateBulk{err: fmt.Errorf("calling to SnoozeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SnoozeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SnoozeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Snooze.
+func (c *SnoozeClient) Update() *SnoozeUpdate {
+	mutation := newSnoozeMutation(c.config, OpUpdate)
+	return &SnoozeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SnoozeClient) UpdateOne(_m *Snooze) *SnoozeUpdateOne {
+	mutation := newSnoozeMutation(c.config, OpUpdateOne, withSnooze(_m))
+	return &SnoozeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SnoozeClient) UpdateOneID(id int) *SnoozeUpdateOne {
+	mutation := newSnoozeMutation(c.config, OpUpdateOne, withSnoozeID(id))
+	return &SnoozeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Snooze.
+func (c *SnoozeClient) Delete() *SnoozeDelete {
+	mutation := newSnoozeMutation(c.config, OpDelete)
+	return &SnoozeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SnoozeClient) DeleteOne(_m *Snooze) *SnoozeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SnoozeClient) DeleteOneID(id int) *SnoozeDeleteOne {
+	builder := c.Delete().Where(snooze.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SnoozeDeleteOne{builder}
+}
+
+// Query returns a query builder for Snooze.
+func (c *SnoozeClient) Query() *SnoozeQuery {
+	return &SnoozeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSnooze},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Snooze entity by its id.
+func (c *SnoozeClient) Get(ctx context.Context, id int) (*Snooze, error) {
+	return c.Query().Where(snooze.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SnoozeClient) GetX(ctx context.Context, id int) *Snooze {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SnoozeClient) Hooks() []Hook {
+	return c.hooks.Snooze
+}
+
+// Interceptors returns the client interceptors.
+func (c *SnoozeClient) Interceptors() []Interceptor {
+	return c.inters.Snooze
+}
+
+func (c *SnoozeClient) mutate(ctx context.Context, m *SnoozeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SnoozeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SnoozeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SnoozeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SnoozeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Snooze mutation op: %q", m.Op())
+	}
+}
+
+// SubscriptionClient is a client for the Subscription schema.
+type SubscriptionClient struct {
+	config
+}
+
+// NewSubscriptionClient returns a client for the Subscription from the given config.
+func NewSubscriptionClient(c config) *SubscriptionClient {
+	return &SubscriptionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `subscription.Hooks(f(g(h())))`.
+func (c *SubscriptionClient) Use(hooks ...Hook) {
+	c.hooks.Subscription = append(c.hooks.Subscription, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `subscription.Intercept(f(g(h())))`.
+func (c *SubscriptionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Subscription = append(c.inters.Subscription, interceptors...)
+}
+
+// Create returns a builder for creating a Subscription entity.
+func (c *SubscriptionClient) Create() *SubscriptionCreate {
+	mutation := newSubscriptionMutation(c.config, OpCreate)
+	return &SubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Subscription entities.
+func (c *SubscriptionClient) CreateBulk(builders ...*SubscriptionCreate) *SubscriptionCreateBulk {
+	return &SubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SubscriptionClient) MapCreateBulk(slice any, setFunc func(*SubscriptionCreate, int)) *SubscriptionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SubscriptionCreateBulk{err: fmt.Errorf("calling to SubscriptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SubscriptionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Subscription.
+func (c *SubscriptionClient) Update() *SubscriptionUpdate {
+	mutation := newSubscriptionMutation(c.config, OpUpdate)
+	return &SubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SubscriptionClient) UpdateOne(_m *Subscription) *SubscriptionUpdateOne {
+	mutation := newSubscriptionMutation(c.config, OpUpdateOne, withSubscription(_m))
+	return &SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SubscriptionClient) UpdateOneID(id int) *SubscriptionUpdateOne {
+	mutation := newSubscriptionMutation(c.config, OpUpdateOne, withSubscriptionID(id))
+	return &SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Subscription.
+func (c *SubscriptionClient) Delete() *SubscriptionDelete {
+	mutation := newSubscriptionMutation(c.config, OpDelete)
+	return &SubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SubscriptionClient) DeleteOne(_m *Subscription) *SubscriptionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SubscriptionClient) DeleteOneID(id int) *SubscriptionDeleteOne {
+	builder := c.Delete().Where(subscription.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SubscriptionDeleteOne{builder}
+}
+
+// Query returns a query builder for Subscription.
+func (c *SubscriptionClient) Query() *SubscriptionQuery {
+	return &SubscriptionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSubscription},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Subscription entity by its id.
+func (c *SubscriptionClient) Get(ctx context.Context, id int) (*Subscription, error) {
+	return c.Query().Where(subscription.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SubscriptionClient) GetX(ctx context.Context, id int) *Subscription {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEvents queries the events edge of a Subscription.
+func (c *SubscriptionClient) QueryEvents(_m *Subscription) *EventQuery {
+	query := (&EventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subscription.Table, subscription.FieldID, id),
+			sqlgraph.To(event.Table, event.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, subscription.EventsTable, subscription.EventsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SubscriptionClient) Hooks() []Hook {
+	return c.hooks.Subscription
+}
+
+// Interceptors returns the client interceptors.
+func (c *SubscriptionClient) Interceptors() []Interceptor {
+	return c.inters.Subscription
+}
+
+func (c *SubscriptionClient) mutate(ctx context.Context, m *SubscriptionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Subscription mutation op: %q", m.Op())
+	}
+}
+
 // TagClient is a client for the Tag schema.
 type TagClient struct {
 	config
@@ -3554,15 +4011,15 @@ func (c *UserNotificationChannelClient) mutate(ctx context.Context, m *UserNotif
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ApiToken, AppConfig, AuditEntry, Contact, Event, GiftIdea, Group, GroupNote,
-		MigrationLog, NotificationLog, PasswordResetToken, Person, PersonNote,
-		PushSubscription, RecurringRule, Relationship, Session, Tag, User,
-		UserNotificationChannel []ent.Hook
+		ApiToken, AppConfig, AuditEntry, ChannelHealth, Contact, Event, GiftIdea, Group,
+		GroupNote, MigrationLog, NotificationLog, PasswordResetToken, Person,
+		PersonNote, PushSubscription, RecurringRule, Relationship, Session, Snooze,
+		Subscription, Tag, User, UserNotificationChannel []ent.Hook
 	}
 	inters struct {
-		ApiToken, AppConfig, AuditEntry, Contact, Event, GiftIdea, Group, GroupNote,
-		MigrationLog, NotificationLog, PasswordResetToken, Person, PersonNote,
-		PushSubscription, RecurringRule, Relationship, Session, Tag, User,
-		UserNotificationChannel []ent.Interceptor
+		ApiToken, AppConfig, AuditEntry, ChannelHealth, Contact, Event, GiftIdea, Group,
+		GroupNote, MigrationLog, NotificationLog, PasswordResetToken, Person,
+		PersonNote, PushSubscription, RecurringRule, Relationship, Session, Snooze,
+		Subscription, Tag, User, UserNotificationChannel []ent.Interceptor
 	}
 )

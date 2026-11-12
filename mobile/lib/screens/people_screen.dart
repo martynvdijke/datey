@@ -6,6 +6,7 @@ import '../services/api_client.dart';
 import '../services/storage_service.dart';
 import '../widgets/person_avatar.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/person_form_sheet.dart';
 import '../utils/formatters.dart';
 
 class PeopleScreen extends ConsumerStatefulWidget {
@@ -99,6 +100,16 @@ class _PeopleScreenState extends ConsumerState<PeopleScreen> {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+          builder: (_) => PersonFormSheet(onSaved: () => ref.invalidate(peopleProvider)),
+        ),
+        icon: const Icon(Icons.person_add_alt_1),
+        label: const Text('Add person'),
       ),
       body: Column(children: [
         // Group filter chips

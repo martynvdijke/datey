@@ -5,6 +5,20 @@
 <h1 class="mb-1">{{.Group.Name}}</h1>
 {{if .Group.Description}}<p class="text-muted mb-4">{{.Group.Description}}</p>{{else}}<div class="mb-4"></div>{{end}}
 
+<!-- Read-only share link (expiring, revocable by rotating the feed key) -->
+<div class="share-bar mb-4">
+  <form action="/groups/{{.Group.ID}}/share" method="POST"
+        hx-post="/groups/{{.Group.ID}}/share" hx-target="#share-link-result" hx-swap="innerHTML"
+        class="d-flex flex-wrap gap-2 align-items-center">
+    {{template "csrfField" .}}
+    <button type="submit" class="btn btn-outline-secondary btn-sm">{{T "share.create"}}</button>
+    <label class="form-label small text-muted mb-0" for="share-days-group">{{T "share.days_label"}}</label>
+    <input type="number" class="form-control form-control-sm share-days" id="share-days-group" name="days"
+           min="1" max="90" value="30" style="width:5rem" aria-label="{{T "share.days_label"}}">
+  </form>
+  <div id="share-link-result" aria-live="polite"></div>
+</div>
+
 <div class="row g-4">
   <!-- Members -->
   <div class="col-lg-6">
@@ -74,6 +88,7 @@
                 <td>{{.Date}}</td>
                 <td class="small text-muted">{{.Description}}</td>
                 <td class="text-end">
+                  <a href="/events/{{.ID}}/edit" class="btn btn-outline-secondary btn-sm py-0">Edit</a>
                   <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest tr" hx-swap="outerHTML">
                     {{template "csrfField" $}}
                     <button class="btn btn-outline-danger btn-sm py-0" type="submit">

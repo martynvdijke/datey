@@ -1,0 +1,133 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">{{T "data_quality.title"}}</h1>
+  <a href="/people" class="btn btn-outline-secondary">{{T "data_quality.back"}}</a>
+</div>
+
+<p class="text-muted">{{T "data_quality.subtitle"}}</p>
+
+<div class="alert alert-info" role="status" aria-live="polite">
+  <ul class="mb-0">
+    <li data-summary="missing-birth-year">{{.SummaryMissingBirthYear}}</li>
+    <li data-summary="missing-photo">{{.SummaryMissingPhoto}}</li>
+    <li data-summary="birthday-soon">{{.SummaryBirthdaySoon}}</li>
+    <li data-summary="duplicates">{{.SummaryDuplicates}}</li>
+  </ul>
+</div>
+
+<section class="card mb-4" id="dq-missing-birth-year" aria-labelledby="dq-missing-birth-year-heading">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="h6 mb-0" id="dq-missing-birth-year-heading">{{T "data_quality.missing_birth_year"}}</h2>
+    <span class="badge text-bg-secondary">{{len .MissingBirthYear}}</span>
+  </div>
+  {{if .MissingBirthYear}}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{T "data_quality.col_person"}}</th>
+          <th scope="col">{{T "data_quality.col_detail"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .MissingBirthYear}}
+        <tr>
+          <td><a href="/people/{{.ID}}">{{.Name}}</a></td>
+          <td class="text-muted">{{.Detail}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <div class="card-body text-muted">{{T "data_quality.empty_missing_birth_year"}}</div>
+  {{end}}
+</section>
+
+<section class="card mb-4" id="dq-missing-photo" aria-labelledby="dq-missing-photo-heading">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="h6 mb-0" id="dq-missing-photo-heading">{{T "data_quality.missing_photo"}}</h2>
+    <span class="badge text-bg-secondary">{{len .MissingPhoto}}</span>
+  </div>
+  {{if .MissingPhoto}}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{T "data_quality.col_person"}}</th>
+          <th scope="col">{{T "data_quality.col_detail"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .MissingPhoto}}
+        <tr>
+          <td><a href="/people/{{.ID}}">{{.Name}}</a></td>
+          <td class="text-muted">{{.Detail}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <div class="card-body text-muted">{{T "data_quality.empty_missing_photo"}}</div>
+  {{end}}
+</section>
+
+<section class="card mb-4" id="dq-birthday-soon" aria-labelledby="dq-birthday-soon-heading">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="h6 mb-0" id="dq-birthday-soon-heading">{{T "data_quality.birthday_soon"}}</h2>
+    <span class="badge text-bg-secondary">{{len .BirthdaySoonNoGift}}</span>
+  </div>
+  {{if .BirthdaySoonNoGift}}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{T "data_quality.col_person"}}</th>
+          <th scope="col">{{T "data_quality.col_detail"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .BirthdaySoonNoGift}}
+        <tr>
+          <td><a href="/people/{{.ID}}">{{.Name}}</a></td>
+          <td class="text-muted">{{.Detail}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <div class="card-body text-muted">{{T "data_quality.empty_birthday_soon"}}</div>
+  {{end}}
+</section>
+
+<section class="card mb-4" id="dq-duplicates" aria-labelledby="dq-duplicates-heading">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="h6 mb-0" id="dq-duplicates-heading">{{T "data_quality.duplicates"}}</h2>
+    <span class="badge text-bg-secondary">{{len .Duplicates}}</span>
+  </div>
+  {{if .Duplicates}}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{T "data_quality.col_names"}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Duplicates}}
+        <tr>
+          <td>
+            {{range $i, $member := .Members}}{{if $i}}, {{end}}<a href="/people/{{$member.ID}}">{{$member.Name}}</a>{{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <div class="card-body text-muted">{{T "data_quality.empty_duplicates"}}</div>
+  {{end}}
+</section>
+{{end}}

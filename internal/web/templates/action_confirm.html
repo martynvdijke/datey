@@ -1,0 +1,33 @@
+{{define "head_extra"}}<meta name="robots" content="noindex, nofollow">{{end}}
+
+{{define "content"}}
+<div class="row justify-content-center mt-4">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card shadow-sm" data-reminder-action="{{.Kind}}">
+      <div class="card-body p-4">
+        {{if .Done}}
+          <h1 class="h4 mb-3">{{T "reminder_action.done_title"}}</h1>
+          <p class="mb-1">{{if .IsAck}}{{T "reminder_action.done_ack"}}{{else}}{{T "reminder_action.done_snooze"}}{{end}}</p>
+          <p class="text-muted mb-0">{{.Occasion}}</p>
+        {{else}}
+          <h1 class="h4 mb-3">{{T "reminder_action.title"}}</h1>
+          <p class="text-muted">{{T "reminder_action.occasion"}} <strong>{{.Occasion}}</strong></p>
+          <form method="POST" action="">
+            {{template "csrfField" .}}
+            {{if .IsSnooze}}
+              <label class="form-label" for="days">{{T "reminder_action.days_label"}}</label>
+              <select class="form-select mb-3" id="days" name="days">
+                {{range $day := seq 1 .DaysMax}}<option value="{{$day}}"{{if eq $day $.Days}} selected{{end}}>{{$day}}</option>{{end}}
+              </select>
+              <button class="btn btn-primary" type="submit">{{T "reminder_action.snooze_submit"}}</button>
+            {{else}}
+              <p>{{T "reminder_action.ack_explain"}}</p>
+              <button class="btn btn-primary" type="submit">{{T "reminder_action.ack_submit"}}</button>
+            {{end}}
+          </form>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

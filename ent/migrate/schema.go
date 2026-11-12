@@ -54,6 +54,7 @@ var (
 		{Name: "reminder_days", Type: field.TypeInt, Nullable: true},
 		{Name: "last_scheduler_run", Type: field.TypeTime, Nullable: true},
 		{Name: "scheduler_catchup", Type: field.TypeBool, Nullable: true},
+		{Name: "subscription_poll_hours", Type: field.TypeInt, Nullable: true},
 		{Name: "date_variant", Type: field.TypeString, Nullable: true},
 		{Name: "reminder_digest", Type: field.TypeBool, Nullable: true},
 		{Name: "reminder_stages", Type: field.TypeString, Nullable: true},
@@ -79,6 +80,8 @@ var (
 		{Name: "ntfy_topic", Type: field.TypeString, Nullable: true},
 		{Name: "ntfy_token", Type: field.TypeString, Nullable: true},
 		{Name: "ntfy_priority", Type: field.TypeInt, Nullable: true},
+		{Name: "pushover_token", Type: field.TypeString, Nullable: true},
+		{Name: "pushover_user", Type: field.TypeString, Nullable: true},
 		{Name: "webhook_url", Type: field.TypeString, Nullable: true},
 		{Name: "webhook_secret", Type: field.TypeString, Nullable: true},
 		{Name: "discord_webhook_url", Type: field.TypeString, Nullable: true},
@@ -157,6 +160,29 @@ var (
 			},
 		},
 	}
+	// ChannelHealthsColumns holds the columns for the "channel_healths" table.
+	ChannelHealthsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "channel", Type: field.TypeString},
+		{Name: "target", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "last_success_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_failure_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_error", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "consecutive_failures", Type: field.TypeInt, Default: 0},
+	}
+	// ChannelHealthsTable holds the schema information for the "channel_healths" table.
+	ChannelHealthsTable = &schema.Table{
+		Name:       "channel_healths",
+		Columns:    ChannelHealthsColumns,
+		PrimaryKey: []*schema.Column{ChannelHealthsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "channelhealth_channel_target",
+				Unique:  true,
+				Columns: []*schema.Column{ChannelHealthsColumns[1], ChannelHealthsColumns[2]},
+			},
+		},
+	}
 	// ContactsColumns holds the columns for the "contacts" table.
 	ContactsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -184,9 +210,18 @@ var (
 		{Name: "lunar_month", Type: field.TypeInt, Nullable: true},
 		{Name: "lunar_day", Type: field.TypeInt, Nullable: true},
 		{Name: "lunar_leap", Type: field.TypeBool, Default: false},
+		{Name: "frequency", Type: field.TypeString, Default: "annual"},
+		{Name: "interval", Type: field.TypeInt, Default: 1},
+		{Name: "end_date", Type: field.TypeTime, Nullable: true},
+		{Name: "occurrence_count", Type: field.TypeInt, Nullable: true},
+		{Name: "external_uid", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "rule_kind", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "rule_ordinal", Type: field.TypeInt, Nullable: true},
+		{Name: "rule_weekday", Type: field.TypeInt, Nullable: true},
 		{Name: "contact_events", Type: field.TypeInt, Nullable: true},
 		{Name: "group_events", Type: field.TypeInt, Nullable: true},
 		{Name: "person_events", Type: field.TypeInt, Nullable: true},
+		{Name: "subscription_id", Type: field.TypeInt, Nullable: true},
 	}
 	// EventsTable holds the schema information for the "events" table.
 	EventsTable = &schema.Table{
@@ -196,20 +231,26 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "events_contacts_events",
-				Columns:    []*schema.Column{EventsColumns[11]},
+				Columns:    []*schema.Column{EventsColumns[19]},
 				RefColumns: []*schema.Column{ContactsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "events_groups_events",
-				Columns:    []*schema.Column{EventsColumns[12]},
+				Columns:    []*schema.Column{EventsColumns[20]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "events_persons_events",
-				Columns:    []*schema.Column{EventsColumns[13]},
+				Columns:    []*schema.Column{EventsColumns[21]},
 				RefColumns: []*schema.Column{PersonsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "events_subscriptions_events",
+				Columns:    []*schema.Column{EventsColumns[22]},
+				RefColumns: []*schema.Column{SubscriptionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -236,6 +277,9 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"idea", "purchased", "given", "archived"}, Default: "idea"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "purchased_at", Type: field.TypeTime, Nullable: true},
+		{Name: "given_at", Type: field.TypeTime, Nullable: true},
+		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
 		{Name: "person_gift_ideas", Type: field.TypeInt},
 	}
 	// GiftIdeasTable holds the schema information for the "gift_ideas" table.
@@ -246,7 +290,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "gift_ideas_persons_giftIdeas",
-				Columns:    []*schema.Column{GiftIdeasColumns[8]},
+				Columns:    []*schema.Column{GiftIdeasColumns[11]},
 				RefColumns: []*schema.Column{PersonsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -255,7 +299,7 @@ var (
 			{
 				Name:    "giftidea_status_person_gift_ideas",
 				Unique:  false,
-				Columns: []*schema.Column{GiftIdeasColumns[5], GiftIdeasColumns[8]},
+				Columns: []*schema.Column{GiftIdeasColumns[5], GiftIdeasColumns[11]},
 			},
 		},
 	}
@@ -531,6 +575,58 @@ var (
 			},
 		},
 	}
+	// SnoozesColumns holds the columns for the "snoozes" table.
+	SnoozesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "event_id", Type: field.TypeInt},
+		{Name: "occasion", Type: field.TypeTime},
+		{Name: "snoozed_until", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// SnoozesTable holds the schema information for the "snoozes" table.
+	SnoozesTable = &schema.Table{
+		Name:       "snoozes",
+		Columns:    SnoozesColumns,
+		PrimaryKey: []*schema.Column{SnoozesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "snooze_event_id_occasion_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{SnoozesColumns[1], SnoozesColumns[2], SnoozesColumns[4]},
+			},
+			{
+				Name:    "snooze_snoozed_until",
+				Unique:  false,
+				Columns: []*schema.Column{SnoozesColumns[3]},
+			},
+		},
+	}
+	// SubscriptionsColumns holds the columns for the "subscriptions" table.
+	SubscriptionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "last_attempt_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_success_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_error", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// SubscriptionsTable holds the schema information for the "subscriptions" table.
+	SubscriptionsTable = &schema.Table{
+		Name:       "subscriptions",
+		Columns:    SubscriptionsColumns,
+		PrimaryKey: []*schema.Column{SubscriptionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "subscription_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{SubscriptionsColumns[3]},
+			},
+		},
+	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -657,6 +753,7 @@ var (
 		APITokensTable,
 		AppConfigsTable,
 		AuditEntriesTable,
+		ChannelHealthsTable,
 		ContactsTable,
 		EventsTable,
 		GiftIdeasTable,
@@ -671,6 +768,8 @@ var (
 		RecurringRulesTable,
 		RelationshipsTable,
 		SessionsTable,
+		SnoozesTable,
+		SubscriptionsTable,
 		TagsTable,
 		UsersTable,
 		UserNotificationChannelsTable,
@@ -684,6 +783,7 @@ func init() {
 	EventsTable.ForeignKeys[0].RefTable = ContactsTable
 	EventsTable.ForeignKeys[1].RefTable = GroupsTable
 	EventsTable.ForeignKeys[2].RefTable = PersonsTable
+	EventsTable.ForeignKeys[3].RefTable = SubscriptionsTable
 	GiftIdeasTable.ForeignKeys[0].RefTable = PersonsTable
 	GroupNotesTable.ForeignKeys[0].RefTable = GroupsTable
 	NotificationLogsTable.ForeignKeys[0].RefTable = EventsTable

@@ -32,7 +32,7 @@ func (h *Handler) forgotPasswordPage(w http.ResponseWriter, r *http.Request) {
 	if !h.notifReg.IsConfigured(emailNotifierName) {
 		data["Error"] = "Password reset by email is unavailable because no email channel is configured."
 	}
-	h.render(w, r, "forgot_password.html", data)
+	h.renderAuth(w, r, "forgot_password.html", data)
 }
 
 // forgotPasswordPost validates the submitted username and, when a matching
@@ -47,7 +47,7 @@ func (h *Handler) forgotPasswordPost(w http.ResponseWriter, r *http.Request) {
 
 	username := r.FormValue("username")
 	if username == "" {
-		h.render(w, r, "forgot_password.html", map[string]any{
+		h.renderAuth(w, r, "forgot_password.html", map[string]any{
 			"Title": "Datey - Reset Password",
 			"Error": "Username is required",
 			"FormData": map[string]string{
@@ -63,7 +63,7 @@ func (h *Handler) forgotPasswordPost(w http.ResponseWriter, r *http.Request) {
 	if !allowed {
 		w.Header().Set("Retry-After", fmt.Sprintf("%d", int(retryAfter.Seconds())+1))
 		w.WriteHeader(http.StatusTooManyRequests)
-		h.render(w, r, "forgot_password.html", map[string]any{
+		h.renderAuth(w, r, "forgot_password.html", map[string]any{
 			"Title": "Datey - Reset Password",
 			"Error": "Too many reset requests. Please try again later.",
 		})
@@ -71,7 +71,7 @@ func (h *Handler) forgotPasswordPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !h.notifReg.IsConfigured(emailNotifierName) {
-		h.render(w, r, "forgot_password.html", map[string]any{
+		h.renderAuth(w, r, "forgot_password.html", map[string]any{
 			"Title": "Datey - Reset Password",
 			"Error": "Password reset by email is unavailable because no email channel is configured.",
 		})
@@ -102,7 +102,7 @@ func (h *Handler) forgotPasswordPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Same message for existing and unknown usernames (anti-enumeration).
-	h.render(w, r, "forgot_password.html", map[string]any{
+	h.renderAuth(w, r, "forgot_password.html", map[string]any{
 		"Title":   "Datey - Reset Password",
 		"Success": "If that username exists, a password reset link has been emailed to the configured notification address.",
 	})
@@ -113,13 +113,13 @@ func (h *Handler) forgotPasswordPost(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) resetPasswordPage(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		h.render(w, r, "reset_password.html", map[string]any{
+		h.renderAuth(w, r, "reset_password.html", map[string]any{
 			"Title": "Datey - Reset Password",
 			"Error": "Missing reset token. Request a new password reset link from the login page.",
 		})
 		return
 	}
-	h.render(w, r, "reset_password.html", map[string]any{
+	h.renderAuth(w, r, "reset_password.html", map[string]any{
 		"Title": "Datey - Reset Password",
 		"Token": token,
 	})
@@ -143,7 +143,7 @@ func (h *Handler) resetPasswordPost(w http.ResponseWriter, r *http.Request) {
 	tok, err := h.passwordResetTokens.GetByRawToken(r.Context(), token)
 	if err != nil {
 		slog.Info("reset password: rejected token", "error", err)
-		h.render(w, r, "reset_password.html", map[string]any{
+		h.renderAuth(w, r, "reset_password.html", map[string]any{
 			"Title": "Datey - Reset Password",
 			"Token": token,
 			"Error": "This reset link is invalid, has already been used, or has expired. Please request a new one.",
@@ -166,7 +166,7 @@ func (h *Handler) resetPasswordPost(w http.ResponseWriter, r *http.Request) {
 		errors["confirm"] = "Passwords do not match"
 	}
 	if len(errors) > 0 {
-		h.render(w, r, "reset_password.html", map[string]any{
+		h.renderAuth(w, r, "reset_password.html", map[string]any{
 			"Title":  "Datey - Reset Password",
 			"Token":  token,
 			"Errors": errors,

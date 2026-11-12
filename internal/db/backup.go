@@ -1,9 +1,12 @@
 package db
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"database/sql"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -11,13 +14,77 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/datey/datey/internal/photos"
 )
 
-// Backup creates a timestamped copy of the SQLite database.
+// photoArchiveSuffix is appended to the stem of a database backup to name the
+// photo sidecar archive. Kept as a separate file so that a database backup
+// stays a plain, validatable SQLite file and legacy backups keep working.
+const photoArchiveSuffix = "-photos.tar.gz"
+
+// PhotoArchivePath returns the sidecar photo archive path that belongs to the
+// given database backup file (e.g. "datey_20260101_120000.db" ->
+// "datey_20260101_120000-photos.tar.gz"). It returns "" for names that are
+// not .db files.
+func PhotoArchivePath(dbBackupFile string) string {
+	if !strings.HasSuffix(dbBackupFile, ".db") {
+		return ""
+	}
+	return strings.TrimSuffix(dbBackupFile, ".db") + photoArchiveSuffix
+}
+
+// BackupEntry describes one database backup in a backup directory, together
+// with its photo sidecar when one exists.
+type BackupEntry struct {
+	Name          string
+	Size          int64
+	Modified      time.Time
+	PhotosArchive string // base name of the sidecar archive, "" when absent
+	PhotosSize    int64
+}
+
+// ListBackups reports the database backups in dir. Each entry also reports the
+// photo sidecar that belongs to it, so callers can tell a self-contained
+// backup from a legacy database-only one.
+func ListBackups(dir string) ([]BackupEntry, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var out []BackupEntry
+	for _, e := range entries {
+		if e.IsDir() || filepath.Ext(e.Name()) != ".db" {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		entry := BackupEntry{Name: e.Name(), Size: info.Size(), Modified: info.ModTime()}
+		if sidecar := PhotoArchivePath(e.Name()); sidecar != "" {
+			if si, err := os.Stat(filepath.Join(dir, sidecar)); err == nil && si.Mode().IsRegular() {
+				entry.PhotosArchive = sidecar
+				entry.PhotosSize = si.Size()
+			}
+		}
+		out = append(out, entry)
+	}
+	return out, nil
+}
+
+// Backup creates a timestamped copy of the SQLite database along with a
+// sidecar archive of the photo files under <dataDir>/photos, making the
+// backup self-contained.
 // It checkpoints the WAL first to ensure all data is in the main file,
 // then copies it to the backup directory.
 func Backup(dbPath, backupDir string, retentionDays int) error {
 	backupFile, err := copyDatabase(dbPath, backupDir, "datey", "20060102_150405")
+	if err != nil {
+		return err
+	}
+
+	photoCount, photoBytes, err := writePhotoArchive(filepath.Dir(dbPath), backupFile)
 	if err != nil {
 		return err
 	}
@@ -31,15 +98,23 @@ func Backup(dbPath, backupDir string, retentionDays int) error {
 		}, cutoff)
 	}
 
-	slog.Info("database backup created", "path", backupFile, "size_bytes", fileSize(backupFile))
+	slog.Info("database backup created",
+		"path", backupFile, "size_bytes", fileSize(backupFile),
+		"photos_archive", PhotoArchivePath(backupFile), "photo_count", photoCount, "photo_bytes", photoBytes)
 	return nil
 }
 
 // BackupWeekly creates a weekly copy of the SQLite database named
 // datey_weekly_YYYYMMDD.db (date-only, one file per week; a same-day re-run
-// overwrites it). Old weekly backups older than retentionWeeks are pruned.
+// overwrites it), plus the photo sidecar for that backup. Old weekly backups
+// older than retentionWeeks are pruned together with their sidecars.
 func BackupWeekly(dbPath, backupDir string, retentionWeeks int) error {
 	backupFile, err := copyDatabase(dbPath, backupDir, "datey_weekly", "20060102")
+	if err != nil {
+		return err
+	}
+
+	photoCount, photoBytes, err := writePhotoArchive(filepath.Dir(dbPath), backupFile)
 	if err != nil {
 		return err
 	}
@@ -51,7 +126,9 @@ func BackupWeekly(dbPath, backupDir string, retentionWeeks int) error {
 		}, cutoff)
 	}
 
-	slog.Info("weekly database backup created", "path", backupFile, "size_bytes", fileSize(backupFile))
+	slog.Info("weekly database backup created",
+		"path", backupFile, "size_bytes", fileSize(backupFile),
+		"photos_archive", PhotoArchivePath(backupFile), "photo_count", photoCount, "photo_bytes", photoBytes)
 	return nil
 }
 
@@ -107,6 +184,125 @@ func copyDatabase(dbPath, backupDir, prefix, timeFormat string) (string, error) 
 	return backupFile, nil
 }
 
+// writePhotoArchive captures every photo file below <dataDir>/photos into a
+// gzip-compressed tar next to the database backup. A missing photo directory
+// yields an empty archive rather than an error, so restoring a backup taken
+// when no photos existed still clears stale photos on the target host.
+// Returns the number of files and total bytes captured.
+func writePhotoArchive(dataDir, dbBackupFile string) (int, int64, error) {
+	archivePath := PhotoArchivePath(dbBackupFile)
+	if archivePath == "" {
+		return 0, 0, fmt.Errorf("photo archive: %q is not a .db file", dbBackupFile)
+	}
+	photosDir := photos.NewStore(dataDir).Dir()
+
+	// Build in the destination directory so the final rename is atomic.
+	tmp, err := os.CreateTemp(filepath.Dir(archivePath), ".photos-*.tar.gz.tmp")
+	if err != nil {
+		return 0, 0, fmt.Errorf("create photo archive: %w", err)
+	}
+	tmpPath := tmp.Name()
+	defer func() {
+		if tmpPath != "" {
+			_ = os.Remove(tmpPath)
+		}
+	}()
+
+	gz := gzip.NewWriter(tmp)
+	tw := tar.NewWriter(gz)
+
+	var count int
+	var total int64
+
+	if info, err := os.Stat(photosDir); err == nil && info.IsDir() {
+		walkErr := filepath.WalkDir(photosDir, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			// Skip files that are not regular (symlinks, devices) and the
+			// store's own in-flight temp files (".tmp-*"): neither belongs in
+			// a backup.
+			if !d.Type().IsRegular() {
+				slog.Warn("photo backup: skipping non-regular file", "path", path)
+				return nil
+			}
+			if strings.HasPrefix(d.Name(), ".tmp-") {
+				return nil
+			}
+			rel, err := filepath.Rel(photosDir, path)
+			if err != nil {
+				return err
+			}
+			info, err := d.Info()
+			if err != nil {
+				return err
+			}
+			hdr := &tar.Header{
+				Name:     filepath.ToSlash(rel),
+				Mode:     0o644,
+				Size:     info.Size(),
+				ModTime:  info.ModTime(),
+				Typeflag: tar.TypeReg,
+			}
+			if err := tw.WriteHeader(hdr); err != nil {
+				return err
+			}
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			n, copyErr := io.Copy(tw, f)
+			closeErr := f.Close()
+			if copyErr != nil {
+				return copyErr
+			}
+			if closeErr != nil {
+				return closeErr
+			}
+			count++
+			total += n
+			return nil
+		})
+		if walkErr != nil {
+			_ = tw.Close()
+			_ = gz.Close()
+			_ = tmp.Close()
+			return 0, 0, fmt.Errorf("archive photos: %w", walkErr)
+		}
+	} else if err != nil && !os.IsNotExist(err) {
+		_ = tw.Close()
+		_ = gz.Close()
+		_ = tmp.Close()
+		return 0, 0, fmt.Errorf("stat photos dir: %w", err)
+	}
+
+	if err := tw.Close(); err != nil {
+		_ = gz.Close()
+		_ = tmp.Close()
+		return 0, 0, fmt.Errorf("close tar: %w", err)
+	}
+	if err := gz.Close(); err != nil {
+		_ = tmp.Close()
+		return 0, 0, fmt.Errorf("close gzip: %w", err)
+	}
+	if err := tmp.Sync(); err != nil {
+		_ = tmp.Close()
+		return 0, 0, fmt.Errorf("sync photo archive: %w", err)
+	}
+	if err := tmp.Close(); err != nil {
+		return 0, 0, fmt.Errorf("close photo archive: %w", err)
+	}
+	if err := os.Rename(tmpPath, archivePath); err != nil {
+		return 0, 0, fmt.Errorf("rename photo archive: %w", err)
+	}
+	tmpPath = "" // renamed away; nothing left to clean up
+
+	return count, total, nil
+}
+
 func fileSize(path string) int64 {
 	info, err := os.Stat(path)
 	if err != nil {
@@ -116,7 +312,8 @@ func fileSize(path string) int64 {
 }
 
 // cleanupBackups removes .db files in dir for which match returns true and
-// whose modification time is before cutoff.
+// whose modification time is before cutoff. The photo sidecar of every
+// removed backup is removed too, so pruning never leaves orphan archives.
 func cleanupBackups(dir string, match func(name string) bool, cutoff time.Time) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
@@ -144,8 +341,13 @@ func cleanupBackups(dir string, match func(name string) bool, cutoff time.Time) 
 			path := filepath.Join(dir, entry.Name())
 			if err := os.Remove(path); err != nil {
 				slog.Warn("backup cleanup: remove", "path", path, "error", err)
-			} else {
-				slog.Debug("backup cleanup: removed old backup", "path", path)
+				continue
+			}
+			slog.Debug("backup cleanup: removed old backup", "path", path)
+			if sidecar := PhotoArchivePath(path); sidecar != "" {
+				if err := os.Remove(sidecar); err != nil && !os.IsNotExist(err) {
+					slog.Warn("backup cleanup: remove photo archive", "path", sidecar, "error", err)
+				}
 			}
 		}
 	}

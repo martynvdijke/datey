@@ -224,8 +224,8 @@ func TestTRMNLBirthdaysRelativeAndReminderWindow(t *testing.T) {
 	midnight := func(days int) time.Time {
 		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
 	}
-	newTestEvent(t, h, personID, "birthday", midnight(2))  // Tomorrow
-	newTestEvent(t, h, personID, "birthday", midnight(10)) // In 9 days (within 14)
+	newTestEvent(t, h, personID, "birthday", midnight(2))  // In 2 days
+	newTestEvent(t, h, personID, "birthday", midnight(10)) // In 10 days (within 14)
 	newTestEvent(t, h, personID, "birthday", midnight(20)) // outside 14
 
 	_, _, resp := getTRMNLBirthdays(t, h)
@@ -233,18 +233,20 @@ func TestTRMNLBirthdaysRelativeAndReminderWindow(t *testing.T) {
 	if len(resp.Birthdays) != 2 {
 		t.Fatalf("expected 2 birthdays within ReminderDays=14, got %d", len(resp.Birthdays))
 	}
-	if resp.Birthdays[0].Relative != "Tomorrow" {
-		t.Errorf("expected relative Tomorrow for +2 days, got %q", resp.Birthdays[0].Relative)
+	// Day counts are calendar days in the owner's zone, so +2 days is "In 2
+	// days" rather than the old elapsed-24h truncation ("Tomorrow").
+	if resp.Birthdays[0].Relative != "In 2 days" {
+		t.Errorf("expected relative \"In 2 days\" for +2 days, got %q", resp.Birthdays[0].Relative)
 	}
 	// Beyond 7 days the relative label is empty (same as the stats feed).
-	if resp.Birthdays[1].DaysRemaining != 9 {
-		t.Errorf("expected days_remaining 9 for +10 days, got %d", resp.Birthdays[1].DaysRemaining)
+	if resp.Birthdays[1].DaysRemaining != 10 {
+		t.Errorf("expected days_remaining 10 for +10 days, got %d", resp.Birthdays[1].DaysRemaining)
 	}
 	if resp.Birthdays[1].Relative != "" {
 		t.Errorf("expected empty relative beyond 7 days, got %q", resp.Birthdays[1].Relative)
 	}
-	if resp.NextBirthday == nil || resp.NextBirthday.Relative != "Tomorrow" {
-		t.Errorf("expected next_birthday Tomorrow, got %+v", resp.NextBirthday)
+	if resp.NextBirthday == nil || resp.NextBirthday.Relative != "In 2 days" {
+		t.Errorf("expected next_birthday \"In 2 days\", got %+v", resp.NextBirthday)
 	}
 }
 
@@ -291,9 +293,8 @@ func TestTRMNLStatsNextEventIsEarliest(t *testing.T) {
 	personID := newTestPerson(t, h, "Anna")
 	now := time.Now()
 	// Annual events are reported on their occurrence date (midnight of the
-	// month/day), so day counts are anchored to midnight-based dates:
-	// midnight 2 days out is deterministically 1 whole day away, midnight
-	// 4 days out is 3 whole days away.
+	// month/day) and counted as calendar days in the owner's zone: midnight 2
+	// days out is exactly 2 days away, midnight 4 days out is 4.
 	midnight := func(days int) time.Time {
 		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
 	}
@@ -311,11 +312,11 @@ func TestTRMNLStatsNextEventIsEarliest(t *testing.T) {
 	if stats.NextEvent.Type != "anniversary" {
 		t.Errorf("expected earliest event type anniversary, got %q", stats.NextEvent.Type)
 	}
-	if stats.NextEvent.DaysRemaining != 1 {
-		t.Errorf("expected days_remaining 1, got %d", stats.NextEvent.DaysRemaining)
+	if stats.NextEvent.DaysRemaining != 2 {
+		t.Errorf("expected days_remaining 2, got %d", stats.NextEvent.DaysRemaining)
 	}
-	if stats.NextEvent.Relative != "Tomorrow" {
-		t.Errorf("expected relative Tomorrow, got %q", stats.NextEvent.Relative)
+	if stats.NextEvent.Relative != "In 2 days" {
+		t.Errorf("expected relative \"In 2 days\", got %q", stats.NextEvent.Relative)
 	}
 	if len(stats.Upcoming) != 2 {
 		t.Errorf("expected 2 upcoming events, got %d", len(stats.Upcoming))
@@ -371,8 +372,8 @@ func TestTRMNLStatsFallsBackToNextBirthday(t *testing.T) {
 	if stats.NextEvent.Type != "birthday" {
 		t.Errorf("expected type birthday, got %q", stats.NextEvent.Type)
 	}
-	if stats.NextEvent.DaysRemaining != 39 {
-		t.Errorf("expected days_remaining 39, got %d", stats.NextEvent.DaysRemaining)
+	if stats.NextEvent.DaysRemaining != 40 {
+		t.Errorf("expected days_remaining 40, got %d", stats.NextEvent.DaysRemaining)
 	}
 	if len(stats.Upcoming) != 1 {
 		t.Errorf("expected 1 upcoming event (the fallback), got %d", len(stats.Upcoming))
@@ -424,8 +425,8 @@ func TestTRMNLBirthdaysFallsBackBeyondWindow(t *testing.T) {
 	if resp.NextBirthday.Name != "Anna" {
 		t.Errorf("expected name Anna, got %q", resp.NextBirthday.Name)
 	}
-	if resp.NextBirthday.DaysRemaining != 59 {
-		t.Errorf("expected days_remaining 59, got %d", resp.NextBirthday.DaysRemaining)
+	if resp.NextBirthday.DaysRemaining != 60 {
+		t.Errorf("expected days_remaining 60, got %d", resp.NextBirthday.DaysRemaining)
 	}
 	if len(resp.Birthdays) != 1 {
 		t.Errorf("expected 1 birthday (the fallback), got %d", len(resp.Birthdays))

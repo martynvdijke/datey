@@ -1,0 +1,142 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">{{T "portable.title"}}</h1>
+  <a href="/settings" class="btn btn-outline-secondary">{{T "portable.back"}}</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">
+    <h2 class="h6 mb-0">{{T "portable.export"}}</h2>
+  </div>
+  <div class="card-body">
+    <p class="text-muted">{{T "portable.help"}}</p>
+    <a href="/settings/portable/export" class="btn btn-primary" download>{{T "portable.export"}}</a>
+    <div class="form-text">{{T "portable.export_hint"}}</div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">
+    <h2 class="h6 mb-0">{{T "portable.import_heading"}}</h2>
+  </div>
+  <div class="card-body">
+    <form action="/settings/portable/import" method="POST" enctype="multipart/form-data" class="row g-3 align-items-end">
+      {{template "csrfField" .}}
+      <div class="col-md-8">
+        <label for="portable_file" class="form-label">{{T "portable.file_label"}}</label>
+        <input class="form-control" type="file" name="portable_file" id="portable_file" accept=".json,application/json" required>
+        <div class="form-text">{{T "portable.file_hint"}}</div>
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-primary w-100">{{T "portable.preview"}}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{with .View}}
+{{if .Problems}}
+<div class="alert alert-danger" role="alert" id="portable-problems">
+  <h6 class="alert-heading">{{T "portable.problems"}}</h6>
+  <ul class="mb-0">
+    {{range .Problems}}<li>{{.}}</li>{{end}}
+  </ul>
+</div>
+{{end}}
+
+{{if .HasPreview}}
+<div class="card mb-4" id="portable-preview">
+  <div class="card-header">
+    <h2 class="h6 mb-0">{{T "portable.summary"}}</h2>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-3">
+        <thead>
+          <tr>
+            <th>{{T "portable.entity"}}</th>
+            <th class="text-end">{{T "portable.new"}}</th>
+            <th class="text-end">{{T "portable.skip"}}</th>
+            <th class="text-end">{{T "portable.conflict"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Rows}}
+          <tr>
+            <td>{{T .Key}}</td>
+            <td class="text-end">{{.Counts.New}}</td>
+            <td class="text-end">{{.Counts.Skip}}</td>
+            <td class="text-end">{{.Counts.Conflict}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+
+    <form action="/settings/portable/import/confirm" method="POST">
+      {{template "csrfField" .}}
+      <input type="hidden" name="envelope" value="{{.EnvelopeJSON}}">
+      <div class="form-text mb-2">{{T "portable.confirm_hint"}}</div>
+      <button type="submit" class="btn btn-success">{{T "portable.confirm"}}</button>
+    </form>
+  </div>
+</div>
+{{end}}
+
+{{if .Result}}
+<div class="card mb-4" id="portable-result">
+  <div class="card-header">
+    <h2 class="h6 mb-0">{{T "portable.results"}}</h2>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>{{T "portable.entity"}}</th>
+            <th class="text-end">{{T "portable.created"}}</th>
+            <th class="text-end">{{T "portable.skipped"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .ResultRows}}
+          <tr>
+            <td>{{T .Key}}</td>
+            <td class="text-end">{{.Result.Created}}</td>
+            <td class="text-end">{{.Result.Skipped}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+
+    {{if .Result.Skipped}}
+    <h6>{{T "portable.skipped_reasons"}}</h6>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-3">
+        <thead>
+          <tr>
+            <th>{{T "portable.entity"}}</th>
+            <th>{{T "portable.file_label"}}</th>
+            <th>{{T "portable.reason"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Result.Skipped}}
+          <tr class="table-warning">
+            <td>{{.Entity}}</td>
+            <td>{{.Name}}</td>
+            <td>{{.Reason}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{end}}
+
+    <a href="/settings/portable/import" class="btn btn-outline-secondary">{{T "portable.import_again"}}</a>
+  </div>
+</div>
+{{end}}
+{{end}}
+{{end}}

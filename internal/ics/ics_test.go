@@ -17,6 +17,26 @@ func parseOne(t *testing.T, body string) []Event {
 	return events
 }
 
+func TestParse_UID(t *testing.T) {
+	events := parseOne(t, "BEGIN:VEVENT\r\nUID:abc-123@example.org\r\nSUMMARY:Sync me\r\nDTSTART;VALUE=DATE:20260812\r\nEND:VEVENT\r\n")
+	if len(events) != 1 {
+		t.Fatalf("want 1 event, got %d", len(events))
+	}
+	if events[0].UID != "abc-123@example.org" {
+		t.Errorf("want UID %q, got %q", "abc-123@example.org", events[0].UID)
+	}
+}
+
+func TestParse_MissingUID(t *testing.T) {
+	events := parseOne(t, "BEGIN:VEVENT\r\nSUMMARY:No uid\r\nDTSTART;VALUE=DATE:20260812\r\nEND:VEVENT\r\n")
+	if len(events) != 1 {
+		t.Fatalf("want 1 event, got %d", len(events))
+	}
+	if events[0].UID != "" {
+		t.Errorf("want empty UID, got %q", events[0].UID)
+	}
+}
+
 func TestParse_AllDayEvent(t *testing.T) {
 	events := parseOne(t, "BEGIN:VEVENT\r\nSUMMARY:Birthday party\r\nDTSTART;VALUE=DATE:20260812\r\nEND:VEVENT\r\n")
 	if len(events) != 1 {

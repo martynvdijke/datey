@@ -86,11 +86,45 @@ func (r *Registry) SendTo(ctx context.Context, name, title, message string, targ
 	return n.SendTo(ctx, title, message, target)
 }
 
+// SendWithActions is Send with optional native action links. Channels that do
+// not implement ActionNotifier (or that receive no links) get the plain
+// message, so this never changes existing behaviour.
+func (r *Registry) SendWithActions(ctx context.Context, name, title, message string, actions ActionLinks) error {
+	return r.SendToWithActions(ctx, name, title, message, "", actions)
+}
+
+// SendToWithActions is SendTo with optional native action links.
+func (r *Registry) SendToWithActions(ctx context.Context, name, title, message, target string, actions ActionLinks) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	n, ok := r.notifiers[name]
+	if !ok {
+		return fmt.Errorf("notifier %q not registered", name)
+	}
+	if !n.IsConfigured() {
+		return fmt.Errorf("notifier %q not configured", name)
+	}
+	if an, ok := n.(ActionNotifier); ok && !actions.Empty() {
+		return an.SendToActions(ctx, title, message, target, actions)
+	}
+	return n.SendTo(ctx, title, message, target)
+}
+
 func (r *Registry) IsConfigured(name string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	n, ok := r.notifiers[name]
 	return ok && n.IsConfigured()
+}
+
+// Notifier returns the registered notifier with the given name. It lets
+// callers that need more than fire-and-forget (retry, health recording) drive
+// the instance directly; IsConfigured is not implied.
+func (r *Registry) Notifier(name string) (Notifier, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	n, ok := r.notifiers[name]
+	return n, ok
 }
 
 // ConfiguredNames returns the names of all registered notifiers that are

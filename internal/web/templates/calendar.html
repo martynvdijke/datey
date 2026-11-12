@@ -13,6 +13,13 @@
 
 {{define "content"}}
 <h1 class="mb-4">Calendar</h1>
+<div class="calendar-legend mb-3" aria-label="Event types">
+  <span class="badge event-type-badge event-birthday">{{T "event_type.birthday"}}</span>
+  <span class="badge event-type-badge event-anniversary">{{T "event_type.anniversary"}}</span>
+  <span class="badge event-type-badge event-wedding">{{T "event_type.wedding"}}</span>
+  <span class="badge event-type-badge event-memorial">{{T "event_type.memorial"}}</span>
+  <span class="badge event-type-badge event-custom">{{T "event_type.custom"}}</span>
+</div>
 <div id="calendar-container">
   <div id="calendar-loading" class="calendar-loading">
     <div class="spinner-border text-secondary" role="status">
@@ -69,6 +76,7 @@
             <option value="birthday">birthday</option>
             <option value="anniversary">anniversary</option>
             <option value="wedding">wedding</option>
+            <option value="memorial">memorial</option>
             <option value="holiday">holiday</option>
             <option value="meeting">meeting</option>
           </select>

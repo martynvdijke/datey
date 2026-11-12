@@ -84,6 +84,11 @@ func SchedulerCatchup(v bool) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldSchedulerCatchup, v))
 }
 
+// SubscriptionPollHours applies equality check predicate on the "subscription_poll_hours" field. It's identical to SubscriptionPollHoursEQ.
+func SubscriptionPollHours(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldSubscriptionPollHours, v))
+}
+
 // DateVariant applies equality check predicate on the "date_variant" field. It's identical to DateVariantEQ.
 func DateVariant(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldDateVariant, v))
@@ -207,6 +212,16 @@ func NtfyToken(v string) predicate.AppConfig {
 // NtfyPriority applies equality check predicate on the "ntfy_priority" field. It's identical to NtfyPriorityEQ.
 func NtfyPriority(v int) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldNtfyPriority, v))
+}
+
+// PushoverToken applies equality check predicate on the "pushover_token" field. It's identical to PushoverTokenEQ.
+func PushoverToken(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushoverToken, v))
+}
+
+// PushoverUser applies equality check predicate on the "pushover_user" field. It's identical to PushoverUserEQ.
+func PushoverUser(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushoverUser, v))
 }
 
 // WebhookURL applies equality check predicate on the "webhook_url" field. It's identical to WebhookURLEQ.
@@ -722,6 +737,56 @@ func SchedulerCatchupIsNil() predicate.AppConfig {
 // SchedulerCatchupNotNil applies the NotNil predicate on the "scheduler_catchup" field.
 func SchedulerCatchupNotNil() predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotNull(FieldSchedulerCatchup))
+}
+
+// SubscriptionPollHoursEQ applies the EQ predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldSubscriptionPollHours, v))
+}
+
+// SubscriptionPollHoursNEQ applies the NEQ predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursNEQ(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldSubscriptionPollHours, v))
+}
+
+// SubscriptionPollHoursIn applies the In predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldSubscriptionPollHours, vs...))
+}
+
+// SubscriptionPollHoursNotIn applies the NotIn predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursNotIn(vs ...int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldSubscriptionPollHours, vs...))
+}
+
+// SubscriptionPollHoursGT applies the GT predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursGT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldSubscriptionPollHours, v))
+}
+
+// SubscriptionPollHoursGTE applies the GTE predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursGTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldSubscriptionPollHours, v))
+}
+
+// SubscriptionPollHoursLT applies the LT predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursLT(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldSubscriptionPollHours, v))
+}
+
+// SubscriptionPollHoursLTE applies the LTE predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursLTE(v int) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldSubscriptionPollHours, v))
+}
+
+// SubscriptionPollHoursIsNil applies the IsNil predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldSubscriptionPollHours))
+}
+
+// SubscriptionPollHoursNotNil applies the NotNil predicate on the "subscription_poll_hours" field.
+func SubscriptionPollHoursNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldSubscriptionPollHours))
 }
 
 // DateVariantEQ applies the EQ predicate on the "date_variant" field.
@@ -2362,6 +2427,156 @@ func NtfyPriorityIsNil() predicate.AppConfig {
 // NtfyPriorityNotNil applies the NotNil predicate on the "ntfy_priority" field.
 func NtfyPriorityNotNil() predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotNull(FieldNtfyPriority))
+}
+
+// PushoverTokenEQ applies the EQ predicate on the "pushover_token" field.
+func PushoverTokenEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushoverToken, v))
+}
+
+// PushoverTokenNEQ applies the NEQ predicate on the "pushover_token" field.
+func PushoverTokenNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldPushoverToken, v))
+}
+
+// PushoverTokenIn applies the In predicate on the "pushover_token" field.
+func PushoverTokenIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldPushoverToken, vs...))
+}
+
+// PushoverTokenNotIn applies the NotIn predicate on the "pushover_token" field.
+func PushoverTokenNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldPushoverToken, vs...))
+}
+
+// PushoverTokenGT applies the GT predicate on the "pushover_token" field.
+func PushoverTokenGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldPushoverToken, v))
+}
+
+// PushoverTokenGTE applies the GTE predicate on the "pushover_token" field.
+func PushoverTokenGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldPushoverToken, v))
+}
+
+// PushoverTokenLT applies the LT predicate on the "pushover_token" field.
+func PushoverTokenLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldPushoverToken, v))
+}
+
+// PushoverTokenLTE applies the LTE predicate on the "pushover_token" field.
+func PushoverTokenLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldPushoverToken, v))
+}
+
+// PushoverTokenContains applies the Contains predicate on the "pushover_token" field.
+func PushoverTokenContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldPushoverToken, v))
+}
+
+// PushoverTokenHasPrefix applies the HasPrefix predicate on the "pushover_token" field.
+func PushoverTokenHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldPushoverToken, v))
+}
+
+// PushoverTokenHasSuffix applies the HasSuffix predicate on the "pushover_token" field.
+func PushoverTokenHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldPushoverToken, v))
+}
+
+// PushoverTokenIsNil applies the IsNil predicate on the "pushover_token" field.
+func PushoverTokenIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldPushoverToken))
+}
+
+// PushoverTokenNotNil applies the NotNil predicate on the "pushover_token" field.
+func PushoverTokenNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldPushoverToken))
+}
+
+// PushoverTokenEqualFold applies the EqualFold predicate on the "pushover_token" field.
+func PushoverTokenEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldPushoverToken, v))
+}
+
+// PushoverTokenContainsFold applies the ContainsFold predicate on the "pushover_token" field.
+func PushoverTokenContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldPushoverToken, v))
+}
+
+// PushoverUserEQ applies the EQ predicate on the "pushover_user" field.
+func PushoverUserEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldPushoverUser, v))
+}
+
+// PushoverUserNEQ applies the NEQ predicate on the "pushover_user" field.
+func PushoverUserNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldPushoverUser, v))
+}
+
+// PushoverUserIn applies the In predicate on the "pushover_user" field.
+func PushoverUserIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldPushoverUser, vs...))
+}
+
+// PushoverUserNotIn applies the NotIn predicate on the "pushover_user" field.
+func PushoverUserNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldPushoverUser, vs...))
+}
+
+// PushoverUserGT applies the GT predicate on the "pushover_user" field.
+func PushoverUserGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldPushoverUser, v))
+}
+
+// PushoverUserGTE applies the GTE predicate on the "pushover_user" field.
+func PushoverUserGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldPushoverUser, v))
+}
+
+// PushoverUserLT applies the LT predicate on the "pushover_user" field.
+func PushoverUserLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldPushoverUser, v))
+}
+
+// PushoverUserLTE applies the LTE predicate on the "pushover_user" field.
+func PushoverUserLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldPushoverUser, v))
+}
+
+// PushoverUserContains applies the Contains predicate on the "pushover_user" field.
+func PushoverUserContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldPushoverUser, v))
+}
+
+// PushoverUserHasPrefix applies the HasPrefix predicate on the "pushover_user" field.
+func PushoverUserHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldPushoverUser, v))
+}
+
+// PushoverUserHasSuffix applies the HasSuffix predicate on the "pushover_user" field.
+func PushoverUserHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldPushoverUser, v))
+}
+
+// PushoverUserIsNil applies the IsNil predicate on the "pushover_user" field.
+func PushoverUserIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldPushoverUser))
+}
+
+// PushoverUserNotNil applies the NotNil predicate on the "pushover_user" field.
+func PushoverUserNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldPushoverUser))
+}
+
+// PushoverUserEqualFold applies the EqualFold predicate on the "pushover_user" field.
+func PushoverUserEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldPushoverUser, v))
+}
+
+// PushoverUserContainsFold applies the ContainsFold predicate on the "pushover_user" field.
+func PushoverUserContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldPushoverUser, v))
 }
 
 // WebhookURLEQ applies the EQ predicate on the "webhook_url" field.

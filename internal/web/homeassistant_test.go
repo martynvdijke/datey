@@ -71,8 +71,8 @@ func TestHAFeedStatsShape(t *testing.T) {
 
 	personID := newTestPerson(t, h, "Dana")
 	// Annual events are reported on their occurrence date (midnight of the
-	// month/day), so day counts are anchored to midnight-based dates:
-	// midnight 4 days out is deterministically 3 whole days away.
+	// month/day) and counted as calendar days in the owner's zone: midnight 4
+	// days out is exactly 4 days away.
 	now := time.Now()
 	midnight := func(days int) time.Time {
 		return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, days)
@@ -100,8 +100,8 @@ func TestHAFeedStatsShape(t *testing.T) {
 	if stats.NextEvent != "Dana's Birthday" {
 		t.Errorf("next_event: got %q want %q", stats.NextEvent, "Dana's Birthday")
 	}
-	if stats.NextEventDays != 3 {
-		t.Errorf("next_event_days: got %d want 3", stats.NextEventDays)
+	if stats.NextEventDays != 4 {
+		t.Errorf("next_event_days: got %d want 4", stats.NextEventDays)
 	}
 	if stats.NextEventDate == "" {
 		t.Error("next_event_date should not be empty")
@@ -119,7 +119,7 @@ func TestHAFeedStatsShape(t *testing.T) {
 		t.Fatalf("upcoming: got %d entries want 1", len(stats.Upcoming))
 	}
 	ev := stats.Upcoming[0]
-	if ev.Name != "Dana" || ev.Type != "birthday" || ev.Days != 3 {
+	if ev.Name != "Dana" || ev.Type != "birthday" || ev.Days != 4 {
 		t.Errorf("upcoming[0]: got %+v", ev)
 	}
 	if ev.Date == "" {

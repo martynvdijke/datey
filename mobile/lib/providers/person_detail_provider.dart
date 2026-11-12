@@ -14,3 +14,14 @@ final personDetailProvider = FutureProvider.family<PersonDetail, int>((ref, id) 
   }
   throw Exception(resp.data is Map ? resp.data['message'] ?? 'Not found' : 'Failed');
 });
+
+/// A person's events including the schedule fields, read from the versioned
+/// write API (`GET /api/v1/people/{id}/events`).
+final personEventsProvider = FutureProvider.family<List<PersonEvent>, int>((ref, id) async {
+  final storage = StorageService();
+  final baseUrl = await storage.getBaseUrl();
+  if (baseUrl == null || baseUrl.isEmpty) throw Exception('No server URL');
+  final client = ApiClient(storage: storage, baseUrl: baseUrl);
+  final raw = await client.listPersonEvents(id);
+  return raw.map(PersonEvent.fromJson).toList();
+});

@@ -67,6 +67,15 @@ func (r *PersonNoteRepository) Delete(ctx context.Context, personID, noteID int)
 	return nil
 }
 
+// ListAll returns every person note with its owner eager-loaded, ordered by
+// note date then ID. Used by whole-dataset exports.
+func (r *PersonNoteRepository) ListAll(ctx context.Context) ([]*ent.PersonNote, error) {
+	return r.client.PersonNote.Query().
+		WithPerson().
+		Order(ent.Asc(personnote.FieldNoteDate), ent.Asc(personnote.FieldID)).
+		All(ctx)
+}
+
 // ListByPerson returns the person's notes ordered oldest first (timeline order).
 func (r *PersonNoteRepository) ListByPerson(ctx context.Context, personID int) ([]*ent.PersonNote, error) {
 	return r.client.PersonNote.Query().

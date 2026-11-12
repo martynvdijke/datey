@@ -30,10 +30,18 @@ func (n *DiscordNotifier) IsConfigured() bool {
 }
 
 func (n *DiscordNotifier) Send(ctx context.Context, title, message string) error {
-	return n.SendTo(ctx, title, message, "")
+	return n.SendToActions(ctx, title, message, "", ActionLinks{})
 }
 
 func (n *DiscordNotifier) SendTo(ctx context.Context, title, message string, target string) error {
+	return n.SendToActions(ctx, title, message, target, ActionLinks{})
+}
+
+// SendToActions posts the reminder with optional link buttons. Discord renders
+// them as a component row under the embed; each opens the signed confirmation
+// page in the browser (style 5 = link button, so no interaction endpoint is
+// needed).
+func (n *DiscordNotifier) SendToActions(ctx context.Context, title, message, target string, actions ActionLinks) error {
 	dest := n.cfg.DiscordWebhookURL
 	if target != "" {
 		dest = target
@@ -47,6 +55,9 @@ func (n *DiscordNotifier) SendTo(ctx context.Context, title, message string, tar
 				"color":       0x5865F2,
 			},
 		},
+	}
+	if components := discordComponents(actions); len(components) > 0 {
+		payload["components"] = components
 	}
 
 	body, err := json.Marshal(payload)
@@ -70,4 +81,31 @@ func (n *DiscordNotifier) SendTo(ctx context.Context, title, message string, tar
 		return fmt.Errorf("discord returned status %d", resp.StatusCode)
 	}
 	return nil
+}
+
+// discordComponents builds a single action row of link buttons (type 2, style
+// 5). Labels are fixed English because a webhook payload has no per-recipient
+// locale; the page each button opens is localised.
+func discordComponents(actions ActionLinks) []map[string]any {
+	buttons := make([]map[string]any, 0, 2)
+	if actions.SnoozeURL != "" {
+		buttons = append(buttons, map[string]any{
+			"type":  2,
+			"style": 5,
+			"label": "Snooze 3 days",
+			"url":   actions.SnoozeURL,
+		})
+	}
+	if actions.AckURL != "" {
+		buttons = append(buttons, map[string]any{
+			"type":  2,
+			"style": 5,
+			"label": "Acknowledge",
+			"url":   actions.AckURL,
+		})
+	}
+	if len(buttons) == 0 {
+		return nil
+	}
+	return []map[string]any{{"type": 1, "components": buttons}}
 }

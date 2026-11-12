@@ -29,6 +29,8 @@ type AppConfig struct {
 	LastSchedulerRun *time.Time `json:"last_scheduler_run,omitempty"`
 	// SchedulerCatchup holds the value of the "scheduler_catchup" field.
 	SchedulerCatchup *bool `json:"scheduler_catchup,omitempty"`
+	// SubscriptionPollHours holds the value of the "subscription_poll_hours" field.
+	SubscriptionPollHours *int `json:"subscription_poll_hours,omitempty"`
 	// DateVariant holds the value of the "date_variant" field.
 	DateVariant *string `json:"date_variant,omitempty"`
 	// ReminderDigest holds the value of the "reminder_digest" field.
@@ -79,6 +81,10 @@ type AppConfig struct {
 	NtfyToken *string `json:"ntfy_token,omitempty"`
 	// NtfyPriority holds the value of the "ntfy_priority" field.
 	NtfyPriority *int `json:"ntfy_priority,omitempty"`
+	// PushoverToken holds the value of the "pushover_token" field.
+	PushoverToken *string `json:"pushover_token,omitempty"`
+	// PushoverUser holds the value of the "pushover_user" field.
+	PushoverUser *string `json:"pushover_user,omitempty"`
 	// WebhookURL holds the value of the "webhook_url" field.
 	WebhookURL *string `json:"webhook_url,omitempty"`
 	// WebhookSecret holds the value of the "webhook_secret" field.
@@ -177,9 +183,9 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldTrmnlEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled, appconfig.FieldGoogleContactsEnabled:
 			values[i] = new(sql.NullBool)
-		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes, appconfig.FieldAuditRetentionMax:
+		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldSubscriptionPollHours, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes, appconfig.FieldAuditRetentionMax:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldTelegramWebhookSecret, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldTrmnlKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldTelegramWebhookSecret, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldPushoverToken, appconfig.FieldPushoverUser, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldTrmnlKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldGoogleLastSync, appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -245,6 +251,13 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.SchedulerCatchup = new(bool)
 				*_m.SchedulerCatchup = value.Bool
+			}
+		case appconfig.FieldSubscriptionPollHours:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field subscription_poll_hours", values[i])
+			} else if value.Valid {
+				_m.SubscriptionPollHours = new(int)
+				*_m.SubscriptionPollHours = int(value.Int64)
 			}
 		case appconfig.FieldDateVariant:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -420,6 +433,20 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.NtfyPriority = new(int)
 				*_m.NtfyPriority = int(value.Int64)
+			}
+		case appconfig.FieldPushoverToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field pushover_token", values[i])
+			} else if value.Valid {
+				_m.PushoverToken = new(string)
+				*_m.PushoverToken = value.String
+			}
+		case appconfig.FieldPushoverUser:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field pushover_user", values[i])
+			} else if value.Valid {
+				_m.PushoverUser = new(string)
+				*_m.PushoverUser = value.String
 			}
 		case appconfig.FieldWebhookURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -795,6 +822,11 @@ func (_m *AppConfig) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
+	if v := _m.SubscriptionPollHours; v != nil {
+		builder.WriteString("subscription_poll_hours=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	if v := _m.DateVariant; v != nil {
 		builder.WriteString("date_variant=")
 		builder.WriteString(*v)
@@ -918,6 +950,16 @@ func (_m *AppConfig) String() string {
 	if v := _m.NtfyPriority; v != nil {
 		builder.WriteString("ntfy_priority=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.PushoverToken; v != nil {
+		builder.WriteString("pushover_token=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.PushoverUser; v != nil {
+		builder.WriteString("pushover_user=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	if v := _m.WebhookURL; v != nil {

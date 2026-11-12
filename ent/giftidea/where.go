@@ -85,6 +85,21 @@ func UpdatedAt(v time.Time) predicate.GiftIdea {
 	return predicate.GiftIdea(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// PurchasedAt applies equality check predicate on the "purchased_at" field. It's identical to PurchasedAtEQ.
+func PurchasedAt(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldEQ(FieldPurchasedAt, v))
+}
+
+// GivenAt applies equality check predicate on the "given_at" field. It's identical to GivenAtEQ.
+func GivenAt(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldEQ(FieldGivenAt, v))
+}
+
+// ArchivedAt applies equality check predicate on the "archived_at" field. It's identical to ArchivedAtEQ.
+func ArchivedAt(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldEQ(FieldArchivedAt, v))
+}
+
 // TitleEQ applies the EQ predicate on the "title" field.
 func TitleEQ(v string) predicate.GiftIdea {
 	return predicate.GiftIdea(sql.FieldEQ(FieldTitle, v))
@@ -448,6 +463,156 @@ func UpdatedAtLT(v time.Time) predicate.GiftIdea {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.GiftIdea {
 	return predicate.GiftIdea(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// PurchasedAtEQ applies the EQ predicate on the "purchased_at" field.
+func PurchasedAtEQ(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldEQ(FieldPurchasedAt, v))
+}
+
+// PurchasedAtNEQ applies the NEQ predicate on the "purchased_at" field.
+func PurchasedAtNEQ(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNEQ(FieldPurchasedAt, v))
+}
+
+// PurchasedAtIn applies the In predicate on the "purchased_at" field.
+func PurchasedAtIn(vs ...time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldIn(FieldPurchasedAt, vs...))
+}
+
+// PurchasedAtNotIn applies the NotIn predicate on the "purchased_at" field.
+func PurchasedAtNotIn(vs ...time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNotIn(FieldPurchasedAt, vs...))
+}
+
+// PurchasedAtGT applies the GT predicate on the "purchased_at" field.
+func PurchasedAtGT(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldGT(FieldPurchasedAt, v))
+}
+
+// PurchasedAtGTE applies the GTE predicate on the "purchased_at" field.
+func PurchasedAtGTE(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldGTE(FieldPurchasedAt, v))
+}
+
+// PurchasedAtLT applies the LT predicate on the "purchased_at" field.
+func PurchasedAtLT(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldLT(FieldPurchasedAt, v))
+}
+
+// PurchasedAtLTE applies the LTE predicate on the "purchased_at" field.
+func PurchasedAtLTE(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldLTE(FieldPurchasedAt, v))
+}
+
+// PurchasedAtIsNil applies the IsNil predicate on the "purchased_at" field.
+func PurchasedAtIsNil() predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldIsNull(FieldPurchasedAt))
+}
+
+// PurchasedAtNotNil applies the NotNil predicate on the "purchased_at" field.
+func PurchasedAtNotNil() predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNotNull(FieldPurchasedAt))
+}
+
+// GivenAtEQ applies the EQ predicate on the "given_at" field.
+func GivenAtEQ(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldEQ(FieldGivenAt, v))
+}
+
+// GivenAtNEQ applies the NEQ predicate on the "given_at" field.
+func GivenAtNEQ(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNEQ(FieldGivenAt, v))
+}
+
+// GivenAtIn applies the In predicate on the "given_at" field.
+func GivenAtIn(vs ...time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldIn(FieldGivenAt, vs...))
+}
+
+// GivenAtNotIn applies the NotIn predicate on the "given_at" field.
+func GivenAtNotIn(vs ...time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNotIn(FieldGivenAt, vs...))
+}
+
+// GivenAtGT applies the GT predicate on the "given_at" field.
+func GivenAtGT(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldGT(FieldGivenAt, v))
+}
+
+// GivenAtGTE applies the GTE predicate on the "given_at" field.
+func GivenAtGTE(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldGTE(FieldGivenAt, v))
+}
+
+// GivenAtLT applies the LT predicate on the "given_at" field.
+func GivenAtLT(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldLT(FieldGivenAt, v))
+}
+
+// GivenAtLTE applies the LTE predicate on the "given_at" field.
+func GivenAtLTE(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldLTE(FieldGivenAt, v))
+}
+
+// GivenAtIsNil applies the IsNil predicate on the "given_at" field.
+func GivenAtIsNil() predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldIsNull(FieldGivenAt))
+}
+
+// GivenAtNotNil applies the NotNil predicate on the "given_at" field.
+func GivenAtNotNil() predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNotNull(FieldGivenAt))
+}
+
+// ArchivedAtEQ applies the EQ predicate on the "archived_at" field.
+func ArchivedAtEQ(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldEQ(FieldArchivedAt, v))
+}
+
+// ArchivedAtNEQ applies the NEQ predicate on the "archived_at" field.
+func ArchivedAtNEQ(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNEQ(FieldArchivedAt, v))
+}
+
+// ArchivedAtIn applies the In predicate on the "archived_at" field.
+func ArchivedAtIn(vs ...time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldIn(FieldArchivedAt, vs...))
+}
+
+// ArchivedAtNotIn applies the NotIn predicate on the "archived_at" field.
+func ArchivedAtNotIn(vs ...time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNotIn(FieldArchivedAt, vs...))
+}
+
+// ArchivedAtGT applies the GT predicate on the "archived_at" field.
+func ArchivedAtGT(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldGT(FieldArchivedAt, v))
+}
+
+// ArchivedAtGTE applies the GTE predicate on the "archived_at" field.
+func ArchivedAtGTE(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldGTE(FieldArchivedAt, v))
+}
+
+// ArchivedAtLT applies the LT predicate on the "archived_at" field.
+func ArchivedAtLT(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldLT(FieldArchivedAt, v))
+}
+
+// ArchivedAtLTE applies the LTE predicate on the "archived_at" field.
+func ArchivedAtLTE(v time.Time) predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldLTE(FieldArchivedAt, v))
+}
+
+// ArchivedAtIsNil applies the IsNil predicate on the "archived_at" field.
+func ArchivedAtIsNil() predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldIsNull(FieldArchivedAt))
+}
+
+// ArchivedAtNotNil applies the NotNil predicate on the "archived_at" field.
+func ArchivedAtNotNil() predicate.GiftIdea {
+	return predicate.GiftIdea(sql.FieldNotNull(FieldArchivedAt))
 }
 
 // HasPerson applies the HasEdge predicate on the "person" edge.

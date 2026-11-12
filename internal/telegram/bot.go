@@ -3,13 +3,14 @@ package telegram
 import (
 	"context"
 	"log/slog"
-	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/repository"
+	"github.com/datey/datey/internal/search"
 )
 
 // EventLister lists upcoming occurrences.
@@ -23,11 +24,17 @@ type PersonFinder interface {
 	Search(ctx context.Context, q string) ([]*ent.Person, error)
 }
 
+// Searcher queries the full-text index. internal/search.Searcher satisfies it.
+type Searcher interface {
+	Search(ctx context.Context, query string) ([]search.Group, error)
+}
+
 // Bot handles Telegram updates.
 type Bot struct {
 	cfg    *config.Config
 	events EventLister
 	people PersonFinder
+	search Searcher
 	sender Sender
 }
 
@@ -41,17 +48,43 @@ func NewWithSender(cfg *config.Config, events EventLister, people PersonFinder, 
 	return &Bot{cfg: cfg, events: events, people: people, sender: sender}
 }
 
+// SetSearcher attaches the full-text search backend. It may be left unset: the
+// /search command then answers with a "search unavailable" message instead of
+// failing.
+func (b *Bot) SetSearcher(s Searcher) { b.search = s }
+
 func todayStartUTC() time.Time {
 	now := time.Now().UTC()
 	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 }
 
-func helpText(reminderDays int) string {
+// defaultUpcomingDays is the window used by /upcoming when no argument is given.
+const defaultUpcomingDays = 30
+
+// maxMessageRunes leaves headroom below Telegram's 4096-character limit for the
+// truncation marker.
+const maxMessageRunes = 4000
+
+const truncationMarker = "\n… (truncated)"
+
+// truncateReply keeps a reply within Telegram's message limit. Telegram counts
+// UTF-16 code units; capping runes is stricter for BMP text and close enough
+// elsewhere, and the headroom above absorbs surrogate pairs.
+func truncateReply(s string) string {
+	if utf8.RuneCountInString(s) <= maxMessageRunes {
+		return s
+	}
+	runes := []rune(s)
+	return string(runes[:maxMessageRunes]) + truncationMarker
+}
+
+func helpText() string {
 	return "Datey bot — upcoming dates\n" +
-		"/upcoming [days] — next N days (default " + strconv.Itoa(reminderDays) + ")\n" +
+		"/upcoming [days] — next N days (default 30, max 365)\n" +
 		"/today — today's events\n" +
 		"/person <name> — a person's upcoming dates\n" +
-		"/search <query> — find people"
+		"/search <query> — search people, notes, gifts, events and groups\n" +
+		"/help — this message"
 }
 
 // HandleUpdate processes a single update.
@@ -73,7 +106,7 @@ func (b *Bot) HandleUpdate(ctx context.Context, upd *Update) {
 
 	// Split command and args.
 	// Command may have @botusername suffix: /upcoming@mybot
-	spaceIdx := strings.IndexFunc(text, func(r rune) bool { return r == ' ' || r == '\t' || r == '\n' })
+	spaceIdx := strings.IndexFunc(text, func(r rune) bool { return r == ' ' || r == '\t' || r == '\n' || r == '\r' })
 	var cmdPart, argPart string
 	if spaceIdx == -1 {
 		cmdPart = text
@@ -82,7 +115,7 @@ func (b *Bot) HandleUpdate(ctx context.Context, upd *Update) {
 		cmdPart = text[:spaceIdx]
 		argPart = strings.TrimSpace(text[spaceIdx+1:])
 	}
-	// Strip @bot suffix.
+	// Strip @bot suffix (groups send /command@BotName).
 	if at := strings.Index(cmdPart, "@"); at != -1 {
 		cmdPart = cmdPart[:at]
 	}
@@ -91,7 +124,7 @@ func (b *Bot) HandleUpdate(ctx context.Context, upd *Update) {
 	var reply string
 	switch cmdPart {
 	case "/start", "/help":
-		reply = helpText(b.cfg.ReminderDays)
+		reply = helpText()
 	case "/upcoming":
 		reply = b.handleUpcoming(ctx, argPart)
 	case "/today":
@@ -110,5 +143,5 @@ func (b *Bot) HandleUpdate(ctx context.Context, upd *Update) {
 }
 
 func (b *Bot) send(ctx context.Context, chatID int64, text string) error {
-	return b.sender.SendMessage(ctx, chatID, text)
+	return b.sender.SendMessage(ctx, chatID, truncateReply(text))
 }

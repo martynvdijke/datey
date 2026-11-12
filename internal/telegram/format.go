@@ -63,6 +63,18 @@ func formatDetail(e *ent.Event, occDate, todayStart time.Time) string {
 		}
 	}
 
+	// Memorial events show elapsed years instead of an age ("N years since").
+	if e.Type == "memorial" && e.Date.Year() > 1 {
+		years := occDate.Year() - e.Date.Year()
+		if years >= 0 {
+			unit := "years"
+			if years == 1 {
+				unit = "year"
+			}
+			s += fmt.Sprintf(" (%d %s since)", years, unit)
+		}
+	}
+
 	// Milestone label.
 	if ok, label := milestone.IsMilestone(e.Type, e.Date, occDate); ok && label != "" {
 		s += fmt.Sprintf(" 🎉 %s", label)

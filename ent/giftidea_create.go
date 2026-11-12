@@ -111,6 +111,48 @@ func (_c *GiftIdeaCreate) SetNillableUpdatedAt(v *time.Time) *GiftIdeaCreate {
 	return _c
 }
 
+// SetPurchasedAt sets the "purchased_at" field.
+func (_c *GiftIdeaCreate) SetPurchasedAt(v time.Time) *GiftIdeaCreate {
+	_c.mutation.SetPurchasedAt(v)
+	return _c
+}
+
+// SetNillablePurchasedAt sets the "purchased_at" field if the given value is not nil.
+func (_c *GiftIdeaCreate) SetNillablePurchasedAt(v *time.Time) *GiftIdeaCreate {
+	if v != nil {
+		_c.SetPurchasedAt(*v)
+	}
+	return _c
+}
+
+// SetGivenAt sets the "given_at" field.
+func (_c *GiftIdeaCreate) SetGivenAt(v time.Time) *GiftIdeaCreate {
+	_c.mutation.SetGivenAt(v)
+	return _c
+}
+
+// SetNillableGivenAt sets the "given_at" field if the given value is not nil.
+func (_c *GiftIdeaCreate) SetNillableGivenAt(v *time.Time) *GiftIdeaCreate {
+	if v != nil {
+		_c.SetGivenAt(*v)
+	}
+	return _c
+}
+
+// SetArchivedAt sets the "archived_at" field.
+func (_c *GiftIdeaCreate) SetArchivedAt(v time.Time) *GiftIdeaCreate {
+	_c.mutation.SetArchivedAt(v)
+	return _c
+}
+
+// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
+func (_c *GiftIdeaCreate) SetNillableArchivedAt(v *time.Time) *GiftIdeaCreate {
+	if v != nil {
+		_c.SetArchivedAt(*v)
+	}
+	return _c
+}
+
 // SetPersonID sets the "person" edge to the Person entity by ID.
 func (_c *GiftIdeaCreate) SetPersonID(id int) *GiftIdeaCreate {
 	_c.mutation.SetPersonID(id)
@@ -259,6 +301,18 @@ func (_c *GiftIdeaCreate) createSpec() (*GiftIdea, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(giftidea.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := _c.mutation.PurchasedAt(); ok {
+		_spec.SetField(giftidea.FieldPurchasedAt, field.TypeTime, value)
+		_node.PurchasedAt = &value
+	}
+	if value, ok := _c.mutation.GivenAt(); ok {
+		_spec.SetField(giftidea.FieldGivenAt, field.TypeTime, value)
+		_node.GivenAt = &value
+	}
+	if value, ok := _c.mutation.ArchivedAt(); ok {
+		_spec.SetField(giftidea.FieldArchivedAt, field.TypeTime, value)
+		_node.ArchivedAt = &value
 	}
 	if nodes := _c.mutation.PersonIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

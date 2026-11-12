@@ -33,6 +33,29 @@
         <label for="notes" class="form-label">Notes</label>
         <textarea class="form-control" id="notes" name="notes" rows="3">{{if .FormData}}{{.FormData.Notes}}{{else if .Person}}{{.Person.Notes}}{{end}}</textarea>
       </div>
+      <div class="mb-3">
+        <label for="reminder_days" class="form-label">{{T "people.reminder_stages_label"}}</label>
+        <input type="text" class="form-control" id="reminder_days" name="reminder_days" value="{{if .FormData}}{{.FormData.ReminderDays}}{{else}}{{.ReminderDaysValue}}{{end}}" inputmode="numeric" placeholder="7, 1" autocomplete="off" aria-describedby="reminder-days-help">
+        <div class="form-text" id="reminder-days-help">{{T "people.reminder_stages_help"}}</div>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "reminder_days")}}
+      </div>
+      <div class="mb-3">
+        <label for="timezone" class="form-label">{{T "people.timezone_label"}}</label>
+        <select class="form-select" id="timezone" name="timezone" aria-describedby="timezone-help">
+          <option value="">{{T "people.timezone_inherit"}}{{if .TimezoneDefaultName}} ({{.TimezoneDefaultName}}){{end}}</option>
+          {{range .TimezoneGroups}}
+          <optgroup label="{{.Region}}">
+            {{range .Zones}}
+            <option value="{{.}}"{{if eq . $.TimezoneValue}} selected{{end}}>{{.}}</option>
+            {{end}}
+          </optgroup>
+          {{end}}
+          <option value="__custom__"{{if .TimezoneIsCustom}} selected{{end}}>{{T "people.timezone_custom"}}</option>
+        </select>
+        <input type="text" class="form-control mt-2{{if not .TimezoneIsCustom}} d-none{{end}}" id="timezone_custom" name="timezone_custom" value="{{.TimezoneCustomValue}}" placeholder="Europe/Berlin" autocomplete="off" aria-label="{{T "people.timezone_custom"}}">
+        <div class="form-text" id="timezone-help">{{T "people.timezone_help"}}</div>
+        {{template "fieldError" (dict "Errors" .Errors "Field" "timezone")}}
+      </div>
       {{if .Groups}}
       <div class="mb-3">
         <label class="form-label">Groups</label>
@@ -64,6 +87,20 @@
     }
     [first, middle, last].forEach(function (el) { el.addEventListener('input', updatePreview); });
     updatePreview();
+
+    var tzSelect = document.getElementById('timezone');
+    var tzCustom = document.getElementById('timezone_custom');
+    if (tzSelect && tzCustom) {
+      function syncTimezoneInput() {
+        var custom = tzSelect.value === '__custom__';
+        tzCustom.classList.toggle('d-none', !custom);
+        if (!custom) tzCustom.value = '';
+      }
+      tzSelect.addEventListener('change', function () {
+        syncTimezoneInput();
+        if (tzSelect.value === '__custom__') tzCustom.focus();
+      });
+    }
   })();
 </script>
 {{end}}

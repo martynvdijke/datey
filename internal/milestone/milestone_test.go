@@ -108,3 +108,17 @@ func TestIsMilestone_DaysFlag(t *testing.T) {
 		t.Fatal("9999 days should not be milestone")
 	}
 }
+
+func TestIsMilestone_Memorial(t *testing.T) {
+	// Memorial events show "N years since" and must never carry a badge —
+	// not even the optional 10_000-day badge.
+	start := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	for _, occ := range []time.Time{
+		time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), // 26 years, not a birthday milestone
+		start.AddDate(0, 0, 10000),                  // would be a 10_000-day milestone
+	} {
+		if ok, label := IsMilestoneWithOptions("memorial", start, occ, true); ok {
+			t.Errorf("memorial must not produce a badge, got %q", label)
+		}
+	}
+}

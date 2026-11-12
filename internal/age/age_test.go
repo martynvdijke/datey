@@ -117,3 +117,19 @@ func TestInfoFor(t *testing.T) {
 		t.Errorf("InfoFor(zero) = %+v; want HasAge=false", noAge)
 	}
 }
+
+func TestYearsSince(t *testing.T) {
+	memorial := mustDate(t, 2010, 5, 1)
+	// Before the anniversary: 15 completed years.
+	if got, ok := YearsSince(memorial, mustDate(t, 2026, 4, 30)); !ok || got != 15 {
+		t.Errorf("YearsSince before anniversary = %d, %v; want 15, true", got, ok)
+	}
+	// On the anniversary: 16 years since.
+	if got, ok := YearsSince(memorial, mustDate(t, 2026, 5, 1)); !ok || got != 16 {
+		t.Errorf("YearsSince on anniversary = %d, %v; want 16, true", got, ok)
+	}
+	// Yearless memorial entries have no usable count.
+	if got, ok := YearsSince(time.Time{}, mustDate(t, 2026, 5, 1)); ok {
+		t.Errorf("YearsSince(zero) = %d, %v; want 0, false", got, ok)
+	}
+}

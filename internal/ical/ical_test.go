@@ -74,11 +74,11 @@ func TestTimedEvent(t *testing.T) {
 
 func TestYearlyRecurrence(t *testing.T) {
 	recurring := Calendar([]Event{{
-		UID:         "datey-3@example.com",
-		Summary:     "Anna - birthday",
-		Date:        fixedTime(),
-		AllDay:      true,
-		RecurYearly: true,
+		UID:     "datey-3@example.com",
+		Summary: "Anna - birthday",
+		Date:    fixedTime(),
+		AllDay:  true,
+		RRule:   "FREQ=YEARLY",
 	}}, fixedTime())
 	if !strings.Contains(recurring, "RRULE:FREQ=YEARLY") {
 		t.Errorf("expected RRULE:FREQ=YEARLY, got:\n%s", recurring)
@@ -192,5 +192,88 @@ func TestFoldUnicodeBoundary(t *testing.T) {
 	joined := strings.Join(segs, "")
 	if joined != "SUMMARY:"+s {
 		t.Errorf("fold changed content:\n got %q\nwant %q", joined, "SUMMARY:"+s)
+	}
+}
+
+func TestRRuleBoundsAreEmittedVerbatim(t *testing.T) {
+	until := Calendar([]Event{{
+		UID:    "datey-10@example.com",
+		Date:   fixedTime(),
+		AllDay: true,
+		RRule:  "FREQ=YEARLY;UNTIL=20301231T235959Z",
+	}}, fixedTime())
+	if !strings.Contains(until, "RRULE:FREQ=YEARLY;UNTIL=20301231T235959Z") {
+		t.Errorf("expected UNTIL bound, got:\n%s", until)
+	}
+
+	count := Calendar([]Event{{
+		UID:    "datey-11@example.com",
+		Date:   fixedTime(),
+		AllDay: true,
+		RRule:  "FREQ=YEARLY;COUNT=10",
+	}}, fixedTime())
+	if !strings.Contains(count, "RRULE:FREQ=YEARLY;COUNT=10") {
+		t.Errorf("expected COUNT bound, got:\n%s", count)
+	}
+}
+
+func TestRDATEInstances(t *testing.T) {
+	out := Calendar([]Event{{
+		UID:     "datey-12@example.com",
+		Summary: "Anna - rent",
+		Date:    time.Date(2026, 1, 31, 0, 0, 0, 0, time.UTC),
+		AllDay:  true,
+		ExtraDates: []time.Time{
+			time.Date(2026, 2, 28, 0, 0, 0, 0, time.UTC),
+			time.Date(2026, 3, 31, 0, 0, 0, 0, time.UTC),
+		},
+	}}, fixedTime())
+
+	for _, want := range []string{
+		"DTSTART;VALUE=DATE:20260131",
+		"RDATE;VALUE=DATE:20260228",
+		"RDATE;VALUE=DATE:20260331",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("expected %q, got:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "RRULE") {
+		t.Errorf("materialized series must not carry an RRULE, got:\n%s", out)
+	}
+	if strings.Count(out, "RDATE") != 2 {
+		t.Errorf("expected exactly 2 RDATE lines, got:\n%s", out)
+	}
+}
+
+func TestRDATETimedEventUsesFloatingDateTime(t *testing.T) {
+	out := Calendar([]Event{{
+		UID:         "datey-13@example.com",
+		Date:        time.Date(2026, 1, 5, 0, 0, 0, 0, time.UTC),
+		AllDay:      false,
+		StartHour:   9,
+		StartMinute: 30,
+		ExtraDates:  []time.Time{time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)},
+	}}, fixedTime())
+
+	if !strings.Contains(out, "RDATE:20260202T093000") {
+		t.Errorf("expected floating DATE-TIME RDATE, got:\n%s", out)
+	}
+	if strings.Contains(out, "RDATE;VALUE=DATE") {
+		t.Errorf("timed event must not emit DATE-valued RDATE, got:\n%s", out)
+	}
+}
+
+func TestRDATESFolding(t *testing.T) {
+	// Many instances still fold to the 75-octet content-line limit.
+	ev := Event{UID: "datey-14@example.com", Date: fixedTime(), AllDay: true}
+	for i := 0; i < 30; i++ {
+		ev.ExtraDates = append(ev.ExtraDates, fixedTime().AddDate(0, 0, i))
+	}
+	out := Calendar([]Event{ev}, fixedTime())
+	for _, line := range strings.Split(out, "\r\n") {
+		if len(line) > maxLineOctets {
+			t.Errorf("content line exceeds %d octets (%d): %q", maxLineOctets, len(line), line)
+		}
 	}
 }

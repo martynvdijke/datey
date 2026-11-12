@@ -141,7 +141,9 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "SCHEDULER_HOUR", Label: "Scheduler Hour (0-23)", Value: val("SCHEDULER_HOUR", strconv.Itoa(cfg.SchedulerHour)), Type: "number", RestartRequired: true, Help: "Daily reminder run hour. Requires restart to apply.", Error: errFor("SCHEDULER_HOUR")},
 		{Name: "REMINDER_DAYS", Label: "Reminder Window (1-365 days)", Value: val("REMINDER_DAYS", strconv.Itoa(cfg.ReminderDays)), Type: "number", Error: errFor("REMINDER_DAYS")},
 		{Name: "SCHEDULER_CATCHUP", Label: "Catch Up Missed Reminders", Type: "checkbox", Checked: checked("SCHEDULER_CATCHUP", cfg.SchedulerCatchup), Help: "On startup, send reminders for dates that fell inside the reminder window while the server was offline. Past dates use \"was N days ago\" phrasing; already-sent notifications are never repeated.", Error: errFor("SCHEDULER_CATCHUP")},
+		{Name: "SUBSCRIPTION_POLL_HOURS", Label: "Subscription Poll Interval (hours)", Value: val("SUBSCRIPTION_POLL_HOURS", strconv.Itoa(cfg.SubscriptionPollHours)), Type: "number", RestartRequired: true, Help: "How often enabled ICS subscriptions are fetched. 0 disables automatic polling. Requires restart to apply.", Error: errFor("SUBSCRIPTION_POLL_HOURS")},
 		{Name: "DATE_VARIANT", Label: "Date Variant", Value: val("DATE_VARIANT", cfg.DateVariant), Type: "select", Options: []string{"european", "us"}, Selected: val("DATE_VARIANT", cfg.DateVariant), Help: "How dates are displayed: european is day-first (\"25 Dec\"), us is month-first (\"Dec 25\").", Error: errFor("DATE_VARIANT")},
+		{Name: "TIMEZONE", Label: "Time Zone", Value: val("TIMEZONE", cfg.Timezone), Type: "text", Help: "IANA time zone for people without their own (e.g. Europe/Berlin, UTC). Empty = server local.", Error: errFor("TIMEZONE")},
 		{Name: "LOG_LEVEL", Label: "Log Level", Value: val("LOG_LEVEL", cfg.LogLevel), Type: "select", Options: []string{"debug", "info", "warn", "error"}, Selected: val("LOG_LEVEL", cfg.LogLevel), Error: errFor("LOG_LEVEL")},
 		{Name: "LOG_BUFFER_SIZE", Label: "Log Buffer Size", Value: val("LOG_BUFFER_SIZE", strconv.Itoa(cfg.LogBufferSize)), Type: "number", RestartRequired: true, Help: "In-memory ring buffer entries. Requires restart to apply.", Error: errFor("LOG_BUFFER_SIZE")},
 		{Name: "EINK_MODE", Label: "Force E-Ink Mode", Type: "checkbox", Checked: checked("EINK_MODE", cfg.EinkMode), Help: "Enables high-contrast E-Ink theme for all users."},
@@ -178,6 +180,8 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "NTFY_TOPIC", Label: "Topic", Value: val("NTFY_TOPIC", cfg.NtfyTopic), Type: "text", Help: "Topic to publish reminders to. Required to enable ntfy.", Error: errFor("NTFY_TOPIC")},
 		{Name: "NTFY_TOKEN", Label: "Access Token", Value: val("NTFY_TOKEN", cfg.NtfyToken), Type: "text", Secret: true, Help: "Optional bearer token for authenticated ntfy servers.", Error: errFor("NTFY_TOKEN")},
 		{Name: "NTFY_PRIORITY", Label: "Priority (1-5)", Value: val("NTFY_PRIORITY", strconv.Itoa(cfg.NtfyPriority)), Type: "number", Help: "1 = min, 3 = default, 5 = max.", Error: errFor("NTFY_PRIORITY")},
+		{Name: "PUSHOVER_TOKEN", Label: "Pushover Application Token", Value: val("PUSHOVER_TOKEN", cfg.PushoverToken), Type: "text", Secret: true, Help: "Create an application in your Pushover dashboard to get a token.", Error: errFor("PUSHOVER_TOKEN")},
+		{Name: "PUSHOVER_USER", Label: "Pushover User Key", Value: val("PUSHOVER_USER", cfg.PushoverUser), Type: "text", Help: "Default recipient user key. Per-user keys can be set under Notification settings.", Error: errFor("PUSHOVER_USER")},
 	}}
 
 	webhook := configGroup{Title: "Webhook", TestSection: "webhook", Fields: []configField{

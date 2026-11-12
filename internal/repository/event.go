@@ -59,6 +59,17 @@ func (r *EventRepository) Get(ctx context.Context, id int) (*ent.Event, error) {
 	return r.client.Event.Get(ctx, id)
 }
 
+// GetWithOwner loads an event with its owner edges preloaded so callers can
+// report person/group/contact ownership without extra queries.
+func (r *EventRepository) GetWithOwner(ctx context.Context, id int) (*ent.Event, error) {
+	return r.client.Event.Query().
+		Where(event.IDEQ(id)).
+		WithPerson().
+		WithGroup().
+		WithContact().
+		Only(ctx)
+}
+
 func (r *EventRepository) List(ctx context.Context) ([]*ent.Event, error) {
 	return r.client.Event.Query().
 		Order(ent.Asc(event.FieldDate)).
@@ -159,6 +170,146 @@ func (r *EventRepository) UpdateWithCalendar(ctx context.Context, id int, eventT
 	return u.Save(ctx)
 }
 
+// EventSchedule carries the recurrence fields of an event. Use
+// NewEventSchedule to normalize caller input before persisting it.
+type EventSchedule struct {
+	Frequency       string
+	Interval        int
+	EndDate         *time.Time
+	OccurrenceCount *int
+}
+
+// NewEventSchedule normalizes a frequency/interval pair: an unknown or empty
+// frequency becomes annual, and interval keeps its value only for every_n
+// (otherwise 1, the schema default).
+func NewEventSchedule(freq string, interval int, endDate *time.Time, count *int) EventSchedule {
+	f, ok := recurring.NormalizeFrequency(freq)
+	if !ok {
+		f = recurring.FrequencyAnnual
+	}
+	if f != recurring.FrequencyEveryN {
+		interval = 1
+	}
+	if interval < 1 {
+		interval = 1
+	}
+	if interval > 120 {
+		interval = 120
+	}
+	if count != nil && *count < 1 {
+		count = nil
+	}
+	return EventSchedule{Frequency: f, Interval: interval, EndDate: endDate, OccurrenceCount: count}
+}
+
+func (s EventSchedule) applyCreate(cb *ent.EventCreate) *ent.EventCreate {
+	cb = cb.SetFrequency(s.Frequency).SetInterval(s.Interval)
+	if s.EndDate != nil {
+		cb = cb.SetEndDate(*s.EndDate)
+	}
+	if s.OccurrenceCount != nil {
+		cb = cb.SetOccurrenceCount(*s.OccurrenceCount)
+	}
+	return cb
+}
+
+func (s EventSchedule) applyUpdate(u *ent.EventUpdateOne) *ent.EventUpdateOne {
+	u = u.SetFrequency(s.Frequency).SetInterval(s.Interval)
+	if s.EndDate != nil {
+		u = u.SetEndDate(*s.EndDate)
+	} else {
+		u = u.ClearEndDate()
+	}
+	if s.OccurrenceCount != nil {
+		u = u.SetOccurrenceCount(*s.OccurrenceCount)
+	} else {
+		u = u.ClearOccurrenceCount()
+	}
+	return u
+}
+
+// CreateForPersonWithSchedule creates a person event with explicit calendar
+// and recurrence fields. calendarSystem "gregorian" (or "") needs no lunar
+// month/day.
+func (r *EventRepository) CreateForPersonWithSchedule(ctx context.Context, personID int, eventType string, date time.Time, description string, calendarSystem string, lunarMonth, lunarDay *int, lunarLeap bool, sched EventSchedule) (*ent.Event, error) {
+	if calendarSystem == "" {
+		calendarSystem = "gregorian"
+	}
+	if err := validateLunar(calendarSystem, lunarMonth, lunarDay); err != nil {
+		return nil, err
+	}
+	cb := r.client.Event.Create().
+		SetType(eventType).
+		SetDate(date).
+		SetDescription(description).
+		SetCreatedAt(time.Now()).
+		SetPersonID(personID).
+		SetCalendarSystem(calendarSystem).
+		SetLunarLeap(lunarLeap)
+	if lunarMonth != nil {
+		cb = cb.SetLunarMonth(*lunarMonth)
+	}
+	if lunarDay != nil {
+		cb = cb.SetLunarDay(*lunarDay)
+	}
+	return sched.applyCreate(cb).Save(ctx)
+}
+
+// CreateForGroupWithSchedule creates a group event with explicit calendar and
+// recurrence fields. It mirrors CreateForPersonWithSchedule but attaches the
+// group edge instead of the person edge.
+func (r *EventRepository) CreateForGroupWithSchedule(ctx context.Context, groupID int, eventType string, date time.Time, description string, calendarSystem string, lunarMonth, lunarDay *int, lunarLeap bool, sched EventSchedule) (*ent.Event, error) {
+	if calendarSystem == "" {
+		calendarSystem = "gregorian"
+	}
+	if err := validateLunar(calendarSystem, lunarMonth, lunarDay); err != nil {
+		return nil, err
+	}
+	cb := r.client.Event.Create().
+		SetType(eventType).
+		SetDate(date).
+		SetDescription(description).
+		SetCreatedAt(time.Now()).
+		SetGroupID(groupID).
+		SetCalendarSystem(calendarSystem).
+		SetLunarLeap(lunarLeap)
+	if lunarMonth != nil {
+		cb = cb.SetLunarMonth(*lunarMonth)
+	}
+	if lunarDay != nil {
+		cb = cb.SetLunarDay(*lunarDay)
+	}
+	return sched.applyCreate(cb).Save(ctx)
+}
+
+// UpdateWithSchedule updates an event with explicit calendar and recurrence
+// fields. A nil EndDate / OccurrenceCount clears the stored bound.
+func (r *EventRepository) UpdateWithSchedule(ctx context.Context, id int, eventType string, date time.Time, description string, calendarSystem string, lunarMonth, lunarDay *int, lunarLeap bool, sched EventSchedule) (*ent.Event, error) {
+	if calendarSystem == "" {
+		calendarSystem = "gregorian"
+	}
+	if err := validateLunar(calendarSystem, lunarMonth, lunarDay); err != nil {
+		return nil, err
+	}
+	u := r.client.Event.UpdateOneID(id).
+		SetType(eventType).
+		SetDate(date).
+		SetDescription(description).
+		SetCalendarSystem(calendarSystem).
+		SetLunarLeap(lunarLeap)
+	if lunarMonth != nil {
+		u = u.SetLunarMonth(*lunarMonth)
+	} else {
+		u = u.ClearLunarMonth()
+	}
+	if lunarDay != nil {
+		u = u.SetLunarDay(*lunarDay)
+	} else {
+		u = u.ClearLunarDay()
+	}
+	return sched.applyUpdate(u).Save(ctx)
+}
+
 func (r *EventRepository) ListInRange(ctx context.Context, start, end time.Time) ([]*ent.Event, error) {
 	return r.client.Event.Query().
 		Where(event.DateGTE(start), event.DateLTE(end)).
@@ -167,6 +318,23 @@ func (r *EventRepository) ListInRange(ctx context.Context, start, end time.Time)
 		WithGroup().
 		WithPerson().
 		All(ctx)
+}
+
+// SetNotes updates only the free-text notes of an event.
+func (r *EventRepository) SetNotes(ctx context.Context, id int, notes string) (*ent.Event, error) {
+	return r.client.Event.UpdateOneID(id).SetNotes(notes).Save(ctx)
+}
+
+// SetReminderDays replaces the event's reminder-stage override. An empty list
+// clears the column so the person (or global) reminder stages apply again.
+func (r *EventRepository) SetReminderDays(ctx context.Context, id int, days []int) (*ent.Event, error) {
+	mutation := r.client.Event.UpdateOneID(id)
+	if len(days) == 0 {
+		mutation = mutation.ClearReminderDays()
+	} else {
+		mutation = mutation.SetReminderDays(days)
+	}
+	return mutation.Save(ctx)
 }
 
 func (r *EventRepository) Delete(ctx context.Context, id int) error {

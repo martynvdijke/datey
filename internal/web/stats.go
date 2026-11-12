@@ -1,12 +1,18 @@
 package web
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/datey/datey/internal/age"
 	"github.com/datey/datey/internal/milestone"
+	"github.com/datey/datey/internal/repository"
+	"github.com/datey/datey/internal/tzutil"
 )
 
 type ageBucket struct {
@@ -34,6 +40,59 @@ type missedView struct {
 	Name string
 	Type string
 	Date string
+}
+
+// giftStatusTotal is one row of the gift-spend breakdown. Amounts stay in
+// integer cents until rendering; Total is the formatted display string.
+type giftStatusTotal struct {
+	Status string
+	Count  int
+	Cents  int
+	Total  string
+}
+
+// giftSpender is one row of the per-person spend table.
+type giftSpender struct {
+	Name  string
+	Count int
+	Cents int
+	Total string
+}
+
+// giftMonthSpend is one row of the spend-by-month bar chart. Undated marks the
+// explicit bucket for priced purchases that carry no lifecycle timestamp.
+type giftMonthSpend struct {
+	Label   string
+	Undated bool
+	Count   int
+	Cents   int
+	Total   string
+	Pct     int
+}
+
+// currencySymbol is the single place the gift-spend currency is chosen. The
+// app has no currency setting yet and renders gift prices with "$" on the
+// person page, so the stats summary matches that.
+const currencySymbol = "$"
+
+// formatCents renders an integer amount of cents as a money string
+// ("$1,234.56"). Integer arithmetic guarantees two exact decimals, so no
+// floating-point rounding can creep into the summary.
+func formatCents(cents int) string {
+	sign := ""
+	if cents < 0 {
+		sign = "-"
+		cents = -cents
+	}
+	whole := strconv.Itoa(cents / 100)
+	var grouped strings.Builder
+	for i := 0; i < len(whole); i++ {
+		if i > 0 && (len(whole)-i)%3 == 0 {
+			grouped.WriteByte(',')
+		}
+		grouped.WriteByte(whole[i])
+	}
+	return fmt.Sprintf("%s%s%s.%02d", sign, currencySymbol, grouped.String(), cents%100)
 }
 
 func (h *Handler) statsPage(w http.ResponseWriter, r *http.Request) {
@@ -210,6 +269,99 @@ func (h *Handler) statsPage(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	// Gift spend. One ListAll (ideas + eager-loaded persons) feeds both the
+	// all-time totals and the trailing 12-month breakdown; bucketing happens in
+	// the repository so no extra query or raw SQL is needed. GivenAt is the
+	// spend date when present, else PurchasedAt; items with neither land in the
+	// explicit "undated" bucket.
+	giftIdeas, giftErr := h.giftIdeas.ListAll(r.Context())
+	if giftErr != nil {
+		slog.Error("stats: list gift ideas", "error", giftErr)
+	}
+	giftStatusOrder := []string{"idea", "purchased", "given", "archived"}
+	giftCountByStatus := map[string]int{}
+	giftCentsByStatus := map[string]int{}
+	giftTotalCents := 0
+	giftTotalCount := len(giftIdeas)
+	giftPricedCount := 0
+	spendByPerson := map[int]*giftSpender{}
+	for _, g := range giftIdeas {
+		giftCountByStatus[string(g.Status)]++
+		if g.PriceCents == nil {
+			continue
+		}
+		cents := *g.PriceCents
+		if cents < 0 {
+			cents = 0
+		}
+		giftPricedCount++
+		giftCentsByStatus[string(g.Status)] += cents
+		giftTotalCents += cents
+		if p := g.Edges.Person; p != nil {
+			row, ok := spendByPerson[p.ID]
+			if !ok {
+				row = &giftSpender{Name: p.Name}
+				spendByPerson[p.ID] = row
+			}
+			row.Count++
+			row.Cents += cents
+		}
+	}
+	var giftByStatus []giftStatusTotal
+	for _, status := range giftStatusOrder {
+		if giftCountByStatus[status] == 0 {
+			continue
+		}
+		giftByStatus = append(giftByStatus, giftStatusTotal{
+			Status: status,
+			Count:  giftCountByStatus[status],
+			Cents:  giftCentsByStatus[status],
+			Total:  formatCents(giftCentsByStatus[status]),
+		})
+	}
+	topSpenders := make([]giftSpender, 0, len(spendByPerson))
+	for _, row := range spendByPerson {
+		row.Total = formatCents(row.Cents)
+		topSpenders = append(topSpenders, *row)
+	}
+	sort.Slice(topSpenders, func(i, j int) bool {
+		if topSpenders[i].Cents == topSpenders[j].Cents {
+			return topSpenders[i].Name < topSpenders[j].Name
+		}
+		return topSpenders[i].Cents > topSpenders[j].Cents
+	})
+	const topSpenderLimit = 5
+	if len(topSpenders) > topSpenderLimit {
+		topSpenders = topSpenders[:topSpenderLimit]
+	}
+
+	// 12-month spend bars. Percentages are relative to the largest bucket so
+	// the widest bar fills the track; a non-zero amount never rounds to a
+	// zero-width bar.
+	giftMonthlyBuckets := repository.MonthlySpend(giftIdeas, time.Now(), 12, tzutil.Default())
+	giftMonthly := make([]giftMonthSpend, 0, len(giftMonthlyBuckets))
+	maxMonthCents := 0
+	for _, b := range giftMonthlyBuckets {
+		if b.Cents > maxMonthCents {
+			maxMonthCents = b.Cents
+		}
+	}
+	for _, b := range giftMonthlyBuckets {
+		row := giftMonthSpend{
+			Undated: b.Undated,
+			Count:   b.Count,
+			Cents:   b.Cents,
+			Total:   formatCents(b.Cents),
+		}
+		if !b.Undated {
+			row.Label = b.Month.Format("Jan 06")
+		}
+		if maxMonthCents > 0 {
+			row.Pct = (b.Cents*100 + maxMonthCents - 1) / maxMonthCents
+		}
+		giftMonthly = append(giftMonthly, row)
+	}
+
 	h.render(w, r, "stats.html", map[string]any{
 		"Title":              "Datey - Stats",
 		"AgeBuckets":         ageBuckets,
@@ -219,5 +371,11 @@ func (h *Handler) statsPage(w http.ResponseWriter, r *http.Request) {
 		"EventsPerMonth":     eventsPerMonth,
 		"UpcomingMilestones": upcomingMilestones,
 		"MissedRecently":     missedRecently,
+		"GiftByStatus":       giftByStatus,
+		"GiftTopSpenders":    topSpenders,
+		"GiftMonthlySpend":   giftMonthly,
+		"GiftTotal":          formatCents(giftTotalCents),
+		"GiftTotalCount":     giftTotalCount,
+		"GiftPricedCount":    giftPricedCount,
 	})
 }

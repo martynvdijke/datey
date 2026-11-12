@@ -165,7 +165,7 @@ func (h *Handler) settingsBackupRestore(w http.ResponseWriter, r *http.Request) 
 		h.renderBackupWithError(w, r, "Failed to stage restore.")
 		return
 	}
-	if err := db.WriteRestorePending(h.cfg.DataDir, originalName); err != nil {
+	if err := db.WriteRestorePendingFrom(h.cfg.DataDir, originalName, candidatePath); err != nil {
 		_ = os.Remove(staged)
 		h.renderBackupWithError(w, r, "Failed to stage restore.")
 		return

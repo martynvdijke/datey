@@ -18,6 +18,7 @@ import (
 	"github.com/datey/datey/ent/notificationlog"
 	"github.com/datey/datey/ent/person"
 	"github.com/datey/datey/ent/predicate"
+	"github.com/datey/datey/ent/subscription"
 )
 
 // EventUpdate is the builder for updating Event entities.
@@ -215,6 +216,202 @@ func (_u *EventUpdate) SetNillableLunarLeap(v *bool) *EventUpdate {
 	return _u
 }
 
+// SetFrequency sets the "frequency" field.
+func (_u *EventUpdate) SetFrequency(v string) *EventUpdate {
+	_u.mutation.SetFrequency(v)
+	return _u
+}
+
+// SetNillableFrequency sets the "frequency" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableFrequency(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetFrequency(*v)
+	}
+	return _u
+}
+
+// SetInterval sets the "interval" field.
+func (_u *EventUpdate) SetInterval(v int) *EventUpdate {
+	_u.mutation.ResetInterval()
+	_u.mutation.SetInterval(v)
+	return _u
+}
+
+// SetNillableInterval sets the "interval" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableInterval(v *int) *EventUpdate {
+	if v != nil {
+		_u.SetInterval(*v)
+	}
+	return _u
+}
+
+// AddInterval adds value to the "interval" field.
+func (_u *EventUpdate) AddInterval(v int) *EventUpdate {
+	_u.mutation.AddInterval(v)
+	return _u
+}
+
+// SetEndDate sets the "end_date" field.
+func (_u *EventUpdate) SetEndDate(v time.Time) *EventUpdate {
+	_u.mutation.SetEndDate(v)
+	return _u
+}
+
+// SetNillableEndDate sets the "end_date" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableEndDate(v *time.Time) *EventUpdate {
+	if v != nil {
+		_u.SetEndDate(*v)
+	}
+	return _u
+}
+
+// ClearEndDate clears the value of the "end_date" field.
+func (_u *EventUpdate) ClearEndDate() *EventUpdate {
+	_u.mutation.ClearEndDate()
+	return _u
+}
+
+// SetOccurrenceCount sets the "occurrence_count" field.
+func (_u *EventUpdate) SetOccurrenceCount(v int) *EventUpdate {
+	_u.mutation.ResetOccurrenceCount()
+	_u.mutation.SetOccurrenceCount(v)
+	return _u
+}
+
+// SetNillableOccurrenceCount sets the "occurrence_count" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableOccurrenceCount(v *int) *EventUpdate {
+	if v != nil {
+		_u.SetOccurrenceCount(*v)
+	}
+	return _u
+}
+
+// AddOccurrenceCount adds value to the "occurrence_count" field.
+func (_u *EventUpdate) AddOccurrenceCount(v int) *EventUpdate {
+	_u.mutation.AddOccurrenceCount(v)
+	return _u
+}
+
+// ClearOccurrenceCount clears the value of the "occurrence_count" field.
+func (_u *EventUpdate) ClearOccurrenceCount() *EventUpdate {
+	_u.mutation.ClearOccurrenceCount()
+	return _u
+}
+
+// SetSubscriptionID sets the "subscription_id" field.
+func (_u *EventUpdate) SetSubscriptionID(v int) *EventUpdate {
+	_u.mutation.SetSubscriptionID(v)
+	return _u
+}
+
+// SetNillableSubscriptionID sets the "subscription_id" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableSubscriptionID(v *int) *EventUpdate {
+	if v != nil {
+		_u.SetSubscriptionID(*v)
+	}
+	return _u
+}
+
+// ClearSubscriptionID clears the value of the "subscription_id" field.
+func (_u *EventUpdate) ClearSubscriptionID() *EventUpdate {
+	_u.mutation.ClearSubscriptionID()
+	return _u
+}
+
+// SetExternalUID sets the "external_uid" field.
+func (_u *EventUpdate) SetExternalUID(v string) *EventUpdate {
+	_u.mutation.SetExternalUID(v)
+	return _u
+}
+
+// SetNillableExternalUID sets the "external_uid" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableExternalUID(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetExternalUID(*v)
+	}
+	return _u
+}
+
+// ClearExternalUID clears the value of the "external_uid" field.
+func (_u *EventUpdate) ClearExternalUID() *EventUpdate {
+	_u.mutation.ClearExternalUID()
+	return _u
+}
+
+// SetRuleKind sets the "rule_kind" field.
+func (_u *EventUpdate) SetRuleKind(v string) *EventUpdate {
+	_u.mutation.SetRuleKind(v)
+	return _u
+}
+
+// SetNillableRuleKind sets the "rule_kind" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableRuleKind(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetRuleKind(*v)
+	}
+	return _u
+}
+
+// ClearRuleKind clears the value of the "rule_kind" field.
+func (_u *EventUpdate) ClearRuleKind() *EventUpdate {
+	_u.mutation.ClearRuleKind()
+	return _u
+}
+
+// SetRuleOrdinal sets the "rule_ordinal" field.
+func (_u *EventUpdate) SetRuleOrdinal(v int) *EventUpdate {
+	_u.mutation.ResetRuleOrdinal()
+	_u.mutation.SetRuleOrdinal(v)
+	return _u
+}
+
+// SetNillableRuleOrdinal sets the "rule_ordinal" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableRuleOrdinal(v *int) *EventUpdate {
+	if v != nil {
+		_u.SetRuleOrdinal(*v)
+	}
+	return _u
+}
+
+// AddRuleOrdinal adds value to the "rule_ordinal" field.
+func (_u *EventUpdate) AddRuleOrdinal(v int) *EventUpdate {
+	_u.mutation.AddRuleOrdinal(v)
+	return _u
+}
+
+// ClearRuleOrdinal clears the value of the "rule_ordinal" field.
+func (_u *EventUpdate) ClearRuleOrdinal() *EventUpdate {
+	_u.mutation.ClearRuleOrdinal()
+	return _u
+}
+
+// SetRuleWeekday sets the "rule_weekday" field.
+func (_u *EventUpdate) SetRuleWeekday(v int) *EventUpdate {
+	_u.mutation.ResetRuleWeekday()
+	_u.mutation.SetRuleWeekday(v)
+	return _u
+}
+
+// SetNillableRuleWeekday sets the "rule_weekday" field if the given value is not nil.
+func (_u *EventUpdate) SetNillableRuleWeekday(v *int) *EventUpdate {
+	if v != nil {
+		_u.SetRuleWeekday(*v)
+	}
+	return _u
+}
+
+// AddRuleWeekday adds value to the "rule_weekday" field.
+func (_u *EventUpdate) AddRuleWeekday(v int) *EventUpdate {
+	_u.mutation.AddRuleWeekday(v)
+	return _u
+}
+
+// ClearRuleWeekday clears the value of the "rule_weekday" field.
+func (_u *EventUpdate) ClearRuleWeekday() *EventUpdate {
+	_u.mutation.ClearRuleWeekday()
+	return _u
+}
+
 // SetContactID sets the "contact" edge to the Contact entity by ID.
 func (_u *EventUpdate) SetContactID(id int) *EventUpdate {
 	_u.mutation.SetContactID(id)
@@ -287,6 +484,11 @@ func (_u *EventUpdate) AddNotificationLogs(v ...*NotificationLog) *EventUpdate {
 	return _u.AddNotificationLogIDs(ids...)
 }
 
+// SetSubscription sets the "subscription" edge to the Subscription entity.
+func (_u *EventUpdate) SetSubscription(v *Subscription) *EventUpdate {
+	return _u.SetSubscriptionID(v.ID)
+}
+
 // Mutation returns the EventMutation object of the builder.
 func (_u *EventUpdate) Mutation() *EventMutation {
 	return _u.mutation
@@ -331,6 +533,12 @@ func (_u *EventUpdate) RemoveNotificationLogs(v ...*NotificationLog) *EventUpdat
 	return _u.RemoveNotificationLogIDs(ids...)
 }
 
+// ClearSubscription clears the "subscription" edge to the Subscription entity.
+func (_u *EventUpdate) ClearSubscription() *EventUpdate {
+	_u.mutation.ClearSubscription()
+	return _u
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *EventUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
@@ -373,6 +581,26 @@ func (_u *EventUpdate) check() error {
 	if v, ok := _u.mutation.LunarDay(); ok {
 		if err := event.LunarDayValidator(v); err != nil {
 			return &ValidationError{Name: "lunar_day", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_day": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Interval(); ok {
+		if err := event.IntervalValidator(v); err != nil {
+			return &ValidationError{Name: "interval", err: fmt.Errorf(`ent: validator failed for field "Event.interval": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OccurrenceCount(); ok {
+		if err := event.OccurrenceCountValidator(v); err != nil {
+			return &ValidationError{Name: "occurrence_count", err: fmt.Errorf(`ent: validator failed for field "Event.occurrence_count": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RuleOrdinal(); ok {
+		if err := event.RuleOrdinalValidator(v); err != nil {
+			return &ValidationError{Name: "rule_ordinal", err: fmt.Errorf(`ent: validator failed for field "Event.rule_ordinal": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RuleWeekday(); ok {
+		if err := event.RuleWeekdayValidator(v); err != nil {
+			return &ValidationError{Name: "rule_weekday", err: fmt.Errorf(`ent: validator failed for field "Event.rule_weekday": %w`, err)}
 		}
 	}
 	return nil
@@ -445,6 +673,60 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.LunarLeap(); ok {
 		_spec.SetField(event.FieldLunarLeap, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Frequency(); ok {
+		_spec.SetField(event.FieldFrequency, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Interval(); ok {
+		_spec.SetField(event.FieldInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedInterval(); ok {
+		_spec.AddField(event.FieldInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.EndDate(); ok {
+		_spec.SetField(event.FieldEndDate, field.TypeTime, value)
+	}
+	if _u.mutation.EndDateCleared() {
+		_spec.ClearField(event.FieldEndDate, field.TypeTime)
+	}
+	if value, ok := _u.mutation.OccurrenceCount(); ok {
+		_spec.SetField(event.FieldOccurrenceCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOccurrenceCount(); ok {
+		_spec.AddField(event.FieldOccurrenceCount, field.TypeInt, value)
+	}
+	if _u.mutation.OccurrenceCountCleared() {
+		_spec.ClearField(event.FieldOccurrenceCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ExternalUID(); ok {
+		_spec.SetField(event.FieldExternalUID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalUIDCleared() {
+		_spec.ClearField(event.FieldExternalUID, field.TypeString)
+	}
+	if value, ok := _u.mutation.RuleKind(); ok {
+		_spec.SetField(event.FieldRuleKind, field.TypeString, value)
+	}
+	if _u.mutation.RuleKindCleared() {
+		_spec.ClearField(event.FieldRuleKind, field.TypeString)
+	}
+	if value, ok := _u.mutation.RuleOrdinal(); ok {
+		_spec.SetField(event.FieldRuleOrdinal, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRuleOrdinal(); ok {
+		_spec.AddField(event.FieldRuleOrdinal, field.TypeInt, value)
+	}
+	if _u.mutation.RuleOrdinalCleared() {
+		_spec.ClearField(event.FieldRuleOrdinal, field.TypeInt)
+	}
+	if value, ok := _u.mutation.RuleWeekday(); ok {
+		_spec.SetField(event.FieldRuleWeekday, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRuleWeekday(); ok {
+		_spec.AddField(event.FieldRuleWeekday, field.TypeInt, value)
+	}
+	if _u.mutation.RuleWeekdayCleared() {
+		_spec.ClearField(event.FieldRuleWeekday, field.TypeInt)
 	}
 	if _u.mutation.ContactCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -571,6 +853,35 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(notificationlog.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubscriptionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.SubscriptionTable,
+			Columns: []string{event.SubscriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubscriptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.SubscriptionTable,
+			Columns: []string{event.SubscriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -780,6 +1091,202 @@ func (_u *EventUpdateOne) SetNillableLunarLeap(v *bool) *EventUpdateOne {
 	return _u
 }
 
+// SetFrequency sets the "frequency" field.
+func (_u *EventUpdateOne) SetFrequency(v string) *EventUpdateOne {
+	_u.mutation.SetFrequency(v)
+	return _u
+}
+
+// SetNillableFrequency sets the "frequency" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableFrequency(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetFrequency(*v)
+	}
+	return _u
+}
+
+// SetInterval sets the "interval" field.
+func (_u *EventUpdateOne) SetInterval(v int) *EventUpdateOne {
+	_u.mutation.ResetInterval()
+	_u.mutation.SetInterval(v)
+	return _u
+}
+
+// SetNillableInterval sets the "interval" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableInterval(v *int) *EventUpdateOne {
+	if v != nil {
+		_u.SetInterval(*v)
+	}
+	return _u
+}
+
+// AddInterval adds value to the "interval" field.
+func (_u *EventUpdateOne) AddInterval(v int) *EventUpdateOne {
+	_u.mutation.AddInterval(v)
+	return _u
+}
+
+// SetEndDate sets the "end_date" field.
+func (_u *EventUpdateOne) SetEndDate(v time.Time) *EventUpdateOne {
+	_u.mutation.SetEndDate(v)
+	return _u
+}
+
+// SetNillableEndDate sets the "end_date" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableEndDate(v *time.Time) *EventUpdateOne {
+	if v != nil {
+		_u.SetEndDate(*v)
+	}
+	return _u
+}
+
+// ClearEndDate clears the value of the "end_date" field.
+func (_u *EventUpdateOne) ClearEndDate() *EventUpdateOne {
+	_u.mutation.ClearEndDate()
+	return _u
+}
+
+// SetOccurrenceCount sets the "occurrence_count" field.
+func (_u *EventUpdateOne) SetOccurrenceCount(v int) *EventUpdateOne {
+	_u.mutation.ResetOccurrenceCount()
+	_u.mutation.SetOccurrenceCount(v)
+	return _u
+}
+
+// SetNillableOccurrenceCount sets the "occurrence_count" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableOccurrenceCount(v *int) *EventUpdateOne {
+	if v != nil {
+		_u.SetOccurrenceCount(*v)
+	}
+	return _u
+}
+
+// AddOccurrenceCount adds value to the "occurrence_count" field.
+func (_u *EventUpdateOne) AddOccurrenceCount(v int) *EventUpdateOne {
+	_u.mutation.AddOccurrenceCount(v)
+	return _u
+}
+
+// ClearOccurrenceCount clears the value of the "occurrence_count" field.
+func (_u *EventUpdateOne) ClearOccurrenceCount() *EventUpdateOne {
+	_u.mutation.ClearOccurrenceCount()
+	return _u
+}
+
+// SetSubscriptionID sets the "subscription_id" field.
+func (_u *EventUpdateOne) SetSubscriptionID(v int) *EventUpdateOne {
+	_u.mutation.SetSubscriptionID(v)
+	return _u
+}
+
+// SetNillableSubscriptionID sets the "subscription_id" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableSubscriptionID(v *int) *EventUpdateOne {
+	if v != nil {
+		_u.SetSubscriptionID(*v)
+	}
+	return _u
+}
+
+// ClearSubscriptionID clears the value of the "subscription_id" field.
+func (_u *EventUpdateOne) ClearSubscriptionID() *EventUpdateOne {
+	_u.mutation.ClearSubscriptionID()
+	return _u
+}
+
+// SetExternalUID sets the "external_uid" field.
+func (_u *EventUpdateOne) SetExternalUID(v string) *EventUpdateOne {
+	_u.mutation.SetExternalUID(v)
+	return _u
+}
+
+// SetNillableExternalUID sets the "external_uid" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableExternalUID(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetExternalUID(*v)
+	}
+	return _u
+}
+
+// ClearExternalUID clears the value of the "external_uid" field.
+func (_u *EventUpdateOne) ClearExternalUID() *EventUpdateOne {
+	_u.mutation.ClearExternalUID()
+	return _u
+}
+
+// SetRuleKind sets the "rule_kind" field.
+func (_u *EventUpdateOne) SetRuleKind(v string) *EventUpdateOne {
+	_u.mutation.SetRuleKind(v)
+	return _u
+}
+
+// SetNillableRuleKind sets the "rule_kind" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableRuleKind(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetRuleKind(*v)
+	}
+	return _u
+}
+
+// ClearRuleKind clears the value of the "rule_kind" field.
+func (_u *EventUpdateOne) ClearRuleKind() *EventUpdateOne {
+	_u.mutation.ClearRuleKind()
+	return _u
+}
+
+// SetRuleOrdinal sets the "rule_ordinal" field.
+func (_u *EventUpdateOne) SetRuleOrdinal(v int) *EventUpdateOne {
+	_u.mutation.ResetRuleOrdinal()
+	_u.mutation.SetRuleOrdinal(v)
+	return _u
+}
+
+// SetNillableRuleOrdinal sets the "rule_ordinal" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableRuleOrdinal(v *int) *EventUpdateOne {
+	if v != nil {
+		_u.SetRuleOrdinal(*v)
+	}
+	return _u
+}
+
+// AddRuleOrdinal adds value to the "rule_ordinal" field.
+func (_u *EventUpdateOne) AddRuleOrdinal(v int) *EventUpdateOne {
+	_u.mutation.AddRuleOrdinal(v)
+	return _u
+}
+
+// ClearRuleOrdinal clears the value of the "rule_ordinal" field.
+func (_u *EventUpdateOne) ClearRuleOrdinal() *EventUpdateOne {
+	_u.mutation.ClearRuleOrdinal()
+	return _u
+}
+
+// SetRuleWeekday sets the "rule_weekday" field.
+func (_u *EventUpdateOne) SetRuleWeekday(v int) *EventUpdateOne {
+	_u.mutation.ResetRuleWeekday()
+	_u.mutation.SetRuleWeekday(v)
+	return _u
+}
+
+// SetNillableRuleWeekday sets the "rule_weekday" field if the given value is not nil.
+func (_u *EventUpdateOne) SetNillableRuleWeekday(v *int) *EventUpdateOne {
+	if v != nil {
+		_u.SetRuleWeekday(*v)
+	}
+	return _u
+}
+
+// AddRuleWeekday adds value to the "rule_weekday" field.
+func (_u *EventUpdateOne) AddRuleWeekday(v int) *EventUpdateOne {
+	_u.mutation.AddRuleWeekday(v)
+	return _u
+}
+
+// ClearRuleWeekday clears the value of the "rule_weekday" field.
+func (_u *EventUpdateOne) ClearRuleWeekday() *EventUpdateOne {
+	_u.mutation.ClearRuleWeekday()
+	return _u
+}
+
 // SetContactID sets the "contact" edge to the Contact entity by ID.
 func (_u *EventUpdateOne) SetContactID(id int) *EventUpdateOne {
 	_u.mutation.SetContactID(id)
@@ -852,6 +1359,11 @@ func (_u *EventUpdateOne) AddNotificationLogs(v ...*NotificationLog) *EventUpdat
 	return _u.AddNotificationLogIDs(ids...)
 }
 
+// SetSubscription sets the "subscription" edge to the Subscription entity.
+func (_u *EventUpdateOne) SetSubscription(v *Subscription) *EventUpdateOne {
+	return _u.SetSubscriptionID(v.ID)
+}
+
 // Mutation returns the EventMutation object of the builder.
 func (_u *EventUpdateOne) Mutation() *EventMutation {
 	return _u.mutation
@@ -894,6 +1406,12 @@ func (_u *EventUpdateOne) RemoveNotificationLogs(v ...*NotificationLog) *EventUp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveNotificationLogIDs(ids...)
+}
+
+// ClearSubscription clears the "subscription" edge to the Subscription entity.
+func (_u *EventUpdateOne) ClearSubscription() *EventUpdateOne {
+	_u.mutation.ClearSubscription()
+	return _u
 }
 
 // Where appends a list predicates to the EventUpdate builder.
@@ -951,6 +1469,26 @@ func (_u *EventUpdateOne) check() error {
 	if v, ok := _u.mutation.LunarDay(); ok {
 		if err := event.LunarDayValidator(v); err != nil {
 			return &ValidationError{Name: "lunar_day", err: fmt.Errorf(`ent: validator failed for field "Event.lunar_day": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Interval(); ok {
+		if err := event.IntervalValidator(v); err != nil {
+			return &ValidationError{Name: "interval", err: fmt.Errorf(`ent: validator failed for field "Event.interval": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.OccurrenceCount(); ok {
+		if err := event.OccurrenceCountValidator(v); err != nil {
+			return &ValidationError{Name: "occurrence_count", err: fmt.Errorf(`ent: validator failed for field "Event.occurrence_count": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RuleOrdinal(); ok {
+		if err := event.RuleOrdinalValidator(v); err != nil {
+			return &ValidationError{Name: "rule_ordinal", err: fmt.Errorf(`ent: validator failed for field "Event.rule_ordinal": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.RuleWeekday(); ok {
+		if err := event.RuleWeekdayValidator(v); err != nil {
+			return &ValidationError{Name: "rule_weekday", err: fmt.Errorf(`ent: validator failed for field "Event.rule_weekday": %w`, err)}
 		}
 	}
 	return nil
@@ -1040,6 +1578,60 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 	}
 	if value, ok := _u.mutation.LunarLeap(); ok {
 		_spec.SetField(event.FieldLunarLeap, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Frequency(); ok {
+		_spec.SetField(event.FieldFrequency, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Interval(); ok {
+		_spec.SetField(event.FieldInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedInterval(); ok {
+		_spec.AddField(event.FieldInterval, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.EndDate(); ok {
+		_spec.SetField(event.FieldEndDate, field.TypeTime, value)
+	}
+	if _u.mutation.EndDateCleared() {
+		_spec.ClearField(event.FieldEndDate, field.TypeTime)
+	}
+	if value, ok := _u.mutation.OccurrenceCount(); ok {
+		_spec.SetField(event.FieldOccurrenceCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOccurrenceCount(); ok {
+		_spec.AddField(event.FieldOccurrenceCount, field.TypeInt, value)
+	}
+	if _u.mutation.OccurrenceCountCleared() {
+		_spec.ClearField(event.FieldOccurrenceCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ExternalUID(); ok {
+		_spec.SetField(event.FieldExternalUID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalUIDCleared() {
+		_spec.ClearField(event.FieldExternalUID, field.TypeString)
+	}
+	if value, ok := _u.mutation.RuleKind(); ok {
+		_spec.SetField(event.FieldRuleKind, field.TypeString, value)
+	}
+	if _u.mutation.RuleKindCleared() {
+		_spec.ClearField(event.FieldRuleKind, field.TypeString)
+	}
+	if value, ok := _u.mutation.RuleOrdinal(); ok {
+		_spec.SetField(event.FieldRuleOrdinal, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRuleOrdinal(); ok {
+		_spec.AddField(event.FieldRuleOrdinal, field.TypeInt, value)
+	}
+	if _u.mutation.RuleOrdinalCleared() {
+		_spec.ClearField(event.FieldRuleOrdinal, field.TypeInt)
+	}
+	if value, ok := _u.mutation.RuleWeekday(); ok {
+		_spec.SetField(event.FieldRuleWeekday, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedRuleWeekday(); ok {
+		_spec.AddField(event.FieldRuleWeekday, field.TypeInt, value)
+	}
+	if _u.mutation.RuleWeekdayCleared() {
+		_spec.ClearField(event.FieldRuleWeekday, field.TypeInt)
 	}
 	if _u.mutation.ContactCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1166,6 +1758,35 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(notificationlog.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubscriptionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.SubscriptionTable,
+			Columns: []string{event.SubscriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubscriptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.SubscriptionTable,
+			Columns: []string{event.SubscriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

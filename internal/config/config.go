@@ -6,18 +6,34 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/datey/datey/internal/reminderplan"
+	"github.com/datey/datey/internal/tzutil"
 )
 
 type Config struct {
-	Port             int
-	DataDir          string
-	SchedulerHour    int
-	ReminderDays     int
+	Port          int
+	DataDir       string
+	SchedulerHour int
+	ReminderDays  int
+	// ReminderStages is the ascending list of lead times (in days) at which a
+	// reminder is sent. It always contains at least one entry and supersedes
+	// ReminderDays, which remains the single-stage fallback.
+	ReminderStages []int
+	// ReminderDigest sends one combined message per channel per day instead of
+	// an individual message per event.
+	ReminderDigest   bool
 	SchedulerCatchup bool
-	DateVariant      string
-	LogLevel         string
-	LogBufferSize    int
-	OTLPEndpoint     string
+	// SubscriptionPollHours controls how often enabled ICS subscriptions are
+	// fetched. Zero disables automatic polling.
+	SubscriptionPollHours int
+	DateVariant           string
+	// Timezone is the instance-wide IANA zone used for people who do not have
+	// their own. Empty means the server's local zone.
+	Timezone      string
+	LogLevel      string
+	LogBufferSize int
+	OTLPEndpoint  string
 
 	// AppURL is the externally reachable base URL (e.g. "https://datey.example.com").
 	// Used to build links inside emailed content such as password reset links.
@@ -57,6 +73,9 @@ type Config struct {
 	NtfyTopic    string
 	NtfyToken    string
 	NtfyPriority int
+
+	PushoverToken string
+	PushoverUser  string
 
 	WebhookURL    string
 	WebhookSecret string
@@ -136,7 +155,9 @@ func Load() (*Config, error) {
 		SchedulerHour:         getEnvInt("SCHEDULER_HOUR", 8),
 		ReminderDays:          getEnvInt("REMINDER_DAYS", 7),
 		SchedulerCatchup:      getEnvBool("SCHEDULER_CATCHUP", true),
+		SubscriptionPollHours: getEnvInt("SUBSCRIPTION_POLL_HOURS", 24),
 		DateVariant:           getEnvExplicit("DATE_VARIANT", "european"),
+		Timezone:              getEnv("TIMEZONE", ""),
 		LogLevel:              getEnvExplicit("LOG_LEVEL", "info"),
 		LogBufferSize:         getEnvInt("LOG_BUFFER_SIZE", 10000),
 		OTLPEndpoint:          getEnv("OTEL_ENDPOINT", ""),
@@ -161,6 +182,8 @@ func Load() (*Config, error) {
 		NtfyTopic:             getEnv("NTFY_TOPIC", ""),
 		NtfyToken:             getEnv("NTFY_TOKEN", ""),
 		NtfyPriority:          getEnvInt("NTFY_PRIORITY", 3),
+		PushoverToken:         getEnv("PUSHOVER_TOKEN", ""),
+		PushoverUser:          getEnv("PUSHOVER_USER", ""),
 		WebhookURL:            getEnv("WEBHOOK_URL", ""),
 		WebhookSecret:         getEnv("WEBHOOK_SECRET", ""),
 
@@ -256,6 +279,25 @@ func Load() (*Config, error) {
 		cfg.BackupRetentionDays = 30
 	}
 
+	if raw := strings.TrimSpace(os.Getenv("REMINDER_STAGES")); raw != "" {
+		st, err := reminderplan.ParseStages(raw)
+		if err != nil {
+			return nil, fmt.Errorf("REMINDER_STAGES: %w", err)
+		}
+		cfg.ReminderStages = st
+	}
+	if len(cfg.ReminderStages) == 0 {
+		cfg.ReminderStages = []int{cfg.ReminderDays}
+	}
+	cfg.ReminderDigest = getEnvBool("REMINDER_DIGEST", false)
+
+	if cfg.Timezone != "" {
+		if err := tzutil.Validate(cfg.Timezone); err != nil {
+			return nil, fmt.Errorf("TIMEZONE: %w", err)
+		}
+	}
+	tzutil.SetDefault(cfg.Timezone)
+
 	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
@@ -282,11 +324,27 @@ func (c *Config) Validate() error {
 	if c.SchedulerHour < 0 || c.SchedulerHour > 23 {
 		return fmt.Errorf("SCHEDULER_HOUR must be between 0 and 23, got %d", c.SchedulerHour)
 	}
+	if c.SubscriptionPollHours < 0 || c.SubscriptionPollHours > 168 {
+		return fmt.Errorf("SUBSCRIPTION_POLL_HOURS must be between 0 and 168, got %d", c.SubscriptionPollHours)
+	}
 	if c.WeeklyBackupDay < 0 || c.WeeklyBackupDay > 6 {
 		return fmt.Errorf("WEEKLY_BACKUP_DAY must be between 0 (Sunday) and 6 (Saturday), got %d", c.WeeklyBackupDay)
 	}
 	if c.ReminderDays < 1 || c.ReminderDays > 365 {
 		return fmt.Errorf("REMINDER_DAYS must be between 1 and 365, got %d", c.ReminderDays)
+	}
+	if len(c.ReminderStages) > 0 {
+		if len(c.ReminderStages) > reminderplan.MaxStages {
+			return fmt.Errorf("REMINDER_STAGES must have at most %d entries", reminderplan.MaxStages)
+		}
+		for i, st := range c.ReminderStages {
+			if st < reminderplan.MinStage || st > reminderplan.MaxStage {
+				return fmt.Errorf("REMINDER_STAGES entries must be between %d and %d, got %d", reminderplan.MinStage, reminderplan.MaxStage, st)
+			}
+			if i > 0 && st <= c.ReminderStages[i-1] {
+				return fmt.Errorf("REMINDER_STAGES must be strictly ascending")
+			}
+		}
 	}
 	if !validDateVariants[c.DateVariant] {
 		return fmt.Errorf("DATE_VARIANT must be one of european, us; got %q", c.DateVariant)

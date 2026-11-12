@@ -4,16 +4,22 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/carddav"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/db"
+	"github.com/datey/datey/internal/giftgap"
 	"github.com/datey/datey/internal/googlecontacts"
+	"github.com/datey/datey/internal/icsub"
 	"github.com/datey/datey/internal/notifier"
+	"github.com/datey/datey/internal/reminderaction"
+	"github.com/datey/datey/internal/reminderplan"
 	"github.com/datey/datey/internal/repository"
 	"github.com/datey/datey/internal/settings"
+	"github.com/datey/datey/internal/tzutil"
 )
 
 // catchUpGrace is the epsilon that separates a normal restart (shortly after
@@ -35,6 +41,7 @@ type Scheduler struct {
 	settings *settings.Store
 	users    *repository.UserRepository
 	channels *repository.UserNotificationChannelRepository
+	snoozes  *repository.SnoozeRepository
 }
 
 func New(cfg *config.Config, client *ent.Client, registry *notifier.Registry, settingsStore *settings.Store) *Scheduler {
@@ -47,7 +54,20 @@ func New(cfg *config.Config, client *ent.Client, registry *notifier.Registry, se
 		settings: settingsStore,
 		users:    repository.NewUserRepository(client),
 		channels: repository.NewUserNotificationChannelRepository(client),
+		snoozes:  repository.NewSnoozeRepository(client),
 	}
+}
+
+// actionSecret returns the signing key for reminder action links: the first
+// configured feed key, matching internal/web's share-token key order. A nil
+// result means action links are unavailable and reminders go out without them.
+func (s *Scheduler) actionSecret() []byte {
+	for _, k := range []string{s.cfg.ICalFeedKey, s.cfg.UpcomingAPIKey, s.cfg.RSSFeedKey} {
+		if k != "" {
+			return []byte(k)
+		}
+	}
+	return nil
 }
 
 func (s *Scheduler) Start(ctx context.Context) {
@@ -63,6 +83,24 @@ func (s *Scheduler) Start(ctx context.Context) {
 
 	initialDelay := time.Until(next)
 	slog.Debug("scheduler first run", "source", "scheduler", "delay", initialDelay)
+
+	// Live ICS subscription polling runs on its own cadence, independent of the
+	// daily reminder pass. Zero disables automatic polling.
+	if interval := time.Duration(s.cfg.SubscriptionPollHours) * time.Hour; interval > 0 {
+		go func() {
+			s.runSubscriptionSync(ctx)
+			t := time.NewTicker(interval)
+			defer t.Stop()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-t.C:
+					s.runSubscriptionSync(ctx)
+				}
+			}
+		}()
+	}
 
 	timer := time.NewTimer(initialDelay)
 	defer timer.Stop()
@@ -135,6 +173,22 @@ func (s *Scheduler) runGoogleSync(ctx context.Context) {
 	}
 }
 
+// runSubscriptionSync polls every enabled ICS subscription and applies the
+// UID-keyed diff. A failed fetch is logged and leaves the stored events
+// untouched, so an unreachable feed never destroys data.
+func (s *Scheduler) runSubscriptionSync(ctx context.Context) {
+	if s.cfg.SubscriptionPollHours <= 0 {
+		return
+	}
+	summary, err := icsub.NewSyncer(s.client, nil).SyncAllEnabled(ctx)
+	if err != nil {
+		slog.Error("scheduler: subscription sync", "source", "scheduler", "error", err)
+		return
+	}
+	slog.Info("scheduler: subscriptions synced", "source", "scheduler",
+		"created", summary.Created, "updated", summary.Updated, "deleted", summary.Deleted)
+}
+
 // catchUpMissed runs a startup catch-up pass when the gap since the last
 // successful reminder pass exceeds one day plus a grace period. It notifies
 // occurrences whose dates fell inside the reminder window during the downtime
@@ -158,9 +212,9 @@ func (s *Scheduler) catchUpMissed(ctx context.Context) {
 		return
 	}
 
-	from := now.AddDate(0, 0, -s.cfg.ReminderDays)
+	from := now.AddDate(0, 0, -s.reminderHorizon())
 	if lastRun != nil {
-		from = lastRun.AddDate(0, 0, -s.cfg.ReminderDays)
+		from = lastRun.AddDate(0, 0, -s.reminderHorizon())
 	}
 	slog.Info("scheduler: catching up missed reminders", "source", "scheduler", "from", from.Format(time.RFC3339))
 
@@ -177,14 +231,16 @@ func (s *Scheduler) persistRun(ctx context.Context) {
 }
 
 func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
+	base := strings.TrimRight(s.cfg.AppURL, "/")
+	sender := notifier.NewSender(notifier.NewHealthRecorder(repository.NewChannelHealthRepository(s.client)))
 	now := time.Now()
-	from := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	end := from.AddDate(0, 0, s.cfg.ReminderDays)
+	from := tzutil.Today(now, tzutil.Default()).AddDate(0, 0, -1)
+	end := from.AddDate(0, 0, s.reminderHorizon()+2)
 	if catchUp {
 		end = now
-		from = now.AddDate(0, 0, -s.cfg.ReminderDays)
+		from = now.AddDate(0, 0, -s.reminderHorizon()-1)
 		if lastRun, err := s.settings.LastSchedulerRun(ctx); err == nil && lastRun != nil {
-			from = lastRun.AddDate(0, 0, -s.cfg.ReminderDays)
+			from = lastRun.AddDate(0, 0, -s.reminderHorizon())
 		}
 	}
 	occurrences, err := s.events.ListUpcomingOccurrences(ctx, from, end)
@@ -193,6 +249,10 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 		return
 	}
 	slog.Info("processing reminders", "source", "scheduler", "event_count", len(occurrences), "catch_up", catchUp)
+	if s.cfg.ReminderDigest {
+		s.sendDigest(ctx, occurrences, now, sender)
+		return
+	}
 	users, err := s.users.List(ctx)
 	if err != nil {
 		slog.Error("scheduler: list users", "source", "scheduler", "error", err)
@@ -207,10 +267,32 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 					continue
 				}
 			}
+			if snoozed, serr := s.snoozes.Active(ctx, event.ID, occ.Date, 0, now); serr != nil {
+				slog.Error("scheduler: check snooze", "source", "scheduler", "error", serr)
+			} else if snoozed {
+				slog.Debug("scheduler: occurrence snoozed", "source", "scheduler", "event", event.ID, "user", 0)
+				continue
+			}
 			eventKey := fmt.Sprintf("%d-%s", event.ID, occ.Date.Format("2006-01-02"))
-			days := daysBetween(now, occ.Date)
+			days := daysBetween(now, occ.Date, eventLocation(event))
 			dayOf := days == 0
-			for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush", "discord", "slack", "matrix"} {
+			stages := s.occurrenceStages(event)
+			stage, staged := stageForDays(days, stages)
+			if !staged && !dayOf && !(catchUp && days < 0) {
+				continue
+			}
+			if len(stages) > 1 {
+				eventKey = fmt.Sprintf("%s-%d", eventKey, stage)
+			}
+			var actions notifier.ActionLinks
+			if secret := s.actionSecret(); secret != nil {
+				if su, au, lerr := reminderaction.Links(secret, base, event.ID, occ.Date, 0, reminderaction.DefaultTTL); lerr != nil {
+					slog.Error("scheduler: mint action links", "source", "scheduler", "error", lerr, "event", event.ID)
+				} else {
+					actions = notifier.ActionLinks{SnoozeURL: su, AckURL: au}
+				}
+			}
+			for _, name := range []string{"email", "gotify", "telegram", "ntfy", "pushover", "webhook", "webpush", "discord", "slack", "matrix"} {
 				if !s.registry.IsConfigured(name) {
 					continue
 				}
@@ -235,6 +317,9 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 					contactName = p.Name
 				} else if g := event.Edges.Group; g != nil {
 					contactName = g.Name + " (group)"
+				} else if event.RuleKind != "" && event.Description != "" {
+					// Calendar-rule events carry their name in the description.
+					contactName = event.Description
 				}
 				title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
 				var message string
@@ -256,7 +341,17 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 					}
 					message = fmt.Sprintf("Upcoming %s for %s on %s (%s)", event.Type, contactName, occ.Date.Format("January 2"), when)
 				}
-				_ = s.registry.Send(ctx, name, title, message)
+				if extra := s.giftGapLine(ctx, event); extra != "" {
+					message += "\n" + extra
+				}
+				if p := event.Edges.Person; p != nil {
+					if link := notifier.PersonLinkLine(s.cfg.AppURL, p.ID); link != "" {
+						message += "\n" + link
+					}
+				}
+				if n, ok := s.registry.Notifier(name); ok {
+					_ = sender.SendToActions(ctx, n, title, message, "", actions)
+				}
 				_, _ = s.notifLog.Create(ctx, event.ID, name, dateKey, time.Now())
 			}
 		}
@@ -271,13 +366,35 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 			}
 		}
 		eventKey := fmt.Sprintf("%d-%s", event.ID, occ.Date.Format("2006-01-02"))
-		days := daysBetween(now, occ.Date)
+		days := daysBetween(now, occ.Date, eventLocation(event))
 		dayOf := days == 0
+		stages := s.occurrenceStages(event)
+		stage, staged := stageForDays(days, stages)
+		if !staged && !dayOf && !(catchUp && days < 0) {
+			continue
+		}
+		if len(stages) > 1 {
+			eventKey = fmt.Sprintf("%s-%d", eventKey, stage)
+		}
 		for _, u := range users {
 			if !s.userInScope(u, event) {
 				continue
 			}
-			for _, name := range []string{"email", "gotify", "telegram", "ntfy", "webhook", "webpush", "discord", "slack", "matrix"} {
+			if snoozed, serr := s.snoozes.Active(ctx, event.ID, occ.Date, u.ID, now); serr != nil {
+				slog.Error("scheduler: check snooze", "source", "scheduler", "error", serr)
+			} else if snoozed {
+				slog.Debug("scheduler: occurrence snoozed", "source", "scheduler", "event", event.ID, "user", u.ID)
+				continue
+			}
+			var actions notifier.ActionLinks
+			if secret := s.actionSecret(); secret != nil {
+				if su, au, lerr := reminderaction.Links(secret, base, event.ID, occ.Date, u.ID, reminderaction.DefaultTTL); lerr != nil {
+					slog.Error("scheduler: mint action links", "source", "scheduler", "error", lerr, "event", event.ID)
+				} else {
+					actions = notifier.ActionLinks{SnoozeURL: su, AckURL: au}
+				}
+			}
+			for _, name := range []string{"email", "gotify", "telegram", "ntfy", "pushover", "webhook", "webpush", "discord", "slack", "matrix"} {
 				if !s.registry.IsConfigured(name) {
 					continue
 				}
@@ -321,6 +438,9 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 					contactName = p.Name
 				} else if g := event.Edges.Group; g != nil {
 					contactName = g.Name + " (group)"
+				} else if event.RuleKind != "" && event.Description != "" {
+					// Calendar-rule events carry their name in the description.
+					contactName = event.Description
 				}
 				title := fmt.Sprintf("Reminder: %s - %s", contactName, event.Type)
 				var message string
@@ -342,8 +462,18 @@ func (s *Scheduler) processReminders(ctx context.Context, catchUp bool) {
 					}
 					message = fmt.Sprintf("Upcoming %s for %s on %s (%s)", event.Type, contactName, occ.Date.Format("January 2"), when)
 				}
-				if err := s.registry.SendTo(ctx, name, title, message, target); err != nil {
-					slog.Error("notification failed", "source", "scheduler", "channel", name, "user", u.ID, "error", err)
+				if extra := s.giftGapLine(ctx, event); extra != "" {
+					message += "\n" + extra
+				}
+				if p := event.Edges.Person; p != nil {
+					if link := notifier.PersonLinkLine(s.cfg.AppURL, p.ID); link != "" {
+						message += "\n" + link
+					}
+				}
+				if n, ok := s.registry.Notifier(name); ok {
+					if err := sender.SendToActions(ctx, n, title, message, target, actions); err != nil {
+						slog.Error("notification failed", "source", "scheduler", "channel", name, "user", u.ID, "error", err)
+					}
 				}
 				if _, err = s.notifLog.CreateForUser(ctx, event.ID, name, dateKey, dedupUserID, time.Now()); err != nil {
 					slog.Error("scheduler: log notification", "source", "scheduler", "error", err)
@@ -453,10 +583,150 @@ func (s *Scheduler) occurrenceAnnounced(ctx context.Context, channel, base strin
 // days t is after now (negative when before). Both are truncated to their UTC
 // date, so an occurrence later today reads 0 ("today") and one tomorrow reads
 // 1, regardless of the pass time of day.
-func daysBetween(now, t time.Time) int {
-	nowDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	tDay := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
-	return int(tDay.Sub(nowDay).Hours() / 24)
+// giftGapLine returns the optional "No gift idea yet" suffix for a birthday or
+// anniversary whose person has no open gift idea. It returns "" for events
+// that are not celebrations, events without a person, and persons that already
+// have an open ("idea") gift idea.
+func (s *Scheduler) giftGapLine(ctx context.Context, event *ent.Event) string {
+	if event.Type != "birthday" && event.Type != "anniversary" {
+		return ""
+	}
+	p := event.Edges.Person
+	if p == nil {
+		return ""
+	}
+	n, err := repository.NewGiftIdeaRepository(s.client).CountOpenByPerson(ctx, p.ID)
+	if err != nil {
+		return ""
+	}
+	return giftgap.Line(p.ID, n, s.cfg.AppURL)
+}
+
+// occurrenceStages resolves the effective reminder stages for an event:
+// event override, then person override, then the global list.
+func (s *Scheduler) occurrenceStages(e *ent.Event) []int {
+	var p []int
+	if e.Edges.Person != nil {
+		p = e.Edges.Person.ReminderDays
+	}
+	stages := reminderplan.EffectiveStages(s.cfg.ReminderStages, p, e.ReminderDays)
+	if len(stages) == 0 {
+		// Configs built without Load() (tests, embedders) carry no stage list.
+		// Fall back to the single legacy lead time so reminders still fire.
+		if s.cfg.ReminderDays > 0 {
+			return []int{s.cfg.ReminderDays}
+		}
+	}
+	return stages
+}
+
+// stageForDays reports which reminder stage (in days before the occasion) the
+// current pass belongs to. A pass also matches when the occasion is already
+// closer than the next stage, so a stage is not silently skipped. Day counts
+// are supplied by the caller, already computed in the event owner's zone.
+func stageForDays(days int, stages []int) (int, bool) {
+	if days < 1 || len(stages) == 0 {
+		return 0, false
+	}
+	best := 0
+	for _, st := range stages {
+		if st == days {
+			return st, true
+		}
+		if st >= days && (best == 0 || st < best) {
+			best = st
+		}
+	}
+	return best, best != 0
+}
+
+// eventLocation picks the zone a person's dates are counted in: their own
+// timezone when set, otherwise the instance-wide default.
+func eventLocation(e *ent.Event) *time.Location {
+	if e != nil && e.Edges.Person != nil {
+		return tzutil.Resolve(e.Edges.Person.Timezone)
+	}
+	return tzutil.Default()
+}
+
+// reminderHorizon is the widest look-ahead the occurrence query must cover so
+// every configured stage can fire: the larger of REMINDER_DAYS and the
+// largest configured stage.
+func (s *Scheduler) reminderHorizon() int {
+	h := s.cfg.ReminderDays
+	for _, st := range s.cfg.ReminderStages {
+		if st > h {
+			h = st
+		}
+	}
+	if h < 1 {
+		h = 1
+	}
+	return h
+}
+
+// sendDigest delivers one combined message per configured channel instead of
+// one message per event, deduplicated by channel and day.
+func (s *Scheduler) sendDigest(ctx context.Context, occs []repository.EventOccurrence, now time.Time, sender *notifier.Sender) {
+	dateKey := now.Format("2006-01-02")
+	entries := make([]reminderplan.DigestEntry, 0, len(occs))
+	anchor := 0
+	for _, occ := range occs {
+		e := occ.Event
+		if e.Type == "birthday" && e.Edges.Person != nil && !e.Edges.Person.NotifyBirthdays {
+			continue
+		}
+		days := daysBetween(now, occ.Date, eventLocation(e))
+		if days < 0 {
+			continue
+		}
+		if anchor == 0 {
+			anchor = e.ID
+		}
+		name := e.Type
+		if c := e.Edges.Contact; c != nil {
+			name = c.Name + " - " + e.Type
+		} else if p := e.Edges.Person; p != nil {
+			name = p.Name + " - " + e.Type
+		} else if g := e.Edges.Group; g != nil {
+			name = g.Name + " (group) - " + e.Type
+		} else if e.RuleKind != "" && e.Description != "" {
+			name = e.Description + " - " + e.Type
+		}
+		when := "today"
+		if days == 1 {
+			when = "tomorrow"
+		} else if days > 1 {
+			when = fmt.Sprintf("%d days away", days)
+		}
+		entries = append(entries, reminderplan.DigestEntry{
+			Title:   name,
+			Message: fmt.Sprintf("%s (%s)", occ.Date.Format("January 2"), when),
+		})
+	}
+	body := reminderplan.ComposeDigest(entries)
+	if body == "" {
+		body = "No upcoming events in the reminder window."
+	}
+	for _, name := range []string{"email", "gotify", "telegram", "ntfy", "pushover", "webhook", "webpush", "discord", "slack", "matrix"} {
+		if !s.registry.IsConfigured(name) {
+			continue
+		}
+		key := reminderplan.DigestKey(name, dateKey)
+		if ex, err := s.notifLog.ExistsForDate(ctx, name, key); err != nil || ex {
+			continue
+		}
+		if n, ok := s.registry.Notifier(name); ok {
+			_ = sender.Send(ctx, n, reminderplan.DigestHeader, body)
+		}
+		if anchor != 0 {
+			_, _ = s.notifLog.Create(ctx, anchor, name, key, time.Now())
+		}
+	}
+}
+
+func daysBetween(now, t time.Time, loc *time.Location) int {
+	return tzutil.DaysBetween(tzutil.Today(now, loc), t)
 }
 
 func (s *Scheduler) runBackup(ctx context.Context) {

@@ -42,6 +42,10 @@
   {{define "inlineError"}}{{if .}}<div class="text-danger mt-1">{{.}}</div>{{end}}{{end}}
   {{define "fieldError"}}{{if .Errors}}{{if index .Errors .Field}}<div class="text-danger mt-1">{{index .Errors .Field}}</div>{{end}}{{end}}{{end}}
   {{define "requiredIndicator"}}<span class="text-danger" aria-hidden="true">*</span>{{end}}
+  {{/* Quiet version line shared by the unauthenticated auth surfaces
+       (login, setup, password reset). Version comes from handlers.Version;
+       "Datey" is a brand name, so the line needs no translation. */}}
+  {{define "authVersionFooter"}}{{if .Version}}<p class="auth-version">Datey v{{.Version}}</p>{{end}}{{end}}
   <script>
     (function() {
       var themes = ['light', 'dark', 'eink'];
@@ -72,9 +76,14 @@
       </a>
 
       {{if .User}}
-      <form class="d-none d-md-flex navbar-search" role="search" action="/people" method="GET">
+      {{/* Progressive enhancement: without JavaScript the box keeps its
+           original behaviour (filter the people list); with HTMX every submit
+           or keystroke is served by the unified /search page. */}}
+      <form class="d-none d-md-flex navbar-search" role="search" action="/people" method="GET"
+            hx-get="/search" hx-target="#main-content" hx-swap="innerHTML" hx-replace-url="true"
+            hx-trigger="submit, input changed delay:300ms from:#nav-search">
         <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input class="form-control" type="search" name="q" placeholder="{{T "nav.search_placeholder"}}" aria-label="Search people">
+        <input id="nav-search" class="form-control" type="search" name="q" autocomplete="off" placeholder="{{T "search.nav_placeholder"}}" aria-label="{{T "search.label"}}">
       </form>
       {{end}}
 
@@ -134,6 +143,26 @@
       </div>
     </div>
   </nav>
+
+  <script>
+    // ⌘K / Ctrl-K focuses the global search box (progressive enhancement).
+    (function () {
+      var input = document.getElementById('nav-search');
+      if (!input) return;
+      document.addEventListener('keydown', function (e) {
+        if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+        if (e.key !== 'k' && e.key !== 'K') return;
+        e.preventDefault();
+        // The box is hidden below the md breakpoint; fall back to the page.
+        if (input.getClientRects().length > 0) {
+          input.focus();
+          input.select();
+        } else {
+          window.location.href = '/search';
+        }
+      });
+    })();
+  </script>
 
   <main class="container" id="main-content">
     {{template "content" .}}

@@ -1,0 +1,58 @@
+{{define "head_extra"}}<meta name="robots" content="noindex, nofollow">{{end}}
+
+{{define "shareEventList"}}
+<ul class="list-group list-group-flush share-events">
+  {{range .}}
+  <li class="list-group-item share-event px-0" data-event-type="{{.Type}}">
+    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge event-type-badge event-{{.Type}}">{{.Type}}</span>
+        <span class="share-event-date">{{.Date}}</span>
+      </div>
+      <div class="text-end small">
+        {{if .AgeInfo.HasAge}}<strong>{{if le .DaysRemaining 0}}{{ordinal .AgeInfo.Current}}{{else}}{{ordinal .AgeInfo.Next}}{{end}} {{T "dashboard.birthday"}}</strong> · {{end}}
+        {{if .HasYears}}<strong>{{.YearsSince}} {{T "share.years_since"}}</strong> · {{end}}
+        {{if .RelativeLabel}}<strong>{{.RelativeLabel}}</strong> · {{end}}
+        <span class="text-muted">{{.DaysRemaining}} {{T "dashboard.days_remaining"}}</span>
+      </div>
+    </div>
+  </li>
+  {{end}}
+</ul>
+{{end}}
+
+{{define "content"}}
+<div class="share-view" data-share-kind="{{.Kind}}">
+  <div class="share-banner mb-4" role="note" data-share-banner>
+    <strong>{{T "share.banner"}}</strong>
+    <span class="share-banner-expiry">{{T "share.expires"}} {{.Expires}}</span>
+  </div>
+
+  <h1 class="share-title">{{.Name}}</h1>
+
+  {{if eq .Kind "person"}}
+    {{if .Events}}
+      {{template "shareEventList" .Events}}
+    {{else}}
+      <p class="text-muted" data-share-empty>{{T "share.no_upcoming"}}</p>
+    {{end}}
+  {{else}}
+    {{if .Members}}
+      {{range .Members}}
+      <section class="share-member mb-4" data-share-member="{{.ID}}">
+        <h2 class="h5">{{.Name}}</h2>
+        {{if .Events}}
+          {{template "shareEventList" .Events}}
+        {{else}}
+          <p class="text-muted small mb-0">{{T "share.no_upcoming"}}</p>
+        {{end}}
+      </section>
+      {{end}}
+    {{else}}
+      <p class="text-muted" data-share-empty>{{T "share.no_members"}}</p>
+    {{end}}
+  {{end}}
+
+  <p class="share-footnote small text-muted mt-4">{{T "share.readonly_note"}}</p>
+</div>
+{{end}}

@@ -50,6 +50,8 @@ func (h *Handler) testConfig(w http.ResponseWriter, r *http.Request) {
 		ok, msg = testNotifier(ctx, notifier.NewTelegramNotifier(&tmp))
 	case "ntfy":
 		ok, msg = testNotifier(ctx, notifier.NewNtfyNotifier(&tmp))
+	case "pushover":
+		ok, msg = testNotifier(ctx, notifier.NewPushoverNotifier(&tmp))
 	case "webhook":
 		ok, msg = testNotifier(ctx, notifier.NewWebhookNotifier(&tmp))
 	case "webpush":
@@ -297,6 +299,7 @@ func (h *Handler) testAll(ctx context.Context, cfg *config.Config, form url.Valu
 		{"Gotify", func() (bool, string) { return testNotifier(ctx, notifier.NewGotifyNotifier(cfg)) }},
 		{"Telegram", func() (bool, string) { return testNotifier(ctx, notifier.NewTelegramNotifier(cfg)) }},
 		{"ntfy", func() (bool, string) { return testNotifier(ctx, notifier.NewNtfyNotifier(cfg)) }},
+		{"Pushover", func() (bool, string) { return testNotifier(ctx, notifier.NewPushoverNotifier(cfg)) }},
 		{"Webhook", func() (bool, string) { return testNotifier(ctx, notifier.NewWebhookNotifier(cfg)) }},
 		{"Web Push", func() (bool, string) { return h.testWebPush(ctx, cfg) }},
 		{"Immich", func() (bool, string) { return h.testImmich(ctx, cfg, form) }},
@@ -415,6 +418,10 @@ func applyFormToConfig(cfg *config.Config, form url.Values) {
 	setStr("NTFY_TOPIC", &cfg.NtfyTopic)
 	setStr("NTFY_TOKEN", &cfg.NtfyToken)
 	setInt("NTFY_PRIORITY", &cfg.NtfyPriority)
+
+	// Pushover
+	setStr("PUSHOVER_TOKEN", &cfg.PushoverToken)
+	setStr("PUSHOVER_USER", &cfg.PushoverUser)
 
 	// Webhook
 	setStr("WEBHOOK_URL", &cfg.WebhookURL)

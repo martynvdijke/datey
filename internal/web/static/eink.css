@@ -150,6 +150,7 @@
 [data-bs-theme="eink"] .event-type-badge.event-wedding { border-style: dotted !important; }
 [data-bs-theme="eink"] .event-type-badge.event-holiday { border-style: double !important; }
 [data-bs-theme="eink"] .event-type-badge.event-meeting { border-style: groove !important; }
+[data-bs-theme="eink"] .event-type-badge.event-memorial { border-style: outset !important; }
 [data-bs-theme="eink"] .event-type-badge.event-custom { border-style: ridge !important; }
 
 /* ── Status Badges ── */

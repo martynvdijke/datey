@@ -15,6 +15,7 @@ import (
 	"github.com/datey/datey/ent/apitoken"
 	"github.com/datey/datey/ent/appconfig"
 	"github.com/datey/datey/ent/auditentry"
+	"github.com/datey/datey/ent/channelhealth"
 	"github.com/datey/datey/ent/contact"
 	"github.com/datey/datey/ent/event"
 	"github.com/datey/datey/ent/giftidea"
@@ -29,6 +30,8 @@ import (
 	"github.com/datey/datey/ent/recurringrule"
 	"github.com/datey/datey/ent/relationship"
 	"github.com/datey/datey/ent/session"
+	"github.com/datey/datey/ent/snooze"
+	"github.com/datey/datey/ent/subscription"
 	"github.com/datey/datey/ent/tag"
 	"github.com/datey/datey/ent/user"
 	"github.com/datey/datey/ent/usernotificationchannel"
@@ -95,6 +98,7 @@ func checkColumn(t, c string) error {
 			apitoken.Table:                apitoken.ValidColumn,
 			appconfig.Table:               appconfig.ValidColumn,
 			auditentry.Table:              auditentry.ValidColumn,
+			channelhealth.Table:           channelhealth.ValidColumn,
 			contact.Table:                 contact.ValidColumn,
 			event.Table:                   event.ValidColumn,
 			giftidea.Table:                giftidea.ValidColumn,
@@ -109,6 +113,8 @@ func checkColumn(t, c string) error {
 			recurringrule.Table:           recurringrule.ValidColumn,
 			relationship.Table:            relationship.ValidColumn,
 			session.Table:                 session.ValidColumn,
+			snooze.Table:                  snooze.ValidColumn,
+			subscription.Table:            subscription.ValidColumn,
 			tag.Table:                     tag.ValidColumn,
 			user.Table:                    user.ValidColumn,
 			usernotificationchannel.Table: usernotificationchannel.ValidColumn,

@@ -59,6 +59,11 @@ func IsMilestoneWithOptions(eventType string, eventDate, occurrenceDate time.Tim
 			}
 		}
 		return false, ""
+	case "memorial":
+		// Memorial events render "N years since"; they are deliberately not
+		// birthdays and must never carry a birthday/anniversary badge, not
+		// even the 10_000-day badge.
+		return false, ""
 	default:
 		if includeDays {
 			if ok, label := checkDaysMilestone(eventDate, occurrenceDate); ok {

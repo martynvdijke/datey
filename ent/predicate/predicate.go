@@ -15,6 +15,9 @@ type AppConfig func(*sql.Selector)
 // AuditEntry is the predicate function for auditentry builders.
 type AuditEntry func(*sql.Selector)
 
+// ChannelHealth is the predicate function for channelhealth builders.
+type ChannelHealth func(*sql.Selector)
+
 // Contact is the predicate function for contact builders.
 type Contact func(*sql.Selector)
 
@@ -56,6 +59,12 @@ type Relationship func(*sql.Selector)
 
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
+
+// Snooze is the predicate function for snooze builders.
+type Snooze func(*sql.Selector)
+
+// Subscription is the predicate function for subscription builders.
+type Subscription func(*sql.Selector)
 
 // Tag is the predicate function for tag builders.
 type Tag func(*sql.Selector)

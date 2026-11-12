@@ -30,6 +30,20 @@
   </div>
 </div>
 
+<!-- Read-only share link (expiring, revocable by rotating the feed key) -->
+<div class="share-bar mb-4">
+  <form action="/people/{{.Person.ID}}/share" method="POST"
+        hx-post="/people/{{.Person.ID}}/share" hx-target="#share-link-result" hx-swap="innerHTML"
+        class="d-flex flex-wrap gap-2 align-items-center">
+    {{template "csrfField" .}}
+    <button type="submit" class="btn btn-outline-secondary btn-sm">{{T "share.create"}}</button>
+    <label class="form-label small text-muted mb-0" for="share-days">{{T "share.days_label"}}</label>
+    <input type="number" class="form-control form-control-sm share-days" id="share-days" name="days"
+           min="1" max="90" value="30" style="width:5rem" aria-label="{{T "share.days_label"}}">
+  </form>
+  <div id="share-link-result" aria-live="polite"></div>
+</div>
+
 {{if .Person.Notes}}
 <section class="card mb-4" aria-labelledby="contact-information-heading">
   <div class="card-body">
@@ -38,6 +52,16 @@
   </div>
 </section>
 {{end}}
+
+<section class="card mb-4" aria-labelledby="person-timezone-heading" id="person-timezone">
+  <div class="card-body">
+    <h2 id="person-timezone-heading" class="h5">{{T "person_detail.timezone"}}</h2>
+    <p class="mb-0 person-timezone-value">
+      <span class="badge bg-secondary-subtle text-secondary-emphasis" id="person-timezone-name">{{.TimezoneLabel}}</span>
+      {{if .TimezoneInherited}}<span class="small text-muted ms-1">{{T "person_detail.timezone_instance_default"}}</span>{{end}}
+    </p>
+  </div>
+</section>
 
 <!-- Notes -->
 <section class="card mb-4" aria-labelledby="person-notes-heading">
@@ -195,7 +219,7 @@
 </div>
 
 <!-- Gift Ideas -->
-<div class="card mb-3">
+<div class="card mb-3" id="gift-ideas">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <h2 class="h5 mb-0">{{T "person_detail.gift_ideas"}}</h2>
@@ -313,6 +337,7 @@
               <span class="event-timeline-desc text-muted small">{{.Description}}</span>
             {{end}}
             <div class="ms-auto">
+              <a href="/events/{{.ID}}/edit" class="btn btn-outline-secondary btn-sm py-0">{{T "person_detail.edit"}}</a>
               <form action="/events/{{.ID}}/delete" method="POST" style="display:inline" hx-confirm="Delete this event?" hx-post="/events/{{.ID}}/delete" hx-target="closest .event-timeline-item" hx-swap="outerHTML" hx-indicator="closest form">
                 {{template "csrfField" $csrf}}
                 <button class="btn btn-outline-danger btn-sm py-0" type="submit">

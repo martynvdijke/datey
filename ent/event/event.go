@@ -32,6 +32,24 @@ const (
 	FieldLunarDay = "lunar_day"
 	// FieldLunarLeap holds the string denoting the lunar_leap field in the database.
 	FieldLunarLeap = "lunar_leap"
+	// FieldFrequency holds the string denoting the frequency field in the database.
+	FieldFrequency = "frequency"
+	// FieldInterval holds the string denoting the interval field in the database.
+	FieldInterval = "interval"
+	// FieldEndDate holds the string denoting the end_date field in the database.
+	FieldEndDate = "end_date"
+	// FieldOccurrenceCount holds the string denoting the occurrence_count field in the database.
+	FieldOccurrenceCount = "occurrence_count"
+	// FieldSubscriptionID holds the string denoting the subscription_id field in the database.
+	FieldSubscriptionID = "subscription_id"
+	// FieldExternalUID holds the string denoting the external_uid field in the database.
+	FieldExternalUID = "external_uid"
+	// FieldRuleKind holds the string denoting the rule_kind field in the database.
+	FieldRuleKind = "rule_kind"
+	// FieldRuleOrdinal holds the string denoting the rule_ordinal field in the database.
+	FieldRuleOrdinal = "rule_ordinal"
+	// FieldRuleWeekday holds the string denoting the rule_weekday field in the database.
+	FieldRuleWeekday = "rule_weekday"
 	// EdgeContact holds the string denoting the contact edge name in mutations.
 	EdgeContact = "contact"
 	// EdgePerson holds the string denoting the person edge name in mutations.
@@ -40,6 +58,8 @@ const (
 	EdgeGroup = "group"
 	// EdgeNotificationLogs holds the string denoting the notification_logs edge name in mutations.
 	EdgeNotificationLogs = "notification_logs"
+	// EdgeSubscription holds the string denoting the subscription edge name in mutations.
+	EdgeSubscription = "subscription"
 	// Table holds the table name of the event in the database.
 	Table = "events"
 	// ContactTable is the table that holds the contact relation/edge.
@@ -70,6 +90,13 @@ const (
 	NotificationLogsInverseTable = "notification_logs"
 	// NotificationLogsColumn is the table column denoting the notification_logs relation/edge.
 	NotificationLogsColumn = "event_notification_logs"
+	// SubscriptionTable is the table that holds the subscription relation/edge.
+	SubscriptionTable = "events"
+	// SubscriptionInverseTable is the table name for the Subscription entity.
+	// It exists in this package in order to avoid circular dependency with the "subscription" package.
+	SubscriptionInverseTable = "subscriptions"
+	// SubscriptionColumn is the table column denoting the subscription relation/edge.
+	SubscriptionColumn = "subscription_id"
 )
 
 // Columns holds all SQL columns for event fields.
@@ -85,6 +112,15 @@ var Columns = []string{
 	FieldLunarMonth,
 	FieldLunarDay,
 	FieldLunarLeap,
+	FieldFrequency,
+	FieldInterval,
+	FieldEndDate,
+	FieldOccurrenceCount,
+	FieldSubscriptionID,
+	FieldExternalUID,
+	FieldRuleKind,
+	FieldRuleOrdinal,
+	FieldRuleWeekday,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"
@@ -125,6 +161,22 @@ var (
 	LunarDayValidator func(int) error
 	// DefaultLunarLeap holds the default value on creation for the "lunar_leap" field.
 	DefaultLunarLeap bool
+	// DefaultFrequency holds the default value on creation for the "frequency" field.
+	DefaultFrequency string
+	// DefaultInterval holds the default value on creation for the "interval" field.
+	DefaultInterval int
+	// IntervalValidator is a validator for the "interval" field. It is called by the builders before save.
+	IntervalValidator func(int) error
+	// OccurrenceCountValidator is a validator for the "occurrence_count" field. It is called by the builders before save.
+	OccurrenceCountValidator func(int) error
+	// DefaultExternalUID holds the default value on creation for the "external_uid" field.
+	DefaultExternalUID string
+	// DefaultRuleKind holds the default value on creation for the "rule_kind" field.
+	DefaultRuleKind string
+	// RuleOrdinalValidator is a validator for the "rule_ordinal" field. It is called by the builders before save.
+	RuleOrdinalValidator func(int) error
+	// RuleWeekdayValidator is a validator for the "rule_weekday" field. It is called by the builders before save.
+	RuleWeekdayValidator func(int) error
 )
 
 // OrderOption defines the ordering options for the Event queries.
@@ -180,6 +232,51 @@ func ByLunarLeap(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLunarLeap, opts...).ToFunc()
 }
 
+// ByFrequency orders the results by the frequency field.
+func ByFrequency(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFrequency, opts...).ToFunc()
+}
+
+// ByInterval orders the results by the interval field.
+func ByInterval(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInterval, opts...).ToFunc()
+}
+
+// ByEndDate orders the results by the end_date field.
+func ByEndDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEndDate, opts...).ToFunc()
+}
+
+// ByOccurrenceCount orders the results by the occurrence_count field.
+func ByOccurrenceCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOccurrenceCount, opts...).ToFunc()
+}
+
+// BySubscriptionID orders the results by the subscription_id field.
+func BySubscriptionID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubscriptionID, opts...).ToFunc()
+}
+
+// ByExternalUID orders the results by the external_uid field.
+func ByExternalUID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalUID, opts...).ToFunc()
+}
+
+// ByRuleKind orders the results by the rule_kind field.
+func ByRuleKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRuleKind, opts...).ToFunc()
+}
+
+// ByRuleOrdinal orders the results by the rule_ordinal field.
+func ByRuleOrdinal(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRuleOrdinal, opts...).ToFunc()
+}
+
+// ByRuleWeekday orders the results by the rule_weekday field.
+func ByRuleWeekday(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRuleWeekday, opts...).ToFunc()
+}
+
 // ByContactField orders the results by contact field.
 func ByContactField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -214,6 +311,13 @@ func ByNotificationLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newNotificationLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySubscriptionField orders the results by subscription field.
+func BySubscriptionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSubscriptionStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newContactStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -240,5 +344,12 @@ func newNotificationLogsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NotificationLogsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, NotificationLogsTable, NotificationLogsColumn),
+	)
+}
+func newSubscriptionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SubscriptionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, SubscriptionTable, SubscriptionColumn),
 	)
 }

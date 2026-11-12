@@ -33,10 +33,18 @@ func (n *NtfyNotifier) IsConfigured() bool {
 }
 
 func (n *NtfyNotifier) Send(ctx context.Context, title, message string) error {
-	return n.SendTo(ctx, title, message, "")
+	return n.SendToActions(ctx, title, message, "", ActionLinks{})
 }
 
 func (n *NtfyNotifier) SendTo(ctx context.Context, title, message string, target string) error {
+	return n.SendToActions(ctx, title, message, target, ActionLinks{})
+}
+
+// SendToActions publishes the reminder with optional native action buttons.
+// ntfy renders them under the message; each is a "view" action that opens the
+// signed confirmation page in the browser, which keeps the action working
+// without an ntfy account and without a CSRF-protected direct POST.
+func (n *NtfyNotifier) SendToActions(ctx context.Context, title, message, target string, actions ActionLinks) error {
 	baseURL := n.cfg.NtfyURL
 	if baseURL == "" {
 		baseURL = "https://ntfy.sh"
@@ -54,6 +62,9 @@ func (n *NtfyNotifier) SendTo(ctx context.Context, title, message string, target
 		"title":    title,
 		"message":  message,
 		"priority": priority,
+	}
+	if buttons := ntfyActions(actions); len(buttons) > 0 {
+		payload["actions"] = buttons
 	}
 
 	body, err := json.Marshal(payload)
@@ -82,4 +93,28 @@ func (n *NtfyNotifier) SendTo(ctx context.Context, title, message string, target
 	}
 
 	return nil
+}
+
+// ntfyActions renders the two reminder actions as ntfy "view" actions. Labels
+// are fixed English: notifiers have no per-recipient locale, and the
+// confirmation page they open is localised.
+func ntfyActions(actions ActionLinks) []map[string]any {
+	out := make([]map[string]any, 0, 2)
+	if actions.SnoozeURL != "" {
+		out = append(out, map[string]any{
+			"action": "view",
+			"label":  "Snooze 3 days",
+			"url":    actions.SnoozeURL,
+			"clear":  true,
+		})
+	}
+	if actions.AckURL != "" {
+		out = append(out, map[string]any{
+			"action": "view",
+			"label":  "Acknowledge",
+			"url":    actions.AckURL,
+			"clear":  true,
+		})
+	}
+	return out
 }

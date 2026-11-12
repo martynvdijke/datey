@@ -144,6 +144,66 @@ func (_u *GiftIdeaUpdate) SetUpdatedAt(v time.Time) *GiftIdeaUpdate {
 	return _u
 }
 
+// SetPurchasedAt sets the "purchased_at" field.
+func (_u *GiftIdeaUpdate) SetPurchasedAt(v time.Time) *GiftIdeaUpdate {
+	_u.mutation.SetPurchasedAt(v)
+	return _u
+}
+
+// SetNillablePurchasedAt sets the "purchased_at" field if the given value is not nil.
+func (_u *GiftIdeaUpdate) SetNillablePurchasedAt(v *time.Time) *GiftIdeaUpdate {
+	if v != nil {
+		_u.SetPurchasedAt(*v)
+	}
+	return _u
+}
+
+// ClearPurchasedAt clears the value of the "purchased_at" field.
+func (_u *GiftIdeaUpdate) ClearPurchasedAt() *GiftIdeaUpdate {
+	_u.mutation.ClearPurchasedAt()
+	return _u
+}
+
+// SetGivenAt sets the "given_at" field.
+func (_u *GiftIdeaUpdate) SetGivenAt(v time.Time) *GiftIdeaUpdate {
+	_u.mutation.SetGivenAt(v)
+	return _u
+}
+
+// SetNillableGivenAt sets the "given_at" field if the given value is not nil.
+func (_u *GiftIdeaUpdate) SetNillableGivenAt(v *time.Time) *GiftIdeaUpdate {
+	if v != nil {
+		_u.SetGivenAt(*v)
+	}
+	return _u
+}
+
+// ClearGivenAt clears the value of the "given_at" field.
+func (_u *GiftIdeaUpdate) ClearGivenAt() *GiftIdeaUpdate {
+	_u.mutation.ClearGivenAt()
+	return _u
+}
+
+// SetArchivedAt sets the "archived_at" field.
+func (_u *GiftIdeaUpdate) SetArchivedAt(v time.Time) *GiftIdeaUpdate {
+	_u.mutation.SetArchivedAt(v)
+	return _u
+}
+
+// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
+func (_u *GiftIdeaUpdate) SetNillableArchivedAt(v *time.Time) *GiftIdeaUpdate {
+	if v != nil {
+		_u.SetArchivedAt(*v)
+	}
+	return _u
+}
+
+// ClearArchivedAt clears the value of the "archived_at" field.
+func (_u *GiftIdeaUpdate) ClearArchivedAt() *GiftIdeaUpdate {
+	_u.mutation.ClearArchivedAt()
+	return _u
+}
+
 // SetPersonID sets the "person" edge to the Person entity by ID.
 func (_u *GiftIdeaUpdate) SetPersonID(id int) *GiftIdeaUpdate {
 	_u.mutation.SetPersonID(id)
@@ -264,6 +324,24 @@ func (_u *GiftIdeaUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(giftidea.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.PurchasedAt(); ok {
+		_spec.SetField(giftidea.FieldPurchasedAt, field.TypeTime, value)
+	}
+	if _u.mutation.PurchasedAtCleared() {
+		_spec.ClearField(giftidea.FieldPurchasedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GivenAt(); ok {
+		_spec.SetField(giftidea.FieldGivenAt, field.TypeTime, value)
+	}
+	if _u.mutation.GivenAtCleared() {
+		_spec.ClearField(giftidea.FieldGivenAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ArchivedAt(); ok {
+		_spec.SetField(giftidea.FieldArchivedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ArchivedAtCleared() {
+		_spec.ClearField(giftidea.FieldArchivedAt, field.TypeTime)
 	}
 	if _u.mutation.PersonCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -429,6 +507,66 @@ func (_u *GiftIdeaUpdateOne) SetUpdatedAt(v time.Time) *GiftIdeaUpdateOne {
 	return _u
 }
 
+// SetPurchasedAt sets the "purchased_at" field.
+func (_u *GiftIdeaUpdateOne) SetPurchasedAt(v time.Time) *GiftIdeaUpdateOne {
+	_u.mutation.SetPurchasedAt(v)
+	return _u
+}
+
+// SetNillablePurchasedAt sets the "purchased_at" field if the given value is not nil.
+func (_u *GiftIdeaUpdateOne) SetNillablePurchasedAt(v *time.Time) *GiftIdeaUpdateOne {
+	if v != nil {
+		_u.SetPurchasedAt(*v)
+	}
+	return _u
+}
+
+// ClearPurchasedAt clears the value of the "purchased_at" field.
+func (_u *GiftIdeaUpdateOne) ClearPurchasedAt() *GiftIdeaUpdateOne {
+	_u.mutation.ClearPurchasedAt()
+	return _u
+}
+
+// SetGivenAt sets the "given_at" field.
+func (_u *GiftIdeaUpdateOne) SetGivenAt(v time.Time) *GiftIdeaUpdateOne {
+	_u.mutation.SetGivenAt(v)
+	return _u
+}
+
+// SetNillableGivenAt sets the "given_at" field if the given value is not nil.
+func (_u *GiftIdeaUpdateOne) SetNillableGivenAt(v *time.Time) *GiftIdeaUpdateOne {
+	if v != nil {
+		_u.SetGivenAt(*v)
+	}
+	return _u
+}
+
+// ClearGivenAt clears the value of the "given_at" field.
+func (_u *GiftIdeaUpdateOne) ClearGivenAt() *GiftIdeaUpdateOne {
+	_u.mutation.ClearGivenAt()
+	return _u
+}
+
+// SetArchivedAt sets the "archived_at" field.
+func (_u *GiftIdeaUpdateOne) SetArchivedAt(v time.Time) *GiftIdeaUpdateOne {
+	_u.mutation.SetArchivedAt(v)
+	return _u
+}
+
+// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
+func (_u *GiftIdeaUpdateOne) SetNillableArchivedAt(v *time.Time) *GiftIdeaUpdateOne {
+	if v != nil {
+		_u.SetArchivedAt(*v)
+	}
+	return _u
+}
+
+// ClearArchivedAt clears the value of the "archived_at" field.
+func (_u *GiftIdeaUpdateOne) ClearArchivedAt() *GiftIdeaUpdateOne {
+	_u.mutation.ClearArchivedAt()
+	return _u
+}
+
 // SetPersonID sets the "person" edge to the Person entity by ID.
 func (_u *GiftIdeaUpdateOne) SetPersonID(id int) *GiftIdeaUpdateOne {
 	_u.mutation.SetPersonID(id)
@@ -579,6 +717,24 @@ func (_u *GiftIdeaUpdateOne) sqlSave(ctx context.Context) (_node *GiftIdea, err 
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(giftidea.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.PurchasedAt(); ok {
+		_spec.SetField(giftidea.FieldPurchasedAt, field.TypeTime, value)
+	}
+	if _u.mutation.PurchasedAtCleared() {
+		_spec.ClearField(giftidea.FieldPurchasedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GivenAt(); ok {
+		_spec.SetField(giftidea.FieldGivenAt, field.TypeTime, value)
+	}
+	if _u.mutation.GivenAtCleared() {
+		_spec.ClearField(giftidea.FieldGivenAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ArchivedAt(); ok {
+		_spec.SetField(giftidea.FieldArchivedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ArchivedAtCleared() {
+		_spec.ClearField(giftidea.FieldArchivedAt, field.TypeTime)
 	}
 	if _u.mutation.PersonCleared() {
 		edge := &sqlgraph.EdgeSpec{

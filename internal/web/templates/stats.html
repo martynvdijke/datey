@@ -99,4 +99,59 @@
   </div>
 </div>
 
+<!-- Panel 6: Gift Spend -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h6">{{T "stats.gift_spend"}}</h2>
+    {{if .GiftTotalCount}}
+    <p class="mb-3"><span class="fs-4 fw-semibold">{{.GiftTotal}}</span>
+      <span class="text-muted small ms-2">{{T "stats.gift_total"}}</span></p>
+    {{if .GiftByStatus}}
+    <table class="table table-sm mb-3">
+      <thead>
+        <tr><th>{{T "stats.gift_status"}}</th><th class="text-end">{{T "stats.gift_count"}}</th><th class="text-end">{{T "stats.gift_amount"}}</th></tr>
+      </thead>
+      <tbody>
+        {{range .GiftByStatus}}
+        <tr>
+          <td>{{if eq .Status "idea"}}{{T "stats.gift_idea"}}{{else if eq .Status "purchased"}}{{T "stats.gift_purchased"}}{{else if eq .Status "given"}}{{T "stats.gift_given"}}{{else}}{{T "stats.gift_archived"}}{{end}}</td>
+          <td class="text-end">{{.Count}}</td>
+          <td class="text-end">{{.Total}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{end}}
+    <h3 class="h6">{{T "stats.gift_by_month"}}</h3>
+    {{if .GiftMonthlySpend}}
+    <div class="stats-bars mb-3">
+      {{range .GiftMonthlySpend}}
+      <div class="d-flex align-items-center gap-2 mb-2" data-gift-bucket="{{if .Undated}}undated{{else}}{{.Label}}{{end}}">
+        <span class="text-muted small" style="width:60px;">{{if .Undated}}{{T "stats.gift_undated"}}{{else}}{{.Label}}{{end}}</span>
+        <div class="flex-grow-1 bg-secondary bg-opacity-10 rounded" style="height:20px;">
+          <div class="bg-primary rounded" style="width: {{.Pct}}%; height:100%;"></div>
+        </div>
+        <span class="small" style="width:80px; text-align:right;">{{.Total}}</span>
+        <span class="small text-muted" style="width:36px; text-align:right;">({{.Count}})</span>
+      </div>
+      {{end}}
+    </div>
+    {{else}}
+    <p class="text-muted small mb-3">{{T "stats.gift_none"}}</p>
+    {{end}}
+    <h3 class="h6">{{T "stats.gift_top_spenders"}}</h3>
+    {{if .GiftTopSpenders}}
+    <ul class="list-unstyled mb-2">
+      {{range .GiftTopSpenders}}<li class="d-flex justify-content-between gap-2"><span>{{.Name}}</span><span class="text-muted">{{.Total}} <span class="small">({{.Count}})</span></span></li>{{end}}
+    </ul>
+    {{else}}
+    <p class="text-muted small mb-2">{{T "stats.gift_none"}}</p>
+    {{end}}
+    <p class="small text-muted mb-1">{{T "stats.gift_priced"}}: {{.GiftPricedCount}} / {{.GiftTotalCount}}</p>
+    {{else}}
+    <div class="empty-state"><p class="mb-0">{{T "stats.gift_none"}}</p></div>
+    {{end}}
+  </div>
+</div>
+
 {{end}}

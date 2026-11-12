@@ -169,6 +169,33 @@ func (_u *AppConfigUpdate) ClearSchedulerCatchup() *AppConfigUpdate {
 	return _u
 }
 
+// SetSubscriptionPollHours sets the "subscription_poll_hours" field.
+func (_u *AppConfigUpdate) SetSubscriptionPollHours(v int) *AppConfigUpdate {
+	_u.mutation.ResetSubscriptionPollHours()
+	_u.mutation.SetSubscriptionPollHours(v)
+	return _u
+}
+
+// SetNillableSubscriptionPollHours sets the "subscription_poll_hours" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableSubscriptionPollHours(v *int) *AppConfigUpdate {
+	if v != nil {
+		_u.SetSubscriptionPollHours(*v)
+	}
+	return _u
+}
+
+// AddSubscriptionPollHours adds value to the "subscription_poll_hours" field.
+func (_u *AppConfigUpdate) AddSubscriptionPollHours(v int) *AppConfigUpdate {
+	_u.mutation.AddSubscriptionPollHours(v)
+	return _u
+}
+
+// ClearSubscriptionPollHours clears the value of the "subscription_poll_hours" field.
+func (_u *AppConfigUpdate) ClearSubscriptionPollHours() *AppConfigUpdate {
+	_u.mutation.ClearSubscriptionPollHours()
+	return _u
+}
+
 // SetDateVariant sets the "date_variant" field.
 func (_u *AppConfigUpdate) SetDateVariant(v string) *AppConfigUpdate {
 	_u.mutation.SetDateVariant(v)
@@ -701,6 +728,46 @@ func (_u *AppConfigUpdate) AddNtfyPriority(v int) *AppConfigUpdate {
 // ClearNtfyPriority clears the value of the "ntfy_priority" field.
 func (_u *AppConfigUpdate) ClearNtfyPriority() *AppConfigUpdate {
 	_u.mutation.ClearNtfyPriority()
+	return _u
+}
+
+// SetPushoverToken sets the "pushover_token" field.
+func (_u *AppConfigUpdate) SetPushoverToken(v string) *AppConfigUpdate {
+	_u.mutation.SetPushoverToken(v)
+	return _u
+}
+
+// SetNillablePushoverToken sets the "pushover_token" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillablePushoverToken(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetPushoverToken(*v)
+	}
+	return _u
+}
+
+// ClearPushoverToken clears the value of the "pushover_token" field.
+func (_u *AppConfigUpdate) ClearPushoverToken() *AppConfigUpdate {
+	_u.mutation.ClearPushoverToken()
+	return _u
+}
+
+// SetPushoverUser sets the "pushover_user" field.
+func (_u *AppConfigUpdate) SetPushoverUser(v string) *AppConfigUpdate {
+	_u.mutation.SetPushoverUser(v)
+	return _u
+}
+
+// SetNillablePushoverUser sets the "pushover_user" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillablePushoverUser(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetPushoverUser(*v)
+	}
+	return _u
+}
+
+// ClearPushoverUser clears the value of the "pushover_user" field.
+func (_u *AppConfigUpdate) ClearPushoverUser() *AppConfigUpdate {
+	_u.mutation.ClearPushoverUser()
 	return _u
 }
 
@@ -1684,6 +1751,15 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.SchedulerCatchupCleared() {
 		_spec.ClearField(appconfig.FieldSchedulerCatchup, field.TypeBool)
 	}
+	if value, ok := _u.mutation.SubscriptionPollHours(); ok {
+		_spec.SetField(appconfig.FieldSubscriptionPollHours, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedSubscriptionPollHours(); ok {
+		_spec.AddField(appconfig.FieldSubscriptionPollHours, field.TypeInt, value)
+	}
+	if _u.mutation.SubscriptionPollHoursCleared() {
+		_spec.ClearField(appconfig.FieldSubscriptionPollHours, field.TypeInt)
+	}
 	if value, ok := _u.mutation.DateVariant(); ok {
 		_spec.SetField(appconfig.FieldDateVariant, field.TypeString, value)
 	}
@@ -1848,6 +1924,18 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.NtfyPriorityCleared() {
 		_spec.ClearField(appconfig.FieldNtfyPriority, field.TypeInt)
+	}
+	if value, ok := _u.mutation.PushoverToken(); ok {
+		_spec.SetField(appconfig.FieldPushoverToken, field.TypeString, value)
+	}
+	if _u.mutation.PushoverTokenCleared() {
+		_spec.ClearField(appconfig.FieldPushoverToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.PushoverUser(); ok {
+		_spec.SetField(appconfig.FieldPushoverUser, field.TypeString, value)
+	}
+	if _u.mutation.PushoverUserCleared() {
+		_spec.ClearField(appconfig.FieldPushoverUser, field.TypeString)
 	}
 	if value, ok := _u.mutation.WebhookURL(); ok {
 		_spec.SetField(appconfig.FieldWebhookURL, field.TypeString, value)
@@ -2277,6 +2365,33 @@ func (_u *AppConfigUpdateOne) SetNillableSchedulerCatchup(v *bool) *AppConfigUpd
 // ClearSchedulerCatchup clears the value of the "scheduler_catchup" field.
 func (_u *AppConfigUpdateOne) ClearSchedulerCatchup() *AppConfigUpdateOne {
 	_u.mutation.ClearSchedulerCatchup()
+	return _u
+}
+
+// SetSubscriptionPollHours sets the "subscription_poll_hours" field.
+func (_u *AppConfigUpdateOne) SetSubscriptionPollHours(v int) *AppConfigUpdateOne {
+	_u.mutation.ResetSubscriptionPollHours()
+	_u.mutation.SetSubscriptionPollHours(v)
+	return _u
+}
+
+// SetNillableSubscriptionPollHours sets the "subscription_poll_hours" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableSubscriptionPollHours(v *int) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetSubscriptionPollHours(*v)
+	}
+	return _u
+}
+
+// AddSubscriptionPollHours adds value to the "subscription_poll_hours" field.
+func (_u *AppConfigUpdateOne) AddSubscriptionPollHours(v int) *AppConfigUpdateOne {
+	_u.mutation.AddSubscriptionPollHours(v)
+	return _u
+}
+
+// ClearSubscriptionPollHours clears the value of the "subscription_poll_hours" field.
+func (_u *AppConfigUpdateOne) ClearSubscriptionPollHours() *AppConfigUpdateOne {
+	_u.mutation.ClearSubscriptionPollHours()
 	return _u
 }
 
@@ -2812,6 +2927,46 @@ func (_u *AppConfigUpdateOne) AddNtfyPriority(v int) *AppConfigUpdateOne {
 // ClearNtfyPriority clears the value of the "ntfy_priority" field.
 func (_u *AppConfigUpdateOne) ClearNtfyPriority() *AppConfigUpdateOne {
 	_u.mutation.ClearNtfyPriority()
+	return _u
+}
+
+// SetPushoverToken sets the "pushover_token" field.
+func (_u *AppConfigUpdateOne) SetPushoverToken(v string) *AppConfigUpdateOne {
+	_u.mutation.SetPushoverToken(v)
+	return _u
+}
+
+// SetNillablePushoverToken sets the "pushover_token" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillablePushoverToken(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetPushoverToken(*v)
+	}
+	return _u
+}
+
+// ClearPushoverToken clears the value of the "pushover_token" field.
+func (_u *AppConfigUpdateOne) ClearPushoverToken() *AppConfigUpdateOne {
+	_u.mutation.ClearPushoverToken()
+	return _u
+}
+
+// SetPushoverUser sets the "pushover_user" field.
+func (_u *AppConfigUpdateOne) SetPushoverUser(v string) *AppConfigUpdateOne {
+	_u.mutation.SetPushoverUser(v)
+	return _u
+}
+
+// SetNillablePushoverUser sets the "pushover_user" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillablePushoverUser(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetPushoverUser(*v)
+	}
+	return _u
+}
+
+// ClearPushoverUser clears the value of the "pushover_user" field.
+func (_u *AppConfigUpdateOne) ClearPushoverUser() *AppConfigUpdateOne {
+	_u.mutation.ClearPushoverUser()
 	return _u
 }
 
@@ -3825,6 +3980,15 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	if _u.mutation.SchedulerCatchupCleared() {
 		_spec.ClearField(appconfig.FieldSchedulerCatchup, field.TypeBool)
 	}
+	if value, ok := _u.mutation.SubscriptionPollHours(); ok {
+		_spec.SetField(appconfig.FieldSubscriptionPollHours, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedSubscriptionPollHours(); ok {
+		_spec.AddField(appconfig.FieldSubscriptionPollHours, field.TypeInt, value)
+	}
+	if _u.mutation.SubscriptionPollHoursCleared() {
+		_spec.ClearField(appconfig.FieldSubscriptionPollHours, field.TypeInt)
+	}
 	if value, ok := _u.mutation.DateVariant(); ok {
 		_spec.SetField(appconfig.FieldDateVariant, field.TypeString, value)
 	}
@@ -3989,6 +4153,18 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.NtfyPriorityCleared() {
 		_spec.ClearField(appconfig.FieldNtfyPriority, field.TypeInt)
+	}
+	if value, ok := _u.mutation.PushoverToken(); ok {
+		_spec.SetField(appconfig.FieldPushoverToken, field.TypeString, value)
+	}
+	if _u.mutation.PushoverTokenCleared() {
+		_spec.ClearField(appconfig.FieldPushoverToken, field.TypeString)
+	}
+	if value, ok := _u.mutation.PushoverUser(); ok {
+		_spec.SetField(appconfig.FieldPushoverUser, field.TypeString, value)
+	}
+	if _u.mutation.PushoverUserCleared() {
+		_spec.ClearField(appconfig.FieldPushoverUser, field.TypeString)
 	}
 	if value, ok := _u.mutation.WebhookURL(); ok {
 		_spec.SetField(appconfig.FieldWebhookURL, field.TypeString, value)

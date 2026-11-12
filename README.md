@@ -13,6 +13,7 @@ A self-hosted web application for tracking important dates and receiving automat
 
 - **📅 Event Tracking** — Manage people and their important events (birthdays, anniversaries, weddings, holidays, meetings, custom) with dates and descriptions.
 - **📥 ICS Import** — Preview and import events from `.ics` calendar files (all-day and timed events, yearly recurrences; duplicates skipped).
+- **🔄 Live ICS Subscriptions** — Admins register remote ICS feed URLs; Datey polls them on a schedule (`SUBSCRIPTION_POLL_HOURS`) and diffs by UID, creating, updating and removing subscription-owned events while never touching manual events. Failed fetches keep the last good state and are shown under Settings → Calendar subscriptions.
 - **🔄 Recurring Rules** — Built-in recurring events (Mother's Day 2nd Sunday of May, Father's Day 3rd Sunday of June, New Year's Day, Easter-based holidays) plus custom nth-weekday-of-month rules (e.g. "Last Monday of August"); ordinal 5 means "Last" and nonexistent ordinals skip the year.
 - **⏰ Daily Scheduler** — Checks for upcoming events daily at a configurable hour and sends reminders. If the server was offline when a reminder was due, it catches up on the next startup: dates that fell inside the reminder window during the downtime are re-checked and sent with "was N days ago" phrasing (no duplicate sends).
 - **📧 Email Notifications** — SMTP-based email reminders for upcoming events.
@@ -103,6 +104,7 @@ See `.env.example` for a template.
 | `SCHEDULER_HOUR` | `8` | Hour of day to run reminder check (**enforced**: 0–23) *(restart required)* |
 | `REMINDER_DAYS` | `7` | Days ahead to look for upcoming events (**enforced**: 1–365) |
 | `SCHEDULER_CATCHUP` | `true` | On startup, catch up reminders missed while the server was offline (**enforced**: boolean) |
+| `SUBSCRIPTION_POLL_HOURS` | `24` | Hours between automatic ICS subscription fetches; `0` disables polling (**enforced**: 0–168) *(restart required)* |
 | `DATE_VARIANT` | `european` | Date display variant for user-facing pages (**enforced**: `european` = day-first "25 Dec", `us` = month-first "Dec 25") |
 | `LOG_LEVEL` | `warn` | Log level (**enforced**: must be one of `debug`, `info`, `warn`, `error`) |
 | `LOG_BUFFER_SIZE` | `10000` | In-memory ring buffer size for log viewer *(restart required)* |
@@ -324,6 +326,12 @@ datey/
 | `GET` | `/settings` | Notification settings & test |
 | `GET` | `/settings/config` | Configuration view |
 | `POST` | `/settings/config` | Save configuration (admin only) |
+| `GET` | `/settings/subscriptions` | Calendar subscription list (admin only) |
+| `POST` | `/settings/subscriptions` | Add a subscription (admin only) |
+| `POST` | `/settings/subscriptions/{id}` | Edit a subscription (admin only) |
+| `POST` | `/settings/subscriptions/{id}/toggle` | Enable/disable a subscription (admin only) |
+| `POST` | `/settings/subscriptions/{id}/refresh` | Sync a subscription now and flash the diff counts (admin only) |
+| `POST` | `/settings/subscriptions/{id}/delete` | Delete a subscription, keeping its events (admin only) |
 | `GET` | `/settings/logs` | Log viewer |
 | `GET` | `/settings/backup` | Backup view |
 | `POST` | `/settings/backup` | Run a backup |

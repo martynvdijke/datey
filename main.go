@@ -121,6 +121,7 @@ func main() {
 	reg.Register(notifier.NewGotifyNotifier(cfg))
 	reg.Register(notifier.NewTelegramNotifier(cfg))
 	reg.Register(notifier.NewNtfyNotifier(cfg))
+	reg.Register(notifier.NewPushoverNotifier(cfg))
 	reg.Register(notifier.NewWebhookNotifier(cfg))
 	reg.Register(notifier.NewDiscordNotifier(cfg))
 	reg.Register(notifier.NewSlackNotifier(cfg))
@@ -145,6 +146,7 @@ func main() {
 
 	handler := web.NewHandler(cfg, client, reg, store)
 	handler.SetAuditRecorder(auditlog.NewFromClient(client))
+	handler.EnableTelegramSearch() // attach FTS5 index so Telegram /search works
 	handlers.Version = Version
 	handler.RegisterRoutes(r)
 
