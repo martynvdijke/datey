@@ -218,7 +218,9 @@ func (n *FCMNotifier) credentials(ctx context.Context) (oauth2.TokenSource, erro
 	if n.ts != nil {
 		return n.ts, nil
 	}
-	creds, err := google.CredentialsFromJSON(ctx, []byte(n.cfg.FCMServiceAccountJSON), fcmScope)
+	// Use the type-specific loader so an unexpected credential JSON cannot be
+	// interpreted as a different (potentially attacker-supplied) credential type.
+	creds, err := google.CredentialsFromJSONWithTypeAndParams(ctx, []byte(n.cfg.FCMServiceAccountJSON), google.ServiceAccount, google.CredentialsParams{Scopes: []string{fcmScope}})
 	if err != nil {
 		return nil, err
 	}
