@@ -1,3 +1,16 @@
+# [1.60.0](https://github.com/martynvdijke/datey/compare/v1.59.1...v1.60.0) (2026-11-12)
+
+
+### Bug Fixes
+
+* apply staticcheck De Morgan suggestion in scheduler gating ([b427fd1](https://github.com/martynvdijke/datey/commit/b427fd1afbc4153fdc4eaf3b2f0a464abc5f1810))
+* resolve golangci-lint findings ([58df7b3](https://github.com/martynvdijke/datey/commit/58df7b3042f37bb6fbef2ddf127975cf10ab69e5))
+
+
+### Features
+
+* add calendar subscriptions, occurrence engine v2, and full feature roadmap ([aeb67b1](https://github.com/martynvdijke/datey/commit/aeb67b1be893adb6462dc36e4b60d1a1ec873fda))
+
 ## [1.59.1](https://github.com/martynvdijke/datey/compare/v1.59.0...v1.59.1) (2026-11-10)
 
 
