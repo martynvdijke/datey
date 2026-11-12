@@ -1,3 +1,15 @@
+# [1.61.0](https://github.com/martynvdijke/datey/compare/v1.60.0...v1.61.0) (2026-11-12)
+
+
+### Bug Fixes
+
+* load FCM credentials with the type-specific google loader ([df6263f](https://github.com/martynvdijke/datey/commit/df6263f14d4b160a89e0105634ec0f7e89863796))
+
+
+### Features
+
+* add real-time notifications and Android FCM push ([8b4cf43](https://github.com/martynvdijke/datey/commit/8b4cf438d6ea0f5cf344389aeaebbf5ffead9741))
+
 # [1.60.0](https://github.com/martynvdijke/datey/compare/v1.59.1...v1.60.0) (2026-11-12)
 
 
