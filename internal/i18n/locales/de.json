@@ -303,5 +303,13 @@
   "subscriptions.enabled_done": "Abonnement aktiviert.",
   "subscriptions.disabled_done": "Abonnement deaktiviert.",
   "stats.gift_by_month": "Ausgaben pro Monat",
-  "stats.gift_undated": "Ohne Datum"
+  "stats.gift_undated": "Ohne Datum",
+  "notifications.fcm_title": "Android-App",
+  "notifications.fcm_help": "Installiere die Datey-App und erlaube Benachrichtigungen.",
+  "notifications.fcm_enable": "Android-App-Benachrichtigungen aktivieren",
+  "notifications.fcm_configured": "FCM: konfiguriert",
+  "notifications.fcm_not_configured": "FCM: nicht konfiguriert — Android-Push wurde vom Server-Administrator nicht aktiviert.",
+  "notifications.newitems_title": "Hinweise zu neuen Einträgen",
+  "notifications.newitems_help": "Werde benachrichtigt, wenn jemand anderes eine neue Person oder ein neues Ereignis hinzufügt.",
+  "notifications.newitems_enable": "Bei neuen Einträgen benachrichtigen"
 }

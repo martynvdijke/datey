@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/SherClockHolmes/webpush-go"
 
+	"github.com/datey/datey/ent"
 	"github.com/datey/datey/internal/config"
 	"github.com/datey/datey/internal/repository"
 )
@@ -65,6 +67,28 @@ func (n *WebPushNotifier) SendTo(ctx context.Context, title, message string, tar
 		return fmt.Errorf("webpush: list subscriptions: %w", err)
 	}
 
+	return n.sendToSubscriptions(ctx, subscriptions, title, message)
+}
+
+// SendToUser pushes to every browser subscription owned by a single user.
+// Android device rows (endpoint prefix "fcm:") are stored in the same table and
+// are skipped here; they are delivered by the FCM notifier.
+func (n *WebPushNotifier) SendToUser(ctx context.Context, userID int, title, message string) error {
+	if !n.IsConfigured() {
+		return fmt.Errorf("webpush: not configured")
+	}
+
+	subscriptions, err := n.subs.ListByUser(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("webpush: list subscriptions for user %d: %w", userID, err)
+	}
+
+	return n.sendToSubscriptions(ctx, subscriptions, title, message)
+}
+
+// sendToSubscriptions delivers one payload to the given subscriptions,
+// pruning endpoints that report 404 (gone) or 410 (unsubscribed).
+func (n *WebPushNotifier) sendToSubscriptions(ctx context.Context, subscriptions []*ent.PushSubscription, title, message string) error {
 	payload, err := json.Marshal(map[string]string{
 		"title":   title,
 		"message": message,
@@ -75,6 +99,10 @@ func (n *WebPushNotifier) SendTo(ctx context.Context, title, message string, tar
 
 	var firstErr error
 	for _, sub := range subscriptions {
+		if strings.HasPrefix(sub.Endpoint, fcmEndpointPrefix) {
+			// Android device token, not a browser push endpoint.
+			continue
+		}
 		resp, err := webpush.SendNotificationWithContext(ctx, payload, &webpush.Subscription{
 			Endpoint: sub.Endpoint,
 			Keys: webpush.Keys{

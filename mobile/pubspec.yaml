@@ -17,6 +17,11 @@ dependencies:
   url_launcher: ^6.2.6
   webview_flutter: ^4.14.1
   intl: ^0.20.2
+  # Android push notifications (FCM). Firebase is only initialised at runtime
+  # when android/app/google-services.json was present at build time; see
+  # docs/android-push.md.
+  firebase_core: ^5.1.0
+  firebase_messaging: ^17.0.1
 
 dev_dependencies:
   flutter_test:

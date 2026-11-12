@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -480,6 +481,11 @@ func (h *Handler) createPerson(w http.ResponseWriter, r *http.Request) {
 			_ = h.groups.AddPerson(r.Context(), gid, p.ID)
 		}
 	}
+
+	// Notify the other users (realtime + push), never blocking this request.
+	h.notifyNewItem(r, "person", p.Name,
+		formatNewItemMessage(localeFromRequest(r), "notifications.new_person_added", "New person added: %s", p.Name),
+		fmt.Sprintf("/people/%d", p.ID))
 
 	http.Redirect(w, r, "/people?success=Person+created", http.StatusSeeOther)
 }

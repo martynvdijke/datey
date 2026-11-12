@@ -17,6 +17,14 @@ import (
 var notificationChannelOrder = []string{
 	"email", "gotify", "telegram", "ntfy", "pushover",
 	"webhook", "discord", "slack", "matrix", "webpush",
+	"fcm", "newitems",
+}
+
+// notificationChannelWithoutTarget reports whether the channel is a plain
+// on/off switch: those have no destination field and always persist (even with
+// an empty target) so that unchecking the box is stored rather than skipped.
+func notificationChannelWithoutTarget(channel string) bool {
+	return channel == "fcm" || channel == "newitems"
 }
 
 // channelHealthTimeLayout is the server-side timestamp format used on the
@@ -35,6 +43,13 @@ type channelCard struct {
 	ConsecutiveFailures int
 	LastError           string
 	Failed              bool
+
+	// NoTarget marks switch-only channels (Android app, new item alerts):
+	// the template renders a checkbox without a destination field.
+	NoTarget  bool
+	TitleKey  string // i18n key overriding the channel name as the card title
+	HelpKey   string // i18n key for the card's helper text
+	EnableKey string // i18n key overriding the generic enable label
 }
 
 func (h *Handler) settingsNotifications(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +66,7 @@ func (h *Handler) settingsNotifications(w http.ResponseWriter, r *http.Request) 
 		healthRows = nil
 	}
 	groups, _ := h.groups.List(r.Context())
+	fcmConfigured := h.cfg.FCMEnabled && h.cfg.FCMProjectID != "" && h.cfg.FCMServiceAccountJSON != ""
 	h.render(w, r, "settings_notifications.html", map[string]any{
 		"Title":                     "Datey - Notification Settings",
 		"SettingsTab":               "notifications-personal",
@@ -58,6 +74,7 @@ func (h *Handler) settingsNotifications(w http.ResponseWriter, r *http.Request) 
 		"Groups":                    groups,
 		"NotificationScopeMode":     string(u.NotificationScopeMode),
 		"NotificationScopeGroupIds": u.NotificationScopeGroupIds,
+		"FCMConfigured":             fcmConfigured,
 	})
 }
 
@@ -68,6 +85,21 @@ func buildChannelCards(channels map[string]*ent.UserNotificationChannel, health 
 	cards := make([]channelCard, 0, len(notificationChannelOrder))
 	for _, name := range notificationChannelOrder {
 		card := channelCard{Channel: name}
+		switch name {
+		case "fcm":
+			card.NoTarget = true
+			card.TitleKey = "notifications.fcm_title"
+			card.HelpKey = "notifications.fcm_help"
+			card.EnableKey = "notifications.fcm_enable"
+		case "newitems":
+			card.NoTarget = true
+			card.TitleKey = "notifications.newitems_title"
+			card.HelpKey = "notifications.newitems_help"
+			card.EnableKey = "notifications.newitems_enable"
+			// A missing row means "enabled": new item alerts are opt-out,
+			// matching the dispatcher's default.
+			card.Enabled = true
+		}
 		target := ""
 		if ch, ok := channels[name]; ok {
 			card.Target = ch.Target
@@ -114,9 +146,13 @@ func (h *Handler) settingsNotificationsSave(w http.ResponseWriter, r *http.Reque
 	for _, ct := range notificationChannelOrder {
 		target := strings.TrimSpace(r.FormValue("target_" + ct))
 		enabled := r.FormValue("enabled_"+ct) == "on"
-		if target == "" && !enabled {
+		// Switch-only channels have no target field: persist them even when
+		// unchecked, otherwise turning the channel off would never be saved.
+		if target == "" && !enabled && !notificationChannelWithoutTarget(ct) {
 			continue
 		}
+		// ValidateTarget accepts an empty target, which is the only value the
+		// switch-only channels ever submit.
 		if err := repository.ValidateTarget(ct, target); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

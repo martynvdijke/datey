@@ -113,6 +113,15 @@ type Config struct {
 	PushVAPIDPublicKey  string
 	PushVAPIDPrivateKey string
 
+	// Firebase Cloud Messaging for the Android app. The service-account JSON is
+	// a secret and must never be logged or rendered in clear.
+	FCMEnabled            bool
+	FCMProjectID          string
+	FCMServiceAccountJSON string
+	// NotifyNewItems is the instance-wide default for "notify me when someone
+	// adds a new item". True when unset (opt-out).
+	NotifyNewItems bool
+
 	ImmichURL    string
 	ImmichAPIKey string
 
@@ -219,11 +228,15 @@ func Load() (*Config, error) {
 		TRMNLEnabled:         getEnv("TRMNL_ENABLED", "") == "true",
 		TRMNLKey:             getEnv("TRMNL_KEY", ""),
 
-		PushEnabled:         getEnv("PUSH_ENABLED", "") == "true",
-		PushVAPIDPublicKey:  getEnv("PUSH_VAPID_PUBLIC_KEY", ""),
-		PushVAPIDPrivateKey: getEnv("PUSH_VAPID_PRIVATE_KEY", ""),
-		ImmichURL:           getEnv("IMMICH_URL", ""),
-		ImmichAPIKey:        getEnv("IMMICH_API_KEY", ""),
+		PushEnabled:           getEnv("PUSH_ENABLED", "") == "true",
+		PushVAPIDPublicKey:    getEnv("PUSH_VAPID_PUBLIC_KEY", ""),
+		PushVAPIDPrivateKey:   getEnv("PUSH_VAPID_PRIVATE_KEY", ""),
+		FCMEnabled:            getEnvBool("FCM_ENABLED", false),
+		FCMProjectID:          getEnv("FCM_PROJECT_ID", ""),
+		FCMServiceAccountJSON: getEnv("FCM_SERVICE_ACCOUNT_JSON", ""),
+		NotifyNewItems:        getEnvBool("NOTIFY_NEW_ITEMS", true),
+		ImmichURL:             getEnv("IMMICH_URL", ""),
+		ImmichAPIKey:          getEnv("IMMICH_API_KEY", ""),
 
 		CarddavEnabled:      getEnv("CARDDAV_ENABLED", "") == "true",
 		CarddavURL:          getEnv("CARDDAV_URL", ""),
@@ -391,6 +404,9 @@ func (c *Config) Validate() error {
 	}
 	if c.PushEnabled && (c.PushVAPIDPublicKey == "" || c.PushVAPIDPrivateKey == "") {
 		return fmt.Errorf("PUSH_VAPID_PUBLIC_KEY and PUSH_VAPID_PRIVATE_KEY must be set when PUSH_ENABLED is true")
+	}
+	if c.FCMEnabled && (c.FCMProjectID == "" || c.FCMServiceAccountJSON == "") {
+		return fmt.Errorf("FCM_PROJECT_ID and FCM_SERVICE_ACCOUNT_JSON must be set when FCM_ENABLED is true")
 	}
 	if c.ImmichURL != "" {
 		u, err := url.ParseRequestURI(c.ImmichURL)

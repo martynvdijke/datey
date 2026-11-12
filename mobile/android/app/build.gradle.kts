@@ -6,6 +6,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Firebase/FCM is optional. Applying com.google.gms.google-services without
+// android/app/google-services.json aborts the build, so only turn it on when
+// the file is present. CI and fresh clones therefore keep building.
+val googleServicesConfig = file("google-services.json")
+if (googleServicesConfig.exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // Release signing material is supplied locally through mobile/android/key.properties
 // and in CI through repository secrets. The file and keystore are gitignored.
 val keystorePropertiesFile = rootProject.file("key.properties")

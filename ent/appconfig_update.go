@@ -1278,6 +1278,86 @@ func (_u *AppConfigUpdate) ClearPushVapidPrivateKey() *AppConfigUpdate {
 	return _u
 }
 
+// SetFcmEnabled sets the "fcm_enabled" field.
+func (_u *AppConfigUpdate) SetFcmEnabled(v bool) *AppConfigUpdate {
+	_u.mutation.SetFcmEnabled(v)
+	return _u
+}
+
+// SetNillableFcmEnabled sets the "fcm_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableFcmEnabled(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetFcmEnabled(*v)
+	}
+	return _u
+}
+
+// ClearFcmEnabled clears the value of the "fcm_enabled" field.
+func (_u *AppConfigUpdate) ClearFcmEnabled() *AppConfigUpdate {
+	_u.mutation.ClearFcmEnabled()
+	return _u
+}
+
+// SetFcmProjectID sets the "fcm_project_id" field.
+func (_u *AppConfigUpdate) SetFcmProjectID(v string) *AppConfigUpdate {
+	_u.mutation.SetFcmProjectID(v)
+	return _u
+}
+
+// SetNillableFcmProjectID sets the "fcm_project_id" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableFcmProjectID(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetFcmProjectID(*v)
+	}
+	return _u
+}
+
+// ClearFcmProjectID clears the value of the "fcm_project_id" field.
+func (_u *AppConfigUpdate) ClearFcmProjectID() *AppConfigUpdate {
+	_u.mutation.ClearFcmProjectID()
+	return _u
+}
+
+// SetFcmServiceAccountJSON sets the "fcm_service_account_json" field.
+func (_u *AppConfigUpdate) SetFcmServiceAccountJSON(v string) *AppConfigUpdate {
+	_u.mutation.SetFcmServiceAccountJSON(v)
+	return _u
+}
+
+// SetNillableFcmServiceAccountJSON sets the "fcm_service_account_json" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableFcmServiceAccountJSON(v *string) *AppConfigUpdate {
+	if v != nil {
+		_u.SetFcmServiceAccountJSON(*v)
+	}
+	return _u
+}
+
+// ClearFcmServiceAccountJSON clears the value of the "fcm_service_account_json" field.
+func (_u *AppConfigUpdate) ClearFcmServiceAccountJSON() *AppConfigUpdate {
+	_u.mutation.ClearFcmServiceAccountJSON()
+	return _u
+}
+
+// SetNotifyNewItems sets the "notify_new_items" field.
+func (_u *AppConfigUpdate) SetNotifyNewItems(v bool) *AppConfigUpdate {
+	_u.mutation.SetNotifyNewItems(v)
+	return _u
+}
+
+// SetNillableNotifyNewItems sets the "notify_new_items" field if the given value is not nil.
+func (_u *AppConfigUpdate) SetNillableNotifyNewItems(v *bool) *AppConfigUpdate {
+	if v != nil {
+		_u.SetNotifyNewItems(*v)
+	}
+	return _u
+}
+
+// ClearNotifyNewItems clears the value of the "notify_new_items" field.
+func (_u *AppConfigUpdate) ClearNotifyNewItems() *AppConfigUpdate {
+	_u.mutation.ClearNotifyNewItems()
+	return _u
+}
+
 // SetImmichURL sets the "immich_url" field.
 func (_u *AppConfigUpdate) SetImmichURL(v string) *AppConfigUpdate {
 	_u.mutation.SetImmichURL(v)
@@ -2089,6 +2169,30 @@ func (_u *AppConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.PushVapidPrivateKeyCleared() {
 		_spec.ClearField(appconfig.FieldPushVapidPrivateKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.FcmEnabled(); ok {
+		_spec.SetField(appconfig.FieldFcmEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.FcmEnabledCleared() {
+		_spec.ClearField(appconfig.FieldFcmEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.FcmProjectID(); ok {
+		_spec.SetField(appconfig.FieldFcmProjectID, field.TypeString, value)
+	}
+	if _u.mutation.FcmProjectIDCleared() {
+		_spec.ClearField(appconfig.FieldFcmProjectID, field.TypeString)
+	}
+	if value, ok := _u.mutation.FcmServiceAccountJSON(); ok {
+		_spec.SetField(appconfig.FieldFcmServiceAccountJSON, field.TypeString, value)
+	}
+	if _u.mutation.FcmServiceAccountJSONCleared() {
+		_spec.ClearField(appconfig.FieldFcmServiceAccountJSON, field.TypeString)
+	}
+	if value, ok := _u.mutation.NotifyNewItems(); ok {
+		_spec.SetField(appconfig.FieldNotifyNewItems, field.TypeBool, value)
+	}
+	if _u.mutation.NotifyNewItemsCleared() {
+		_spec.ClearField(appconfig.FieldNotifyNewItems, field.TypeBool)
 	}
 	if value, ok := _u.mutation.ImmichURL(); ok {
 		_spec.SetField(appconfig.FieldImmichURL, field.TypeString, value)
@@ -3477,6 +3581,86 @@ func (_u *AppConfigUpdateOne) ClearPushVapidPrivateKey() *AppConfigUpdateOne {
 	return _u
 }
 
+// SetFcmEnabled sets the "fcm_enabled" field.
+func (_u *AppConfigUpdateOne) SetFcmEnabled(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetFcmEnabled(v)
+	return _u
+}
+
+// SetNillableFcmEnabled sets the "fcm_enabled" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableFcmEnabled(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetFcmEnabled(*v)
+	}
+	return _u
+}
+
+// ClearFcmEnabled clears the value of the "fcm_enabled" field.
+func (_u *AppConfigUpdateOne) ClearFcmEnabled() *AppConfigUpdateOne {
+	_u.mutation.ClearFcmEnabled()
+	return _u
+}
+
+// SetFcmProjectID sets the "fcm_project_id" field.
+func (_u *AppConfigUpdateOne) SetFcmProjectID(v string) *AppConfigUpdateOne {
+	_u.mutation.SetFcmProjectID(v)
+	return _u
+}
+
+// SetNillableFcmProjectID sets the "fcm_project_id" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableFcmProjectID(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetFcmProjectID(*v)
+	}
+	return _u
+}
+
+// ClearFcmProjectID clears the value of the "fcm_project_id" field.
+func (_u *AppConfigUpdateOne) ClearFcmProjectID() *AppConfigUpdateOne {
+	_u.mutation.ClearFcmProjectID()
+	return _u
+}
+
+// SetFcmServiceAccountJSON sets the "fcm_service_account_json" field.
+func (_u *AppConfigUpdateOne) SetFcmServiceAccountJSON(v string) *AppConfigUpdateOne {
+	_u.mutation.SetFcmServiceAccountJSON(v)
+	return _u
+}
+
+// SetNillableFcmServiceAccountJSON sets the "fcm_service_account_json" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableFcmServiceAccountJSON(v *string) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetFcmServiceAccountJSON(*v)
+	}
+	return _u
+}
+
+// ClearFcmServiceAccountJSON clears the value of the "fcm_service_account_json" field.
+func (_u *AppConfigUpdateOne) ClearFcmServiceAccountJSON() *AppConfigUpdateOne {
+	_u.mutation.ClearFcmServiceAccountJSON()
+	return _u
+}
+
+// SetNotifyNewItems sets the "notify_new_items" field.
+func (_u *AppConfigUpdateOne) SetNotifyNewItems(v bool) *AppConfigUpdateOne {
+	_u.mutation.SetNotifyNewItems(v)
+	return _u
+}
+
+// SetNillableNotifyNewItems sets the "notify_new_items" field if the given value is not nil.
+func (_u *AppConfigUpdateOne) SetNillableNotifyNewItems(v *bool) *AppConfigUpdateOne {
+	if v != nil {
+		_u.SetNotifyNewItems(*v)
+	}
+	return _u
+}
+
+// ClearNotifyNewItems clears the value of the "notify_new_items" field.
+func (_u *AppConfigUpdateOne) ClearNotifyNewItems() *AppConfigUpdateOne {
+	_u.mutation.ClearNotifyNewItems()
+	return _u
+}
+
 // SetImmichURL sets the "immich_url" field.
 func (_u *AppConfigUpdateOne) SetImmichURL(v string) *AppConfigUpdateOne {
 	_u.mutation.SetImmichURL(v)
@@ -4318,6 +4502,30 @@ func (_u *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, er
 	}
 	if _u.mutation.PushVapidPrivateKeyCleared() {
 		_spec.ClearField(appconfig.FieldPushVapidPrivateKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.FcmEnabled(); ok {
+		_spec.SetField(appconfig.FieldFcmEnabled, field.TypeBool, value)
+	}
+	if _u.mutation.FcmEnabledCleared() {
+		_spec.ClearField(appconfig.FieldFcmEnabled, field.TypeBool)
+	}
+	if value, ok := _u.mutation.FcmProjectID(); ok {
+		_spec.SetField(appconfig.FieldFcmProjectID, field.TypeString, value)
+	}
+	if _u.mutation.FcmProjectIDCleared() {
+		_spec.ClearField(appconfig.FieldFcmProjectID, field.TypeString)
+	}
+	if value, ok := _u.mutation.FcmServiceAccountJSON(); ok {
+		_spec.SetField(appconfig.FieldFcmServiceAccountJSON, field.TypeString, value)
+	}
+	if _u.mutation.FcmServiceAccountJSONCleared() {
+		_spec.ClearField(appconfig.FieldFcmServiceAccountJSON, field.TypeString)
+	}
+	if value, ok := _u.mutation.NotifyNewItems(); ok {
+		_spec.SetField(appconfig.FieldNotifyNewItems, field.TypeBool, value)
+	}
+	if _u.mutation.NotifyNewItemsCleared() {
+		_spec.ClearField(appconfig.FieldNotifyNewItems, field.TypeBool)
 	}
 	if value, ok := _u.mutation.ImmichURL(); ok {
 		_spec.SetField(appconfig.FieldImmichURL, field.TypeString, value)

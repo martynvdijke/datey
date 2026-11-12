@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../services/push_service.dart';
 import '../services/storage_service.dart';
 
 final storageServiceProvider = Provider<StorageService>((ref) => StorageService());
@@ -62,6 +65,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<AppUser?>> {
       if (resp.statusCode == 200 && resp.data is Map) {
         final user = AppUser.fromJson(resp.data as Map<String, dynamic>);
         state = AsyncValue.data(user);
+        // Register this device for FCM and flush a pending notification tap.
+        unawaited(PushService.instance.onLogin());
         return true;
       } else if (resp.statusCode == 401) {
         await storage.clearAuth();
@@ -88,6 +93,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AppUser?>> {
         // cookies already persisted via interceptor
         final user = AppUser.fromJson(resp.data as Map<String, dynamic>);
         state = AsyncValue.data(user);
+        unawaited(PushService.instance.onLogin());
         ref.invalidate(baseUrlProvider);
         return true;
       } else {
@@ -102,6 +108,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<AppUser?>> {
 
   Future<void> logout() async {
     final storage = ref.read(storageServiceProvider);
+    // Unregister the device while the session is still valid, then drop it.
+    await PushService.instance.onLogout();
     await storage.clearAuth();
     state = const AsyncValue.data(null);
   }

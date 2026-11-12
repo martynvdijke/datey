@@ -26,11 +26,13 @@ type configField struct {
 	Options         []string // for select
 	Checked         bool     // for checkbox
 	Selected        string   // current selected option value (for select)
+	Placeholder     string   // placeholder text (never used to echo a stored secret)
 }
 
 // configGroup bundles related fields under a heading in the form.
 type configGroup struct {
 	Title       string
+	Hint        string // optional plain-text note rendered under the heading
 	Fields      []configField
 	TestSection string // section slug for the "Test" button (POST /settings/config/test/{section}); empty = no button
 }
@@ -287,6 +289,25 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "PUSH_VAPID_PUBLIC_KEY", Label: "VAPID Public Key", Value: val("PUSH_VAPID_PUBLIC_KEY", cfg.PushVAPIDPublicKey), Type: "readonly", ReadOnly: true, Help: "Public part of the VAPID key pair; served to browsers to establish subscriptions."},
 		{Name: "PUSH_VAPID_PRIVATE_KEY", Label: "VAPID Private Key", Value: val("PUSH_VAPID_PRIVATE_KEY", cfg.PushVAPIDPrivateKey), Type: "text", Secret: true, Help: "Secret signing key. Never share it; rotate by entering a new key or clearing this field and saving while enabled."},
 	}}
+
+	// The service-account JSON is a secret: it is never echoed back into the
+	// form. When one is stored, the field shows a masked placeholder instead
+	// and an empty submission keeps the current value (same semantics as the
+	// Immich API key).
+	fcmServiceAccountPlaceholder := ""
+	if cfg.FCMServiceAccountJSON != "" {
+		fcmServiceAccountPlaceholder = "•••••••• (configured — leave blank to keep the saved value)"
+	}
+	fcmGroup := configGroup{
+		Title: "Android Push (FCM)",
+		Hint:  "Sends notifications to the Datey Android app. The app must be built against the same Firebase project. Setup guide: docs/android-push.md.",
+		Fields: []configField{
+			{Name: "FCM_ENABLED", Label: "Enable Android Push (FCM)", Type: "checkbox", Checked: checked("FCM_ENABLED", cfg.FCMEnabled), Help: "Send notifications to registered Android devices through Firebase Cloud Messaging. Requires the project ID and service-account JSON below."},
+			{Name: "FCM_PROJECT_ID", Label: "Firebase Project ID", Value: val("FCM_PROJECT_ID", cfg.FCMProjectID), Type: "text", Help: "Firebase project id (Firebase console → Project settings → General).", Error: errFor("FCM_PROJECT_ID")},
+			{Name: "FCM_SERVICE_ACCOUNT_JSON", Label: "Service Account JSON", Value: "", Placeholder: fcmServiceAccountPlaceholder, Type: "textarea", Secret: true, Help: "Raw service-account JSON. Stored server-side, never logged or rendered again; leave blank to keep the saved value.", Error: errFor("FCM_SERVICE_ACCOUNT_JSON")},
+			{Name: "NOTIFY_NEW_ITEMS", Label: "Notify Users About New Items", Type: "checkbox", Checked: checked("NOTIFY_NEW_ITEMS", cfg.NotifyNewItems), Help: "Instance-wide default: tell other users when someone adds a person or event. Users can opt out in their notification settings."},
+		},
+	}
 	immichKeyValue := ""
 	if submitted != nil {
 		immichKeyValue = val("IMMICH_API_KEY", "")
@@ -296,5 +317,5 @@ func buildConfigGroups(cfg *config.Config, submitted url.Values, errs map[string
 		{Name: "IMMICH_API_KEY", Label: "Immich API Key", Value: immichKeyValue, Type: "text", Secret: true, Help: "Leave blank to keep the saved key. Used only by the server.", Error: errFor("IMMICH_API_KEY")},
 	}}
 
-	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, discord, slack, matrix, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, trmnlGroup, pushGroup, immichGroup}
+	return []configGroup{general, backup, email, gotify, telegram, ntfy, webhook, discord, slack, matrix, analytics, obs, ical, rssGroup, upcomingAPIGroup, homeAssistantGroup, trmnlGroup, pushGroup, fcmGroup, immichGroup}
 }

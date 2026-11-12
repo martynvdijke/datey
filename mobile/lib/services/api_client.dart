@@ -82,6 +82,28 @@ class ApiClient {
 
   Future<Response<dynamic>> getMe() => dio.get('/api/v1/me');
 
+  /// Registers this device's FCM token for the signed-in user.
+  Future<void> registerDevice(String token, {String platform = 'android'}) async {
+    final resp = await dio.post(
+      '/api/v1/devices',
+      data: {'token': token, 'platform': platform},
+      options: Options(contentType: 'application/json'),
+    );
+    if (resp.statusCode == 201 || resp.statusCode == 200) return;
+    throw _apiError(resp, 'Could not register the device for notifications.');
+  }
+
+  /// Removes this device's FCM token for the signed-in user.
+  Future<void> unregisterDevice(String token) async {
+    final resp = await dio.delete(
+      '/api/v1/devices',
+      data: {'token': token},
+      options: Options(contentType: 'application/json'),
+    );
+    if (resp.statusCode == 204 || resp.statusCode == 200) return;
+    throw _apiError(resp, 'Could not unregister the device for notifications.');
+  }
+
   Future<Response<dynamic>> getOidcStatus() => dio.get('/api/auth/oidc/status');
 
   /// Download the requester's attributable account data as JSON.

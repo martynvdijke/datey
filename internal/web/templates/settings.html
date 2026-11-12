@@ -247,6 +247,10 @@
             {{end}}
           </legend>
 
+          {{if .Hint}}
+            <p class="form-text text-muted">{{.Hint}}</p>
+          {{end}}
+
           {{range .Fields}}
             <div class="mb-3">
               <label class="form-label d-flex align-items-center gap-2" for="{{.Name}}">
@@ -274,6 +278,10 @@
                     <option value="{{.}}" {{if eq . $sel}}selected{{end}}>{{.}}</option>
                   {{end}}
                 </select>
+                {{if .Help}}<div class="form-text text-muted" id="{{.Name}}-help">{{.Help}}</div>{{end}}
+              {{else if eq .Type "textarea"}}
+                <textarea class="form-control" id="{{.Name}}" name="{{.Name}}" rows="4"
+                          {{if .Secret}}autocomplete="off"{{end}} {{if .Placeholder}}placeholder="{{.Placeholder}}"{{end}} aria-describedby="{{.Name}}-help">{{.Value}}</textarea>
                 {{if .Help}}<div class="form-text text-muted" id="{{.Name}}-help">{{.Help}}</div>{{end}}
               {{else}}
                 <input class="form-control" type="{{.Type}}" id="{{.Name}}" name="{{.Name}}" value="{{.Value}}"

@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -292,6 +293,11 @@ func (h *Handler) apiCreatePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.auditRecord(r, "person.create", strconv.Itoa(p.ID))
+
+	h.notifyNewItem(r, "person", p.Name,
+		formatNewItemMessage(localeFromRequest(r), "notifications.new_person_added", "New person added: %s", p.Name),
+		fmt.Sprintf("/people/%d", p.ID))
+
 	writeAPIJSON(w, http.StatusCreated, h.personWriteDTO(r.Context(), p))
 }
 
@@ -629,7 +635,8 @@ func (h *Handler) apiCreateEvent(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, http.StatusBadRequest, "bad_request", "Invalid person id")
 		return
 	}
-	if _, err := h.people.Get(r.Context(), id); err != nil {
+	person, err := h.people.Get(r.Context(), id)
+	if err != nil {
 		if ent.IsNotFound(err) {
 			writeAPIError(w, http.StatusNotFound, "not_found", "Person not found")
 			return
@@ -670,7 +677,93 @@ func (h *Handler) apiCreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.auditRecord(r, "event.create", strconv.Itoa(created.ID))
+
+	title := strings.TrimSpace(person.Name + " - " + validated.Type)
+	if person.Name == "" {
+		title = validated.Type
+	}
+	h.notifyNewItem(r, "event", title,
+		formatNewItemMessage(localeFromRequest(r), "notifications.new_event_added", "New event added: %s", title),
+		fmt.Sprintf("/people/%d", id))
+
 	writeAPIJSON(w, http.StatusCreated, eventWriteDTO(created))
+}
+
+// ── Devices ──────────────────────────────────────────────────────────────
+
+// deviceRequest is the body of POST/DELETE /api/v1/devices.
+type deviceRequest struct {
+	Token    string `json:"token"`
+	Platform string `json:"platform"`
+}
+
+// fcmDeviceEndpointPrefix must match the prefix the notifier uses.
+const fcmDeviceEndpointPrefix = "fcm:"
+
+// apiRegisterDevice stores an Android FCM device token for the current user.
+// Tokens are kept in push_subscription with endpoint "fcm:"+token, so the
+// endpoint uniqueness constraint makes registration idempotent.
+func (h *Handler) apiRegisterDevice(w http.ResponseWriter, r *http.Request) {
+	u := UserFromContext(r.Context())
+	if u == nil {
+		writeAPIError(w, http.StatusUnauthorized, "unauthorized", "Not authenticated")
+		return
+	}
+	var req deviceRequest
+	if !decodeJSONBody(w, r, &req) {
+		return
+	}
+	token := strings.TrimSpace(req.Token)
+	if token == "" {
+		writeAPIValidationError(w, map[string]string{"token": "required"})
+		return
+	}
+	if len(token) > 4096 {
+		writeAPIValidationError(w, map[string]string{"token": "too_long"})
+		return
+	}
+	platform := strings.TrimSpace(req.Platform)
+	if h.pushSubs == nil {
+		writeAPIError(w, http.StatusInternalServerError, "internal", "Device registration unavailable")
+		return
+	}
+	if _, err := h.pushSubs.Upsert(r.Context(), u.ID, fcmDeviceEndpointPrefix+token, "fcm", "fcm"); err != nil {
+		slog.Error("api: register device", "user_id", u.ID, "error", err)
+		writeAPIError(w, http.StatusInternalServerError, "internal", "Failed to register device")
+		return
+	}
+	writeAPIJSON(w, http.StatusCreated, map[string]any{
+		"registered": true,
+		"platform":   platform,
+	})
+}
+
+// apiUnregisterDevice removes an Android device token (logout, token rotated).
+func (h *Handler) apiUnregisterDevice(w http.ResponseWriter, r *http.Request) {
+	u := UserFromContext(r.Context())
+	if u == nil {
+		writeAPIError(w, http.StatusUnauthorized, "unauthorized", "Not authenticated")
+		return
+	}
+	var req deviceRequest
+	if !decodeJSONBody(w, r, &req) {
+		return
+	}
+	token := strings.TrimSpace(req.Token)
+	if token == "" {
+		writeAPIValidationError(w, map[string]string{"token": "required"})
+		return
+	}
+	if h.pushSubs == nil {
+		writeAPIError(w, http.StatusInternalServerError, "internal", "Device registration unavailable")
+		return
+	}
+	if err := h.pushSubs.DeleteByUserAndEndpoint(r.Context(), u.ID, fcmDeviceEndpointPrefix+token); err != nil {
+		slog.Error("api: unregister device", "user_id", u.ID, "error", err)
+		writeAPIError(w, http.StatusInternalServerError, "internal", "Failed to unregister device")
+		return
+	}
+	writeAPIJSON(w, http.StatusOK, map[string]any{"unregistered": true})
 }
 
 func (h *Handler) apiUpdateEvent(w http.ResponseWriter, r *http.Request) {

@@ -303,5 +303,13 @@
   "subscriptions.enabled_done": "Subscription enabled.",
   "subscriptions.disabled_done": "Subscription disabled.",
   "stats.gift_by_month": "Spend by month",
-  "stats.gift_undated": "Undated"
+  "stats.gift_undated": "Undated",
+  "notifications.fcm_title": "Android app",
+  "notifications.fcm_help": "Install the Datey app and allow notifications.",
+  "notifications.fcm_enable": "Enable Android app notifications",
+  "notifications.fcm_configured": "FCM: configured",
+  "notifications.fcm_not_configured": "FCM: not configured — the server admin has not enabled Android push.",
+  "notifications.newitems_title": "New item alerts",
+  "notifications.newitems_help": "Get notified when someone else adds a new person or event.",
+  "notifications.newitems_enable": "Notify me about new items"
 }

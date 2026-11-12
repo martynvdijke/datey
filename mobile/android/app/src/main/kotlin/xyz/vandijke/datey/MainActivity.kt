@@ -1,5 +1,9 @@
 package xyz.vandijke.datey
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import android.webkit.CookieManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -10,6 +14,11 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // FCM payloads from the server target this channel. It must exist
+        // before the first notification arrives or Android 8+ silently drops
+        // the custom channel (and falls back to the default one).
+        createNewItemsChannel()
 
         // OIDC sign-in runs in a WebView, so make sure its cookie store is
         // accepting cookies before the flow starts.
@@ -44,5 +53,18 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun createNewItemsChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel(
+            "datey_new_items",
+            "New items",
+            NotificationManager.IMPORTANCE_DEFAULT,
+        ).apply {
+            description = "Alerts when someone adds a new person or event"
+        }
+        manager.createNotificationChannel(channel)
     }
 }

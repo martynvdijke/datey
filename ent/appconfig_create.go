@@ -845,6 +845,62 @@ func (_c *AppConfigCreate) SetNillablePushVapidPrivateKey(v *string) *AppConfigC
 	return _c
 }
 
+// SetFcmEnabled sets the "fcm_enabled" field.
+func (_c *AppConfigCreate) SetFcmEnabled(v bool) *AppConfigCreate {
+	_c.mutation.SetFcmEnabled(v)
+	return _c
+}
+
+// SetNillableFcmEnabled sets the "fcm_enabled" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableFcmEnabled(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetFcmEnabled(*v)
+	}
+	return _c
+}
+
+// SetFcmProjectID sets the "fcm_project_id" field.
+func (_c *AppConfigCreate) SetFcmProjectID(v string) *AppConfigCreate {
+	_c.mutation.SetFcmProjectID(v)
+	return _c
+}
+
+// SetNillableFcmProjectID sets the "fcm_project_id" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableFcmProjectID(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetFcmProjectID(*v)
+	}
+	return _c
+}
+
+// SetFcmServiceAccountJSON sets the "fcm_service_account_json" field.
+func (_c *AppConfigCreate) SetFcmServiceAccountJSON(v string) *AppConfigCreate {
+	_c.mutation.SetFcmServiceAccountJSON(v)
+	return _c
+}
+
+// SetNillableFcmServiceAccountJSON sets the "fcm_service_account_json" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableFcmServiceAccountJSON(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetFcmServiceAccountJSON(*v)
+	}
+	return _c
+}
+
+// SetNotifyNewItems sets the "notify_new_items" field.
+func (_c *AppConfigCreate) SetNotifyNewItems(v bool) *AppConfigCreate {
+	_c.mutation.SetNotifyNewItems(v)
+	return _c
+}
+
+// SetNillableNotifyNewItems sets the "notify_new_items" field if the given value is not nil.
+func (_c *AppConfigCreate) SetNillableNotifyNewItems(v *bool) *AppConfigCreate {
+	if v != nil {
+		_c.SetNotifyNewItems(*v)
+	}
+	return _c
+}
+
 // SetImmichURL sets the "immich_url" field.
 func (_c *AppConfigCreate) SetImmichURL(v string) *AppConfigCreate {
 	_c.mutation.SetImmichURL(v)
@@ -1406,6 +1462,22 @@ func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.PushVapidPrivateKey(); ok {
 		_spec.SetField(appconfig.FieldPushVapidPrivateKey, field.TypeString, value)
 		_node.PushVapidPrivateKey = &value
+	}
+	if value, ok := _c.mutation.FcmEnabled(); ok {
+		_spec.SetField(appconfig.FieldFcmEnabled, field.TypeBool, value)
+		_node.FcmEnabled = &value
+	}
+	if value, ok := _c.mutation.FcmProjectID(); ok {
+		_spec.SetField(appconfig.FieldFcmProjectID, field.TypeString, value)
+		_node.FcmProjectID = &value
+	}
+	if value, ok := _c.mutation.FcmServiceAccountJSON(); ok {
+		_spec.SetField(appconfig.FieldFcmServiceAccountJSON, field.TypeString, value)
+		_node.FcmServiceAccountJSON = &value
+	}
+	if value, ok := _c.mutation.NotifyNewItems(); ok {
+		_spec.SetField(appconfig.FieldNotifyNewItems, field.TypeBool, value)
+		_node.NotifyNewItems = &value
 	}
 	if value, ok := _c.mutation.ImmichURL(); ok {
 		_spec.SetField(appconfig.FieldImmichURL, field.TypeString, value)

@@ -127,6 +127,26 @@ func (r *Registry) Notifier(name string) (Notifier, bool) {
 	return n, ok
 }
 
+// WebPush returns the registered WebPushNotifier, if it was registered.
+func (r *Registry) WebPush() (*WebPushNotifier, bool) {
+	n, ok := r.Notifier("webpush")
+	if !ok {
+		return nil, false
+	}
+	wp, ok := n.(*WebPushNotifier)
+	return wp, ok
+}
+
+// FCM returns the registered FCMNotifier, if it was registered.
+func (r *Registry) FCM() (*FCMNotifier, bool) {
+	n, ok := r.Notifier("fcm")
+	if !ok {
+		return nil, false
+	}
+	f, ok := n.(*FCMNotifier)
+	return f, ok
+}
+
 // ConfiguredNames returns the names of all registered notifiers that are
 // configured and ready to send.
 func (r *Registry) ConfiguredNames() []string {

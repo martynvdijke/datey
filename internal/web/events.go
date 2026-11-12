@@ -98,6 +98,20 @@ func (h *Handler) createEvent(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Notify the other users (realtime + push). The person's display name is
+	// needed for the title; a failed lookup degrades to the event type alone.
+	personName := ""
+	if person, perr := h.people.Get(r.Context(), id); perr == nil && person != nil {
+		personName = person.Name
+	}
+	title := strings.TrimSpace(personName + " - " + validated.Type)
+	if personName == "" {
+		title = validated.Type
+	}
+	h.notifyNewItem(r, "event", title,
+		formatNewItemMessage(locale, "notifications.new_event_added", "New event added: %s", title),
+		fmt.Sprintf("/people/%d", id))
+
 	http.Redirect(w, r, fmt.Sprintf("/people/%d?success=Event+created", id), http.StatusSeeOther)
 }
 

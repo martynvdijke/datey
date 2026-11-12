@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'app.dart' show navigatorKey;
 import 'providers/auth_provider.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -11,6 +12,9 @@ import 'screens/settings_screen.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authStateProvider);
   return GoRouter(
+    // The navigator is exposed as a global so push notifications can show
+    // in-app feedback and navigate from outside the widget tree.
+    navigatorKey: navigatorKey,
     initialLocation: '/',
     redirect: (context, state) {
       final isAuth = auth.whenOrNull(data: (u) => u != null) ?? false;

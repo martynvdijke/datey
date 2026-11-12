@@ -69,6 +69,18 @@ func (r *PushSubscriptionRepository) DeleteByEndpoint(ctx context.Context, endpo
 	return err
 }
 
+// DeleteByUserAndEndpoint removes one of a user's subscriptions. Used by the
+// device-unregistration API so a caller can only delete their own rows.
+func (r *PushSubscriptionRepository) DeleteByUserAndEndpoint(ctx context.Context, userID int, endpoint string) error {
+	_, err := r.client.PushSubscription.Delete().
+		Where(
+			pushsubscription.EndpointEQ(endpoint),
+			pushsubscription.HasUserWith(user.IDEQ(userID)),
+		).
+		Exec(ctx)
+	return err
+}
+
 // Count returns the total number of stored subscriptions.
 func (r *PushSubscriptionRepository) Count(ctx context.Context) (int, error) {
 	return r.client.PushSubscription.Query().Count(ctx)

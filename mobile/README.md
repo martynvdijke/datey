@@ -2,6 +2,13 @@
 
 A new Flutter project.
 
+## Push notifications
+
+Android push notifications use Firebase Cloud Messaging and are optional at
+build time. Setup (Firebase project, `android/app/google-services.json`, server
+env vars, testing, limitations) is documented in
+[`../docs/android-push.md`](../docs/android-push.md).
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

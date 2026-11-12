@@ -96,6 +96,11 @@ func (AppConfig) Fields() []ent.Field {
 		field.String("push_vapid_public_key").Optional().Nillable(),
 		field.String("push_vapid_private_key").Optional().Nillable(),
 
+		field.Bool("fcm_enabled").Optional().Nillable(),
+		field.String("fcm_project_id").Optional().Nillable(),
+		field.String("fcm_service_account_json").Optional().Nillable().Sensitive(),
+		field.Bool("notify_new_items").Optional().Nillable(),
+
 		field.String("immich_url").Optional().Nillable(),
 		field.String("immich_api_key").Optional().Nillable(),
 

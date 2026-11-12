@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Firebase project config (optional, see ../docs/android-push.md)
+/android/app/google-services.json

@@ -247,6 +247,18 @@ func (s *Store) Overlay(ctx context.Context, cfg *config.Config) error {
 	if v := row.PushVapidPrivateKey; v != nil {
 		cfg.PushVAPIDPrivateKey = *v
 	}
+	if v := row.FcmEnabled; v != nil {
+		cfg.FCMEnabled = *v
+	}
+	if v := row.FcmProjectID; v != nil {
+		cfg.FCMProjectID = *v
+	}
+	if v := row.FcmServiceAccountJSON; v != nil {
+		cfg.FCMServiceAccountJSON = *v
+	}
+	if v := row.NotifyNewItems; v != nil {
+		cfg.NotifyNewItems = *v
+	}
 	if v := row.ImmichURL; v != nil {
 		cfg.ImmichURL = *v
 	}
@@ -583,6 +595,10 @@ var errInvalid = ErrInvalid
 
 var validLogLevels = map[string]bool{"debug": true, "info": true, "warn": true, "error": true}
 
+// maskedSecretPrefix starts the UI's masked placeholder for an already-stored
+// secret. A submitted value carrying it means "keep the stored secret".
+const maskedSecretPrefix = "••••••••"
+
 // validDateVariants lists the allowed date display variants; empty means
 // "fall back to the environment/default" (mirrors validLogLevels semantics).
 var validDateVariants = map[string]bool{"european": true, "us": true}
@@ -671,6 +687,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	pushEnabled := form.Get("PUSH_ENABLED") == "on"
 	pushVAPIDPublicKey := form.Get("PUSH_VAPID_PUBLIC_KEY")
 	pushVAPIDPrivateKey := form.Get("PUSH_VAPID_PRIVATE_KEY")
+	fcmEnabled := form.Get("FCM_ENABLED") == "on"
+	fcmProjectID := strings.TrimSpace(form.Get("FCM_PROJECT_ID"))
+	fcmServiceAccountJSON := form.Get("FCM_SERVICE_ACCOUNT_JSON")
+	notifyNewItems := form.Get("NOTIFY_NEW_ITEMS") == "on"
 	immichURL := form.Get("IMMICH_URL")
 	immichAPIKey := form.Get("IMMICH_API_KEY")
 	if immichAPIKey == "" {
@@ -775,6 +795,27 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	}
 	if auditRetentionMax != nil && *auditRetentionMax < 100 {
 		errs["AUDIT_RETENTION_MAX"] = "Audit retention must be at least 100"
+	}
+
+	// FCM secrets follow the same "blank keeps the stored value" rule as the
+	// Immich API key. The service-account JSON is never rendered back into the
+	// form, so an empty submission (or the masked placeholder) must preserve
+	// whatever is already stored rather than clearing it.
+	effectiveFCMProjectID := fcmProjectID
+	if effectiveFCMProjectID == "" {
+		effectiveFCMProjectID = cfg.FCMProjectID
+	}
+	effectiveFCMServiceAccountJSON := strings.TrimSpace(fcmServiceAccountJSON)
+	if effectiveFCMServiceAccountJSON == "" || strings.HasPrefix(effectiveFCMServiceAccountJSON, maskedSecretPrefix) {
+		effectiveFCMServiceAccountJSON = cfg.FCMServiceAccountJSON
+	}
+	if fcmEnabled {
+		if effectiveFCMProjectID == "" {
+			errs["FCM_PROJECT_ID"] = "Firebase project ID is required when Android push is enabled"
+		}
+		if effectiveFCMServiceAccountJSON == "" {
+			errs["FCM_SERVICE_ACCOUNT_JSON"] = "Service-account JSON is required when Android push is enabled"
+		}
 	}
 
 	if len(errs) > 0 {
@@ -920,6 +961,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 		SetNillablePushEnabled(&pushEnabled).
 		SetNillablePushVapidPublicKey(nillableStr(effectivePushPublicKey)).
 		SetNillablePushVapidPrivateKey(nillableStr(effectivePushPrivateKey)).
+		SetNillableFcmEnabled(&fcmEnabled).
+		SetNillableFcmProjectID(nillableStr(effectiveFCMProjectID)).
+		SetNillableFcmServiceAccountJSON(nillableStr(effectiveFCMServiceAccountJSON)).
+		SetNillableNotifyNewItems(&notifyNewItems).
 		SetNillableImmichURL(nillableStr(immichURL)).
 		SetNillableImmichAPIKey(nillableStr(immichAPIKey)).
 		SetNillableAuditRetentionMax(auditRetentionMax).
@@ -993,6 +1038,10 @@ func (s *Store) ApplyForm(ctx context.Context, cfg *config.Config, form url.Valu
 	cfg.PushEnabled = pushEnabled
 	cfg.PushVAPIDPublicKey = effectivePushPublicKey
 	cfg.PushVAPIDPrivateKey = effectivePushPrivateKey
+	cfg.FCMEnabled = fcmEnabled
+	cfg.FCMProjectID = effectiveFCMProjectID
+	cfg.FCMServiceAccountJSON = effectiveFCMServiceAccountJSON
+	cfg.NotifyNewItems = notifyNewItems
 	cfg.ImmichURL = immichURL
 	if immichAPIKey != "" {
 		cfg.ImmichAPIKey = immichAPIKey

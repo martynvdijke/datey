@@ -51,6 +51,8 @@ A self-hosted web application for tracking important dates and receiving automat
   - **🏠 Home Assistant Plugin** — `homeassistant/` plugin folder with key-protected `/api/homeassistant/stats` (RESTful sensor) and `/api/homeassistant/calendar` (calendar entity, all-day `start.date`/`end.date`) feeds plus `sensor.yaml`/`calendar.yaml` snippets for Home Assistant dashboards.
 - **📲 PWA Offline Support** — installable Progressive Web App (`/manifest.json`, `/sw.js` caches the app shell and shows a generic offline page when offline; versioned cache busts on deploy). Add to Home Screen from your browser menu and enjoy instant loads.
 - **🔔 Web Push Notifications** — browser push notifications via VAPID + service worker (`/sw.js`); enabled from Settings → Configuration, requires HTTPS (or localhost).
+- **📡 Real-Time Notifications** — an SSE stream (`/events/stream`) pushes new-item alerts to open browser tabs the moment somebody adds a person or event, rendered as a toast plus a native browser notification when the tab is in the background.
+- **📲 Android Push (FCM)** — the Flutter app registers its Firebase Cloud Messaging token via `POST /api/v1/devices` and receives a notification whenever another user adds a person or event. Configure `FCM_ENABLED`, `FCM_PROJECT_ID` and a `FCM_SERVICE_ACCOUNT_JSON` under Settings → Configuration; setup guide in [docs/android-push.md](docs/android-push.md).
 - **♿ Accessibility** — Skip-to-content link, keyboard-operable controls, ARIA labels, focus management on HTMX swaps.
  - **🔑 API Tokens** — Bearer-token authentication for scripts and automations (`Authorization: Bearer ...`). Create, rotate, and revoke personal tokens from Settings → API Tokens; secrets are shown once and stored only as SHA-256 hashes.
 - **📜 Audit Log** — Append-only, retention-capped record of security-relevant mutations (login success/failure, user create/delete, config saves, person/event/group deletes, backup run/restore, feed-key regeneration) with admin-only filterable viewer at `/settings/audit`. Retention via `AUDIT_RETENTION_MAX` (default 10000, min 100).
@@ -154,6 +156,10 @@ See `.env.example` for a template.
 | `PUSH_ENABLED` | `false` | Enable Web Push browser notifications (requires HTTPS or localhost) |
 | `PUSH_VAPID_PUBLIC_KEY` | — | Public VAPID key; auto-generated on first enable via the UI (optional env override) |
 | `PUSH_VAPID_PRIVATE_KEY` | — | Private VAPID signing key (masked in the admin UI; optional env override) |
+| `FCM_ENABLED` | `false` | Enable Firebase Cloud Messaging push to the Android app |
+| `FCM_PROJECT_ID` | — | Firebase project ID used for the FCM HTTP v1 endpoint |
+| `FCM_SERVICE_ACCOUNT_JSON` | — | Service-account JSON with the Firebase Messaging API enabled (never logged; masked in the admin UI) |
+| `NOTIFY_NEW_ITEMS` | `true` | Notify other users when someone adds a person or event |
 | `CARDDAV_ENABLED` | `false` | Enable two-way CardDAV contact sync (requires a configured server URL) |
 | `CARDDAV_URL` | — | CardDAV server origin or address book URL, e.g. `https://cloud.example.com` or `.../remote.php/dav/addressbooks/user/contacts/` (**enforced**: absolute URL) |
 | `CARDDAV_USERNAME` | — | CardDAV username (Basic auth) |
@@ -206,6 +212,8 @@ Verify the registration with `curl "https://api.telegram.org/bot${TELEGRAM_BOT_T
 ### Per-User Notifications
 
 Each user configures personal delivery targets under **Settings → Notifications** (email address, Telegram chat ID, etc.) for channels the admin has enabled globally. Users may choose **All events** or **Selected groups** scope; the scheduler expands each event into per-user deliveries and honors the scope (group events outside the selection are skipped). Dedup keys are per-user (`channel-event-date-user`) so two users receiving the same event do not suppress each other. When a user has no personal target for an enabled channel, delivery falls back to the global `app_config` value, preserving single-user behavior byte-identically.
+
+Two switch-only channels need no target: **Android app** (`fcm`) enables FCM push to that user's registered devices, and **New item alerts** (`newitems`) opts the user into the real-time / push alerts fired when *another* user adds a person or event. New item alerts are on by default (opt out by unchecking); Android push is off until the user enables it.
 
 ### Google Contacts Sync Setup
 
@@ -363,6 +371,9 @@ datey/
 | `POST` | `/push/subscribe` | Store a Web Push subscription (authenticated) |
 | `POST` | `/push/unsubscribe` | Remove a Web Push subscription (authenticated) |
 | `GET` | `/push/vapid-public-key` | Public VAPID key for establishing browser subscriptions (authenticated) |
+| `GET` | `/events/stream` | SSE stream of real-time notifications (authenticated) |
+| `POST` | `/api/v1/devices` | Register an FCM device token `{token, platform}` (authenticated) |
+| `DELETE` | `/api/v1/devices` | Unregister an FCM device token `{token}` (authenticated) |
 | `GET` | `/health` | Health check |
 | `GET` | `/health/db` | Database health check |
 | `GET` | `/contacts/*` | Legacy redirects → `/people/*` (301) |

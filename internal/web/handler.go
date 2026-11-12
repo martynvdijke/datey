@@ -62,6 +62,10 @@ type Handler struct {
 	audit               auditRecorder
 	telegram            telegramUpdateHandler
 	accounts            *account.Service
+	// broker fans out in-app realtime notifications over SSE.
+	broker *Broker
+	// newItems dispatches new-person / new-event notifications.
+	newItems *notifier.NewItemDispatcher
 }
 
 type auditRecorder interface {
@@ -84,6 +88,15 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 	}
 	events := repository.NewEventRepository(client)
 	people := repository.NewPersonRepository(client)
+	broker := NewBroker()
+
+	var webpush *notifier.WebPushNotifier
+	var fcm *notifier.FCMNotifier
+	if notifReg != nil {
+		webpush, _ = notifReg.WebPush()
+		fcm, _ = notifReg.FCM()
+	}
+
 	return &Handler{
 		cfg:                 cfg,
 		client:              client,
@@ -111,6 +124,8 @@ func NewHandler(cfg *config.Config, client *ent.Client, notifReg *notifier.Regis
 		immich:              immich.New(cfg.ImmichURL, cfg.ImmichAPIKey),
 		photoStore:          photos.NewStore(cfg.DataDir),
 		accounts:            account.New(client),
+		broker:              broker,
+		newItems:            notifier.NewNewItemDispatcher(cfg, client, webpush, fcm, broker),
 	}
 }
 
@@ -154,6 +169,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Post("/api/v1/people/{id}/events", h.apiCreateEvent)
 		r.Patch("/api/v1/events/{id}", h.apiUpdateEvent)
 		r.Delete("/api/v1/events/{id}", h.apiDeleteEvent)
+		// Android (FCM) device registration.
+		r.Post("/api/v1/devices", h.apiRegisterDevice)
+		r.Delete("/api/v1/devices", h.apiUnregisterDevice)
 	})
 
 	// All other routes with middleware applied via group
@@ -227,6 +245,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Delete("/api/me", h.apiDeleteMe)
 			r.Get("/api/v1/me", h.apiMe)
 			r.Delete("/api/v1/me", h.apiDeleteMe)
+			// Server-sent events feed for in-app realtime notifications.
+			r.Get("/events/stream", h.eventsStream)
 			r.Get("/api/v1/me/export", h.apiExportMe)
 			r.Get("/api/me/export", h.apiExportMe)
 			r.Post("/api/me/linked-person", h.setLinkedPerson)

@@ -129,6 +129,14 @@ const (
 	FieldPushVapidPublicKey = "push_vapid_public_key"
 	// FieldPushVapidPrivateKey holds the string denoting the push_vapid_private_key field in the database.
 	FieldPushVapidPrivateKey = "push_vapid_private_key"
+	// FieldFcmEnabled holds the string denoting the fcm_enabled field in the database.
+	FieldFcmEnabled = "fcm_enabled"
+	// FieldFcmProjectID holds the string denoting the fcm_project_id field in the database.
+	FieldFcmProjectID = "fcm_project_id"
+	// FieldFcmServiceAccountJSON holds the string denoting the fcm_service_account_json field in the database.
+	FieldFcmServiceAccountJSON = "fcm_service_account_json"
+	// FieldNotifyNewItems holds the string denoting the notify_new_items field in the database.
+	FieldNotifyNewItems = "notify_new_items"
 	// FieldImmichURL holds the string denoting the immich_url field in the database.
 	FieldImmichURL = "immich_url"
 	// FieldImmichAPIKey holds the string denoting the immich_api_key field in the database.
@@ -233,6 +241,10 @@ var Columns = []string{
 	FieldPushEnabled,
 	FieldPushVapidPublicKey,
 	FieldPushVapidPrivateKey,
+	FieldFcmEnabled,
+	FieldFcmProjectID,
+	FieldFcmServiceAccountJSON,
+	FieldNotifyNewItems,
 	FieldImmichURL,
 	FieldImmichAPIKey,
 	FieldCarddavEnabled,
@@ -565,6 +577,26 @@ func ByPushVapidPublicKey(opts ...sql.OrderTermOption) OrderOption {
 // ByPushVapidPrivateKey orders the results by the push_vapid_private_key field.
 func ByPushVapidPrivateKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPushVapidPrivateKey, opts...).ToFunc()
+}
+
+// ByFcmEnabled orders the results by the fcm_enabled field.
+func ByFcmEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmEnabled, opts...).ToFunc()
+}
+
+// ByFcmProjectID orders the results by the fcm_project_id field.
+func ByFcmProjectID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmProjectID, opts...).ToFunc()
+}
+
+// ByFcmServiceAccountJSON orders the results by the fcm_service_account_json field.
+func ByFcmServiceAccountJSON(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmServiceAccountJSON, opts...).ToFunc()
+}
+
+// ByNotifyNewItems orders the results by the notify_new_items field.
+func ByNotifyNewItems(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyNewItems, opts...).ToFunc()
 }
 
 // ByImmichURL orders the results by the immich_url field.

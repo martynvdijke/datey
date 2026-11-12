@@ -135,6 +135,14 @@ type AppConfig struct {
 	PushVapidPublicKey *string `json:"push_vapid_public_key,omitempty"`
 	// PushVapidPrivateKey holds the value of the "push_vapid_private_key" field.
 	PushVapidPrivateKey *string `json:"push_vapid_private_key,omitempty"`
+	// FcmEnabled holds the value of the "fcm_enabled" field.
+	FcmEnabled *bool `json:"fcm_enabled,omitempty"`
+	// FcmProjectID holds the value of the "fcm_project_id" field.
+	FcmProjectID *string `json:"fcm_project_id,omitempty"`
+	// FcmServiceAccountJSON holds the value of the "fcm_service_account_json" field.
+	FcmServiceAccountJSON *string `json:"-"`
+	// NotifyNewItems holds the value of the "notify_new_items" field.
+	NotifyNewItems *bool `json:"notify_new_items,omitempty"`
 	// ImmichURL holds the value of the "immich_url" field.
 	ImmichURL *string `json:"immich_url,omitempty"`
 	// ImmichAPIKey holds the value of the "immich_api_key" field.
@@ -181,11 +189,11 @@ func (*AppConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldTrmnlEnabled, appconfig.FieldPushEnabled, appconfig.FieldCarddavEnabled, appconfig.FieldGoogleContactsEnabled:
+		case appconfig.FieldSchedulerCatchup, appconfig.FieldReminderDigest, appconfig.FieldSMTPTLS, appconfig.FieldEinkMode, appconfig.FieldIcalEnabled, appconfig.FieldRssEnabled, appconfig.FieldUpcomingAPIEnabled, appconfig.FieldHomeassistantEnabled, appconfig.FieldTrmnlEnabled, appconfig.FieldPushEnabled, appconfig.FieldFcmEnabled, appconfig.FieldNotifyNewItems, appconfig.FieldCarddavEnabled, appconfig.FieldGoogleContactsEnabled:
 			values[i] = new(sql.NullBool)
 		case appconfig.FieldID, appconfig.FieldPort, appconfig.FieldSchedulerHour, appconfig.FieldReminderDays, appconfig.FieldSubscriptionPollHours, appconfig.FieldLogBufferSize, appconfig.FieldBackupRetentionDays, appconfig.FieldSMTPPort, appconfig.FieldSMTPTimeout, appconfig.FieldNtfyPriority, appconfig.FieldIcalDurationMinutes, appconfig.FieldAuditRetentionMax:
 			values[i] = new(sql.NullInt64)
-		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldTelegramWebhookSecret, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldPushoverToken, appconfig.FieldPushoverUser, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldTrmnlKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
+		case appconfig.FieldDataDir, appconfig.FieldDateVariant, appconfig.FieldReminderStages, appconfig.FieldTimezone, appconfig.FieldLogLevel, appconfig.FieldOtelEndpoint, appconfig.FieldBackupDir, appconfig.FieldSMTPHost, appconfig.FieldSMTPUser, appconfig.FieldSMTPPass, appconfig.FieldNotifyEmail, appconfig.FieldGotifyURL, appconfig.FieldGotifyToken, appconfig.FieldTelegramBotToken, appconfig.FieldTelegramChatID, appconfig.FieldTelegramWebhookSecret, appconfig.FieldNtfyURL, appconfig.FieldNtfyTopic, appconfig.FieldNtfyToken, appconfig.FieldPushoverToken, appconfig.FieldPushoverUser, appconfig.FieldWebhookURL, appconfig.FieldWebhookSecret, appconfig.FieldDiscordWebhookURL, appconfig.FieldSlackWebhookURL, appconfig.FieldMatrixHomeserverURL, appconfig.FieldMatrixAccessToken, appconfig.FieldMatrixRoomID, appconfig.FieldUmamiURL, appconfig.FieldUmamiWebsiteID, appconfig.FieldIcalEventStart, appconfig.FieldIcalFeedKey, appconfig.FieldRssFeedKey, appconfig.FieldUpcomingAPIKey, appconfig.FieldHomeassistantKey, appconfig.FieldTrmnlKey, appconfig.FieldPushVapidPublicKey, appconfig.FieldPushVapidPrivateKey, appconfig.FieldFcmProjectID, appconfig.FieldFcmServiceAccountJSON, appconfig.FieldImmichURL, appconfig.FieldImmichAPIKey, appconfig.FieldCarddavURL, appconfig.FieldCarddavUsername, appconfig.FieldCarddavPassword, appconfig.FieldCarddavSyncToken, appconfig.FieldCarddavDeletePolicy, appconfig.FieldGoogleClientID, appconfig.FieldGoogleClientSecret, appconfig.FieldGoogleRefreshToken, appconfig.FieldGoogleSyncToken, appconfig.FieldGoogleDeletePolicy, appconfig.FieldGoogleOauthState:
 			values[i] = new(sql.NullString)
 		case appconfig.FieldLastSchedulerRun, appconfig.FieldCarddavLastSync, appconfig.FieldGoogleLastSync, appconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -622,6 +630,34 @@ func (_m *AppConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.PushVapidPrivateKey = new(string)
 				*_m.PushVapidPrivateKey = value.String
+			}
+		case appconfig.FieldFcmEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_enabled", values[i])
+			} else if value.Valid {
+				_m.FcmEnabled = new(bool)
+				*_m.FcmEnabled = value.Bool
+			}
+		case appconfig.FieldFcmProjectID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_project_id", values[i])
+			} else if value.Valid {
+				_m.FcmProjectID = new(string)
+				*_m.FcmProjectID = value.String
+			}
+		case appconfig.FieldFcmServiceAccountJSON:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_service_account_json", values[i])
+			} else if value.Valid {
+				_m.FcmServiceAccountJSON = new(string)
+				*_m.FcmServiceAccountJSON = value.String
+			}
+		case appconfig.FieldNotifyNewItems:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field notify_new_items", values[i])
+			} else if value.Valid {
+				_m.NotifyNewItems = new(bool)
+				*_m.NotifyNewItems = value.Bool
 			}
 		case appconfig.FieldImmichURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -1085,6 +1121,23 @@ func (_m *AppConfig) String() string {
 	if v := _m.PushVapidPrivateKey; v != nil {
 		builder.WriteString("push_vapid_private_key=")
 		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.FcmEnabled; v != nil {
+		builder.WriteString("fcm_enabled=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.FcmProjectID; v != nil {
+		builder.WriteString("fcm_project_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("fcm_service_account_json=<sensitive>")
+	builder.WriteString(", ")
+	if v := _m.NotifyNewItems; v != nil {
+		builder.WriteString("notify_new_items=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	if v := _m.ImmichURL; v != nil {

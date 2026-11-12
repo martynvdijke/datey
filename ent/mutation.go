@@ -869,6 +869,10 @@ type AppConfigMutation struct {
 	push_enabled               *bool
 	push_vapid_public_key      *string
 	push_vapid_private_key     *string
+	fcm_enabled                *bool
+	fcm_project_id             *string
+	fcm_service_account_json   *string
+	notify_new_items           *bool
 	immich_url                 *string
 	immich_api_key             *string
 	carddav_enabled            *bool
@@ -4094,6 +4098,202 @@ func (m *AppConfigMutation) ResetPushVapidPrivateKey() {
 	delete(m.clearedFields, appconfig.FieldPushVapidPrivateKey)
 }
 
+// SetFcmEnabled sets the "fcm_enabled" field.
+func (m *AppConfigMutation) SetFcmEnabled(b bool) {
+	m.fcm_enabled = &b
+}
+
+// FcmEnabled returns the value of the "fcm_enabled" field in the mutation.
+func (m *AppConfigMutation) FcmEnabled() (r bool, exists bool) {
+	v := m.fcm_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmEnabled returns the old "fcm_enabled" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldFcmEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmEnabled: %w", err)
+	}
+	return oldValue.FcmEnabled, nil
+}
+
+// ClearFcmEnabled clears the value of the "fcm_enabled" field.
+func (m *AppConfigMutation) ClearFcmEnabled() {
+	m.fcm_enabled = nil
+	m.clearedFields[appconfig.FieldFcmEnabled] = struct{}{}
+}
+
+// FcmEnabledCleared returns if the "fcm_enabled" field was cleared in this mutation.
+func (m *AppConfigMutation) FcmEnabledCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldFcmEnabled]
+	return ok
+}
+
+// ResetFcmEnabled resets all changes to the "fcm_enabled" field.
+func (m *AppConfigMutation) ResetFcmEnabled() {
+	m.fcm_enabled = nil
+	delete(m.clearedFields, appconfig.FieldFcmEnabled)
+}
+
+// SetFcmProjectID sets the "fcm_project_id" field.
+func (m *AppConfigMutation) SetFcmProjectID(s string) {
+	m.fcm_project_id = &s
+}
+
+// FcmProjectID returns the value of the "fcm_project_id" field in the mutation.
+func (m *AppConfigMutation) FcmProjectID() (r string, exists bool) {
+	v := m.fcm_project_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmProjectID returns the old "fcm_project_id" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldFcmProjectID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmProjectID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmProjectID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmProjectID: %w", err)
+	}
+	return oldValue.FcmProjectID, nil
+}
+
+// ClearFcmProjectID clears the value of the "fcm_project_id" field.
+func (m *AppConfigMutation) ClearFcmProjectID() {
+	m.fcm_project_id = nil
+	m.clearedFields[appconfig.FieldFcmProjectID] = struct{}{}
+}
+
+// FcmProjectIDCleared returns if the "fcm_project_id" field was cleared in this mutation.
+func (m *AppConfigMutation) FcmProjectIDCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldFcmProjectID]
+	return ok
+}
+
+// ResetFcmProjectID resets all changes to the "fcm_project_id" field.
+func (m *AppConfigMutation) ResetFcmProjectID() {
+	m.fcm_project_id = nil
+	delete(m.clearedFields, appconfig.FieldFcmProjectID)
+}
+
+// SetFcmServiceAccountJSON sets the "fcm_service_account_json" field.
+func (m *AppConfigMutation) SetFcmServiceAccountJSON(s string) {
+	m.fcm_service_account_json = &s
+}
+
+// FcmServiceAccountJSON returns the value of the "fcm_service_account_json" field in the mutation.
+func (m *AppConfigMutation) FcmServiceAccountJSON() (r string, exists bool) {
+	v := m.fcm_service_account_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmServiceAccountJSON returns the old "fcm_service_account_json" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldFcmServiceAccountJSON(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmServiceAccountJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmServiceAccountJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmServiceAccountJSON: %w", err)
+	}
+	return oldValue.FcmServiceAccountJSON, nil
+}
+
+// ClearFcmServiceAccountJSON clears the value of the "fcm_service_account_json" field.
+func (m *AppConfigMutation) ClearFcmServiceAccountJSON() {
+	m.fcm_service_account_json = nil
+	m.clearedFields[appconfig.FieldFcmServiceAccountJSON] = struct{}{}
+}
+
+// FcmServiceAccountJSONCleared returns if the "fcm_service_account_json" field was cleared in this mutation.
+func (m *AppConfigMutation) FcmServiceAccountJSONCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldFcmServiceAccountJSON]
+	return ok
+}
+
+// ResetFcmServiceAccountJSON resets all changes to the "fcm_service_account_json" field.
+func (m *AppConfigMutation) ResetFcmServiceAccountJSON() {
+	m.fcm_service_account_json = nil
+	delete(m.clearedFields, appconfig.FieldFcmServiceAccountJSON)
+}
+
+// SetNotifyNewItems sets the "notify_new_items" field.
+func (m *AppConfigMutation) SetNotifyNewItems(b bool) {
+	m.notify_new_items = &b
+}
+
+// NotifyNewItems returns the value of the "notify_new_items" field in the mutation.
+func (m *AppConfigMutation) NotifyNewItems() (r bool, exists bool) {
+	v := m.notify_new_items
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyNewItems returns the old "notify_new_items" field's value of the AppConfig entity.
+// If the AppConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppConfigMutation) OldNotifyNewItems(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyNewItems is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyNewItems requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyNewItems: %w", err)
+	}
+	return oldValue.NotifyNewItems, nil
+}
+
+// ClearNotifyNewItems clears the value of the "notify_new_items" field.
+func (m *AppConfigMutation) ClearNotifyNewItems() {
+	m.notify_new_items = nil
+	m.clearedFields[appconfig.FieldNotifyNewItems] = struct{}{}
+}
+
+// NotifyNewItemsCleared returns if the "notify_new_items" field was cleared in this mutation.
+func (m *AppConfigMutation) NotifyNewItemsCleared() bool {
+	_, ok := m.clearedFields[appconfig.FieldNotifyNewItems]
+	return ok
+}
+
+// ResetNotifyNewItems resets all changes to the "notify_new_items" field.
+func (m *AppConfigMutation) ResetNotifyNewItems() {
+	m.notify_new_items = nil
+	delete(m.clearedFields, appconfig.FieldNotifyNewItems)
+}
+
 // SetImmichURL sets the "immich_url" field.
 func (m *AppConfigMutation) SetImmichURL(s string) {
 	m.immich_url = &s
@@ -5080,7 +5280,7 @@ func (m *AppConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppConfigMutation) Fields() []string {
-	fields := make([]string, 0, 78)
+	fields := make([]string, 0, 82)
 	if m.port != nil {
 		fields = append(fields, appconfig.FieldPort)
 	}
@@ -5257,6 +5457,18 @@ func (m *AppConfigMutation) Fields() []string {
 	}
 	if m.push_vapid_private_key != nil {
 		fields = append(fields, appconfig.FieldPushVapidPrivateKey)
+	}
+	if m.fcm_enabled != nil {
+		fields = append(fields, appconfig.FieldFcmEnabled)
+	}
+	if m.fcm_project_id != nil {
+		fields = append(fields, appconfig.FieldFcmProjectID)
+	}
+	if m.fcm_service_account_json != nil {
+		fields = append(fields, appconfig.FieldFcmServiceAccountJSON)
+	}
+	if m.notify_new_items != nil {
+		fields = append(fields, appconfig.FieldNotifyNewItems)
 	}
 	if m.immich_url != nil {
 		fields = append(fields, appconfig.FieldImmichURL)
@@ -5441,6 +5653,14 @@ func (m *AppConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.PushVapidPublicKey()
 	case appconfig.FieldPushVapidPrivateKey:
 		return m.PushVapidPrivateKey()
+	case appconfig.FieldFcmEnabled:
+		return m.FcmEnabled()
+	case appconfig.FieldFcmProjectID:
+		return m.FcmProjectID()
+	case appconfig.FieldFcmServiceAccountJSON:
+		return m.FcmServiceAccountJSON()
+	case appconfig.FieldNotifyNewItems:
+		return m.NotifyNewItems()
 	case appconfig.FieldImmichURL:
 		return m.ImmichURL()
 	case appconfig.FieldImmichAPIKey:
@@ -5606,6 +5826,14 @@ func (m *AppConfigMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldPushVapidPublicKey(ctx)
 	case appconfig.FieldPushVapidPrivateKey:
 		return m.OldPushVapidPrivateKey(ctx)
+	case appconfig.FieldFcmEnabled:
+		return m.OldFcmEnabled(ctx)
+	case appconfig.FieldFcmProjectID:
+		return m.OldFcmProjectID(ctx)
+	case appconfig.FieldFcmServiceAccountJSON:
+		return m.OldFcmServiceAccountJSON(ctx)
+	case appconfig.FieldNotifyNewItems:
+		return m.OldNotifyNewItems(ctx)
 	case appconfig.FieldImmichURL:
 		return m.OldImmichURL(ctx)
 	case appconfig.FieldImmichAPIKey:
@@ -6065,6 +6293,34 @@ func (m *AppConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPushVapidPrivateKey(v)
+		return nil
+	case appconfig.FieldFcmEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmEnabled(v)
+		return nil
+	case appconfig.FieldFcmProjectID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmProjectID(v)
+		return nil
+	case appconfig.FieldFcmServiceAccountJSON:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmServiceAccountJSON(v)
+		return nil
+	case appconfig.FieldNotifyNewItems:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyNewItems(v)
 		return nil
 	case appconfig.FieldImmichURL:
 		v, ok := value.(string)
@@ -6541,6 +6797,18 @@ func (m *AppConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(appconfig.FieldPushVapidPrivateKey) {
 		fields = append(fields, appconfig.FieldPushVapidPrivateKey)
 	}
+	if m.FieldCleared(appconfig.FieldFcmEnabled) {
+		fields = append(fields, appconfig.FieldFcmEnabled)
+	}
+	if m.FieldCleared(appconfig.FieldFcmProjectID) {
+		fields = append(fields, appconfig.FieldFcmProjectID)
+	}
+	if m.FieldCleared(appconfig.FieldFcmServiceAccountJSON) {
+		fields = append(fields, appconfig.FieldFcmServiceAccountJSON)
+	}
+	if m.FieldCleared(appconfig.FieldNotifyNewItems) {
+		fields = append(fields, appconfig.FieldNotifyNewItems)
+	}
 	if m.FieldCleared(appconfig.FieldImmichURL) {
 		fields = append(fields, appconfig.FieldImmichURL)
 	}
@@ -6789,6 +7057,18 @@ func (m *AppConfigMutation) ClearField(name string) error {
 	case appconfig.FieldPushVapidPrivateKey:
 		m.ClearPushVapidPrivateKey()
 		return nil
+	case appconfig.FieldFcmEnabled:
+		m.ClearFcmEnabled()
+		return nil
+	case appconfig.FieldFcmProjectID:
+		m.ClearFcmProjectID()
+		return nil
+	case appconfig.FieldFcmServiceAccountJSON:
+		m.ClearFcmServiceAccountJSON()
+		return nil
+	case appconfig.FieldNotifyNewItems:
+		m.ClearNotifyNewItems()
+		return nil
 	case appconfig.FieldImmichURL:
 		m.ClearImmichURL()
 		return nil
@@ -7030,6 +7310,18 @@ func (m *AppConfigMutation) ResetField(name string) error {
 		return nil
 	case appconfig.FieldPushVapidPrivateKey:
 		m.ResetPushVapidPrivateKey()
+		return nil
+	case appconfig.FieldFcmEnabled:
+		m.ResetFcmEnabled()
+		return nil
+	case appconfig.FieldFcmProjectID:
+		m.ResetFcmProjectID()
+		return nil
+	case appconfig.FieldFcmServiceAccountJSON:
+		m.ResetFcmServiceAccountJSON()
+		return nil
+	case appconfig.FieldNotifyNewItems:
+		m.ResetNotifyNewItems()
 		return nil
 	case appconfig.FieldImmichURL:
 		m.ResetImmichURL()

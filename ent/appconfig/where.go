@@ -349,6 +349,26 @@ func PushVapidPrivateKey(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldPushVapidPrivateKey, v))
 }
 
+// FcmEnabled applies equality check predicate on the "fcm_enabled" field. It's identical to FcmEnabledEQ.
+func FcmEnabled(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldFcmEnabled, v))
+}
+
+// FcmProjectID applies equality check predicate on the "fcm_project_id" field. It's identical to FcmProjectIDEQ.
+func FcmProjectID(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldFcmProjectID, v))
+}
+
+// FcmServiceAccountJSON applies equality check predicate on the "fcm_service_account_json" field. It's identical to FcmServiceAccountJSONEQ.
+func FcmServiceAccountJSON(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldFcmServiceAccountJSON, v))
+}
+
+// NotifyNewItems applies equality check predicate on the "notify_new_items" field. It's identical to NotifyNewItemsEQ.
+func NotifyNewItems(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNotifyNewItems, v))
+}
+
 // ImmichURL applies equality check predicate on the "immich_url" field. It's identical to ImmichURLEQ.
 func ImmichURL(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldImmichURL, v))
@@ -4042,6 +4062,196 @@ func PushVapidPrivateKeyEqualFold(v string) predicate.AppConfig {
 // PushVapidPrivateKeyContainsFold applies the ContainsFold predicate on the "push_vapid_private_key" field.
 func PushVapidPrivateKeyContainsFold(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldContainsFold(FieldPushVapidPrivateKey, v))
+}
+
+// FcmEnabledEQ applies the EQ predicate on the "fcm_enabled" field.
+func FcmEnabledEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldFcmEnabled, v))
+}
+
+// FcmEnabledNEQ applies the NEQ predicate on the "fcm_enabled" field.
+func FcmEnabledNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldFcmEnabled, v))
+}
+
+// FcmEnabledIsNil applies the IsNil predicate on the "fcm_enabled" field.
+func FcmEnabledIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldFcmEnabled))
+}
+
+// FcmEnabledNotNil applies the NotNil predicate on the "fcm_enabled" field.
+func FcmEnabledNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldFcmEnabled))
+}
+
+// FcmProjectIDEQ applies the EQ predicate on the "fcm_project_id" field.
+func FcmProjectIDEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDNEQ applies the NEQ predicate on the "fcm_project_id" field.
+func FcmProjectIDNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDIn applies the In predicate on the "fcm_project_id" field.
+func FcmProjectIDIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldFcmProjectID, vs...))
+}
+
+// FcmProjectIDNotIn applies the NotIn predicate on the "fcm_project_id" field.
+func FcmProjectIDNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldFcmProjectID, vs...))
+}
+
+// FcmProjectIDGT applies the GT predicate on the "fcm_project_id" field.
+func FcmProjectIDGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDGTE applies the GTE predicate on the "fcm_project_id" field.
+func FcmProjectIDGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDLT applies the LT predicate on the "fcm_project_id" field.
+func FcmProjectIDLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDLTE applies the LTE predicate on the "fcm_project_id" field.
+func FcmProjectIDLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDContains applies the Contains predicate on the "fcm_project_id" field.
+func FcmProjectIDContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDHasPrefix applies the HasPrefix predicate on the "fcm_project_id" field.
+func FcmProjectIDHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDHasSuffix applies the HasSuffix predicate on the "fcm_project_id" field.
+func FcmProjectIDHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDIsNil applies the IsNil predicate on the "fcm_project_id" field.
+func FcmProjectIDIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldFcmProjectID))
+}
+
+// FcmProjectIDNotNil applies the NotNil predicate on the "fcm_project_id" field.
+func FcmProjectIDNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldFcmProjectID))
+}
+
+// FcmProjectIDEqualFold applies the EqualFold predicate on the "fcm_project_id" field.
+func FcmProjectIDEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDContainsFold applies the ContainsFold predicate on the "fcm_project_id" field.
+func FcmProjectIDContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldFcmProjectID, v))
+}
+
+// FcmServiceAccountJSONEQ applies the EQ predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONNEQ applies the NEQ predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONNEQ(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONIn applies the In predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIn(FieldFcmServiceAccountJSON, vs...))
+}
+
+// FcmServiceAccountJSONNotIn applies the NotIn predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONNotIn(vs ...string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotIn(FieldFcmServiceAccountJSON, vs...))
+}
+
+// FcmServiceAccountJSONGT applies the GT predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONGTE applies the GTE predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONLT applies the LT predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONLTE applies the LTE predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONContains applies the Contains predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONHasPrefix applies the HasPrefix predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONHasSuffix applies the HasSuffix predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONIsNil applies the IsNil predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldFcmServiceAccountJSON))
+}
+
+// FcmServiceAccountJSONNotNil applies the NotNil predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldFcmServiceAccountJSON))
+}
+
+// FcmServiceAccountJSONEqualFold applies the EqualFold predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONContainsFold applies the ContainsFold predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldFcmServiceAccountJSON, v))
+}
+
+// NotifyNewItemsEQ applies the EQ predicate on the "notify_new_items" field.
+func NotifyNewItemsEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldNotifyNewItems, v))
+}
+
+// NotifyNewItemsNEQ applies the NEQ predicate on the "notify_new_items" field.
+func NotifyNewItemsNEQ(v bool) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNEQ(FieldNotifyNewItems, v))
+}
+
+// NotifyNewItemsIsNil applies the IsNil predicate on the "notify_new_items" field.
+func NotifyNewItemsIsNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldIsNull(FieldNotifyNewItems))
+}
+
+// NotifyNewItemsNotNil applies the NotNil predicate on the "notify_new_items" field.
+func NotifyNewItemsNotNil() predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldNotNull(FieldNotifyNewItems))
 }
 
 // ImmichURLEQ applies the EQ predicate on the "immich_url" field.

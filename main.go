@@ -126,7 +126,9 @@ func main() {
 	reg.Register(notifier.NewDiscordNotifier(cfg))
 	reg.Register(notifier.NewSlackNotifier(cfg))
 	reg.Register(notifier.NewMatrixNotifier(cfg))
-	reg.Register(notifier.NewWebPushNotifier(cfg, repository.NewPushSubscriptionRepository(client)))
+	pushSubs := repository.NewPushSubscriptionRepository(client)
+	reg.Register(notifier.NewWebPushNotifier(cfg, pushSubs))
+	reg.Register(notifier.NewFCMNotifier(cfg, pushSubs))
 
 	r := chi.NewRouter()
 
