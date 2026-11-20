@@ -1,3 +1,5 @@
+## [1.61.6](https://github.com/martynvdijke/datey/compare/v1.61.5...v1.61.6) (2026-11-20)
+
 ## [1.61.5](https://github.com/martynvdijke/datey/compare/v1.61.4...v1.61.5) (2026-11-19)
 
 ## [1.61.4](https://github.com/martynvdijke/datey/compare/v1.61.3...v1.61.4) (2026-11-18)
